@@ -17,3 +17,11 @@ The user can also type `/ungagall` to uncheck all options, effectively disabling
 we want to try and improve upon the number of gags in our list, and make it sectioned well so we can add more in the future. We also want to add any extra security we may need, and look over our code to make sure everything works correctly
 ## Sprint Goal 6:
 Peer pressure mare devs into allowing us to send information like this over or see if there is a way for people to create a list of trusted users in their config that would be able to gag them themselves (high security risk, may not implement), (think like glamourer fixed design list)
+
+
+### References & Links:
+Beginning of the code for gagspeak stuff
+https://gitgud.io/BondageProjects/Bondage-College/-/blob/master/BondageClub/Scripts/Speech.js#L296
+
+List of gag levels:
+https://gist.github.com/bananarama92/9c7a11b8263bddd116a7f94973c9272c#file-gag_level-yaml
