@@ -1,0 +1,34 @@
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\bin\x64\Test\net6.0-windows\FFXIVModAppThing.exe
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\bin\x64\Test\net6.0-windows\FFXIVModAppThing.deps.json
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\bin\x64\Test\net6.0-windows\FFXIVModAppThing.runtimeconfig.json
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\bin\x64\Test\net6.0-windows\FFXIVModAppThing.dll
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\bin\x64\Test\net6.0-windows\FFXIVModAppThing.pdb
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.csproj.AssemblyReference.cache
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.Form1.resources
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.csproj.GenerateResource.cache
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.AssemblyInfoInputs.cache
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.AssemblyInfo.cs
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.csproj.CoreCompileInputs.cache
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.dll
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\refint\FFXIVModAppThing.dll
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.pdb
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.genruntimeconfig.cache
+C:\Users\jdtug\source\repos\FFXIVModAppThing\FFXIVModAppThing\obj\x64\Test\net6.0-windows\ref\FFXIVModAppThing.dll
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\bin\x64\Test\net6.0-windows\FFXIVModAppThing.exe
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\bin\x64\Test\net6.0-windows\FFXIVModAppThing.deps.json
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\bin\x64\Test\net6.0-windows\FFXIVModAppThing.runtimeconfig.json
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\bin\x64\Test\net6.0-windows\FFXIVModAppThing.dll
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\bin\x64\Test\net6.0-windows\FFXIVModAppThing.pdb
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.csproj.AssemblyReference.cache
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.Form1.resources
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.csproj.GenerateResource.cache
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.AssemblyInfoInputs.cache
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.AssemblyInfo.cs
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.csproj.CoreCompileInputs.cache
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.dll
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\refint\FFXIVModAppThing.dll
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.pdb
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\FFXIVModAppThing.genruntimeconfig.cache
+C:\Users\jdtug\Source\Repos\Dalamud-GagSpeak\Sprint 1 Files and Code\FFXIVModAppThing\obj\x64\Test\net6.0-windows\ref\FFXIVModAppThing.dll
