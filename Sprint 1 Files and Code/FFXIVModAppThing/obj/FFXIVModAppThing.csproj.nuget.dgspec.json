@@ -1,27 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\jdtug\\Source\\Repos\\Dalamud-GagSpeak\\Sprint 1 Files and Code\\FFXIVModAppThing\\FFXIVModAppThing.csproj": {}
+    "c:\\Users\\Nika\\Documents\\VS Code\\Dalamud\\Dalamud-GagSpeak\\Sprint 1 Files and Code\\FFXIVModAppThing\\FFXIVModAppThing.csproj": {}
   },
   "projects": {
-    "C:\\Users\\jdtug\\Source\\Repos\\Dalamud-GagSpeak\\Sprint 1 Files and Code\\FFXIVModAppThing\\FFXIVModAppThing.csproj": {
+    "c:\\Users\\Nika\\Documents\\VS Code\\Dalamud\\Dalamud-GagSpeak\\Sprint 1 Files and Code\\FFXIVModAppThing\\FFXIVModAppThing.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jdtug\\Source\\Repos\\Dalamud-GagSpeak\\Sprint 1 Files and Code\\FFXIVModAppThing\\FFXIVModAppThing.csproj",
+        "projectUniqueName": "c:\\Users\\Nika\\Documents\\VS Code\\Dalamud\\Dalamud-GagSpeak\\Sprint 1 Files and Code\\FFXIVModAppThing\\FFXIVModAppThing.csproj",
         "projectName": "FFXIVModAppThing",
-        "projectPath": "C:\\Users\\jdtug\\Source\\Repos\\Dalamud-GagSpeak\\Sprint 1 Files and Code\\FFXIVModAppThing\\FFXIVModAppThing.csproj",
-        "packagesPath": "C:\\Users\\jdtug\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jdtug\\Source\\Repos\\Dalamud-GagSpeak\\Sprint 1 Files and Code\\FFXIVModAppThing\\obj\\",
+        "projectPath": "c:\\Users\\Nika\\Documents\\VS Code\\Dalamud\\Dalamud-GagSpeak\\Sprint 1 Files and Code\\FFXIVModAppThing\\FFXIVModAppThing.csproj",
+        "packagesPath": "C:\\Users\\Nika\\.nuget\\packages\\",
+        "outputPath": "c:\\Users\\Nika\\Documents\\VS Code\\Dalamud\\Dalamud-GagSpeak\\Sprint 1 Files and Code\\FFXIVModAppThing\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\jdtug\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\Nika\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net6.0-windows"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -50,6 +48,24 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[6.0.18, 6.0.18]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[6.0.18, 6.0.18]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[6.0.18, 6.0.18]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[6.0.18, 6.0.18]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
@@ -58,7 +74,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.304\\RuntimeIdentifierGraph.json"
         }
       }
     }

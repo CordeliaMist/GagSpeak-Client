@@ -1,0 +1,13 @@
+{
+  "Author": "CK",
+  "Name": "Gag Speak",
+  "Punchline": "Garbled speach when gagged",
+  "Description": "/g for config\nArguments: enable, say, set (strength [0-20])",
+  "InternalName": "gagSpeak",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "gag",
+    "plugin",
+    "chat"
+  ]
+}
