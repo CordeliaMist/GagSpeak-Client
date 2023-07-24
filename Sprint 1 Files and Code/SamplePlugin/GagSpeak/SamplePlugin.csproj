@@ -4,9 +4,9 @@
     <Authors></Authors>
     <Company></Company>
     <Version>0.0.0.1</Version>
-    <Description>A sample plugin.</Description>
+    <Description>Speach Garbler.</Description>
     <Copyright></Copyright>
-    <PackageProjectUrl>https://github.com/goatcorp/SamplePlugin</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/CordeliaMist/Dalamud-GagSpeak</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -18,7 +18,15 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\images\cog.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
 
   <PropertyGroup>
     <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
@@ -59,6 +67,9 @@
       <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <PackageReference Include="XivCommon" Version="7.0.2" />
+    <PackageReference Include="Dalamud.DrunkenToad" Version="1.5.6" />
+    <PackageReference Include="DalamudLinter" Version="1.0.3" />
+    <PackageReference Include="Dalamud.Loc" Version="1.0.3" />
   </ItemGroup>
-
 </Project>

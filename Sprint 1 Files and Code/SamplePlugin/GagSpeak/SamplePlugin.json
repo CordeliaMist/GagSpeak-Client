@@ -2,7 +2,7 @@
   "Author": "CK",
   "Name": "Gag Speak",
   "Punchline": "Garbled speach when gagged",
-  "Description": "/g for config\nArguments: enable, say, set (strength [0-20])",
+  "Description": "Pretend your gag mod actually does something and garble your speech. \nBased on the text garbler of bondageclub",
   "InternalName": "gagSpeak",
   "ApplicableVersion": "any",
   "Tags": [
