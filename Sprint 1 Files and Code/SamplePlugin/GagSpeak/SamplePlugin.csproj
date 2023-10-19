@@ -38,7 +38,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="2.1.11" />
+    <PackageReference Include="DalamudPackager" Version="2.1.12" />
     <Reference Include="FFXIVClientStructs">
       <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
       <Private>false</Private>
@@ -67,9 +67,9 @@
       <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <PackageReference Include="XivCommon" Version="7.0.2" />
-    <PackageReference Include="Dalamud.DrunkenToad" Version="1.5.6" />
+    <PackageReference Include="XivCommon" Version="9.0.0" />
+    <PackageReference Include="Dalamud.DrunkenToad" Version="1.8.5" />
     <PackageReference Include="DalamudLinter" Version="1.0.3" />
-    <PackageReference Include="Dalamud.Loc" Version="1.0.3" />
+    <PackageReference Include="Dalamud.Loc" Version="1.1.2" />
   </ItemGroup>
 </Project>

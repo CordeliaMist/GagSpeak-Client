@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Numerics;
-using Dalamud.Configuration;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using Gagger;
 namespace Gagger.Windows;
 
 

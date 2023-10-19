@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using Dalamud.Interface.Internal.Windows.Settings.Widgets;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using ImGuiScene;
-using Microsoft.VisualBasic;
 
 namespace Gagger.Windows;
 
@@ -55,7 +52,7 @@ public class MainWindow : Window, IDisposable
             {
                 this.Plugin.DrawConfigUI();
             }
-        if(ImGui.InputTextMultiline("input",ref textIn,500, new Vector2(400.0f,250.0f),ImGuiInputTextFlags.CtrlEnterForNewLine));
+        if(ImGui.InputTextMultiline("input",ref textIn,500, new Vector2(400.0f,250.0f),ImGuiInputTextFlags.CtrlEnterForNewLine)); //empty just in if to ensure loading
         if(ImGui.Button("GAG ME!"))
         {
             textOut = garbleFunction(textIn);

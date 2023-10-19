@@ -3,13 +3,10 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Gagger.Windows;
-using System;
 using System.IO;
-using XivCommon;
+using Dalamud.Plugin.Services;
 using ImGuiNET;
-using System.Windows.Forms;
-using Dalamud.Game.Gui;
-using Dalamud.Game.Text;
+using System.Drawing;
 
 namespace Gagger
 {
@@ -19,7 +16,7 @@ namespace Gagger
         private const string CommandName = "/gagspeak";
 
         private DalamudPluginInterface PluginInterface { get; init; }
-        private CommandManager CommandManager { get; init; }
+        private ICommandManager CommandManager { get; init; }
         public Configuration Configuration { get; init; }
         public WindowSystem WindowSystem = new("Gagger");
         private ConfigWindow ConfigWindow { get; init; }
@@ -28,7 +25,7 @@ namespace Gagger
 
         public Plugin(
             [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
-            [RequiredVersion("1.0")] CommandManager commandManager)
+            [RequiredVersion("1.0")] ICommandManager commandManager)
         {
             this.PluginInterface = pluginInterface;
             this.CommandManager = commandManager;
@@ -38,9 +35,8 @@ namespace Gagger
             
             var imagePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "cog.png");
             var settingsImage = this.PluginInterface.UiBuilder.LoadImage(imagePath);
-
             ConfigWindow = new ConfigWindow(this);
-            MainWindow = new MainWindow(this, settingsImage);
+            MainWindow = new MainWindow(this, (ImGuiScene.TextureWrap)settingsImage);
 
             
             WindowSystem.AddWindow(ConfigWindow);
