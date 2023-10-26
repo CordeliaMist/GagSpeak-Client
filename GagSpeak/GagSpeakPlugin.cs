@@ -12,6 +12,7 @@ using Dalamud.Game.Text.SeStringHandling; // For parsing the way SE strings & pa
 using System.Collections.Generic; // For enabling lists
 
 using ImGuiNET;
+using OtterGui;
 using System.Numerics;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;

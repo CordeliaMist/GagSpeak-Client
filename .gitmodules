@@ -3,4 +3,4 @@
 	url = https://github.com/Ottermandias/Penumbra.String.git
 [submodule "OtterGui"]
 	path = OtterGui
-	url = https://github.com/Ottermandias/OtterGui
+	url = https://github.com/Ottermandias/OtterGui/
