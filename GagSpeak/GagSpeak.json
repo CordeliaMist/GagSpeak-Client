@@ -1,0 +1,13 @@
+{
+  "Author": "Cordelia",
+  "Name": "GagSpeak",
+  "Punchline": "Truely make one feel their own speach restricted when gagged~",
+  "Description": "Control your submissive's speach while gagged with this plugin. Apply various kinds of gags, each affecting the speach to a different degree. Exclusive to certain defined chats, and manual override for safety.",
+  "InternalName": "GagSpeak",
+  "AssemblyVersion": "0.0.0.1",
+  "RepoUrl": "https://github.com/CordeliaMist/Dalamud-GagSpeak",
+  "ApplicableVersion": "any",
+  "Tags": [ "Speak", "Gag", "Garble", "Translator", "Control", "BDSM", "RP" ],
+  "DalamudApiLevel": 9,
+  "LoadPriority": 69
+}

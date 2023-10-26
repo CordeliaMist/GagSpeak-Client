@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="Dalamud.Plugin.Bootstrap.targets"/>
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Copyright>Copyright © 2023</Copyright>
+    <LangVersion>latest</LangVersion>
+    <Version>0.0.0.1</Version>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Deterministic>true</Deterministic>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\Assets\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+    
+  <ItemGroup>
+      <Reference Include="Dalamud">
+          <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+          <Private>False</Private>
+      </Reference>
+      <Reference Include="ImGui.NET">
+          <HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
+          <Private>False</Private>
+      </Reference>
+      <Reference Include="ImGuiScene">
+          <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
+          <Private>False</Private>
+      </Reference>
+      <Reference Include="Lumina">
+          <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
+          <Private>False</Private>
+      </Reference>
+      <Reference Include="Lumina.Excel">
+          <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
+          <Private>False</Private>
+      </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OtterGui\OtterGui.csproj" />
+  </ItemGroup>
+
+</Project>
