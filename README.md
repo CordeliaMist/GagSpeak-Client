@@ -1,8 +1,7 @@
 # Dalamud-GagSpeak 
 This Project is the Development of a project which will eventually end up as a Dalamud plugin that can automatically translate sent messages to gagspeak / garbled messages.
 
-![](https://github.com/CordeliaMist/Dalamud-GagSpeak/Assets/GagSpeakBannerAlt.png)
-# Our Project Goals
+![Banner Image](Assets/GagSpeakBannerAlt.png)
 ## Current Goals Accomplished:
 - All Gags and Gag Types and Lock Types are appended
 - Code has had full overhaul and now organized into corrisponding folders and conventional structure
