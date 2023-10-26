@@ -104,21 +104,21 @@ namespace GagSpeak
                 //     }
                 //     ImGui.PopItemWidth();
                 // }
-                using var combo = ImRaii.Combo( "Label" );
-                if( !combo ) return;
+                // using var combo = ImRaii.Combo( "Label" );
+                // if( !combo ) return;
 
-                ImGui.SetNextItemWidth(200f);
-                if( ImGui.InputText( "Search", ref SearchText, 255 ) ) {
-                    SearchedItems = string.isNullOrEmpty(SearchText) ? 
-                        AllItems : AllItems.Where( x => x.ToLowerCase().Contains(SearchText.ToLowerCase()));
-                }
+                // ImGui.SetNextItemWidth(200f);
+                // if( ImGui.InputText( "Search", ref SearchText, 255 ) ) {
+                //     SearchedItems = string.isNullOrEmpty(SearchText) ? 
+                //         AllItems : AllItems.Where( x => x.ToLowerCase().Contains(SearchText.ToLowerCase()));
+                // }
 
-                using var child = ImRaii.Child( "Child", new Vector2(ImGui.GetWindowContentRegionAvail().X, 200), true);
-                foreach( var item in SearchedItems ) {
-                if( ImGui.Selectable( item ) ) {
-                    // can close the combo here
-                }
-                }
+                // using var child = ImRaii.Child( "Child", new Vector2(ImGui.GetWindowContentRegionAvail().X, 200), true);
+                // foreach( var item in SearchedItems ) {
+                // if( ImGui.Selectable( item ) ) {
+                //     // can close the combo here
+                // }
+                // }
 
 
                 // Below this, put a horizontal line.

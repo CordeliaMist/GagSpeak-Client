@@ -43,8 +43,19 @@
       </Reference>
   </ItemGroup>
 
+
+  <ItemGroup>
+    <ProjectReference Include="..\Penumbra.String\Penumbra.String.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\OtterGui\OtterGui.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="VFXEditor.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
