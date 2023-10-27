@@ -9,5 +9,7 @@
   "ApplicableVersion": "any",
   "Tags": [ "Speak", "Gag", "Garble", "Translator", "Control", "BDSM", "RP" ],
   "DalamudApiLevel": 9,
-  "LoadPriority": 69
+  "LoadPriority": 69,
+  "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/master/Assets/GagSpeakIconNoRadial.png"
+  
 }

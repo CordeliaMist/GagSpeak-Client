@@ -3,12 +3,15 @@ using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using ImGuiScene;
+using OtterGui;
 using OtterGui.Raii;
 ﻿using Dalamud.Game.Text;
 using Dalamud.Plugin;
 using System.Diagnostics;
 using Num = System.Numerics;
 using System.Collections.Generic;
+using System.Linq;
+using Lumina.Excel;
 
 namespace GagSpeak
 {
@@ -25,9 +28,9 @@ namespace GagSpeak
             if(_config)
             {
                 // Set window min and max size
-                ImGui.SetNextWindowSizeConstraints(new Num.Vector2(600, 850), new Num.Vector2(1920, 1080));
+                ImGui.SetNextWindowSizeConstraints(new Num.Vector2(600, 550), new Num.Vector2(1920, 1080));
                 // Declare the name of the GUI component
-                ImGui.Begin("Chat Bubbles Config", ref _config);
+                ImGui.Begin("GagSpeak Config", ref _config);
                 // First, declare a space for people to type in their safeword
                 ImGui.InputText("Safeword", ref _safeword, 128);
                 if (ImGui.IsItemHovered()) {
@@ -63,6 +66,20 @@ namespace GagSpeak
                     ImGui.Text("DEBUG INFORMATION:");
                     try
                     {
+                        ImGui.Text($"Fresh Install?: {Configuration.FreshInstall}");
+                        ImGui.Text($"Is Enabled?: {Configuration.Enabled}");
+                        ImGui.Text($"Translatable Chat Types?: {Configuration.Channels}");
+                        ImGui.Text($"Friends Only?: {Configuration.friendsOnly}");
+                        ImGui.Text($"Party Only?: {Configuration.partyOnly}");
+                        ImGui.Text($"Garble Level: {Configuration.GarbleLevel}");
+                        ImGui.Text($"Process Translation Interval: {Configuration.ProcessTranslationInterval}");
+                        ImGui.Text($"Max Translation History: {Configuration.TranslationHistoryMax}");
+                        ImGui.Text($"Total Gag List Count: {Configuration.GagTypes.Count}");
+                        ImGui.Text("Selected GagTypes:");
+                        foreach (var gagType in Configuration.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
+                        ImGui.Text("Selected GagPadlocks:");
+                        foreach (var gagPadlock in Configuration.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text(gagPadlock.ToString()); };
+
                         // Eventually, display the following:
                         // Layer 1 Gag Type, Is Locked?, Lock Type (if Owner Locked, display owner name), Gag muffle Level,
                         // Layer 2 Gag Type, Is Locked?, Lock Type (if Owner Locked, display owner name), Gag muffle Level,
@@ -71,7 +88,6 @@ namespace GagSpeak
                         // Gag Capacity (should max at 3)
                         // Safeword
                         // Safeword Cooldown Timer
-                        ImGui.Text($"Sample Debug Message");
                     }
                     catch (Exception e)
                     {
@@ -86,39 +102,36 @@ namespace GagSpeak
                 // In this section, display the full list of gags, and allow the user to select which ones they want to have on.
                 // The system should only allow a maximum of 3 to be selected at once.
 
-
-                // ImGui.Text($"Layer 1 GagType:");
-                // if (ImGui.IsItemHovered()) {
-                //     ImGui.SetTooltip("Select the first gag type to use.");
-                // }
-                // var selectedGagLayer1Type = this.Configuration.GagTypes;
-                // if(ImGui.BeginCombo("Select Gag Type##GagTypes", $"{selectedGagLayer1Type}")) {
-                //     // For each type of gag in the gagTypes list
-                //     foreach(KeyValuePair<string, int> entry in selectedGagLayer1Type)
-                //     {
-                //         if(ImGui.Selectable($"{entry.Key}", entry.Key == ))
-                //             this.Configuration.OpenBrioBehavior = openBrioBehavior;
-                //         // do something with entry.Value or entry.Key
-                //         }
-                //         ImGui.EndCombo();
+                // var ComboSearchText = string.Empty;
+                // using var gagTypeOneCombo = ImRaii.Combo( "###TypeOneCombo", "Type (Layer 1)", 
+                //     ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest);
+                // if( gagTypeOneCombo ) {
+                //     ImGui.SetNextItemWidth(ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X);
+                //     // Display the imput text for the combo search bar
+                //     if( ImGui.InputTextWithHint("##Search", "Filter...", ref ComboSearchText, 255 ) ) {
+                //         // Query: if the search bar is empty, display all the gag types, otherwise, display only search matches
+                //         selectedGagLayer1Type = string.IsNullOrEmpty(ComboSearchText) ? (
+                //             // If the search bar is empty, display all the types
+                //             Configuration.GagTypes
+                //         ) : (
+                //             // Otherwise, display only search matches
+                //             Configuration.GagTypes.Where( x => x.Key.ToLower().Contains(ComboSearchText.ToLower())
+                //                 ).ToDictionary( x => x.Key, x => x.Value)
+                //         );
+                //         SaveConfig();
                 //     }
-                //     ImGui.PopItemWidth();
+                //     // Now that we have our results, be sure to draw them!
+                //     using var child = ImRaii.Child( "Child", new Vector2( ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X, 200),true);
+                //     // We will draw out one listing for each item.
+                //     foreach( var item in selectedGagLayer1Type.Keys ) {
+                //         if( ImGui.Selectable( item ) ) {
+                //             // can close the combo here
+                //             Services.PluginLog.Debug($"{item}|{selectedGagLayer1Type[item]}");
+                //             return;
+                //         }
+                //     }
                 // }
-                // using var combo = ImRaii.Combo( "Label" );
-                // if( !combo ) return;
-
-                // ImGui.SetNextItemWidth(200f);
-                // if( ImGui.InputText( "Search", ref SearchText, 255 ) ) {
-                //     SearchedItems = string.isNullOrEmpty(SearchText) ? 
-                //         AllItems : AllItems.Where( x => x.ToLowerCase().Contains(SearchText.ToLowerCase()));
-                // }
-
-                // using var child = ImRaii.Child( "Child", new Vector2(ImGui.GetWindowContentRegionAvail().X, 200), true);
-                // foreach( var item in SearchedItems ) {
-                // if( ImGui.Selectable( item ) ) {
-                //     // can close the combo here
-                // }
-                // }
+                // gagTypeOneCombo.Dispose();
 
 
                 // Below this, put a horizontal line.

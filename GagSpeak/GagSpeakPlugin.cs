@@ -23,6 +23,7 @@ using Num = System.Numerics;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFXIVClientStructs.FFXIV.Common.Configuration;
+using System.Runtime.CompilerServices;
 
 // The main namespace for the plugin.
 namespace GagSpeak
@@ -34,15 +35,17 @@ namespace GagSpeak
     {
         public string Name => "Gag Speak"; // Define plugin name
 
-        private string _safeword = "Safeword"; // Define the safeword for the plugin
+        private string _safeword; // Define the safeword for the plugin
         private bool _friendsOnly; // Declare if only people on friends list can say your trigger word
         private bool _partyOnly; // Declare if only people in your party can say your trigger word
         private bool _whitelistOnly; // Declare if only people on your whitelist can say your trigger word
         private bool _config; // called in the public void GagSpeakConfig function
         private bool _debug; // for toggling the debug window in the config
 
-        // List to hold different channels
-        private readonly List<XivChatType> _channels;
+        private readonly List<XivChatType> _channels; // List to hold different channels
+        private readonly List<string> _selectedGagTypes; // List to hold the different gag types
+        private readonly List<GagSpeakConfig.GagPadlocks> _selectedGagPadlocks; // List to hold the different gag padlocks
+
 
         // Holds the order of the XIVChatType channels in _order
         private readonly List<XivChatType> _order = new()
@@ -102,10 +105,16 @@ namespace GagSpeak
 
             // establish plugin configuation from current config, or generate a new one if none exists.
             this.Configuration = Services.PluginInterface.GetPluginConfig() as PluginConfig?? new PluginConfig();
-            // set _channels to the channels defined from the config
-            _channels = this.Configuration.Channels;
+            
+            // set our local plugin variables to the variables stored in our config!           
+            _safeword = this.Configuration.Safeword;
             _friendsOnly = this.Configuration.friendsOnly;
             _partyOnly = this.Configuration.partyOnly;
+            _whitelistOnly = this.Configuration.whitelistOnly;
+            _selectedGagTypes = this.Configuration.selectedGagTypes;
+            _selectedGagPadlocks = this.Configuration.selectedGagPadlocks;
+            _channels = this.Configuration.Channels;
+
 
             // Process the main handlers from Services [THE CORE PART OF THE PLUGIN FUNCTIONALITY]
 
@@ -118,7 +127,7 @@ namespace GagSpeak
             Services.PluginInterface.UiBuilder.Draw += GagSpeakConfigUI;
             Services.PluginInterface.UiBuilder.OpenConfigUi += GagSpeakConfig;
             
-            // command handle for opening config
+            // command handle for opening config (May not need this but also not sure)
             Services.CommandManager.AddHandler("/gagspeak", new CommandInfo(Command) {
                 HelpMessage = "Opens the GagSpeak config window."
             });
@@ -130,6 +139,9 @@ namespace GagSpeak
             this.Configuration.Channels = _channels;
             this.Configuration.friendsOnly = _friendsOnly;
             this.Configuration.partyOnly = _partyOnly;
+            this.Configuration.whitelistOnly = _whitelistOnly;
+            this.Configuration.selectedGagTypes = _selectedGagTypes;
+            this.Configuration.selectedGagPadlocks = _selectedGagPadlocks;
             Services.PluginInterface.SavePluginConfig((IPluginConfiguration)this.Configuration);
         }
 
@@ -194,7 +206,7 @@ namespace GagSpeak
             // /ungag all
         }
 
-        // Function for determining if someone is a friend or not
+        // Function for determining if someone is a friend or not, (useful for && statements with _friendsonly)
         private bool IsFriend(string nameInput) {
             // Check if it is possible for the client to grab the local player name, if so by default set to true.
             if (nameInput == Services.ClientState.LocalPlayer?.Name.TextValue) return true;
@@ -212,7 +224,7 @@ namespace GagSpeak
             return false;
         }
 
-        // Similar function to IsFreind, except looks for if it is a party member.
+        // Similar function to IsFreind, except looks for if it is a party member. (useful for && statements with _partyonly)
         private bool IsPartyMember(string nameInput) {
             if (nameInput == Services.ClientState.LocalPlayer?.Name.TextValue) return true;
 

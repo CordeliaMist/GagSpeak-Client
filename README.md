@@ -18,6 +18,30 @@ This Project is the Development of a project which will eventually end up as a D
 - Avoid any C++ or C habits, such as spamming arrays and strings everywhere, maintain to lists and dictionaries where possible.
 - Overview code, comment EVERYTHING, seriously. This shit is rarely documented at all, having at least one plugin to reference would be amazing, and this could be the first good example, so lets make it one.
 
+# Gamplan to Tackle for translations:
+- Until there is a way to modify chat messages on being sent, the only way to translation messages is to do /gs (message).
+- In order to give commands to other people, we will make use of a whitelist filter
+- It makes more sence to use SeString building over payload manipulation, as payload manip is only client side.
+
+How to tackle commands that order other players?
+- Convert the command into a tell that is sent to the respective player
+- The tell should only go through if the person is on your whitelist
+- The player should be added on both ends for this to work
+- So long as the player is filtered on your whitelist, the tell will be hidden from the chat on both ends client.
+- The tell will then be intercepted and issued as a command 
+
+How to tackle chat mufflers.
+- use /gs (message), everything after /gs is taken in.
+- Use the message as the "arguements", and pass it in as a text to be appended to a payload that can be sent as a message into your respective currently selected chat window type
+
+How to tackle gag selections and UI things.
+- For now im not quite sure, searchable dropdowns broke, and im getting lots of bugs with that kind of shit.
+- Just make sure when a type is selected, that its selection stays visable. Look more into basic combo dropdowns at the moment, worry about search filters later.
+
+https://github.com/Caraxi/SimpleTweaksPlugin/blob/8157cd81a9dccfc21d93234568b8d20902e3f612/Tweaks/CombatMovementControl.cs#L9
+link for a sample of enum-based combo dropdowns with selection saving.
+
+
 
 ### References & Links:
 Beginning of the code for gagspeak stuff

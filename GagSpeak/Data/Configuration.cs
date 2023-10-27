@@ -3,7 +3,8 @@ using System.ComponentModel;
 using Dalamud.Configuration;
 using Dalamud.Game.Text; // Interacting with game chat, XIVChatType, ext.
 using System.Collections.Generic;
-using FFXIVClientStructs.FFXIV.Client.Game.UI; // For enabling lists
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using System.Threading.Channels; // For enabling lists
 // using Dalamud.Plugin;
 
 // Sets up the configuration controls for the GagSpeak Plugin
@@ -11,45 +12,49 @@ namespace GagSpeak
 {
     // Plugin Configuration Class used for dalamud
     public class GagSpeakConfig {
-        // Gets or sets a boolean value to indicate of plugin is a fresh install
-        public bool FreshInstall { get; set; } = true;
+        public bool FreshInstall { get; set; } = true; // Is user on a fresh install?
 
-        // Gets or sets a boolean value to indicate of plugin is enabled
-        public bool Enabled { get; set; } = true;
+        public bool Enabled { get; set; } = true; // Is plugin enabled?
 
-        // Gets or sets the channels that the plugin will translate
-        public List<XivChatType> Channels { get; set; } = new() {XivChatType.Say};
+        public string Safeword { get; set; } = "safeword"; // What is the safeword?
 
-        // stores the bool to see if the friendsonly button is checked
-        public bool friendsOnly { get; set; } = false;
+        public bool friendsOnly { get; set; } = false; // is friend only enabled?
 
-        // stores the bool to see if the partyonly button is checked
-        public bool partyOnly { get; set; } = false;
+        public bool partyOnly { get; set; } = false; // Is party only enabled?
 
-        // Gets or sets the "garble level" of the plugin (determined how muffled translation is)
-        public int GarbleLevel { get; set; } = 0;
+        public bool whitelistOnly { get; set; } = false; // Is whitelist only enabled?
 
-        // Gets or sets the current process intervals for the history
-        public int ProcessTranslationInterval { get; set; } = 300000;
+        // What gag types are selected?
+        public List<string> selectedGagTypes { get; set; } = new() {"None", "None", "None"};
+        
+        // What gag padlocks are selected?
+        public List<GagPadlocks> selectedGagPadlocks { get; set; } = new() {GagPadlocks.None, GagPadlocks.None, GagPadlocks.None};
 
-        // Gets or sets max number of translations stored in history
-        public int TranslationHistoryMax { get; set; } = 30;
+        public List<XivChatType> Channels { get; set; } = new() {XivChatType.Say}; // what channels will the plugin translate in ?
+
+        public int GarbleLevel { get; set; } = 0; // Current Garble Level (0-20)
+
+        public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
+
+        public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
 
 
         // create an enumeration for all the gag types
         // A majority of these likely wont be implemented, but its nice to have.
         public enum GagPadlocks {
-            MetalPadlock,
-            CombinationPadlock,
-            PasswordPadlock,
-            FiveMinutesPadlock,
-            TimerPasswordPadlock,
-            MistressPadlock,
-            MistressTimerPadlock,
+            None, // No gag
+            MetalPadlock, // Metal Padlock, can be picked
+            CombinationPadlock, // Combination Padlock, must enter 4 digit combo to unlock
+            PasswordPadlock, // Password Padlock, must enter password to unlock
+            FiveMinutesPadlock, // 5 minute padlock, must wait 5 minutes to unlock
+            TimerPasswordPadlock, // Timer Password Padlock, must enter password to unlock, but only after a certain amount of time
+            MistressPadlock, // Mistress Padlock, must ask mistress to unlock
+            MistressTimerPadlock, // Mistress Timer Padlock, must ask mistress to unlock, but only after a certain amount of time
         }
         
         // create an dictionary for all the gag types and their strengths
         public Dictionary<string, int> GagTypes {get; set; } = new() {
+            { "None", 0},
             { "Ball Gag", 5 },
             { "Ball Gag Mask", 5 },
             { "Bamboo Gag", 4 },
