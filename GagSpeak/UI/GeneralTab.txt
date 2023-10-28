@@ -12,16 +12,32 @@ using Num = System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
 using Lumina.Excel;
+using Lumina.Excel.GeneratedSheets;
+using OtterGui.Widgets;
 
-namespace GagSpeak
+namespace GagSpeak.UI.Tabs.GeneralTab;
+
+public class GeneralTab : ITab
 {
+    // Begin by appending the readonlys and privates
+    private readonly GagSpeakConfig _config;
+    // other stuff here
 
-    // General ImGUI structure:
-    // ref = what trigger is flipped
-    // IsItemHovered = what displayts when hovered over
-    // SetToolTip = text to display on hover
+    public ReadOnlySpan<byte> Label
+        => "General"u8;
 
-    public unsafe partial class GagSpeak : IDalamudPlugin {
+
+    // Draw the content for the window of the General Tab
+    public void DrawContent()
+    {
+        // If this gets too nasty or detailed later, can always split it up into sub-folders
+
+
+        // Structure Outline:
+    }
+
+    // Helper Functions here
+
         // Create a function for our config UI window
         private void GagSpeakConfigUI() {
             // If our _config is enabled, we should show the window!
@@ -68,18 +84,20 @@ namespace GagSpeak
                     {
                         ImGui.Text($"Fresh Install?: {Configuration.FreshInstall}");
                         ImGui.Text($"Is Enabled?: {Configuration.Enabled}");
-                        ImGui.Text($"Translatable Chat Types?: {Configuration.Channels}");
                         ImGui.Text($"Friends Only?: {Configuration.friendsOnly}");
                         ImGui.Text($"Party Only?: {Configuration.partyOnly}");
+                        ImGui.Text($"Whitelist Only?: {Configuration.whitelistOnly}");
                         ImGui.Text($"Garble Level: {Configuration.GarbleLevel}");
                         ImGui.Text($"Process Translation Interval: {Configuration.ProcessTranslationInterval}");
                         ImGui.Text($"Max Translation History: {Configuration.TranslationHistoryMax}");
                         ImGui.Text($"Total Gag List Count: {Configuration.GagTypes.Count}");
-                        ImGui.Text("Selected GagTypes:");
+                        ImGui.Text("Selected GagTypes:"); ImGui.SameLine(); ImGui.Text($"{Configuration.selectedGagTypes.Count}"); ImGui.SameLine();
                         foreach (var gagType in Configuration.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-                        ImGui.Text("Selected GagPadlocks:");
-                        foreach (var gagPadlock in Configuration.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text(gagPadlock.ToString()); };
-
+                        ImGui.Text("Selected GagPadlocks:"); ImGui.SameLine(); ImGui.Text($"{Configuration.selectedGagPadlocks.Count}"); ImGui.SameLine();
+                        foreach (GagPadlocks gagPadlock in Configuration.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text(gagPadlock.ToString()); };
+            
+                        ImGui.Text($"Translatable Chat Types:");
+                        foreach (var chanel in Configuration.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };
                         // Eventually, display the following:
                         // Layer 1 Gag Type, Is Locked?, Lock Type (if Owner Locked, display owner name), Gag muffle Level,
                         // Layer 2 Gag Type, Is Locked?, Lock Type (if Owner Locked, display owner name), Gag muffle Level,
@@ -98,40 +116,9 @@ namespace GagSpeak
                 ImGui.NewLine();
                 ImGui.Separator();
 
-                // At the top of this section, write out in a larger font than the rest in bold of your gags have been locked or not.
-                // In this section, display the full list of gags, and allow the user to select which ones they want to have on.
-                // The system should only allow a maximum of 3 to be selected at once.
+                // Draw a combo selection Filter for the GagType Selection
+                DrawFilterCombo(Configuration.GagTypes, Configuration.selectedGagTypes[0], Configuration.selectedGagTypes, 0);
 
-                // var ComboSearchText = string.Empty;
-                // using var gagTypeOneCombo = ImRaii.Combo( "###TypeOneCombo", "Type (Layer 1)", 
-                //     ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest);
-                // if( gagTypeOneCombo ) {
-                //     ImGui.SetNextItemWidth(ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X);
-                //     // Display the imput text for the combo search bar
-                //     if( ImGui.InputTextWithHint("##Search", "Filter...", ref ComboSearchText, 255 ) ) {
-                //         // Query: if the search bar is empty, display all the gag types, otherwise, display only search matches
-                //         selectedGagLayer1Type = string.IsNullOrEmpty(ComboSearchText) ? (
-                //             // If the search bar is empty, display all the types
-                //             Configuration.GagTypes
-                //         ) : (
-                //             // Otherwise, display only search matches
-                //             Configuration.GagTypes.Where( x => x.Key.ToLower().Contains(ComboSearchText.ToLower())
-                //                 ).ToDictionary( x => x.Key, x => x.Value)
-                //         );
-                //         SaveConfig();
-                //     }
-                //     // Now that we have our results, be sure to draw them!
-                //     using var child = ImRaii.Child( "Child", new Vector2( ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X, 200),true);
-                //     // We will draw out one listing for each item.
-                //     foreach( var item in selectedGagLayer1Type.Keys ) {
-                //         if( ImGui.Selectable( item ) ) {
-                //             // can close the combo here
-                //             Services.PluginLog.Debug($"{item}|{selectedGagLayer1Type[item]}");
-                //             return;
-                //         }
-                //     }
-                // }
-                // gagTypeOneCombo.Dispose();
 
 
                 // Below this, put a horizontal line.

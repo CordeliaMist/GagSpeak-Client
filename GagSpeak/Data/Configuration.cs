@@ -4,53 +4,60 @@ using Dalamud.Configuration;
 using Dalamud.Game.Text; // Interacting with game chat, XIVChatType, ext.
 using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using System.Threading.Channels; // For enabling lists
-// using Dalamud.Plugin;
+using System.Threading.Channels;
+using System.Linq; // For enabling lists
+using Dalamud.Plugin;
+
+// practicing modular design
+using GagSpeak.UI;
+using GagSpeak.Events;
+
 
 // Sets up the configuration controls for the GagSpeak Plugin
 namespace GagSpeak
 {
-    // Plugin Configuration Class used for dalamud
-    public class GagSpeakConfig {
+    // create an enumeration for all the gag types
+    // A majority of these likely wont be implemented, but its nice to have.
+    public enum GagPadlocks {
+        None, // No gag
+        MetalPadlock, // Metal Padlock, can be picked
+        CombinationPadlock, // Combination Padlock, must enter 4 digit combo to unlock
+        PasswordPadlock, // Password Padlock, must enter password to unlock
+        FiveMinutesPadlock, // 5 minute padlock, must wait 5 minutes to unlock
+        TimerPasswordPadlock, // Timer Password Padlock, must enter password to unlock, but only after a certain amount of time
+        MistressPadlock, // Mistress Padlock, must ask mistress to unlock
+        MistressTimerPadlock, // Mistress Timer Padlock, must ask mistress to unlock, but only after a certain amount of time
+    }
+
+    public class GagSpeakConfig : IPluginConfiguration
+    {
+        public int Version { get; set; } = 0; // Version of the plugin
         public bool FreshInstall { get; set; } = true; // Is user on a fresh install?
-
         public bool Enabled { get; set; } = true; // Is plugin enabled?
-
         public string Safeword { get; set; } = "safeword"; // What is the safeword?
-
         public bool friendsOnly { get; set; } = false; // is friend only enabled?
-
         public bool partyOnly { get; set; } = false; // Is party only enabled?
-
         public bool whitelistOnly { get; set; } = false; // Is whitelist only enabled?
-
-        // What gag types are selected?
-        public List<string> selectedGagTypes { get; set; } = new() {"None", "None", "None"};
-        
-        // What gag padlocks are selected?
-        public List<GagPadlocks> selectedGagPadlocks { get; set; } = new() {GagPadlocks.None, GagPadlocks.None, GagPadlocks.None};
-
-        public List<XivChatType> Channels { get; set; } = new() {XivChatType.Say}; // what channels will the plugin translate in ?
-
+        public bool DebugMode { get; set; } = false; // Is debug mode enabled?
+        public List<string> selectedGagTypes { get; set; } // What gag types are selected?
+        public List<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
+        public List<XivChatType> Channels { get; set; } // Which channels are currently enabled?
         public int GarbleLevel { get; set; } = 0; // Current Garble Level (0-20)
-
         public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
-
         public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
 
+        // Config Options brought over for UI purposes / Implementation purposes
+        public MainWindow.TabType SelectedTab          { get; set; } = MainWindow.TabType.General; // Default to the general tab
+        public bool ShowDesignQuickBar               { get; set; } = false; // Show the design quickbar?
+        public bool LockDesignQuickBar               { get; set; } = false; // Lock the design quickbar?
+        public bool ShowQuickBarInTabs               { get; set; } = true;  // Show the quickbar in the tabs?
+        public bool LockMainWindow                   { get; set; } = false; // Lock the main window?
 
-        // create an enumeration for all the gag types
-        // A majority of these likely wont be implemented, but its nice to have.
-        public enum GagPadlocks {
-            None, // No gag
-            MetalPadlock, // Metal Padlock, can be picked
-            CombinationPadlock, // Combination Padlock, must enter 4 digit combo to unlock
-            PasswordPadlock, // Password Padlock, must enter password to unlock
-            FiveMinutesPadlock, // 5 minute padlock, must wait 5 minutes to unlock
-            TimerPasswordPadlock, // Timer Password Padlock, must enter password to unlock, but only after a certain amount of time
-            MistressPadlock, // Mistress Padlock, must ask mistress to unlock
-            MistressTimerPadlock, // Mistress Timer Padlock, must ask mistress to unlock, but only after a certain amount of time
-        }
+
+        // Configuration options for the whitelist tab
+        private List<string> whitelist = new List<string>(); // appears to be baseline for whitelist
+        public List<string> Whitelist { get => whitelist; set => whitelist = value; } // Note sure why, document later
+
         
         // create an dictionary for all the gag types and their strengths
         public Dictionary<string, int> GagTypes {get; set; } = new() {
@@ -123,16 +130,4 @@ namespace GagSpeak
             { "XL Bone Gag", 4 },
         };
     }
-
-    // class for pluginconfig by dalamud
-    [Serializable]
-    public class PluginConfig : GagSpeakConfig, IPluginConfiguration {
-        // inherited from the dalamud documentation
-        public int Version { get; set; } = 0;
-    }
-
-
-
-
-
 }

@@ -1,0 +1,35 @@
+using System;
+using Dalamud.Interface;
+using Dalamud.Interface.Windowing;
+
+
+// practicing modular design
+namespace GagSpeak.UI;
+
+public class GagSpeakWindowManager : IDisposable
+{
+    private readonly WindowSystem               _windowSystem = new("GagSpeak");
+    private readonly UiBuilder                  _uiBuilder;
+    private readonly MainWindow                 _ui;
+    private readonly HistoryWindow              _uiHistory;  
+
+    public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config, HistoryWindow uiHistory)
+    {
+        // set the main ui window
+        _uiBuilder       = uiBuilder;
+        _ui              = ui;
+        _uiHistory       = uiHistory;
+        _windowSystem.AddWindow(ui);
+        _windowSystem.AddWindow(uiHistory);
+        // Draw the ui and the toggles
+        _uiBuilder.Draw                  += _windowSystem.Draw;     // for drawing the UI stuff
+        _uiBuilder.OpenConfigUi          += _ui.Toggle;             // for toggling the UI stuff
+    }
+
+    // for disposing the UI things
+    public void Dispose()
+    {
+        _uiBuilder.Draw         -= _windowSystem.Draw;
+        _uiBuilder.OpenConfigUi -= _ui.Toggle;
+    }
+}

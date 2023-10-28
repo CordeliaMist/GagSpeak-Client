@@ -24,6 +24,14 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFXIVClientStructs.FFXIV.Common.Configuration;
 using System.Runtime.CompilerServices;
+using System.Diagnostics.Tracing;
+using System.Linq;
+
+
+// Good practice for modular design
+using GagSpeak.UI;
+
+// In an ideal world, once fully compartmentalizard, main should be very small.
 
 // The main namespace for the plugin.
 namespace GagSpeak
@@ -33,19 +41,25 @@ namespace GagSpeak
     // Might make public unsafe partial class
     public unsafe partial class GagSpeak : IGagSpeakPlugin, IDalamudPlugin
     {
-        public string Name => "Gag Speak"; // Define plugin name
+        // Get services & managers needed not already provided in Services.cs (maybe add these to them later see if it works)
+        public HistoryService HistoryService { get; private set; } = null!;
+        public GagSpeakConfig Configuration { get; set; } = null!;
+        MainWindow _mainWindow; // Variable to get the main window.
+        
+        
+        public string Name => "GagSpeak"; // Define plugin name
 
-        private string _safeword; // Define the safeword for the plugin
-        private bool _friendsOnly; // Declare if only people on friends list can say your trigger word
-        private bool _partyOnly; // Declare if only people in your party can say your trigger word
-        private bool _whitelistOnly; // Declare if only people on your whitelist can say your trigger word
-        private bool _config; // called in the public void GagSpeakConfig function
-        private bool _debug; // for toggling the debug window in the config
+        /// <summary>
+        ///  Testing advanced modularization so disabling for now.
+        /// </summary>
+        // private string _safeword; // Define the safeword for the plugin
+        // private bool _friendsOnly; // Declare if only people on friends list can say your trigger word
+        // private bool _partyOnly; // Declare if only people in your party can say your trigger word
+        // private bool _whitelistOnly; // Declare if only people on your whitelist can say your trigger word
+        // private bool _config; // called in the public void GagSpeakConfig function
+        // private bool _debug; // for toggling the debug window in the config {GagPadlocks.None, GagPadlocks.None, GagPadlocks.None}
 
         private readonly List<XivChatType> _channels; // List to hold different channels
-        private readonly List<string> _selectedGagTypes; // List to hold the different gag types
-        private readonly List<GagSpeakConfig.GagPadlocks> _selectedGagPadlocks; // List to hold the different gag padlocks
-
 
         // Holds the order of the XIVChatType channels in _order
         private readonly List<XivChatType> _order = new()
@@ -90,42 +104,40 @@ namespace GagSpeak
             XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8
         };
 
-        // Get services & managers needed not already provided in Services.cs (maybe add these to them later see if it works)
-        public HistoryService HistoryService { get; private set; } = null!;
-        public GagSpeakConfig Configuration { get; set; } = null!;
 
-
-
-        // Make the main GagSpeak plugin class, in the Namespace!
-        // Paramater: pluginInt - The plugin interface, used for interacting with Dalamud & the game
+        // This class runs every time the plugin is enabled, and dispose is called upon disable
         public GagSpeak(DalamudPluginInterface pluginInt)
         {    
             // Create a new instance of the plugin interface. See Services.cs for details
             pluginInt.Create<Services>();
 
-            // establish plugin configuation from current config, or generate a new one if none exists.
-            this.Configuration = Services.PluginInterface.GetPluginConfig() as PluginConfig?? new PluginConfig();
+            try
+            {
+                this.Configuration = Services.PluginInterface.GetPluginConfig() as GagSpeakConfig ?? new GagSpeakConfig();
+            }
+            catch (Exception e)
+            {
+                Services.PluginLog.Error($"Error while fetching config: {e}");
+                this.Configuration = new GagSpeakConfig();
+                this.SaveConfig();
+            }
             
+            // Fix our setup list
+            FixConfigLists();
+
             // set our local plugin variables to the variables stored in our config!           
-            _safeword = this.Configuration.Safeword;
-            _friendsOnly = this.Configuration.friendsOnly;
-            _partyOnly = this.Configuration.partyOnly;
-            _whitelistOnly = this.Configuration.whitelistOnly;
-            _selectedGagTypes = this.Configuration.selectedGagTypes;
-            _selectedGagPadlocks = this.Configuration.selectedGagPadlocks;
+            // _safeword = this.Configuration.Safeword;
+            // _friendsOnly = this.Configuration.friendsOnly;
+            // _partyOnly = this.Configuration.partyOnly;
+            // _whitelistOnly = this.Configuration.whitelistOnly;
             _channels = this.Configuration.Channels;
-
-
-            // Process the main handlers from Services [THE CORE PART OF THE PLUGIN FUNCTIONALITY]
-
-            // Services.framework.Update += OnceUponAFrame; <-- LOOK INTO LATER
 
             // For handling onchat messages
             Services.ChatGui.ChatMessage += Chat_OnChatMessage; // From OnChat Handling
             
             // for UI building
-            Services.PluginInterface.UiBuilder.Draw += GagSpeakConfigUI;
-            Services.PluginInterface.UiBuilder.OpenConfigUi += GagSpeakConfig;
+            Services.PluginInterface.UiBuilder.Draw += _mainWindow.Draw;
+            Services.PluginInterface.UiBuilder.OpenConfigUi += GagSpeakConfig; // for opening Main Window
             
             // command handle for opening config (May not need this but also not sure)
             Services.CommandManager.AddHandler("/gagspeak", new CommandInfo(Command) {
@@ -136,13 +148,13 @@ namespace GagSpeak
         // Function: SaveConfig
         // Purpose: To save the stored variables from the config whenever config is closed.
         public void SaveConfig() {
-            this.Configuration.Channels = _channels;
             this.Configuration.friendsOnly = _friendsOnly;
             this.Configuration.partyOnly = _partyOnly;
             this.Configuration.whitelistOnly = _whitelistOnly;
-            this.Configuration.selectedGagTypes = _selectedGagTypes;
-            this.Configuration.selectedGagPadlocks = _selectedGagPadlocks;
-            Services.PluginInterface.SavePluginConfig((IPluginConfiguration)this.Configuration);
+            this.Configuration.Channels = _channels;
+            Services.PluginInterface.SavePluginConfig(this.Configuration);
+
+            // Empty out any lists to prevent addative leaking
         }
 
         // Dispose function to dispose of the plugin when it is closed
@@ -151,11 +163,35 @@ namespace GagSpeak
             Services.PluginInterface.UiBuilder.Draw -= GagSpeakConfigUI; // remove the config UI
             Services.PluginInterface.UiBuilder.OpenConfigUi -= GagSpeakConfig; // remove the config information
             Services.CommandManager.RemoveHandler("/gagspeak"); // remove the handler created for /gagspeak command
+
+            // Empty the lists to prevent addative leaking
+            // _selectedGagTypes.Clear();
+            // _selectedGagPadlocks.Clear();
+            // _channels.Clear();
             /// Below is possibly a better system for handling multiple windows, look into more later.
         }
 
         // Simple function for the config command 
         private void GagSpeakConfig() => _config = true;
+
+        // Initializes any empty lists from config with default values
+        public void FixConfigLists(){
+            // Set default values for selectedGagTypes
+            if (this.Configuration.selectedGagTypes == null || !this.Configuration.selectedGagTypes.Any() || this.Configuration.selectedGagTypes.Count > 3) {
+                this.Configuration.selectedGagTypes = new List<string> { "None", "None", "None" };
+            }
+            // Set default values for selectedGagPadlocks
+            if (this.Configuration.selectedGagPadlocks == null || !this.Configuration.selectedGagPadlocks.Any())
+            {
+                this.Configuration.selectedGagPadlocks = new List<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };
+            }
+            // set default values for selected channels/
+            if (this.Configuration.Channels == null || !this.Configuration.Channels.Any())
+            {
+                this.Configuration.Channels = new List<XivChatType>(){XivChatType.Say};
+            }
+        }
+
 
         // The main handler that decides what happens based on the commands called.
         private void Command(string command, string args)
@@ -237,7 +273,7 @@ namespace GagSpeak
             return false;
         }
 
-        // Class to store character data to interact with later
+        // Class to store character data to interact with later, used for onchat
         private class CharacterData {
             public SeString? Message;
             public XivChatType Type;

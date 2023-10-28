@@ -34,27 +34,6 @@ namespace GagSpeak
         // 2) the message must be in one of the allowed chat types
         // 3) the message, if 1 & 2 are fulfilled, must be passed into the translator with the appropriate garble strength.
 
-    /// Silly Chats Way of Handling the translation.
-        // private void Translate(SeString message) {
-        //     try {
-        //         foreach (var payload in message.Payloads) {
-        //             if (payload is TextPayload textPayload) {
-        //                 var input = textPayload.Text;
-        //                 if (string.IsNullOrEmpty(input) || input.Contains('\uE0BB')) {
-        //                     continue;
-        //                 }
-
-        //                 var output = this.TranslationService.Translate(input);
-        //                 if (!input.Equals(output)) {
-        //                     textPayload.Text = output;
-        //                     Services.PluginLog.Debug($"{input}|{output}");
-        //                     this.HistoryService.AddTranslation(new Translation(input, output));
-        //                 }
-        //             }
-        //         }
-        //     } catch {
-        //         Services.PluginLog.Debug($"Failed to process message: {message}.");
-        //     }
-        // }
+        
     }
 }
