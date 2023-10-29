@@ -23,7 +23,7 @@ public static class ServiceHandler
         
         // Create a service collection (see Dalamud.cs)
         var services = new ServiceCollection()
-            //.AddSingleton(log)
+            .AddSingleton(log) // Many services DEPEND on the logger, so we need to add it!!!!
 
             // Add the rest of our needed services. Each service below is a CATAGORY. Scroll down to see sub-sections.
             .AddDalamud(pi)
@@ -31,7 +31,7 @@ public static class ServiceHandler
             //.AddInterop()
             .AddEvents()
             //.AddData()
-            .AddChat()
+            //.AddChat()
             //.AddState()
             .AddUi()
             .AddApi();
@@ -52,7 +52,7 @@ public static class ServiceHandler
         => services.AddSingleton<GagSpeakConfig>()
              .AddSingleton<FilenameService>()
             // .AddSingleton<BackupService>()
-            // .AddSingleton<FrameworkManager>()
+             .AddSingleton<FrameworkManager>()
              .AddSingleton<SaveService>();
             // .AddSingleton<CodeService>()
             // .AddSingleton<ConfigMigrationService>()
@@ -104,21 +104,21 @@ public static class ServiceHandler
     //         .AddSingleton<ScalingService>();
 
     // SERVICES FOR ONCHAT, INCLUDE IF EVER NEEDED.
-    private static IServiceCollection AddChat(this IServiceCollection services)
-        => services.AddSingleton<OnChatManager>();
-            // .AddSingleton<DesignFileSystem>()
-            // .AddSingleton<AutoDesignManager>()
-            // .AddSingleton<AutoDesignApplier>()
-            // .AddSingleton<FixedDesignMigrator>()
-            // .AddSingleton<DesignConverter>();
+    // private static IServiceCollection AddChat(this IServiceCollection services)
+    //     => services.AddSingleton<OnChatManager>()
+    //         // .AddSingleton<TranslateMessage>()
+    //         // .AddSingleton<OnChatMessage>();
+    //         // .AddSingleton<OnChatTranslater>()
+    //         // .AddSingleton<FixedDesignMigrator>()
+    //         // .AddSingleton<DesignConverter>();
 
-    // SERVICES FOR STATE, INCLUDE IF EVER NEEDED.
-    // private static IServiceCollection AddState(this IServiceCollection services)
-    //     => services.AddSingleton<StateManager>()
-    //         .AddSingleton<StateApplier>()
-    //         .AddSingleton<StateEditor>()
-    //         .AddSingleton<StateListener>()
-    //         .AddSingleton<FunModule>();
+    // // SERVICES FOR STATE, INCLUDE IF EVER NEEDED.
+    // // private static IServiceCollection AddState(this IServiceCollection services)
+    // //     => services.AddSingleton<StateManager>()
+    // //         .AddSingleton<StateApplier>()
+    // //         .AddSingleton<StateEditor>()
+    // //         .AddSingleton<StateListener>()
+    // //         .AddSingleton<FunModule>();
 
     // SERVICES FOR UI, INCLUDE IF EVER NEEDED.
     private static IServiceCollection AddUi(this IServiceCollection services)
@@ -127,7 +127,7 @@ public static class ServiceHandler
             .AddSingleton<GeneralTab>()
             .AddSingleton<WhitelistTab>()
             .AddSingleton<ConfigSettingsTab>()
-            //.AddSingleton<ActorPanel>()
+            .AddSingleton<HistoryWindow>()
             .AddSingleton<MainWindow>();
             //.AddSingleton<GenericPopupWindow>()
             //.AddSingleton<DebugTab>()

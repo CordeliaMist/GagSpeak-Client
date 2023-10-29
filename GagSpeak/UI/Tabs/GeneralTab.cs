@@ -24,6 +24,7 @@ using GagSpeak.Chat;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 
+#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 public class GeneralTab : ITab
 {
     // Begin by appending the readonlys and privates
@@ -33,11 +34,12 @@ public class GeneralTab : ITab
     private string? _tempSafeword; // for initializing a temporary safeword for the text input field
 
     
-    public GeneralTab(GagSpeakConfig config, UiBuilder uiBuilder)
+    public GeneralTab(GagSpeakConfig config, UiBuilder uiBuilder, UIHelpers uiHelpers)
     {
         // Set the readonlys
         _config = config;
         _uiBuilder = uiBuilder;
+        _uiHelpers = uiHelpers;
     }
 
     // store our current safeword
@@ -105,3 +107,5 @@ public class GeneralTab : ITab
         ImGui.End();
     }
 }
+
+#pragma warning restore IDE1006

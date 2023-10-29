@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Dalamud.Logging;
 using Num = System.Numerics;
+
 // This serves as the hub for both:
 // - OnChatMessage reading
 // - Sending Garbled Messages
@@ -24,7 +25,9 @@ namespace GagSpeak.Chat;
 
 public class OnChatManager : IDisposable
 {
-    // Not really sure how to do this to be honest.
+    private readonly OnChatMessage _onChatMessage;
+    private readonly OnChatTranslate _onChatTranslate;
+
 
     public void Dispose()
     {

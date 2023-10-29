@@ -16,8 +16,8 @@ using OtterGui.Classes;
 // practicing modular design
 namespace GagSpeak.Services;
 
-// our main command list for the plugin
-public class CommandManager : IDisposable
+#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
+public class CommandManager : IDisposable // Our main command list manager
 {
     private const string MainCommandString = "/gagspeak"; // The primary command used
 
@@ -597,3 +597,5 @@ public class CommandManager : IDisposable
     //         .AddRed("[NPC Name]").AddText(" | ").AddWhite("[Player Name]@<World Name>").AddText(".").BuiltString);
     // }
 }
+
+#pragma warning restore IDE1006

@@ -14,6 +14,7 @@ using GagSpeak.Services;
 // practicing modular design
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 
+#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 public class WhitelistTab : ITab
 {
     // When going back through this, be sure to try and reference anything possible to include from the glamourer convention, since it is more modular.
@@ -25,6 +26,14 @@ public class WhitelistTab : ITab
     public ReadOnlySpan<byte> Label
         => "Whitelist"u8;
 
+
+    // Constructor for the whitelist tab
+    public WhitelistTab(GagSpeakConfig config, IClientState clientState) {
+        // Set the readonlys
+        _config = config;
+        _clientState = clientState;
+    }
+    
     // Helper function to clean senders name off the list of clientstate objects
     public static string CleanSenderName(string senderName) {
         string[] senderStrings = SplitCamelCase(RemoveSpecialSymbols(senderName)).Split(" ");
@@ -50,7 +59,7 @@ public class WhitelistTab : ITab
 
         // If the whitelist is empty, then we should set the whitelist to "None"
         if (whitelist.Length == 0) {
-            whitelist = ["None"];
+            whitelist = new string[] { "None" };
         }
 
         // Set the next item width to the max content region in X direction
@@ -90,7 +99,7 @@ public class WhitelistTab : ITab
                 if (!_config.Whitelist.Contains(senderName)) {
                     _config.Whitelist.Add(senderName);
                 }
-                // Save(); <-- Replace this with a config update down the line!
+                _config.Save();
             }
         }
 
@@ -102,7 +111,7 @@ public class WhitelistTab : ITab
         // Also give people the option to remove someone from the whitelist.
         if (ImGui.Button("Remove Selected Player")) {
             _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
-            // Save(); change to config update later
+            _config.Save();
         }
 
         // Display text
@@ -111,3 +120,4 @@ public class WhitelistTab : ITab
     }
 
 }
+#pragma warning restore IDE1006

@@ -22,9 +22,7 @@ using GagSpeak.UI.Tabs.ConfigSettingsTab;
 
 namespace GagSpeak.UI;
 
-
-// continue to look at the tab selected, thinking at the moment that the tab doesnt actually mean the tab bar
-// so it is something we won't need to worry about, but if it is, look into it more.
+#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 public class MainWindow : Window //, IDisposable
 {
     public enum TabType 
@@ -186,3 +184,5 @@ public class MainWindow : Window //, IDisposable
     // basic string function to get the label of title for the window
     private static string GetLabel() => "GagSpeak###GagSpeakMainWindow";
 }
+
+#pragma warning restore IDE1006

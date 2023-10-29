@@ -7,6 +7,7 @@ using OtterGui.Widgets;
 // practicing modular design
 namespace GagSpeak.UI;
 
+#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 public class GagSpeakWindowManager : IDisposable
 {
     private readonly WindowSystem               _windowSystem = new("GagSpeak");
@@ -35,3 +36,4 @@ public class GagSpeakWindowManager : IDisposable
         _uiBuilder.OpenConfigUi -= _ui.Toggle;
     }
 }
+#pragma warning restore IDE1006

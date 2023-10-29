@@ -15,6 +15,8 @@ using GagSpeak.UI;
 using GagSpeak.Services;
 using GagSpeak.Events;
 
+
+#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 // Sets up the configuration controls for the GagSpeak Plugin
 namespace GagSpeak;
 
@@ -198,3 +200,4 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         { "XL Bone Gag", 4 },
     };
 }
+#pragma warning restore IDE1006

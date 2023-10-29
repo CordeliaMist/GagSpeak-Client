@@ -29,20 +29,20 @@ public class DalamudServices
 		services.AddSingleton(CommandManager);
 		services.AddSingleton(Condition);
 		services.AddSingleton(DutyStage);
-		services.AddSingleton(fateTable);
-		services.AddSingleton(flyTextGui);
-		services.AddSingleton(framework);
-		services.AddSingleton(gameGui);
-		services.AddSingleton(gameNetwork);
-		services.AddSingleton(jobGauges);
-		services.AddSingleton(keyState);
-		services.AddSingleton(libcFunction);
-		services.AddSingleton(objectTable);
-		services.AddSingleton(partyFinderGui);
-		services.AddSingleton(partyList);
-		services.AddSingleton(sigScannerD);
-		services.AddSingleton(targetManager);
-		services.AddSingleton(toastGui);
+		services.AddSingleton(FateTable);
+		services.AddSingleton(FlyTextGui);
+		services.AddSingleton(Framework);
+		services.AddSingleton(GameGui);
+		services.AddSingleton(GameNetwork);
+		services.AddSingleton(JobGauges);
+		services.AddSingleton(KeyState);
+		services.AddSingleton(LibcFunction);
+		services.AddSingleton(ObjectTable);
+		services.AddSingleton(PartyFinderGui);
+		services.AddSingleton(PartyList);
+		services.AddSingleton(SigScannerD);
+		services.AddSingleton(TargetManager);
+		services.AddSingleton(ToastGui);
 		services.AddSingleton(this);
 	}
 		
@@ -56,19 +56,19 @@ public class DalamudServices
 	[PluginService] public ICommandManager CommandManager { get; private set; } = null!; // For interfacing with commands
 	[PluginService] public ICondition Condition { get; private set; } = null!; // For interfacing with conditions
 	[PluginService] public IDutyState DutyStage { get; private set; } = null!; // To know if we are currently in duty (may not be needed)
-	[PluginService] public IFateTable fateTable { get; private set; } = null!; // Very much likely not needed
-	[PluginService] public IFlyTextGui flyTextGui { get; private set; } = null!; // For fly by text (may not be needed)
-	[PluginService] public IFramework framework { get; private set; } = null!; // For interfacing with the framework [Dalamud Plugin Service type]
-	[PluginService] public IGameGui gameGui { get; private set; } = null!; // For interfacing with the game GUI
-	[PluginService] public IGameNetwork gameNetwork { get; private set; } = null!; // for interfacing with the gameNetwork status.
-	[PluginService] public IJobGauges jobGauges { get; private set; } = null!; // for interfacing with job guages (unsure why needed)
-	[PluginService] public IKeyState keyState { get; private set; } = null!; // for getting the keystate (unsure what this mean atm)
-	[PluginService] public ILibcFunction libcFunction { get; private set; } = null!; // For interfacing with the libc function
-	[PluginService] public IObjectTable objectTable { get; private set; } = null!; // For interfacing with the object table
-	[PluginService] public IPartyFinderGui partyFinderGui { get; private set; } = null!; // For interfacing with the party finder (may remove)
-	[PluginService] public IPartyList partyList { get; private set; } = null!; // For interfacing with the party list to know if someone is in party
-	[PluginService] public ISigScanner sigScannerD { get; private set; } = null!; // Have no idea what this does
-	[PluginService] public ITargetManager targetManager { get; private set; } = null!; // For interfacing with the target manager (may not need)
-	[PluginService] public IToastGui toastGui { get; private set; } = null!;
+	[PluginService] public IFateTable FateTable { get; private set; } = null!; // Very much likely not needed
+	[PluginService] public IFlyTextGui FlyTextGui { get; private set; } = null!; // For fly by text (may not be needed)
+	[PluginService] public IFramework Framework { get; private set; } = null!; // For interfacing with the framework [Dalamud Plugin Service type]
+	[PluginService] public IGameGui GameGui { get; private set; } = null!; // For interfacing with the game GUI
+	[PluginService] public IGameNetwork GameNetwork { get; private set; } = null!; // for interfacing with the gameNetwork status.
+	[PluginService] public IJobGauges JobGauges { get; private set; } = null!; // for interfacing with job guages (unsure why needed)
+	[PluginService] public IKeyState KeyState { get; private set; } = null!; // for getting the keystate (unsure what this mean atm)
+	[PluginService] public ILibcFunction LibcFunction { get; private set; } = null!; // For interfacing with the libc function
+	[PluginService] public IObjectTable ObjectTable { get; private set; } = null!; // For interfacing with the object table
+	[PluginService] public IPartyFinderGui PartyFinderGui { get; private set; } = null!; // For interfacing with the party finder (may remove)
+	[PluginService] public IPartyList PartyList { get; private set; } = null!; // For interfacing with the party list to know if someone is in party
+	[PluginService] public ISigScanner SigScannerD { get; private set; } = null!; // Have no idea what this does
+	[PluginService] public ITargetManager TargetManager { get; private set; } = null!; // For interfacing with the target manager (may not need)
+	[PluginService] public IToastGui ToastGui { get; private set; } = null!;
 	#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }

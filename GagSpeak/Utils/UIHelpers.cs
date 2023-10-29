@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using OtterGui;
 using OtterGui.Raii;
+
 // Practicing Modular Design
 namespace GagSpeak.UI;
 
-// Future Note: This class should be static, but currently unsure how to draw these without including instance variables.
-
-// A class for all of the UI helpers, including basic functions for drawing repetative yet unique design elements
-public class UIHelpers
+#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
+public class UIHelpers // A class for all of the UI helpers, including basic functions for drawing repetative yet unique design elements
 {
     private readonly GagSpeakConfig _config;
     
@@ -92,3 +91,4 @@ public class UIHelpers
     }
     // Out of function here!
 }
+#pragma warning restore IDE1006

@@ -26,7 +26,7 @@ using Dalamud.IoC;
 
 namespace GagSpeak.UI;
 
-/// History window for the GagSpeak plugin.
+#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 public class HistoryWindow : Window //, IDisposable
 {
     // Private readonly variables for help in making the history window
@@ -92,3 +92,5 @@ public class HistoryWindow : Window //, IDisposable
     // basic string function to get the label of title for the window
     private static string GetLabel() => "GagSpeakHistory###GagSpeakHistory";    
 }
+
+#pragma warning restore IDE1006

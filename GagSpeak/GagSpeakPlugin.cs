@@ -11,22 +11,6 @@ using System; // For the IDisposable
 using Dalamud.Game.Text.SeStringHandling; // For parsing the way SE strings & payload handling
 using System.Collections.Generic; // For enabling lists
 
-using ImGuiNET;
-using OtterGui;
-using System.Numerics;
-using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Balloon = FFXIVClientStructs.FFXIV.Client.Game.Balloon;
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
-using Num = System.Numerics;
-using Dalamud.Game.ClientState.Objects.Enums;
-using Dalamud.Game.ClientState.Objects.SubKinds;
-using FFXIVClientStructs.FFXIV.Common.Configuration;
-using System.Runtime.CompilerServices;
-using System.Diagnostics.Tracing;
-using System.Linq;
-
 
 // Good practice for modular design
 using System.Reflection;
@@ -43,7 +27,7 @@ using Lumina.Excel.GeneratedSheets;
 // The main namespace for the plugin.
 namespace GagSpeak;
 
-
+#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 public class GagSpeak : IDalamudPlugin
 {
     // Main initializations here.
@@ -184,3 +168,4 @@ public class GagSpeak : IDalamudPlugin
         public bool KillMe { get; set; } = false; 
     }
 }
+#pragma warning restore IDE1006

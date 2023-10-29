@@ -18,6 +18,7 @@ using Dalamud.Interface;
 
 namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
 
+#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 public class ConfigSettingsTab : ITab
 {
     // Begin by appending the readonlys and privates
@@ -173,3 +174,5 @@ public class ConfigSettingsTab : ITab
         }
     }
 }
+
+#pragma warning restore IDE1006

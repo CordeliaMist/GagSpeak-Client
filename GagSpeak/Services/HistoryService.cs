@@ -6,6 +6,8 @@ using System.Timers;
 using Dalamud.Logging;
 using Dalamud.Plugin;
 
+using GagSpeak.Chat;
+
 // Pulled from Sillychat, used for logging a history of the translations
 
 namespace GagSpeak
@@ -22,9 +24,9 @@ namespace GagSpeak
             // Set the plugin variable to the plugin passed in
             this.plugin = plugin;
             // Set the translations to a new concurrent queue
-            this.Translations = new ConcurrentQueue<Translation>();
+            this.Translations = new ConcurrentQueue<TranslateMessage>();
             // Set the translations display to a new list of translations
-            this.TranslationsDisplay = new List<Translation>();
+            this.TranslationsDisplay = new List<TranslateMessage>();
             // Set the process translations timer to a new timer
             this.processTranslationsTimer = new Timer {
                 Interval = plugin.Configuration.ProcessTranslationInterval,
@@ -38,13 +40,13 @@ namespace GagSpeak
         public bool IsProcessing { get; private set; }
 
         /// Gets list of current historical records for display.
-        public List<Translation> TranslationsDisplay { get; private set; }
+        public List<TranslateMessage> TranslationsDisplay { get; private set; }
 
         /// Gets queue for historical translations.
-        public ConcurrentQueue<Translation> Translations { get; }
+        public ConcurrentQueue<TranslateMessage> Translations { get; }
 
         /// Add a translation to queue.
-        public void AddTranslation(Translation translation) {
+        public void AddTranslation(TranslateMessage translation) {
             // I honestly dont fully understand this process, comment on it once you learn more about it!
             this.Translations.Enqueue(translation);
             if (!this.IsProcessing) {
