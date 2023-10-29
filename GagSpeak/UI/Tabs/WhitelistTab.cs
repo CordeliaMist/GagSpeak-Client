@@ -4,6 +4,12 @@ using OtterGui.Widgets;
 using Dalamud.Game.ClientState.Objects.Enums;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using Dalamud.Plugin.Services;
+
+using GagSpeak.Chat;
+using GagSpeak.Events;
+using GagSpeak.UI;
+using GagSpeak.Services;
 
 // practicing modular design
 namespace GagSpeak.UI.Tabs.WhitelistTab;
@@ -12,6 +18,7 @@ public class WhitelistTab : ITab
 {
     // When going back through this, be sure to try and reference anything possible to include from the glamourer convention, since it is more modular.
     private readonly GagSpeakConfig _config; // snag the conmfig from the main plugin for obvious reasons
+    private readonly IClientState _clientState; // snag the clientstate from the main plugin for obvious reasons
     private int _currentWhitelistItem; // store a value so we know which item is selected in whitelist
 
     // Set label for whitelist tab
@@ -36,9 +43,6 @@ public class WhitelistTab : ITab
         Regex rgx = new Regex(@"[^a-zA-Z:/._\ -]");
         return rgx.Replace(value, "");
     }
-
-
-
     // Draw the content for the window of the Whitelist Tab
     public void DrawContent() {
         // Let us begin by creating an array of strings that store the whitelist of appended character names
@@ -61,9 +65,9 @@ public class WhitelistTab : ITab
         ImGui.ListBox("##whitelist", ref _currentWhitelistItem, whitelist, whitelist.Length, 10);
 
         // Create a bool for if the player is targetted (more detail on this later after experimentation)
-        bool playerTargetted = Services.ClientState.LocalPlayer != null && Services.ClientState.LocalPlayer.TargetObject != null;
+        bool playerTargetted = _clientState.LocalPlayer != null && _clientState.LocalPlayer.TargetObject != null;
         // Create a bool for if the player is close enough to the targetted player (more detail on this later after experimentation)
-        bool playerCloseEnough = playerTargetted && Vector3.Distance( Services.ClientState.LocalPlayer.Position, Services.ClientState.LocalPlayer.TargetObject.Position) < 1;
+        bool playerCloseEnough = playerTargetted && Vector3.Distance( _clientState.LocalPlayer.Position, _clientState.LocalPlayer.TargetObject.Position) < 1;
         
         // Message to display based on target proximity
         string targetedPlayerText = "Add Targetted Player"; // Displays if no target
@@ -79,9 +83,9 @@ public class WhitelistTab : ITab
         if (ImGui.Button(targetedPlayerText)) {
             // The Null warnings are hinting that there is a possibility there could be none
             // However, the checks above that return to the bools safeguard this for us.
-            if (Services.ClientState.LocalPlayer.TargetObject.ObjectKind == ObjectKind.Player) {
+            if (_clientState.LocalPlayer.TargetObject.ObjectKind == ObjectKind.Player) {
                 // IF the object type is another player
-                string senderName = CleanSenderName(Services.ClientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
+                string senderName = CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
                 // And now, if the player is not already in our whitelist, we will add them. Otherwise just do nothing.
                 if (!_config.Whitelist.Contains(senderName)) {
                     _config.Whitelist.Add(senderName);

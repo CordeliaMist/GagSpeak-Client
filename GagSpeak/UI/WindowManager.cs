@@ -1,6 +1,7 @@
 using System;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
+using OtterGui.Widgets;
 
 
 // practicing modular design
@@ -21,6 +22,7 @@ public class GagSpeakWindowManager : IDisposable
         _uiHistory       = uiHistory;
         _windowSystem.AddWindow(ui);
         _windowSystem.AddWindow(uiHistory);
+//        _windowSystem.AddWindow(Changelog.Changelog);
         // Draw the ui and the toggles
         _uiBuilder.Draw                  += _windowSystem.Draw;     // for drawing the UI stuff
         _uiBuilder.OpenConfigUi          += _ui.Toggle;             // for toggling the UI stuff

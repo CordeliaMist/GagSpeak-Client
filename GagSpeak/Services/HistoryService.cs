@@ -77,7 +77,7 @@ namespace GagSpeak
             catch (Exception ex)
             {
                 // What to do if the exception is caught
-                Services.PluginLog.Error(ex, "Failed to process translations.");
+                GagSpeak.Log.Error($"{ex}Failed to process translations.");
                 this.IsProcessing = false;
             }
         }

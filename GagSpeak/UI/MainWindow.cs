@@ -11,11 +11,7 @@ using Num = System.Numerics;
 using Dalamud.Interface.Windowing;
 using System.Numerics;
 using Dalamud.Interface.Utility;
-using Dalamud.Interface.Windowing;
-using Dalamud.Plugin;
-using ImGuiNET;
-using OtterGui.Custom;
-using OtterGui.Widgets;
+
 
 // Practicing Modular Design
 using GagSpeak.Events;
@@ -26,7 +22,10 @@ using GagSpeak.UI.Tabs.ConfigSettingsTab;
 
 namespace GagSpeak.UI;
 
-public class MainWindow : Window, IDisposable
+
+// continue to look at the tab selected, thinking at the moment that the tab doesnt actually mean the tab bar
+// so it is something we won't need to worry about, but if it is, look into it more.
+public class MainWindow : Window //, IDisposable
 {
     public enum TabType 
     {
@@ -38,7 +37,7 @@ public class MainWindow : Window, IDisposable
 
     // Private readonly variables here, fill in rest later. (or rather take out)
     private readonly GagSpeakConfig  _config; // Might just be used for debug stuff, may be able to remove.
-    private readonly TabSelected    _event;
+    // private readonly TabSelected    _event;
     private readonly ITab[]         _tabs;
 
     // Readonly variables for the tabs
@@ -46,8 +45,8 @@ public class MainWindow : Window, IDisposable
     public readonly WhitelistTab        Whitelist;
     public readonly ConfigSettingsTab   ConfigSettings;
     public TabType SelectTab = TabType.None; // What tab is selected?
-    public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general, WhitelistTab whitelist, ConfigSettings configsettings,
-            TabSelected @event): base(GetLabel())
+    public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general,
+        WhitelistTab whitelist, ConfigSettingsTab configsettings): base(GetLabel())
     {
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
@@ -63,7 +62,7 @@ public class MainWindow : Window, IDisposable
         Whitelist = whitelist;
         ConfigSettings = configsettings;
         // Below are the stuff besides the tabs that are passed through
-        _event     = @event;
+        //_event     = @event;
         _config    = config;
         // the tabs to be displayed
         _tabs = new ITab[]
@@ -73,7 +72,7 @@ public class MainWindow : Window, IDisposable
             configsettings,
         };
         // lets subscribe to the event so we can write custom code once this event is raised.
-        _event.Subscribe(OnTabSelected, TabSelected.Priority.MainWindow);
+       // _event.Subscribe(OnTabSelected, TabSelected.Priority.MainWindow);
     }
 
     // Prepare to draw the sick window thing
@@ -86,8 +85,8 @@ public class MainWindow : Window, IDisposable
     }
 
     // The function called when the mainwindow must be DISPOSED OF
-    public void Dispose()
-        => _event.Unsubscribe(OnTabSelected); // Best to unsubscribe to events we subscribed to after disposal!
+    // public void Dispose()
+    //     => _event.Unsubscribe(OnTabSelected); // Best to unsubscribe to events we subscribed to after disposal!
 
 
     // Now that we are THE READY. Yis. Let us, LE DRAW (This should be called by the windowManager)
@@ -102,15 +101,37 @@ public class MainWindow : Window, IDisposable
         /// [out ReadOnlySpan<byte> currentTab] - the current tab selected we are on, read in byte span format
         /// [Action buttons]                    - UNSURE ATM
         /// [params ITab[] tabs]                - the list of tabs that will will want to have displayed
-        /// 
         if (TabBar.Draw("##tabs", ImGuiTabBarFlags.None, ToLabel(SelectTab), out var currentTab, () => { }, _tabs)) {
             SelectTab           = TabType.None; // set the selected tab to none
             _config.SelectedTab = FromLabel(currentTab); // set the config selected tab to the current tab
             //_config.Save(); // FIND OUT HOW TO USE SaveConfig(); ACROSS CLASSES LATER.
         }
 
-        // Design Quickbar intentionally removed from here. 
-        // Can append something else here if you really want, like ko-fi & save buttons.
+        // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 10 * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
+        // Can use basic stuff for now, but if you want to look into locking buttons, reference glamourer's button / checkbox code.
+        if (ImGui.Button("Save and Close Config")) {
+            // SaveConfig(); <-- Make this actually save and close config.
+        }
+
+        // This appears to use a completely seperate style of ImGui drawing, look into further later.
+
+        // In that same line...
+        ImGui.SameLine();
+        // Configure the style for our next button
+        ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
+        ImGui.Text(" ");
+        ImGui.SameLine();
+
+        // And now have that button be for the Ko-Fi Link
+        if (ImGui.Button("Tip Cordy for her hard work!")) {
+            ImGui.SetTooltip( "Only if you want to though!");
+            Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
+        }
+
+        ImGui.PopStyleColor(3);
     }
 
     // Function to determine which label we are going to when switching tabs
@@ -135,7 +156,7 @@ public class MainWindow : Window, IDisposable
     }
 
     // Cordy Note: General Support Group buttons, not nessisary for overall design
-    /// <summary> Draw the support button group on the right-hand side of the window. </summary>
+    // / <summary> Draw the support button group on the right-hand side of the window. </summary>
     // public static void DrawSupportButtons(Changelog changelog)
     // {
     //     var width = ImGui.CalcTextSize("Join Discord for Support").X + ImGui.GetStyle().FramePadding.X * 2;
@@ -155,19 +176,13 @@ public class MainWindow : Window, IDisposable
     //         changelog.ForceOpen = true;
     // }
 
+
     // this coordinates what to execute once the mouse clicks on a different tab than the one we are on.
-    
-    private void OnTabSelected(TabType type, Design? _)
-        => SelectTab = type;
+
+    // Still stuck figuring out what the Style? _ is for, but I think it is just a blank style?
+    // private void OnTabSelected(TabType type, Style? _)
+    //     => SelectTab = type;
 
     // basic string function to get the label of title for the window
     private static string GetLabel() => "GagSpeak###GagSpeakMainWindow";
-}
-
-
-
-
-
-
-
 }

@@ -29,37 +29,31 @@ using System.Linq;
 
 
 // Good practice for modular design
+using System.Reflection;
 using GagSpeak.UI;
+using GagSpeak.Services;
+using GagSpeak.Chat;
+using Microsoft.Extensions.DependencyInjection;
+using OtterGui.Classes;
+using OtterGui.Log;
+using Lumina.Excel.GeneratedSheets;
 
 // In an ideal world, once fully compartmentalizard, main should be very small.
 
 // The main namespace for the plugin.
-namespace GagSpeak
+namespace GagSpeak;
+
+
+public class GagSpeak : IDalamudPlugin
 {
-    // The main plugin class, IDalamudPlugin is required.
-    // All variables in here have underscores because similar names are used elsewhere
-    // Might make public unsafe partial class
-    public unsafe partial class GagSpeak : IGagSpeakPlugin, IDalamudPlugin
-    {
-        // Get services & managers needed not already provided in Services.cs (maybe add these to them later see if it works)
-        public HistoryService HistoryService { get; private set; } = null!;
-        public GagSpeakConfig Configuration { get; set; } = null!;
-        MainWindow _mainWindow; // Variable to get the main window.
-        
-        
-        public string Name => "GagSpeak"; // Define plugin name
+    // Main initializations here.
+    public string Name => "GagSpeak"; // Define plugin name
 
-        /// <summary>
-        ///  Testing advanced modularization so disabling for now.
-        /// </summary>
-        // private string _safeword; // Define the safeword for the plugin
-        // private bool _friendsOnly; // Declare if only people on friends list can say your trigger word
-        // private bool _partyOnly; // Declare if only people in your party can say your trigger word
-        // private bool _whitelistOnly; // Declare if only people on your whitelist can say your trigger word
-        // private bool _config; // called in the public void GagSpeakConfig function
-        // private bool _debug; // for toggling the debug window in the config {GagPadlocks.None, GagPadlocks.None, GagPadlocks.None}
-
-        private readonly List<XivChatType> _channels; // List to hold different channels
+    // I have no idea how this line works, look into it further later.
+    public static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
+    public static readonly Logger Log = new(); // initialize the logger for our plugin
+    private readonly ServiceProvider _services; // initialize our services.
+    private readonly List<XivChatType> _channels = new(); // List to hold different channels [SHOULD REMOVE THIS!!!!]
 
         // Holds the order of the XIVChatType channels in _order
         private readonly List<XivChatType> _order = new()
@@ -104,184 +98,117 @@ namespace GagSpeak
             XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8
         };
 
-
-        // This class runs every time the plugin is enabled, and dispose is called upon disable
+        ////* -- MAIN FUNCTION FOR PLUGIN OPENING -- *///
         public GagSpeak(DalamudPluginInterface pluginInt)
         {    
-            // Create a new instance of the plugin interface. See Services.cs for details
-            pluginInt.Create<Services>();
-
             try
             {
-                this.Configuration = Services.PluginInterface.GetPluginConfig() as GagSpeakConfig ?? new GagSpeakConfig();
-            }
-            catch (Exception e)
-            {
-                Services.PluginLog.Error($"Error while fetching config: {e}");
-                this.Configuration = new GagSpeakConfig();
-                this.SaveConfig();
-            }
-            
-            // Fix our setup list
-            FixConfigLists();
+                // Initialize the services in the large Service collection. (see ServiceHandler.cs)
+                _services = ServiceHandler.CreateProvider(pluginInt, Log);
 
-            // set our local plugin variables to the variables stored in our config!           
-            // _safeword = this.Configuration.Safeword;
-            // _friendsOnly = this.Configuration.friendsOnly;
-            // _partyOnly = this.Configuration.partyOnly;
-            // _whitelistOnly = this.Configuration.whitelistOnly;
-            _channels = this.Configuration.Channels;
+                // Initialize messager service once one is made here if needed
+
+                // Initialize the UI
+                _services.GetRequiredService<GagSpeakWindowManager>();
+
+                // Initialize the command manager
+                _services.GetRequiredService<CommandManager>();
+
+                // Initialize the OnChatMessage handler
+                _services.GetRequiredService<OnChatManager>();
+
+                // Initialize the garbler service (may retain inside of GagSpeakWindowManager or OnChatMessage handler)
+                Log.Information($"GagSpeak version{Version} loaded successfully.");
+            }
+            catch
+            {
+                // Note sure how to throw an error here since the services are not yet initialized but yeah
+                // Error($"Error while fetching config: {e}");
+                // if we couldnt suceed, just yeet it.
+                Dispose();
+                throw;
+            }
+        }
 
             // For handling onchat messages
-            Services.ChatGui.ChatMessage += Chat_OnChatMessage; // From OnChat Handling
+            //Services.ChatGui.ChatMessage += Chat_OnChatMessage; // From OnChat Handling [Catagorized as an Event?]
             
             // for UI building
-            Services.PluginInterface.UiBuilder.Draw += _mainWindow.Draw;
-            Services.PluginInterface.UiBuilder.OpenConfigUi += GagSpeakConfig; // for opening Main Window
+            // This should replace the two commented lines below
+            
+            // Services.PluginInterface.UiBuilder.Draw += _mainWindow.Draw;
+            // Services.PluginInterface.UiBuilder.OpenConfigUi += GagSpeakConfig; // for opening Main Window
             
             // command handle for opening config (May not need this but also not sure)
-            Services.CommandManager.AddHandler("/gagspeak", new CommandInfo(Command) {
-                HelpMessage = "Opens the GagSpeak config window."
-            });
-        }
+
+        ////* -- MAIN FUNCTION FOR PLUGIN CLOSING -- *///
+        public void Dispose()
+            => _services?.Dispose(); // Dispose of all services. (call all of their dispose functions)
+            //Services.ChatGui.ChatMessage -= Chat_OnChatMessage; // remove the chat handler
+            //Services.PluginInterface.UiBuilder.Draw -= this.BuildUI; // remove the config UI
+            //Services.PluginInterface.UiBuilder.OpenConfigUi -= GagSpeakConfig; // remove the config information
+            //Services.CommandManager.RemoveHandler("/gagspeak"); // remove the handler created for /gagspeak command
         
+
+
         // Function: SaveConfig
         // Purpose: To save the stored variables from the config whenever config is closed.
-        public void SaveConfig() {
-            this.Configuration.friendsOnly = _friendsOnly;
-            this.Configuration.partyOnly = _partyOnly;
-            this.Configuration.whitelistOnly = _whitelistOnly;
-            this.Configuration.Channels = _channels;
-            Services.PluginInterface.SavePluginConfig(this.Configuration);
+        // public void SaveConfig() {
+        //     this.Configuration.friendsOnly = _friendsOnly;
+        //     this.Configuration.partyOnly = _partyOnly;
+        //     this.Configuration.whitelistOnly = _whitelistOnly;
+        //     this.Configuration.Channels = _channels;
+        //     Services.PluginInterface.SavePluginConfig(this.Configuration);
 
-            // Empty out any lists to prevent addative leaking
-        }
+        //     // Empty out any lists to prevent addative leaking
+        // }
 
-        // Dispose function to dispose of the plugin when it is closed
-        void IDisposable.Dispose() {
-            Services.ChatGui.ChatMessage -= Chat_OnChatMessage; // remove the chat handler
-            Services.PluginInterface.UiBuilder.Draw -= GagSpeakConfigUI; // remove the config UI
-            Services.PluginInterface.UiBuilder.OpenConfigUi -= GagSpeakConfig; // remove the config information
-            Services.CommandManager.RemoveHandler("/gagspeak"); // remove the handler created for /gagspeak command
 
-            // Empty the lists to prevent addative leaking
-            // _selectedGagTypes.Clear();
-            // _selectedGagPadlocks.Clear();
-            // _channels.Clear();
-            /// Below is possibly a better system for handling multiple windows, look into more later.
-        }
-
-        // Simple function for the config command 
-        private void GagSpeakConfig() => _config = true;
+        // Simple function for the config command, DISABLED FOR NEW STRUCTURE TEST 
+        //private void GagSpeakConfig() => _config = true;
 
         // Initializes any empty lists from config with default values
-        public void FixConfigLists(){
-            // Set default values for selectedGagTypes
-            if (this.Configuration.selectedGagTypes == null || !this.Configuration.selectedGagTypes.Any() || this.Configuration.selectedGagTypes.Count > 3) {
-                this.Configuration.selectedGagTypes = new List<string> { "None", "None", "None" };
-            }
-            // Set default values for selectedGagPadlocks
-            if (this.Configuration.selectedGagPadlocks == null || !this.Configuration.selectedGagPadlocks.Any())
-            {
-                this.Configuration.selectedGagPadlocks = new List<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };
-            }
-            // set default values for selected channels/
-            if (this.Configuration.Channels == null || !this.Configuration.Channels.Any())
-            {
-                this.Configuration.Channels = new List<XivChatType>(){XivChatType.Say};
-            }
-        }
 
 
-        // The main handler that decides what happens based on the commands called.
-        private void Command(string command, string args)
-        {
-            // This system may need to be pulled off to its own file in order to shorten the main plugin.cs
-            if (command == "gagspeak") {
-                // Our command is gagspeak
-                if (args == "config") GagSpeakConfig(); // If the arguements are config, open the config window
-                if (args == "safeword") {
-                    // If the arguements are safeword, assign the string afterward as the safeword automatically
-                }
-                if (args == "showlist") {
-                    // secondary arguement would be "padlocks" or "gags". Will display all options for each respective list.
-                }
-            } else if (command == "gag") {
-                // Our command is gag, so handle which gag is applied (maybe control other user with this)
+        // USE THIS FUNCTION FOR STORING DATA ABOUT MESSAGE DETECTION AND STRING BUILDING
+        // private bool IsFriend(string nameInput) {
+        //     // Check if it is possible for the client to grab the local player name, if so by default set to true.
+        //     if (nameInput == Services.ClientState.LocalPlayer?.Name.TextValue) return true;
 
-                // List out all gags here and trigger the applicable one on.
+        //     // after, scan through each object in the object table
+        //     foreach (var t in Services.objectTable) {
+        //         // If the object is a player character, conmtinue on..
+        //         if (!(t is PlayerCharacter pc)) continue;
+        //         // If the player characters name matches the list of names from local players 
+        //         if (pc.Name.TextValue == nameInput) {
+        //             // See if they have a status of being a friend, if so return true, otherwise return false.
+        //             return pc.StatusFlags.HasFlag(StatusFlags.Friend);
+        //         }
+        //     }
+        //     return false;
+        // }
 
-            } else if (command == "gaglock") {
-                // Our command is gaglock, which will apply a spesified padlock type to the spesified gag.
+        // // Similar function to IsFreind, except looks for if it is a party member. (useful for && statements with _partyonly)
+        // private bool IsPartyMember(string nameInput) {
+        //     if (nameInput == Services.ClientState.LocalPlayer?.Name.TextValue) return true;
 
-                // Arguements would be the gag layer, and the type of padlock to use
+        //     foreach (var t in Services.objectTable) {
+        //         if (!(t is PlayerCharacter pc)) continue;
+        //         if (pc.Name.TextValue == nameInput) {
+        //             return pc.StatusFlags.HasFlag(StatusFlags.PartyMember);
+        //         }
+        //     }
+        //     return false;
+        // }
 
-            } else if (command == "ungag") {
-                // Our command is ungag, so handle which gag is removed
-
-                // List out all gags here and trigger the applicable one off
-
-                // Alternatively, they can write all to take all off
-                if (args == "all") {
-                    // Turn all gags off
-                }
-            } else {
-                _config = !_config;
-            }
-
-            /// EXAMPLE COMMANDS FROM EACH SECTION ///
-            // /gagspeak config
-            // /gagspeak safeword "Samurai"
-            // /gagspeak showlist padlocks
-            // /gagspeak showlist gags
-            // /gag 1 ballgag
-            // /gag 2 harness ballgag | Hretha@Crystal
-            // /gaglock 1 MistressPadlock | Hretha@Crystal
-            // /gaglock 2 CombinationPadlock
-            // /ungag 2
-            // /ungag all
-        }
-
-        // Function for determining if someone is a friend or not, (useful for && statements with _friendsonly)
-        private bool IsFriend(string nameInput) {
-            // Check if it is possible for the client to grab the local player name, if so by default set to true.
-            if (nameInput == Services.ClientState.LocalPlayer?.Name.TextValue) return true;
-
-            // after, scan through each object in the object table
-            foreach (var t in Services.objectTable) {
-                // If the object is a player character, conmtinue on..
-                if (!(t is PlayerCharacter pc)) continue;
-                // If the player characters name matches the list of names from local players 
-                if (pc.Name.TextValue == nameInput) {
-                    // See if they have a status of being a friend, if so return true, otherwise return false.
-                    return pc.StatusFlags.HasFlag(StatusFlags.Friend);
-                }
-            }
-            return false;
-        }
-
-        // Similar function to IsFreind, except looks for if it is a party member. (useful for && statements with _partyonly)
-        private bool IsPartyMember(string nameInput) {
-            if (nameInput == Services.ClientState.LocalPlayer?.Name.TextValue) return true;
-
-            foreach (var t in Services.objectTable) {
-                if (!(t is PlayerCharacter pc)) continue;
-                if (pc.Name.TextValue == nameInput) {
-                    return pc.StatusFlags.HasFlag(StatusFlags.PartyMember);
-                }
-            }
-            return false;
-        }
-
-        // Class to store character data to interact with later, used for onchat
-        private class CharacterData {
-            public SeString? Message;
-            public XivChatType Type;
-            public uint ActorId;
-            public DateTime MessageDateTime;
-            public string? Name;
-            public bool NewMessage { get; set; }
-            public bool KillMe { get; set; } = false; 
-        }
+    // May not even need this class
+    private class CharacterData {
+        public SeString? Message;
+        public XivChatType Type;
+        public uint ActorId;
+        public DateTime MessageDateTime;
+        public string? Name;
+        public bool NewMessage { get; set; }
+        public bool KillMe { get; set; } = false; 
     }
 }

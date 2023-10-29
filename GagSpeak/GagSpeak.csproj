@@ -41,19 +41,21 @@
           <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
           <Private>False</Private>
       </Reference>
+      <Reference Include="Newtonsoft.Json">
+        <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
   </ItemGroup>
 
 
   <ItemGroup>
     <ProjectReference Include="..\Penumbra.String\Penumbra.String.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\OtterGui\OtterGui.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="VFXEditor.json">
+    <None Update="GagSpeak.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
