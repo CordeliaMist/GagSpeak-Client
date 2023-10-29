@@ -41,13 +41,48 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public bool partyOnly { get; set; } = false; // Is party only enabled?
     public bool whitelistOnly { get; set; } = false; // Is whitelist only enabled?
     public bool DebugMode { get; set; } = false; // Is debug mode enabled?
-    public List<string> selectedGagTypes { get; set; } // What gag types are selected?
-    public List<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
-    public List<XivChatType> Channels { get; set; } // Which channels are currently enabled?
     public int GarbleLevel { get; set; } = 0; // Current Garble Level (0-20)
     public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
     public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
+    public List<string> selectedGagTypes { get; set; } // What gag types are selected?
+    public List<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
+    public List<XivChatType> Channels { get; set; } // Which channels are currently enabled?
 
+    // public List<XivChatType> _order = new() {
+    //     XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None, 
+    //     XivChatType.Say, XivChatType.Shout, XivChatType.TellOutgoing, XivChatType.TellIncoming,
+    //     XivChatType.Party, XivChatType.Alliance, XivChatType.Ls1, XivChatType.Ls2,
+    //     XivChatType.Ls3, XivChatType.Ls4, XivChatType.Ls5, XivChatType.Ls6,
+    //     XivChatType.Ls7, XivChatType.Ls8, XivChatType.FreeCompany, XivChatType.NoviceNetwork,
+    //     XivChatType.CustomEmote, XivChatType.StandardEmote, XivChatType.Yell, XivChatType.CrossParty,
+    //     XivChatType.PvPTeam, XivChatType.CrossLinkShell1, XivChatType.Echo, XivChatType.None,
+    //     XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None,
+    //     XivChatType.None, XivChatType.None, XivChatType.CrossLinkShell2, XivChatType.CrossLinkShell3,
+    //     XivChatType.CrossLinkShell4, XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7,
+    //     XivChatType.CrossLinkShell8
+    // }; May not need for now!!!!! Keeping for good reference for the CHANNEL_IS_ACTIVE below
+    public bool[] ChannelsIsActive = {
+        false, false, false, false, // None, None, None, None
+        true, true, true, true,     // Say, Shout, TellOutgoing, TellIncoming
+        true, true, true, true,     // Party, Alliance, Ls1, Ls2
+        true, true, true, true,     // Ls3, Ls4, Ls5, Ls6
+        true, true, true, true,     // Ls7, Ls8, FreeCompany, NoviceNetwork
+        true, true, true, true,     // CustomEmote, StandardEmote, Yell, CrossParty
+        true, true, true, false,    // PvPTeam, CrossLinkShell1, Echo, None
+        false, false, false, false, // None, None, None, None
+        false, false, true, true,   // None, None, CWL2, CWL3
+        true, true, true, true,     // CWL4, CWL5, CWL6, CWL7
+        true                        // CWL8
+    }; // Which channels are currently enabled?
+
+    public XivChatType[] _allowedChannels = { // Dont think we need this but may be wrong
+        XivChatType.Say, XivChatType.Shout, XivChatType.TellOutgoing, XivChatType.TellIncoming, XivChatType.Party,
+        XivChatType.Alliance, XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4, XivChatType.Ls5,
+        XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8, XivChatType.FreeCompany, XivChatType.NoviceNetwork,
+        XivChatType.CustomEmote, XivChatType.StandardEmote, XivChatType.Yell, XivChatType.CrossParty, XivChatType.CrossLinkShell1,
+        XivChatType.CrossLinkShell2, XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4, XivChatType.CrossLinkShell5,
+        XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8
+    };
     // Config Options brought over for UI purposes / Implementation purposes
     public MainWindow.TabType SelectedTab          { get; set; } = MainWindow.TabType.General; // Default to the general tab
     public bool ShowDesignQuickBar               { get; set; } = false; // Show the design quickbar?

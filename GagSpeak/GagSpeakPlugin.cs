@@ -53,93 +53,65 @@ public class GagSpeak : IDalamudPlugin
     public static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
     public static readonly Logger Log = new(); // initialize the logger for our plugin
     private readonly ServiceProvider _services; // initialize our services.
-    private readonly List<XivChatType> _channels = new(); // List to hold different channels [SHOULD REMOVE THIS!!!!]
 
-        // Holds the order of the XIVChatType channels in _order
-        private readonly List<XivChatType> _order = new()
+    // Holds the order of the XIVChatType channels in _order
+    // private readonly List<XivChatType> _order = new()
+    // {
+    //     XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None, 
+    //     XivChatType.Say, XivChatType.Shout, XivChatType.TellOutgoing, XivChatType.TellIncoming,
+    //     XivChatType.Party, XivChatType.Alliance, XivChatType.Ls1, XivChatType.Ls2,
+    //     XivChatType.Ls3, XivChatType.Ls4, XivChatType.Ls5, XivChatType.Ls6,
+    //     XivChatType.Ls7, XivChatType.Ls8, XivChatType.FreeCompany, XivChatType.NoviceNetwork,
+    //     XivChatType.CustomEmote, XivChatType.StandardEmote, XivChatType.Yell, XivChatType.CrossParty,
+    //     XivChatType.PvPTeam, XivChatType.CrossLinkShell1, XivChatType.Echo, XivChatType.None,
+    //     XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None,
+    //     XivChatType.None, XivChatType.None, XivChatType.CrossLinkShell2, XivChatType.CrossLinkShell3,
+    //     XivChatType.CrossLinkShell4, XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7,
+    //     XivChatType.CrossLinkShell8
+    // };
+
+    ////* -- MAIN FUNCTION FOR PLUGIN OPENING -- *///
+    public GagSpeak(DalamudPluginInterface pluginInt)
+    {    
+        try
         {
-            XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None, 
-            XivChatType.Say, XivChatType.Shout, XivChatType.TellOutgoing, XivChatType.TellIncoming,
-            XivChatType.Party, XivChatType.Alliance, XivChatType.Ls1, XivChatType.Ls2,
-            XivChatType.Ls3, XivChatType.Ls4, XivChatType.Ls5, XivChatType.Ls6,
-            XivChatType.Ls7, XivChatType.Ls8, XivChatType.FreeCompany, XivChatType.NoviceNetwork,
-            XivChatType.CustomEmote, XivChatType.StandardEmote, XivChatType.Yell, XivChatType.CrossParty,
-            XivChatType.PvPTeam, XivChatType.CrossLinkShell1, XivChatType.Echo, XivChatType.None,
-            XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None,
-            XivChatType.None, XivChatType.None, XivChatType.CrossLinkShell2, XivChatType.CrossLinkShell3,
-            XivChatType.CrossLinkShell4, XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7,
-            XivChatType.CrossLinkShell8
-        };
+            // Initialize the services in the large Service collection. (see ServiceHandler.cs)
+            _services = ServiceHandler.CreateProvider(pluginInt, Log);
 
-        // Holds the yes/no for each XIVChatType channel so we know which is enabled or not
-        private readonly bool[] _yesno =
-        {
-            false, false, false, false, // None, None, None, None
-            true, true, true, true,     // Say, Shout, TellOutgoing, TellIncoming
-            true, true, true, true,     // Party, Alliance, Ls1, Ls2
-            true, true, true, true,     // Ls3, Ls4, Ls5, Ls6
-            true, true, true, true,     // Ls7, Ls8, FreeCompany, NoviceNetwork
-            true, true, true, true,     // CustomEmote, StandardEmote, Yell, CrossParty
-            true, true, true, false,    // PvPTeam, CrossLinkShell1, Echo, None
-            false, false, false, false, // None, None, None, None
-            false, false, true, true,   // None, None, CWL2, CWL3
-            true, true, true, true,     // CWL4, CWL5, CWL6, CWL7
-            true                        // CWL8
-        };
+            // Initialize messager service once one is made here if needed
 
-        // Create an array of all xivchattypes excluding all channels with a .None, leaving us with all allowed channels
-        private readonly XivChatType[] _allowedChannels =
-            {
-            XivChatType.Say, XivChatType.Shout, XivChatType.TellOutgoing, XivChatType.TellIncoming, XivChatType.Party,
-            XivChatType.Alliance, XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4, XivChatType.Ls5,
-            XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8, XivChatType.FreeCompany, XivChatType.NoviceNetwork,
-            XivChatType.CustomEmote, XivChatType.StandardEmote, XivChatType.Yell, XivChatType.CrossParty, XivChatType.CrossLinkShell1,
-            XivChatType.CrossLinkShell2, XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4, XivChatType.CrossLinkShell5,
-            XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8
-        };
+            // Initialize the UI
+            _services.GetRequiredService<GagSpeakWindowManager>();
 
-        ////* -- MAIN FUNCTION FOR PLUGIN OPENING -- *///
-        public GagSpeak(DalamudPluginInterface pluginInt)
-        {    
-            try
-            {
-                // Initialize the services in the large Service collection. (see ServiceHandler.cs)
-                _services = ServiceHandler.CreateProvider(pluginInt, Log);
+            // Initialize the command manager
+            _services.GetRequiredService<CommandManager>();
 
-                // Initialize messager service once one is made here if needed
+            // Initialize the OnChatMessage handler
+            _services.GetRequiredService<OnChatManager>();
 
-                // Initialize the UI
-                _services.GetRequiredService<GagSpeakWindowManager>();
-
-                // Initialize the command manager
-                _services.GetRequiredService<CommandManager>();
-
-                // Initialize the OnChatMessage handler
-                _services.GetRequiredService<OnChatManager>();
-
-                // Initialize the garbler service (may retain inside of GagSpeakWindowManager or OnChatMessage handler)
-                Log.Information($"GagSpeak version{Version} loaded successfully.");
-            }
-            catch
-            {
-                // Note sure how to throw an error here since the services are not yet initialized but yeah
-                // Error($"Error while fetching config: {e}");
-                // if we couldnt suceed, just yeet it.
-                Dispose();
-                throw;
-            }
+            // Initialize the garbler service (may retain inside of GagSpeakWindowManager or OnChatMessage handler)
+            Log.Information($"GagSpeak version{Version} loaded successfully.");
         }
+        catch
+        {
+            // Note sure how to throw an error here since the services are not yet initialized but yeah
+            // Error($"Error while fetching config: {e}");
+            // if we couldnt suceed, just yeet it.
+            Dispose();
+            throw;
+        }
+    }
 
-            // For handling onchat messages
-            //Services.ChatGui.ChatMessage += Chat_OnChatMessage; // From OnChat Handling [Catagorized as an Event?]
-            
-            // for UI building
-            // This should replace the two commented lines below
-            
-            // Services.PluginInterface.UiBuilder.Draw += _mainWindow.Draw;
-            // Services.PluginInterface.UiBuilder.OpenConfigUi += GagSpeakConfig; // for opening Main Window
-            
-            // command handle for opening config (May not need this but also not sure)
+    // For handling onchat messages
+    //Services.ChatGui.ChatMessage += Chat_OnChatMessage; // From OnChat Handling [Catagorized as an Event?]
+    
+    // for UI building
+    // This should replace the two commented lines below
+    
+    // Services.PluginInterface.UiBuilder.Draw += _mainWindow.Draw;
+    // Services.PluginInterface.UiBuilder.OpenConfigUi += GagSpeakConfig; // for opening Main Window
+    
+    // command handle for opening config (May not need this but also not sure)
 
         ////* -- MAIN FUNCTION FOR PLUGIN CLOSING -- *///
         public void Dispose()
@@ -201,7 +173,7 @@ public class GagSpeak : IDalamudPlugin
         //     return false;
         // }
 
-    // May not even need this class
+    // May not even need this class, best to modularize it all into the configuration class
     private class CharacterData {
         public SeString? Message;
         public XivChatType Type;

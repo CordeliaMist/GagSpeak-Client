@@ -14,6 +14,13 @@ using System.Linq;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using OtterGui.Widgets;
+using Dalamud.Interface;
+using Dalamud.Interface.Utility;
+
+using GagSpeak.Services;
+using GagSpeak.UI;
+using GagSpeak.Events;
+using GagSpeak.Chat;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 
@@ -21,95 +28,80 @@ public class GeneralTab : ITab
 {
     // Begin by appending the readonlys and privates
     private readonly GagSpeakConfig _config;
+    private readonly UiBuilder _uiBuilder;
+    private readonly UIHelpers _uiHelpers; // for drawing filter combo's
+    private string? _tempSafeword; // for initializing a temporary safeword for the text input field
 
+    
+    public GeneralTab(GagSpeakConfig config, UiBuilder uiBuilder)
+    {
+        // Set the readonlys
+        _config = config;
+        _uiBuilder = uiBuilder;
+    }
+
+    // store our current safeword
+    public string _currentSafeword = string.Empty;
+
+    // Apply our lable for the tab
     public ReadOnlySpan<byte> Label
-        => "General"u8;
+        => "ConfigSettings"u8;
 
-
-    // ADDITIONAL HELPER FUNCTIONS GO HERE:
-
-
-    // Draw the content for the window of the General Tab
+    /// <summary>
+    /// This Function draws the content for the window of the General Tab
+    /// </summary>
     public void DrawContent() {
         // Definitely need to refine the ImGui code here, but this is a good start.
-
-        // First, declare a space for people to type in their safeword
-        ImGui.InputText("Safeword", ref _safeword, 128);
-        if (ImGui.IsItemHovered()) {
-            ImGui.SetTooltip("This Safeword let's you override gags lock restrictions, but wont be able to gag again for awhile if you do.");
+        // Create a child for the Main Window (not sure if we need this without a left selection panel)
+        using var child = ImRaii.Child("MainWindowChild");
+        
+        // Draw the child grouping for the ConfigSettings Tab
+        using (var child2 = ImRaii.Child("GeneralTabChild"))
+        {
+            DrawHeader();
+            DrawGeneral();
         }
+    }
 
-        // Below this, put a horizontal line.
-        ImGui.NewLine();
+    // Draw the header stuff
+    private void DrawHeader()
+        => WindowHeader.Draw("Settings & Options", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
+
+    // Draw the actual general tab contents
+    private void DrawGeneral() {
+
+        // create a name variable for the safeword
+        var safeword  = _tempSafeword ?? _config.Safeword;;
+        ImGui.SetNextItemWidth(330 * ImGuiHelpers.GlobalScale);
+        if (ImGui.InputText("Set Safeword##Safeword", ref safeword, 128, ImGuiInputTextFlags.None))
+            _tempSafeword = safeword;
+
+        if (ImGui.IsItemDeactivated()) {
+            _config.Safeword = safeword;
+            _tempSafeword = null;
+        }
+        
         ImGui.Separator();
+        // Now let's draw our 3 gag appliers
 
-        // Draw a combo selection Filter for the GagType Selection
-        UIHelpers.DrawFilterCombo(Configuration.GagTypes, Configuration.selectedGagTypes[0], Configuration.selectedGagTypes, 0);
-
-
-
-        // Below this, put a horizontal line.
-        ImGui.NewLine();
-        ImGui.Separator();
-
-        // in this section, display the checkboxes for all of the different chat types, 
-        // allowing the user to select only the chats they want their garbles messages to process through.
-
-        var i = 0;
-        ImGui.Text("Enabled channels:");
-        if (ImGui.IsItemHovered()) {
-            ImGui.SetTooltip("Which chat channels to show bubbles for.");
-        }
-
-        ImGui.Columns(4);
-        foreach (var e in (XivChatType[]) Enum.GetValues(typeof(XivChatType))) {
-            // If the chat type is a valid chat type
-            if (_yesno[i]) {
-                // See if it is already enabled by default
-                var enabled = _channels.Contains(e);
-                // If a checkbox exists (it always will)...
-                if (ImGui.Checkbox($"{e}", ref enabled)) {
-                    // See If checkbox is clicked, If not, add to list of enabled channels, otherwise, remove it.
-                    if (enabled) _channels.Add(e);
-                    else _channels.Remove(e);
-                }
-                ImGui.NextColumn();
-            }
-            i++;
-        }
-
-        // Set the columns back to 1 now and space over to next section
-        ImGui.Columns(1);
-        ImGui.NewLine();
-        ImGui.Separator();
+        // This will draw the filter combo for our first gag applier
+        ImGui.Text("Currently Selected Gag (Layer 1):");
+        _uiHelpers.DrawFilterCombo(_config.GagTypes, _config.selectedGagTypes[0], _config.selectedGagTypes, 0);
         ImGui.NewLine();
 
-        // Below this, have a button to save and close the config. Next to it, have a button to link to my Ko-Fi
-        // If the save & close button is clicked
-        if (ImGui.Button("Save and Close Config")) {
-            // Save the config, and toggle _config, forcing it to close
-            SaveConfig();
-            _config = false;
-        }
+        // This will draw the filter combo for our first gag applier
+        ImGui.Text("Currently Selected Gag (Layer 2):");
+        _uiHelpers.DrawFilterCombo(_config.GagTypes, _config.selectedGagTypes[1], _config.selectedGagTypes, 1);
+        ImGui.NewLine();
 
-        // In that same line...
-        ImGui.SameLine();
-        // Configure the style for our next button
-        ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
-        ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
-        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
-        ImGui.Text(" ");
-        ImGui.SameLine();
+        // This will draw the filter combo for our first gag applier
+        ImGui.Text("Currently Selected Gag (Layer 3):");
+        _uiHelpers.DrawFilterCombo(_config.GagTypes, _config.selectedGagTypes[1], _config.selectedGagTypes, 2);
+        ImGui.NewLine();
 
-        // And now have that button be for the Ko-Fi Link
-        if (ImGui.Button("Tip Cordy for her hard work!")) {
-            ImGui.SetTooltip( "Only if you want to though!");
-            Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
-        }
+
 
         ImGui.PopStyleColor(3);
         ImGui.End();
     }
-
-        // Structure Outline:
 }
