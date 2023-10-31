@@ -42,7 +42,10 @@ public class ConfigSettingsTab : ITab
     public void DrawContent() {
         // Create a child for the Main Window (not sure if we need this without a left selection panel)
         using var child = ImRaii.Child("MainWindowChild");
-        
+        if (!child)
+            return;
+
+
         // Draw the child grouping for the ConfigSettings Tab
         using (var child2 = ImRaii.Child("ConfigSettingsChild"))
         {
@@ -52,18 +55,17 @@ public class ConfigSettingsTab : ITab
     }
 
     private void DrawHeader()
-        => WindowHeader.Draw("Settings & Options", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
+        => WindowHeader.Draw("Configuration & Settings", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
 
     // Draw the actual config settings
     private void DrawConfigSettings() {
         // Lets start by drawing the child.
         using var child = ImRaii.Child("##ConfigSettingsPanel", -Vector2.One, true);
-
         // define our spacing
-        // var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
+        var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
+        ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         // See "setpanel.cs" for other checkbox options that base off the above ^^
         ImGui.Text("Gag Configuration:");
-        ImGui.NewLine();
         // Checkbox will dictate if only players from their friend list are allowed to use /gag (target) commands on them.
         Checkbox("Only Friends", "Only processes process /gag (target) commands from others if they are on your friend list.\n" +
             "(Does NOT need to be enabled for you to use /gag (target) commands on them)", _config.friendsOnly, v => _config.friendsOnly = v);

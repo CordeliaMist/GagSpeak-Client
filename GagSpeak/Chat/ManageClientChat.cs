@@ -12,12 +12,15 @@ using Num = System.Numerics;
 using GagSpeak.Chat;
 
 namespace GagSpeak.Chat;
-public class OnChatMessage
+
+/// <summary>
+/// <para>The following class scans, reads, triggers other functions, and manages chat messages</para>
+/// <para>These chat messages are, when done properly, all sent to the dalamud chatGUI, and so are any modifications to their payloads.</para>
+/// <para>None of these are sent to the server, so they are entirely safe to use.</para>
+/// </summary>
+public class ManageClientChat
 {
-    // First we must determine what to do with chat messages, and how we will handle their payloads.
-    public OnChatMessage() {
-        // constructer
-    }
+
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString chatmessage, ref bool isHandled) {
     //     // If isHandled is true, we want to immidiately back out of the function.
     //     if (isHandled) return;

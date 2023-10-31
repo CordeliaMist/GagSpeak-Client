@@ -9,6 +9,11 @@ using GagSpeak.UI.Tabs.ConfigSettingsTab;
 using Microsoft.Extensions.DependencyInjection;
 using OtterGui.Classes;
 using OtterGui.Log;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Timers;
 
 
 // practicing modular design
@@ -31,11 +36,10 @@ public static class ServiceHandler
             //.AddInterop()
             .AddEvents()
             //.AddData()
-            //.AddChat()
+            .AddChat()
             //.AddState()
             .AddUi()
             .AddApi();
-
         // return the built services provider
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
     }
@@ -51,12 +55,12 @@ public static class ServiceHandler
     private static IServiceCollection AddMeta(this IServiceCollection services)
         => services.AddSingleton<GagSpeakConfig>()
              .AddSingleton<FilenameService>()
-            // .AddSingleton<BackupService>()
+             .AddSingleton<HistoryService>()
              .AddSingleton<FrameworkManager>()
-             .AddSingleton<SaveService>();
-            // .AddSingleton<CodeService>()
-            // .AddSingleton<ConfigMigrationService>()
-            // .AddSingleton<MessageService>()
+             .AddSingleton<SaveService>()
+             .AddSingleton<BackupService>()
+             .AddSingleton<ConfigMigrationService>()
+             .AddSingleton<MessageService>();
             // .AddSingleton<TextureService>()
             // .AddSingleton<FavoriteManager>();
 
@@ -103,14 +107,14 @@ public static class ServiceHandler
     //         .AddSingleton<ContextMenuService>()
     //         .AddSingleton<ScalingService>();
 
-    // SERVICES FOR ONCHAT, INCLUDE IF EVER NEEDED.
-    // private static IServiceCollection AddChat(this IServiceCollection services)
-    //     => services.AddSingleton<OnChatManager>()
-    //         // .AddSingleton<TranslateMessage>()
-    //         // .AddSingleton<OnChatMessage>();
-    //         // .AddSingleton<OnChatTranslater>()
-    //         // .AddSingleton<FixedDesignMigrator>()
-    //         // .AddSingleton<DesignConverter>();
+    //SERVICES FOR ONCHAT, INCLUDE IF EVER NEEDED.
+    private static IServiceCollection AddChat(this IServiceCollection services)
+        => services.AddSingleton<ChatManager>();
+            // .AddSingleton<TranslateMessage>()
+            // .AddSingleton<OnChatMessage>();
+            // .AddSingleton<OnChatTranslater>()
+            // .AddSingleton<FixedDesignMigrator>()
+            // .AddSingleton<DesignConverter>();
 
     // // SERVICES FOR STATE, INCLUDE IF EVER NEEDED.
     // // private static IServiceCollection AddState(this IServiceCollection services)

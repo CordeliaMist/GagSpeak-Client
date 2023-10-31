@@ -13,6 +13,9 @@ using OtterGui;
 using OtterGui.Classes;
 
 
+// If updateplayerstatus is pressed on whitelist, trigger a tell request to the player to send them back their current status information,
+// then update the whitelist with the new information.
+
 // practicing modular design
 namespace GagSpeak.Services;
 
@@ -65,6 +68,14 @@ public class CommandManager : IDisposable // Our main command list manager
         if (args.Length > 0)
             switch (args)
             {
+// On {/gagspeak safeword [safeword]} display to the chat that the safeword has been sent, with some fancy styles and shit.
+
+// On {/gagspeak showlist padlocks}, display the list of padlocks to them in chat
+
+// On {/gagspeak showlist gags}, display the list of gagtypes to them
+
+// on {/gagspeak setmode domme}, display a message to chat informing the user that they have set their mode to domme. (may not add)
+
                 case "qdb":
                 case "quick":
                 case "bar":
@@ -85,7 +96,6 @@ public class CommandManager : IDisposable // Our main command list manager
                     _chat.Print(new SeStringBuilder().AddCommand("lock", "Toggles the lock of the main window on or off.").BuiltString);
                     return;
             }
-
         _mainWindow.Toggle();
     }
 
@@ -100,6 +110,25 @@ public class CommandManager : IDisposable // Our main command list manager
         var argument = argumentList.Length == 2 ? argumentList[1] : string.Empty;
         var _ = argumentList[0].ToLowerInvariant() switch
         {
+// If /gs [message] is sent, first translate [message], then send message to appropriate chat type (currently selected chat type in chat box)
+
+// if /gag [layer] [gagtype] | [player target] message is sent, construct the proper formatted tell to send to the player,
+// and then hide the tell via chatGUI functions
+
+// if /gag lock [layer] [locktype] | [player target] message is sent, construct the proper formatted tell to send to the player,
+// and then hide the tell via chatGUI functions
+
+// if /gag lock [layer] [locktype] | [password] | [player target] message is sent, construct the proper formatted tell to send to the player,
+// and then hide the tell via chatGUI functions
+
+// if /gag unlock [layer] | [player target] message is sent, construct the proper formatted tell to send to the player,
+// and then hide the tell via chatGUI functions
+
+// if /gag unlock [layer] | [password] | [player target] message is sent, construct the proper formatted tell to send to the player,
+// and then hide the tell via chatGUI functions
+
+// if /gag unlock [layer] | [player target] message is sent, construct the proper formatted tell to send to the player,
+// and then hide the tell via chatGUI functions
             //"apply"             => Apply(argument),
             //"reapply"           => ReapplyState(argument),
             //"revert"            => Revert(argument),

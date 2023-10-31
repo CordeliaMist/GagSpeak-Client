@@ -8,13 +8,14 @@ using System.Threading.Channels;
 using System.Linq; // For enabling lists
 using System.IO;
 using Newtonsoft.Json;
-using Dalamud.Plugin;
+using Dalamud.Interface.Internal.Notifications;
+using OtterGui.Classes;
 
 // practicing modular design
 using GagSpeak.UI;
 using GagSpeak.Services;
-using GagSpeak.Events;
 
+using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 // Sets up the configuration controls for the GagSpeak Plugin
@@ -48,6 +49,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
     public List<string> selectedGagTypes { get; set; } // What gag types are selected?
     public List<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
+    public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
+    public List<string> selectedGagPadlocksAssigner { get; set; } // name of who assigned the padlocks to the user
     public List<XivChatType> Channels { get; set; } // Which channels are currently enabled?
 
     // public List<XivChatType> _order = new() {
@@ -97,17 +100,20 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     private List<string> whitelist = new List<string>(); // appears to be baseline for whitelist
     public List<string> Whitelist { get => whitelist; set => whitelist = value; } // Note sure why, document later
 
+    // There was stuiff about a colorId dictionary here, if you ever need to include it later, you know where to put it so it fits into the hierarchy
     private readonly SaveService _saveService;
 
-    public GagSpeakConfig(SaveService saveService)
+    public GagSpeakConfig(SaveService saveService, ConfigMigrationService migrator)
     {
         _saveService = saveService;
-        //Load(migrator);
+        Load(migrator);
+
+        // Make sure we aren't getting any duplicates
         if (this.selectedGagTypes == null || !this.selectedGagTypes.Any() || this.selectedGagTypes.Count > 3) {
             this.selectedGagTypes = new List<string> { "None", "None", "None" };
         }
         // Set default values for selectedGagPadlocks
-        if (this.selectedGagPadlocks == null || !this.selectedGagPadlocks.Any())
+        if (this.selectedGagPadlocks == null || !this.selectedGagPadlocks.Any() || this.selectedGagPadlocks.Count > 3)
         {
             this.selectedGagPadlocks = new List<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };
         }
@@ -117,9 +123,44 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         }
     }
 
-    public void Save()
-        => _saveService.DelaySave(this);
+    public void Save() {
+        // update garble scrore
+        this.GarbleLevel = this.selectedGagTypes.Sum(gagType => this.GagTypes[gagType]);
 
+        // initialize save service
+        _saveService.DelaySave(this);
+    }
+
+    public void Load(ConfigMigrationService migrator)
+    {
+        static void HandleDeserializationError(object? sender, ErrorEventArgs errorArgs)
+        {
+            GagSpeak.Log.Error(
+                $"Error parsing Configuration at {errorArgs.ErrorContext.Path}, using default or migrating:\n{errorArgs.ErrorContext.Error}");
+            errorArgs.ErrorContext.Handled = true;
+        }
+
+        if (!File.Exists(_saveService.FileNames.ConfigFile))
+            return;
+
+        if (File.Exists(_saveService.FileNames.ConfigFile))
+            try
+            {
+                var text = File.ReadAllText(_saveService.FileNames.ConfigFile);
+                JsonConvert.PopulateObject(text, this, new JsonSerializerSettings
+                {
+                    Error = HandleDeserializationError,
+                });
+            }
+            catch (Exception ex)
+            {
+                GagSpeak.Messager.NotificationMessage(ex,
+                    "Error reading Configuration, reverting to default.\nYou may be able to restore your configuration using the rolling backups in the XIVLauncher/backups/GagSpeak directory.",
+                    "Error reading Configuration", NotificationType.Error);
+            }
+
+        migrator.Migrate(this);
+    }
     public string ToFilename(FilenameService fileNames)
         => fileNames.ConfigFile;
 
@@ -129,6 +170,12 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         var       serializer = new JsonSerializer { Formatting         = Formatting.Indented };
         serializer.Serialize(jWriter, this);
     }
+
+    public static class Constants
+    {
+        public const int CurrentVersion = 4;
+    }
+
     // create an dictionary for all the gag types and their strengths
     public Dictionary<string, int> GagTypes {get; set; } = new() {
         { "None", 0},

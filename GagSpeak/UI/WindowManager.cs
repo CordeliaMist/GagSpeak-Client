@@ -1,6 +1,7 @@
 using System;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
+using GagSpeak.Chat;
 using OtterGui.Widgets;
 
 
@@ -13,14 +14,16 @@ public class GagSpeakWindowManager : IDisposable
     private readonly WindowSystem               _windowSystem = new("GagSpeak");
     private readonly UiBuilder                  _uiBuilder;
     private readonly MainWindow                 _ui;
-    private readonly HistoryWindow              _uiHistory;  
+    private readonly HistoryWindow              _uiHistory;
+    private readonly ChatManager                _chatManager; // Scanning chat  
 
-    public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config, HistoryWindow uiHistory)
+    public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config, HistoryWindow uiHistory, ChatManager chatManager)
     {
         // set the main ui window
         _uiBuilder       = uiBuilder;
         _ui              = ui;
         _uiHistory       = uiHistory;
+        _chatManager     = chatManager;
         _windowSystem.AddWindow(ui);
         _windowSystem.AddWindow(uiHistory);
 //        _windowSystem.AddWindow(Changelog.Changelog);

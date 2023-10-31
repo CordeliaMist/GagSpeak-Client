@@ -71,12 +71,12 @@ public class WhitelistTab : ITab
         // [string[] items] - What content goes into the list
         // [int items_count] - How many items are there?
         // [int height_in_items] - How many items from that list to display at once.
-        ImGui.ListBox("##whitelist", ref _currentWhitelistItem, whitelist, whitelist.Length, 10);
+        ImGui.ListBox("Whitelist##whitelist", ref _currentWhitelistItem, whitelist, whitelist.Length, 10);
 
         // Create a bool for if the player is targetted (more detail on this later after experimentation)
         bool playerTargetted = _clientState.LocalPlayer != null && _clientState.LocalPlayer.TargetObject != null;
         // Create a bool for if the player is close enough to the targetted player (more detail on this later after experimentation)
-        bool playerCloseEnough = playerTargetted && Vector3.Distance( _clientState.LocalPlayer.Position, _clientState.LocalPlayer.TargetObject.Position) < 1;
+        bool playerCloseEnough = playerTargetted && Vector3.Distance( _clientState.LocalPlayer.Position, _clientState.LocalPlayer.TargetObject.Position) < 3;
         
         // Message to display based on target proximity
         string targetedPlayerText = "Add Targetted Player"; // Displays if no target

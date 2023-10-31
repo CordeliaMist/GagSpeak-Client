@@ -22,6 +22,7 @@ public class DalamudServices
 		// Adds a singleton service of the type specified in serviceType with an implementation of the type specified in
 		services.AddSingleton(GameInteropProvider);
 		services.AddSingleton(DalamudPluginInterface);
+		services.AddSingleton(DalamudPluginInterface.UiBuilder);
 		services.AddSingleton(BuddyList);
 		services.AddSingleton(PluginLog);
 		services.AddSingleton(ChatGui);
@@ -50,7 +51,6 @@ public class DalamudServices
 	[PluginService] public IGameInteropProvider GameInteropProvider { get; private set; } = null!; // Maybe add a =null!; at end?
 	[PluginService] public DalamudPluginInterface DalamudPluginInterface { get; private set; } = null!; // for interfacing w/ plugin.
 	[PluginService] public IBuddyList BuddyList { get; private set; } = null!; // Have no idea what this does yet.
-	[PluginService] public IPluginLog PluginLog { get; private set; } = null!; // For logging information about the plugin
 	[PluginService] public IChatGui ChatGui { get; private set; } = null!; // For interfacing with the chat
 	[PluginService] public IClientState ClientState { get; private set; } = null!; // For interfacing with the client state
 	[PluginService] public ICommandManager CommandManager { get; private set; } = null!; // For interfacing with commands
@@ -67,6 +67,7 @@ public class DalamudServices
 	[PluginService] public IObjectTable ObjectTable { get; private set; } = null!; // For interfacing with the object table
 	[PluginService] public IPartyFinderGui PartyFinderGui { get; private set; } = null!; // For interfacing with the party finder (may remove)
 	[PluginService] public IPartyList PartyList { get; private set; } = null!; // For interfacing with the party list to know if someone is in party
+	[PluginService] public IPluginLog PluginLog { get; private set; } = null!;
 	[PluginService] public ISigScanner SigScannerD { get; private set; } = null!; // Have no idea what this does
 	[PluginService] public ITargetManager TargetManager { get; private set; } = null!; // For interfacing with the target manager (may not need)
 	[PluginService] public IToastGui ToastGui { get; private set; } = null!;

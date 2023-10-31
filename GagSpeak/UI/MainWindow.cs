@@ -51,7 +51,7 @@ public class MainWindow : Window //, IDisposable
 
         // Next let's set the size of the window
         SizeConstraints = new WindowSizeConstraints() {
-            MinimumSize = new Vector2(700, 675),     // Minimum size of the window
+            MinimumSize = new Vector2(550, 500),     // Minimum size of the window
             MaximumSize = ImGui.GetIO().DisplaySize, // Maximum size of the window
         };
 
@@ -102,14 +102,16 @@ public class MainWindow : Window //, IDisposable
         if (TabBar.Draw("##tabs", ImGuiTabBarFlags.None, ToLabel(SelectTab), out var currentTab, () => { }, _tabs)) {
             SelectTab           = TabType.None; // set the selected tab to none
             _config.SelectedTab = FromLabel(currentTab); // set the config selected tab to the current tab
-            //_config.Save(); // FIND OUT HOW TO USE SaveConfig(); ACROSS CLASSES LATER.
+            _config.Save(); // FIND OUT HOW TO USE SaveConfig(); ACROSS CLASSES LATER.
         }
 
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
         ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 10 * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
         // Can use basic stuff for now, but if you want to look into locking buttons, reference glamourer's button / checkbox code.
-        if (ImGui.Button("Save and Close Config")) {
-            // SaveConfig(); <-- Make this actually save and close config.
+        if (ImGui.Button("Save and Close")) {
+            Toggle();
+            _config.Save();
+
         }
 
         // This appears to use a completely seperate style of ImGui drawing, look into further later.
@@ -124,7 +126,7 @@ public class MainWindow : Window //, IDisposable
         ImGui.SameLine();
 
         // And now have that button be for the Ko-Fi Link
-        if (ImGui.Button("Tip Cordy for her hard work!")) {
+        if (ImGui.Button("Toss Cordy a thanks!")) {
             ImGui.SetTooltip( "Only if you want to though!");
             Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
         }
