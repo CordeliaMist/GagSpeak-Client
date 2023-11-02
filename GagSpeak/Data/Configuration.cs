@@ -112,17 +112,19 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
 
         // Make sure we aren't getting any duplicates
         if (this.selectedGagTypes == null || !this.selectedGagTypes.Any() || this.selectedGagTypes.Count > 3) {
-            this.selectedGagTypes = new List<string> { "None", "None", "None" };
-        }
+            this.selectedGagTypes = new List<string> { "None", "None", "None" };}
         // Set default values for selectedGagPadlocks
-        if (this.selectedGagPadlocks == null || !this.selectedGagPadlocks.Any() || this.selectedGagPadlocks.Count > 3)
-        {
-            this.selectedGagPadlocks = new List<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };
-        }
+        if (this.selectedGagPadlocks == null || !this.selectedGagPadlocks.Any() || this.selectedGagPadlocks.Count > 3) {
+            this.selectedGagPadlocks = new List<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
         // set default values for selected channels/
         if (this.Channels == null || !this.Channels.Any()) {
-            this.Channels = new List<XivChatType>(){XivChatType.Say};
-        }
+            this.Channels = new List<XivChatType>(){XivChatType.Say};}
+        // set default values for selectedGagPadlocksPassword
+        if (this.selectedGagPadlocksPassword == null || !this.selectedGagPadlocksPassword.Any() || this.selectedGagPadlocksPassword.Count > 3) {
+            this.selectedGagPadlocksPassword = new List<string> { "", "", "" };}
+        // set default values for selectedGagPadlocksAssigner
+        if (this.selectedGagPadlocksAssigner == null || !this.selectedGagPadlocksAssigner.Any() || this.selectedGagPadlocksAssigner.Count > 3) {
+            this.selectedGagPadlocksAssigner = new List<string> { "", "", "" };}
     }
 
     public void Save() {
