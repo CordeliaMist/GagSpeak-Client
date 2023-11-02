@@ -16,6 +16,8 @@ Gagspeak is a plugin made to increase the value of your immersion within FFXIV, 
 ### THIS IS CURRENTLY IN A BETA PRE-RELEASE!!!!
 **Seriously, if I have not directly instructed you to add this to your game because I will be walking you through testing with me, do not download this. There may be certain commands that throw certain flags, or fuck up your game**
 
+**Repo Link:** `https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json`
+
 # DISCLAIMER
 Gagspeak makes use of chat injection, aka detouring and insertting messages directly to the chat using signatures, there are many conditions implemented to maximize the safety of this usage, and there should never be any condition where you will get flagged because i have spent a lot of time making sure there isn't going to be risk. That being said, do not try to brute force an update after a patch if it is marked as out-of-date with a big X until i clear is as up-to-date, so you will know it is safe
 
