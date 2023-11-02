@@ -1,5 +1,5 @@
 # Dalamud-GagSpeak 
-![Banner Image](Assets/GagSpeakBannerAlt.png)
+![Banner Image](images/GagSpeakBannerAlt.png)
 ## GagSpeak Overview
 Gagspeak is a plugin made to increase the value of your immersion within FFXIV, introducing features such as:
 - Configure messages to only work through friends only, party only, or whitelisted players only, or a combination of any.
