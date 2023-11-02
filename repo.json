@@ -27,9 +27,9 @@
         "IsTestingExclusive": "False",
         "DownloadCount": 1,
         "LastUpdate": 1618608322,
-        "DownloadLinkInstall": "",
-        "DownloadLinkUpdate": "",
-        "DownloadLinkTesting": "",
+        "DownloadLinkInstall": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.0.1-beta/latest.zip",
+        "DownloadLinkUpdate": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.0.1-beta/latest.zip",
+        "DownloadLinkTesting": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.0.1-beta/latest.zip",
         "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/Assets/GagSpeakIconNoRadial.png"
     }
 ]
