@@ -39,19 +39,21 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public int Version { get; set; } = 0; // Version of the plugin
     public bool FreshInstall { get; set; } = true; // Is user on a fresh install?
     public bool Enabled { get; set; } = true; // Is plugin enabled?
+    public bool InDomMode { get; set; } = false; // Is plugin in dom mode?
     public string Safeword { get; set; } = "safeword"; // What is the safeword?
     public bool friendsOnly { get; set; } = false; // is friend only enabled?
     public bool partyOnly { get; set; } = false; // Is party only enabled?
     public bool whitelistOnly { get; set; } = false; // Is whitelist only enabled?
     public bool DebugMode { get; set; } = false; // Is debug mode enabled?
     public int GarbleLevel { get; set; } = 0; // Current Garble Level (0-20)
-    public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
-    public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
     public List<string> selectedGagTypes { get; set; } // What gag types are selected?
     public List<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
     public List<string> selectedGagPadlocksAssigner { get; set; } // name of who assigned the padlocks to the user
-    public List<XivChatType> Channels { get; set; } // Which channels are currently enabled?
+    public List<XivChatType> Channels { get; set; } // Which channels are currently enabled / allowed?
+    public XivChatType CurrentChannel { get; set; } // What is the current channel?
+    public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
+    public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
 
     // public List<XivChatType> _order = new() {
     //     XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None, 

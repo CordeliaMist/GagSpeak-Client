@@ -1,37 +1,17 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Dalamud.Game.Command;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
-using OtterGui;
-using OtterGui.Classes;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Plugin;
 using System.Collections.Generic;
-using System.Globalization;
-using Dalamud.Logging;
-using Num = System.Numerics;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Enums;
-using ImPlotNET;
-using OtterGui.Log;
 using GagSpeak.Services;
-
-using XivCommon;
 using XivCommon.Functions;
 using Dalamud.Game;
-
 using System.Diagnostics;
-
-
-// This serves as the hub for both:
-// - OnChatMessage reading
-// - Sending Garbled Messages
-// - Sended tells to whitlisted players
-
+using System.Reflection;
 
 namespace GagSpeak.Chat;
 
@@ -42,35 +22,60 @@ public class ChatManager
     private readonly GagSpeakConfig _config;
     private readonly IClientState _clientState;
     private readonly IObjectTable _objectTable;
-    private readonly CommandManager _commandManager;
     private readonly RealChatInteraction _realChatInteraction;
-    private readonly ISigScanner _sigScanner;
     private readonly IFramework _framework; // framework from XIVClientStructs
     private Queue<string> messageQueue = new Queue<string>();
     private Stopwatch messageTimer = new Stopwatch();
     
+    // future note for cordy, you can store the currently present channel when doing /gsm by just logging the information of the channel the
+    // last chat message sent by you was. This is an easy way to make sure /gsm only goes to the correct channels.
+
+
+    // future future note: the chat handling came from simpletweaks i found out after enough digging, and they have some other fancy inturruptions,
+    // that could possibly make you not need to use /gsm at all.
 
     public ChatManager(IChatGui clientChat, GagSpeakConfig config, IClientState clientState, IObjectTable objectTable,
-    CommandManager commandManager, RealChatInteraction realChatInteraction, ISigScanner sigScanner, IFramework framework) {
+                RealChatInteraction realChatInteraction, IFramework framework) {
         _clientChat = clientChat;
         _config = config;
         _clientState = clientState;
         _objectTable = objectTable;
-        _commandManager = commandManager;
         _realChatInteraction = realChatInteraction;
-        _sigScanner = sigScanner;
         _framework = framework;
-        
-        // begin our realchatinteraction sigscanner
-        _realChatInteraction = new RealChatInteraction(_sigScanner);
 
         // begin our framework check
         _framework.Update += framework_Update;
         // Begin our OnChatMessage Detection
+        _clientChat.CheckMessageHandled += Chat_OnCheckMessageHandled;
         _clientChat.ChatMessage += Chat_OnChatMessage;
     }
 
+    // Helper function List that stores all of the encodeed message keywords
+    List<string> uniqueStringIdentifiers = new List<string> {
+        "over your mouth as the", // gag apply
+        "from her pocket and uses it to lock your", // gag lock
+        "from her pocket and sets the combination password to", // gag lock password
+        "reaches behind your neck, taking off the lock that was keeping your", // gag unlock
+        "reaches behind your neck and sets the password to", // gag unlock password
+        "reaches behind your neck and unfastens the buckle of your", // gag remove
+        "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.", // gag removeall
+    };
+
     // FOR NOW EVERYTHING WILL BE STUFFED INTO HERE, AND LATER DIVIDED OUT INTO THE OTHER CHATS
+    private void Chat_OnCheckMessageHandled(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool isHandled) {
+        // get the text value of the message
+        var textVal = message.TextValue;
+
+        // See if it is a tell
+        if (type == XivChatType.TellIncoming || type == XivChatType.TellOutgoing) {
+            // if it contains one of the keywords from the commands we send then hide it's visibility
+            
+            // This seems to be a RMT ad - let's not show it
+            GagSpeak.Log.Debug("THIS IS IN INCOMING OR OUTGOING TELL: ");
+            // isHandled = true;
+            return;
+        }
+    }
 
     //// CHATGUI FUNCTIONS: ////
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString chatmessage, ref bool isHandled) {
@@ -79,67 +84,69 @@ public class ChatManager
         //    Doing this at any point one our filters is not true is preferred to save on resources and runtime.
         if (isHandled) return;
 
+    // NOTE: This may be able to be further optimized if we can find a way to compare sender to playername without doing all this beforehand.        
+        // Still unsure about the spesifics of this, comment fully later
+        var fmessage = new SeString(new List<Payload>());
+        var nline = new SeString(new List<Payload>());
+        nline.Payloads.Add(new TextPayload("\n"));
+        PlayerPayload playerPayload; // make payload for the player
+        List<char> toRemove = new() { //removes special characters in party listings [https://na.finalfantasyxiv.com/lodestone/character/10080203/blog/2891974/]
+            '','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','',
+        };
+        var sanitized = sender.ToString(); // convert the sender from SeString to String
+
+        foreach(var c in toRemove) { sanitized = sanitized.Replace(c.ToString(), string.Empty); } // remove all special characters
+
+        // COME BACK TO THIS JUMBLED MESS OF CRAP LATER CORDY IT IS OVER YOUR HEAD ATM
+        if (sanitized == _clientState.LocalPlayer?.Name.TextValue) {
+            playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+            if (type == XivChatType.CustomEmote) {
+                var playerName = new SeString(new List<Payload>());
+                playerName.Payloads.Add(new TextPayload(_clientState.LocalPlayer.Name.TextValue));
+                fmessage.Append(playerName);
+            }
+        } 
+        else {
+            if(type == XivChatType.StandardEmote) {
+                playerPayload = sender.Payloads.SingleOrDefault(x => x is PlayerPayload) as PlayerPayload ?? 
+                                chatmessage.Payloads.FirstOrDefault(x => x is PlayerPayload) as PlayerPayload;
+            } 
+            else {
+                playerPayload = sender.Payloads.SingleOrDefault(x => x is PlayerPayload) as PlayerPayload; 
+                if (type == XivChatType.CustomEmote) {
+                    fmessage.Append(playerPayload.PlayerName);
+                }
+            }
+        }
+
+        fmessage.Append(chatmessage);
+        var isEmoteType = type is XivChatType.CustomEmote or XivChatType.StandardEmote;
+        if (isEmoteType) {
+            fmessage.Payloads.Insert(0, new EmphasisItalicPayload(true));
+            fmessage.Payloads.Add(new EmphasisItalicPayload(false));
+        }
+
+        var pName = playerPayload == default(PlayerPayload) ? _clientState.LocalPlayer?.Name.TextValue : playerPayload.PlayerName;
+        var sName = sender.Payloads.SingleOrDefault( x => x is PlayerPayload) as PlayerPayload; // get the player payload from the sender 
+        var senderName = sName?.PlayerName != null ? sName.PlayerName : pName; // if the sender name is not null, set it to the sender name, otherwise set it to the local player name
+
+
+        // Precursor to condition2, if the message satisfied senderName == PlayerName && XivChatType != _config.CurrentChatType, change it
+        if (pName == senderName && type != _config.CurrentChannel) {
+            _config.CurrentChannel = type; // log the current chatbox channel & save
+            _config.Save();
+        }
+
+
         // FILTER CONDITION TWO:
         //  - Is the chat message an incoming tell? If yes, proceed into the inner function, if not read over
         //    literally everything else that happens inside of it lol.
         if (type == XivChatType.TellIncoming) 
         {
-            // Still unsure about the spesifics of this, comment fully later
-            var fmessage = new SeString(new List<Payload>());
-            var nline = new SeString(new List<Payload>());
-            nline.Payloads.Add(new TextPayload("\n"));
-
-            PlayerPayload playerPayload; // make payload for the player
-
-            List<char> toRemove = new() { //removes special characters in party listings [https://na.finalfantasyxiv.com/lodestone/character/10080203/blog/2891974/]
-              '','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','',
-            };
-            var sanitized = sender.ToString(); // convert the sender from SeString to String
-
-            foreach(var c in toRemove) {
-                sanitized = sanitized.Replace(c.ToString(), string.Empty); // remove all special characters
-            }
-
-            // COME BACK TO THIS JUMBLED MESS OF CRAP LATER CORDY IT IS OVER YOUR HEAD ATM
-            if (sanitized == _clientState.LocalPlayer?.Name.TextValue) {
-                playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
-                if (type == XivChatType.CustomEmote) {
-                    var playerName = new SeString(new List<Payload>());
-                    playerName.Payloads.Add(new TextPayload(_clientState.LocalPlayer.Name.TextValue));
-                    fmessage.Append(playerName);
-                }
-            } 
-            else {
-                if(type == XivChatType.StandardEmote) {
-					playerPayload = sender.Payloads.SingleOrDefault(x => x is PlayerPayload) as PlayerPayload ?? 
-                                    chatmessage.Payloads.FirstOrDefault(x => x is PlayerPayload) as PlayerPayload;
-				} 
-                else {
-					playerPayload = sender.Payloads.SingleOrDefault(x => x is PlayerPayload) as PlayerPayload; 
-                    if (type == XivChatType.CustomEmote) {
-						fmessage.Append(playerPayload.PlayerName);
-					}
-				}
-            }
-
-            fmessage.Append(chatmessage);
-            var isEmoteType = type is XivChatType.CustomEmote or XivChatType.StandardEmote;
-            if (isEmoteType) {
-                fmessage.Payloads.Insert(0, new EmphasisItalicPayload(true));
-                fmessage.Payloads.Add(new EmphasisItalicPayload(false));
-            }
-
-            var pName = playerPayload == default(PlayerPayload) ? _clientState.LocalPlayer?.Name.TextValue : playerPayload.PlayerName;
-            var sName = sender.Payloads.SingleOrDefault( x => x is PlayerPayload) as PlayerPayload; // get the player payload from the sender 
-            var senderName = sName?.PlayerName != null ? sName.PlayerName : pName; // if the sender name is not null, set it to the sender name, otherwise set it to the local player name
-            
-
-            // Now that we have stripped the player name and sender name from the payload, let's filter if we need to worry about parsing at all.
-
             /* The message was an incoming tell, so now we must check if it is from a friend, party member, or whitelisted player.
-               It is important to note that these will word on an OR basis, meaning that if we have FriendsOnly and PartyOnly checked,
-               someone who is in your party, but not a friend, can sucessfully trigger the command. Additionally, if none of these
-               options are checked, then we will just accept it regardless. [Basically TLDR if any of these are true we should exit] */
+            It is important to note that these will word on an OR basis, meaning that if we have FriendsOnly and PartyOnly checked,
+            someone who is in your party, but not a friend, can sucessfully trigger the command. Additionally, if none of these
+            options are checked, then we will just accept it regardless. [Basically TLDR if any of these are true we should exit] */
             switch (true) {
                 // Logic commented on first case, left out on rest. All cases are the same, just with different conditions.
                 case var _ when _config.friendsOnly && _config.partyOnly && _config.whitelistOnly: //  all 3 options are checked
@@ -175,16 +182,164 @@ public class ChatManager
 
             // see if the fmessage.toString() contains "gag" as the first word in the string, if not, return.
             if (!fmessage.ToString().ToLower().StartsWith("gag")) {
-                GagSpeak.Log.Debug("Tell does not start with the word 'gag'!");
+                GagSpeak.Log.Debug("Tell does not start with the word 'gag'!"); // temp debug to make sure we can distinguish between encoded tells or not
                 return;
             }
-            DetermineMessageOutcome(fmessage.ToString()); // function that will determine what happens to the player as a result of the tell.
+            // create a list for our keywords
 
-            // Hide that tell recieved payload from the chat box, so it is not seen by the user.
+            // get the type of command given to us based on the disguised message
+            // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
+            List<string> decodedMessageCommand = DetermineIncomingDiguisedMessageType(fmessage.ToString());
+
+            DetermineMessageOutcome(fmessage.ToString(), decodedMessageCommand); // function that will determine what happens to the player as a result of the tell.
+
             _config.Save(); // save our config
+        }
+        // skipping to here if it isnt a tell, or it fails any conditions, optimizing the code (hopefully)
+    }
 
+    /// <summary>
+    /// Oh the things we do for a little extra security...
+    /// <para> Does a massive check on the incoming tell, parses out the keywords from the diguised message, and then returns it</para>
+    /// </summary>
+    /// <param name="recievedMessage"></param>
+    /// <returns>A list(string) containing the keywords in the decoded message</returns
+    private List<string> DetermineIncomingDiguisedMessageType(string recievedMessage) {
+        // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
+        List<string> decodedMessage = new List<string>{"", "", "", "", ""};
+
+        /*if our message was [ *{playerPayload.PlayerName} from {playerPayload.World.Name} applies a {gagType} over your mouth as the {layer} layer of your consealment* ]
+        then we will want to appent the string "apply" to our decodedMessage list, and then parse out all the key elements in {} (that can be a string of any length) to
+        the decodedMessage string*/
+        // unique string for /gag apply == "over your mouth as the"
+        if (recievedMessage.Contains(uniqueStringIdentifiers[0])) { // Handle the /gag base command
+            decodedMessage[0] = "apply";                // Assign "apply" to decodedMessage[0]
+            recievedMessage = recievedMessage.Trim('*');                               // trim off the *'s from the message
+            string[] messageParts = recievedMessage.Split("over your mouth as the");   // Message = {playerPayload.PlayerName} from {playerPayload.World.Name} applies a {gagType} && {layer} layer of your concealment
+            string trimmedMessage = string.Empty;                                      // setting here for future use
+            messageParts[1].Replace(" layer of your concealment", "");                 // trim off the "layers of your concealment" from the message     
+            decodedMessage[1] = messageParts[1].Trim(); // Assign the layer to decodedMessage[1]
+            trimmedMessage = messageParts[0].Trim();                                   // trim off the extra spaces from the message
+            messageParts = trimmedMessage.Split("applies a");                          // split messageParts[0] by "applies a". Message = {playerPayload.PlayerName} from {playerPayload.World.Name} && {gagType}
+            decodedMessage[2] = messageParts[1].Trim(); // Assign the gagtype to decodedMessage[2]
+            trimmedMessage = messageParts[0].Trim();                                   // trim off the extra spaces from the message
+            messageParts = trimmedMessage.Split("from");                               // split messageParts[0] by "from". Message = {playerPayload.PlayerName} && {playerPayload.World.Name}
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // Assign messageParts[0] + " " + messageParts[1] to decodedMessage[4]
+            // FINISHED DECODING THE MESSAGE
+            return decodedMessage;
+        }
+        // unique string for /gag lock = "from her pocket and uses it to lock your"
+        else if (recievedMessage.Contains(uniqueStringIdentifiers[1])) {
+            // Template: *{playerPayload.PlayerName} from {playerPayload.World.Name} takes out a {locktype} from her pocket and uses it to lock your {layer} gag*
+            decodedMessage[0] = "lock";                 // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            string[] messageParts = recievedMessage.Split("from her pocket and uses it to lock your");
+            string trimmedMessage = string.Empty;
+            messageParts[1].Replace(" gag", "");
+            decodedMessage[1] = messageParts[1].Trim(); // we found layer
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("takes out a");
+            decodedMessage[2] = messageParts[1].Trim(); // we found locktype
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("from");
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            // FINISHED DECODING THE MESSAGE
+            return decodedMessage;
+        }
+        // unique string for /gag lock password == "from her pocket and sets the combination password to"
+        else if (recievedMessage.Contains(uniqueStringIdentifiers[2])) {
+            // Template: *{playerPayload.PlayerName} from {playerPayload.World.Name} takes out a {locktype} from her pocket and sets the combination password to {password} before locking your {layer} layer gag*
+            decodedMessage[0] = "lockPassword";         // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            string[] messageParts = recievedMessage.Split("before locking your");
+            string trimmedMessage = string.Empty;
+            messageParts[1].Replace(" layer gag", "");
+            decodedMessage[1] = messageParts[1].Trim(); // we found layer
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("from her pocket and sets the combination password to");
+            decodedMessage[3] = messageParts[1].Trim(); // we found password
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("takes out a");
+            decodedMessage[2] = messageParts[1].Trim(); // we found locktype
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("from");
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            // FINISHED DECODING THE MESSAGE
+            return decodedMessage;
+        }
+        // unique string for /gag unlock == "reaches behind your neck, taking off the lock that was keeping your"
+        else if (recievedMessage.Contains(uniqueStringIdentifiers[3])) {
+            // Template: *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck, taking off the lock that was keeping your {layer} gag layer fastened nice and tight.*
+            decodedMessage[0] = "unlock";               // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage.Replace("gag layer fastened nice and tight.", "");
+            string[] messageParts = recievedMessage.Split("reaches behind your neck, taking off the lock that was keeping your");
+            string trimmedMessage = string.Empty;
+            decodedMessage[1] = messageParts[1].Trim(); // we found layer
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("from");
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            // FINISHED DECODING THE MESSAGE
+            return decodedMessage;
+        }
+        // unique string for /gag unlock password == "reaches behind your neck and sets the password to"
+        else if (recievedMessage.Contains(uniqueStringIdentifiers[4])) {
+            // Template: *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and sets the password to {password} on your {layer} layer gagstrap, unlocking it.*
+            decodedMessage[0] = "unlockPassword";       // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage.Replace("layer gagstrap, unlocking it.", "");
+            string[] messageParts = recievedMessage.Split("on your");
+            string trimmedMessage = string.Empty;
+            decodedMessage[1] = messageParts[1].Trim(); // we found layer
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("reaches behind your neck and sets the password to");
+            decodedMessage[3] = messageParts[1].Trim(); // we found password
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("from");
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            // FINISHED DECODING THE MESSAGE
+            return decodedMessage;
+        }
+        // unique string for /gag remove == "reaches behind your neck and unfastens the buckle of your"
+        else if (recievedMessage.Contains(uniqueStringIdentifiers[5])) {
+            // Template: *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and unfastens the buckle of your {layer} gag layer strap, allowing your voice to be a little clearer.*
+            decodedMessage[0] = "remove";               // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage.Replace("gag layer strap, allowing your voice to be a little clearer.", "");
+            string[] messageParts = recievedMessage.Split("reaches behind your neck and unfastens the buckle of your");
+            string trimmedMessage = string.Empty;
+            decodedMessage[1] = messageParts[1].Trim(); // we found layer
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("from");
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            // FINISHED DECODING THE MESSAGE
+            return decodedMessage;
+        }
+        // final condition means that it is a /gag removeall
+        else if (recievedMessage.Contains(uniqueStringIdentifiers[6])) {
+            // Template: *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.*
+            decodedMessage[0] = "removeall";            // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage.Replace("reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.", "");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            // FINISHED DECODING THE MESSAGE
+            return decodedMessage;
+        } else {
+            // should return a list of empty strings, letting us know it isnt any of the filters.
+            decodedMessage[0] = "none";
+            return decodedMessage;
         }
     }
+
 
     /// <summary>
     /// Will take in a message, and determine what to do with it based on the contents of the message.
@@ -198,157 +353,132 @@ public class ChatManager
     /// <item><c>gag remove LAYER | PLAYER</c> - Remove gag from defined layer</item>
     /// <para><c>recievedMessage</c><param name="receivedMessage"> - The message that was recieved from the player</param></para>
     /// </summary>
-    private void DetermineMessageOutcome(string receivedMessage)
+    private void DetermineMessageOutcome(string receivedMessage, List<string> decodedMessage)
     {
-        // Make our arguements split between everything before, and after the ' | ' in our message.
-        string[] arguments = receivedMessage.Split('|');
-
-        // Make our commandParts become an array of strings that is everything before the first | in the message.
-        string[] commandParts = arguments[0].Trim().Split(' ');
-
-        // set "command" = to the first word that comes after gag.
-        string command = commandParts[1].Trim().ToLower();
-
-        // set our identifiers we will need to assign while parsing the rest of the strings.
-        string lockType = string.Empty;
-        string password = string.Empty;
-        string player = string.Empty;
-        string gagtype = string.Empty;
-        // if the word is lock, unlock, or removeall
-        if (command == "lock") {
-            if (commandParts.Length > 2) {
-                string layerString = commandParts[2].Trim(); // Keeping layer as string outside the block
-                if (!int.TryParse(layerString, out int layer)) {
-                    // Handle if layerString is not a valid int
-                    throw new Exception("Invalid layer value.");
-                }
-
-                if (_config.selectedGagPadlocks[layer] != GagPadlocks.None) {
-                    throw new Exception("Gag is already applied for this layer.");
-                }
-
-                if (arguments.Length >= 2) {
-                    string[] actionParts = arguments[1].Split(new[] { " | " }, StringSplitOptions.RemoveEmptyEntries);
-                    if (actionParts.Length >= 1) {
-                        string lockTypeString = actionParts[0].Trim();
-
-                        if (Enum.TryParse(lockTypeString, out GagPadlocks parsedLockType)) {
-                            _config.selectedGagPadlocks[layer] = parsedLockType;
-                        } else {
-                            throw new Exception("Invalid lock type.");
-                        }
-
-                        // Continue with your logic for password and player
-                        password = actionParts.Length >= 2 ? actionParts[1].Trim() : string.Empty;
-                        player = actionParts.Length >= 3 ? actionParts[2].Trim() : string.Empty;
-
-                        _config.selectedGagPadlocksAssigner[layer] = player;
-                    }
-                }
-            }
-        }
-        else if (command == "unlock") {
-            // it's /gag unlock [layer] | [From Player] message? (shouldn't need password, but maybe)
-            // it's /gag unlock [layer] [password] | [From Player] message?
-            // Extract the 'layer' information from the command parts
-            string layerString = commandParts[2].Trim(); // Keeping layer as string outside the block
-            if (!int.TryParse(layerString, out int layer)) {
-                // Handle if layerString is not a valid int
+        // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
+        // if the parsed type is "lock" or "lockPassword"
+        if (decodedMessage[0] == "lock" || decodedMessage[0] == "lockPassword") {
+            // see if our layer is a valid layer
+            if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
+            if (!int.TryParse(decodedMessage[1], out int layer)) { 
                 throw new Exception("Invalid layer value.");
             }
-            // Extract the 'password' and 'player' information from the arguments
-            if (arguments.Length >= 2) {
-                string[] actionParts = arguments[1].Split(new[] { " | " }, StringSplitOptions.RemoveEmptyEntries);
-
-                // Check and assign the 'password' and 'player'
-                if (actionParts.Length >= 1) {
-                    if (actionParts[0].Contains('|')) {
-                        password = actionParts[0].Trim();
-                    } else {
-                        player = actionParts[0].Trim();
-                    }
-                    // password required, check for match, and type of padlock (add this functionality later)
-                    if (_config.selectedGagPadlocks[layer] != GagPadlocks.None) {
-                        if (_config.selectedGagPadlocksPassword[layer] != password){
-                            // if the passwords dont match, throw exception
-                            throw new Exception("Invalid Password.");
-                        }
-                        // the passwords do match, so remove the gag.
-                        // here we would add functionality for the mistress padlock
-                    }
+            
+            // Our layer is valid, but we also need to make sure that we have a gag on this layer
+            if (_config.selectedGagTypes[layer] == "None") {
+                throw new Exception($"There is no gag applied for layer {layer}, so no lock can be applied.");
+            }
+            // if we do have a gag on this layer, make sure that we dont already have a lock here
+            if (_config.selectedGagPadlocks[layer] != GagPadlocks.None) {
+                throw new Exception($"There is already a lock applied to gag layer {layer}!");
+            }
+            // we already made sure that we applied a valid password in the command manager, so no need to check it here.
+            if (decodedMessage[3] != "") {
+                _config.selectedGagPadlocksPassword[layer] = decodedMessage[3]; // we have a password to set, so set it.
+            }
+            // and because everything above is valid, we can now set the lock type.
+            if (Enum.TryParse(decodedMessage[2], out GagPadlocks parsedLockType)) {
+                _config.selectedGagPadlocks[layer] = parsedLockType;
+            } else {
+                throw new Exception("Invalid lock type sent in.");
+            }
+            // now that we have applied our gagtype, and potentially password, set the assigner to the player if it is a mistress padlock.
+            if (_config.selectedGagPadlocks[layer] == GagPadlocks.MistressPadlock || _config.selectedGagPadlocks[layer] == GagPadlocks.MistressTimerPadlock) {
+                _config.selectedGagPadlocksAssigner[layer] = decodedMessage[4];
+            }
+            GagSpeak.Log.Debug("Determined Message Outcome: LOCK or LOCKPASSWORD || lock sucessfully applied.");
+        }
+        // if the parsed type is "unlock" or "unlockPassword"
+        else if (decodedMessage[0] == "unlock" || decodedMessage[0] == "unlockPassword") {
+            // see if our layer is a valid layer
+            if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
+            if (!int.TryParse(decodedMessage[1], out int layer)) { 
+                throw new Exception("Invalid layer value.");
+            }
+            // our layer is valid, but we also need to make sure that this layer has a lock on it
+            if (_config.selectedGagPadlocks[layer] == GagPadlocks.None) {
+                throw new Exception($"There is no lock applied for gag layer {layer}, so no lock can be removed.");
+            }
+            // Case where it is just unlock
+            if (decodedMessage[3] == "") {
+                // Make sure it is not a MistressPadlock
+                if (_config.selectedGagPadlocks[layer] == GagPadlocks.MistressPadlock && _config.selectedGagPadlocksAssigner[layer] != decodedMessage[4]) {
+                    throw new Exception("Cannot remove a mistress padlock's unless you are the one who assigned it.");
                 }
-                if (actionParts.Length >= 2) {
-                    player = actionParts[1].Trim();
-                    // no password required, remove the gag.
-                    _config.selectedGagPadlocks[layer] = GagPadlocks.None;
-                    _config.selectedGagPadlocksAssigner[layer] = string.Empty;
+                // if we made it here, we can just remove the lock
+                _config.selectedGagPadlocks[layer] = GagPadlocks.None;
+                _config.selectedGagPadlocksPassword[layer] = string.Empty;
+                _config.selectedGagPadlocksAssigner[layer] = "None";
+            } else {
+                // if we do have a password, we need to make sure it matches the password on the lock
+                if (_config.selectedGagPadlocksPassword[layer] != decodedMessage[3]) {
+                    throw new Exception("Invalid Password, failed to unlock.");
                 }
+                // if the passwords do match, so remove the lock IF it is not a mistress padlock.
+                if (_config.selectedGagPadlocks[layer] == GagPadlocks.MistressTimerPadlock &&
+                    _config.selectedGagPadlocksAssigner[layer] != decodedMessage[4]) {
+                    throw new Exception("Cannot remove a mistress padlock's unless you are the one who assigned it.");
+                }
+                // if we made it here, we can remove the lock.
+                _config.selectedGagPadlocks[layer] = GagPadlocks.None;
+                _config.selectedGagPadlocksPassword[layer] = string.Empty;
+                _config.selectedGagPadlocksAssigner[layer] = "None";
             }
         }
-        else if (command == "removeall") {
-            // it's /gag removeall | [From Player] message? (only works if no locks on)
-            // Extract the 'player' information from the arguments
-            if (arguments.Length >= 2) { player = arguments[1].Trim(); }
-
-            // make sure no locks are on, if they are, throw exception
+        // if the parsed type is "removeall"
+        else if (decodedMessage[0] == "removeall") {
+            // make sure all of our gagpadlocks are none, if they are not, throw exception
             if (_config.selectedGagPadlocks.Any(padlock => padlock != GagPadlocks.None)) {
-                throw new Exception("Cannot remove all gags while locks are on.");
+                throw new Exception("Cannot remove all gags while locks are on any of them.");
             }
-
-            // Otherwise, remove them
+            // if we made it here, we can remove them all
             for (int i = 0; i < _config.selectedGagPadlocks.Count; i++) {
                 _config.selectedGagTypes[i] = "None";
                 _config.selectedGagPadlocks[i] = GagPadlocks.None;
                 _config.selectedGagPadlocksPassword[i] = string.Empty;
                 _config.selectedGagPadlocksAssigner[i] = "None";
             }
-
         }
-        else if (command == "remove") {
-            string layerString = commandParts[2].Trim(); // Keeping layer as string outside the block
-            if (!int.TryParse(layerString, out int layer)) {
-                // Handle if layerString is not a valid int
+        // if the parsed type is "remove"
+        else if (decodedMessage[0] == "remove") {
+            // see if our layer is a valid layer
+            if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
+            if (!int.TryParse(decodedMessage[1], out int layer)) { 
                 throw new Exception("Invalid layer value.");
             }
-
-            // make player equal arguments[1].trim
-            if (arguments.Length >= 2) { player = arguments[1].Trim(); }
-            
+            // our layer is valid, but we also need to make sure that this layer has a gag on it
+            if (_config.selectedGagTypes[layer] == "None") {
+                throw new Exception($"There is no gag applied for gag layer {layer}, so no gag can be removed.");
+            }
+            // make sure there is no lock on that gags layer
             if (_config.selectedGagPadlocks[layer] != GagPadlocks.None) {
                 throw new Exception("Cannot remove a gag while the lock is on for this layer.");
             }
-
+            // if we made it here, we can remove the gag
             _config.selectedGagTypes[layer] = "None";
             _config.selectedGagPadlocks[layer] = GagPadlocks.None;
             _config.selectedGagPadlocksPassword[layer] = string.Empty;
             _config.selectedGagPadlocksAssigner[layer] = "None";
         }
-        else {
-            // it's /gag [layer] [gagtype] | [From Player] message?
-            // Extract the 'layer' information from the command parts
-            string layerString = commandParts[1].Trim(); // Keeping layer as string outside the block
-            GagSpeak.Log.Debug($"{layerString}");
-            if (!int.TryParse(layerString, out int layer)) {
-                // Handle if layerString is not a valid int
+        else if (decodedMessage[0] == "apply") {
+            // see if our layer is a valid layer
+            if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
+            if (!int.TryParse(decodedMessage[1], out int layer)) { 
                 throw new Exception("Invalid layer value.");
             }
-            // extract the gag type, which should just be the rest of arguements[0] after the layer,
-            // aka, commandParts[3] and beyond.
-            string[] restCommandParts = commandParts[2..]; // Get all parts after layer
-            gagtype = string.Join(" ", restCommandParts);
-
-            // After this, arguements[1] should just contain the player, aka everything after the | we split from earlier.
-            player = arguments[1].Trim();
-
             // see if our gagtype is in selectedGagTypes[layer]
-            if (!_config.GagTypes.ContainsKey(gagtype)) {
-                // if it is not, throw an exception
+            if (!_config.GagTypes.ContainsKey(decodedMessage[2])) {
                 throw new Exception("Invalid gag type.");
             }
-            // Now, just set that gag type to the layer, and set the assigned player to the player.
-            _config.selectedGagTypes[layer-1] = gagtype;
-
-            GagSpeak.Log.Debug($"{gagtype} | {player}");
+            // make sure gagType is set to none
+            if (_config.selectedGagTypes[layer] != "None") {
+                throw new Exception($"There is already a gag applied for gag layer {layer}!");
+            }
+            // if we made it here, we can apply the gag
+            _config.selectedGagTypes[layer] = decodedMessage[2];
+        } else {
+            // we have an invalid type
+            GagSpeak.Log.Debug($"INVALID MESSAGE TYPE");
         }
     }
 
@@ -398,37 +528,28 @@ public class ChatManager
         if (nameInput == _clientState.LocalPlayer?.Name.TextValue) return true;
         foreach (var t in _objectTable) {
             if (!(t is PlayerCharacter pc)) continue;
-            if (pc.Name.TextValue == nameInput)
-                // here is where we need to compare the nameinput to the whitelist to see if any match
-                // current line below is not the proper way to do this, it was cloned from isPartyMember.
-                return pc.StatusFlags.HasFlag(StatusFlags.PartyMember);
+            if (pc.Name.TextValue == nameInput) {
+                foreach (var name in _config.Whitelist) {
+                    // name in the whitelist is a part of the name string
+                    GagSpeak.Log.Debug($"Whitelist name: {name} | NameInput: {nameInput}");
+                    if (name.Contains(nameInput)) {
+                        GagSpeak.Log.Debug($"Match Found!");
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }
-    
-    // If /gs [message] is sent, first translate [message], then send message to appropriate chat type (currently selected chat type in chat box)
 
-    // if /gag [layer] [gagtype] | [player target] message is sent, construct the proper formatted tell to send to the player,
-    // and then hide the tell via chatGUI functions
-
-    // if /gag lock [layer] [locktype] | [player target] message is sent, construct the proper formatted tell to send to the player,
-    // and then hide the tell via chatGUI functions
-
-    // if /gag lock [layer] [locktype] | [password] | [player target] message is sent, construct the proper formatted tell to send to the player,
-    // and then hide the tell via chatGUI functions
-    
-    // if /gag unlock [layer] | [player target] message is sent, construct the proper formatted tell to send to the player,
-    // and then hide the tell via chatGUI functions
-    
-    // if /gag unlock [layer] | [password] | [player target] message is sent, construct the proper formatted tell to send to the player,
-    // and then hide the tell via chatGUI functions
-
-    // if /gag unlock [layer] | [player target] message is sent, construct the proper formatted tell to send to the player,
-    // and then hide the tell via chatGUI functions
-
-    // If updateplayerstatus is pressed on whitelist, trigger a tell request to the player to send them back their current status information,
-    // then update the whitelist with the new information.
-
+    public void SendRealMessage(string message) {
+        try {
+            _realChatInteraction.SendMessage(message);
+        } catch (Exception e) {
+            GagSpeak.Log.Warning($"{e},{e.Message}");
+            GagSpeak.Log.Debug($"{e},{e.Message}");
+        }
+    }
 
     //Framework updater (handle with care)
     private void framework_Update(IFramework framework) {

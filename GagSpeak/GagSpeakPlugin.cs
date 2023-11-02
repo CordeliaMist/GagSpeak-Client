@@ -6,10 +6,75 @@ using OtterGui.Log;
 using GagSpeak.UI;
 using GagSpeak.Services;
 using GagSpeak.Chat;
+using Dalamud.Game;
+using XivCommon.Functions;
 
 namespace GagSpeak; // The main namespace for the plugin.
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
+/*
+                                 _,..----.._
+                               _/  . -.     \_
+                              /     \  \      \_
+                             /    _  \ _`-.  -. \
+                            /  _-'_.  /    \   \ \
+                           /  /  /     \-_  \_ /  .
+                          /  /  /     / \_\_  '   `.
+                         (   `._'    /    \ \_     |
+                          \         /      ; |    -.
+                          /  /     /       \ |._   |
+                         (  / ._.-'         )/ |  ||
+                          \`|  ---.  .---. //  ' .'|
+                          . \  `-' )  `''  '  /  ' |
+                         /  | (   /          // /  '
+                         `. |\ \  ._.       // /  /____
+                           \|| |\ ____     // '/  /    `-
+                            '| \ \`..'  / / .-'  /       \
+                             | |  \_  _/ / '( ) |         \
+                ___..__      | /    `'  /  `./  \          \
+             _-'       `-.   |      /   \   /  / \          .
+           _/             `- |  // /   .-  /  /   \         `
+          /   _.-           `'.   .-' /     _// /| \_
+         /   /        _    )   `./    \ .--'-' / /\_ \       \
+        /   /      .-' `-./      |     `-'__.-' /  \\|
+       /    |   -\ |      - ._   \  _          '    /'
+       |    /  / | |       \  )   -' .-.            \         :
+       |   / . | | |   .--.|  /  /  /o |             \        `
+       |  / /  | : |   .--.| .  /   \_/               \        \
+       / / (   | \ |  `._O'| ! .                       \        .
+      // .  `  |  \ \      |.' |                       .        |
+      /|  -._  |   \|   )  |   `              /       . \       `
+       |     \ |           '  ) \            /        '  .       .
+     _/     -._ \  .----. /  /   \._     _.-'        .   \       \
+  .-'_-'-,     \ \  `--' /  (     . `---'            '    \       \
+ |.-'  _/       \ \     / .-.\  \\ \                /     \        \
+ \\   /          ) )-._.'/    `.  \|               |       \  _     )
+  \|  /|     _.-'//     /       `-.|               |        -'      |
+      |\ \  /    / _.-'/           -.              |        |       |
+      |   `-.    \'  .'              \             \        '       '
+      \\    `.   |  /                 `.            \      .        '
+      /      -  _/                      `.           `.    |        '
+      \   _.'  /                          -.          |    |       ,
+     / -.     /           _.-               `.        |    |       '
+    /    -   _.              `\               -.      `.   |      /
+    \ -.   .'                  `._              \      |   !     ,
+     |  ._/                       -.             `. .-=\  .'
+     |   /._            |           `.             \-'  |.'     /
+     |  /,o ;                        |-            _`.--'       ;
+     \ .|`.'            |            | `-_      _.'_.          /
+     -' |               '            |    `.   (_ .           /
+    /   \              /             |      `-_ _' _         /`.
+   /     \           .'              |      /(_' _'         .' !
+  .       `._     _.'                |     / ( -'_.-'     _.'  |
+  (       |  `---'                    \-._'   (._ _.- _.-'      .
+  `.      |  \                         \      |: `---'  |       !
+    \     |   \                         \     ||        |        .
+     `.__.|    \                         \`-._/`.       |        !
+          |                               \   \ |       |         .
+           \                               \_  \|       |         |
+            \                            .-' `. `.      |         `
+*/
+
 public class GagSpeak : IDalamudPlugin
 {
     public string Name => "GagSpeak"; // Define plugin name
@@ -20,11 +85,15 @@ public class GagSpeak : IDalamudPlugin
 
     ////* -- MAIN FUNCTION FOR PLUGIN OPENING -- *///
     public GagSpeak(DalamudPluginInterface pluginInt)
-    {    
+    {
         try
         {
             _services = ServiceHandler.CreateProvider(pluginInt, Log); // Initialize the services in the large Service collection. (see ServiceHandler.cs)
             Messager = _services.GetRequiredService<MessageService>(); // Initialize messager service here
+            
+            // Assuming RealChatInteraction needs _sigScanner provided by the services
+
+            // _sigscanner can now be passed into services that require it.
             _services.GetRequiredService<GagSpeakWindowManager>(); // Initialize the UI
             _services.GetRequiredService<CommandManager>(); // Initialize the command manager
             _services.GetRequiredService<ChatManager>(); // Initialize the OnChatMessage handler

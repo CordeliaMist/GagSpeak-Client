@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game;
 using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
-
+using GagSpeak.Services;
 // practicing modular design
 namespace XivCommon.Functions {
     /// <summary>
@@ -88,13 +88,13 @@ namespace XivCommon.Functions {
             }
             // Assuming it meets the correct conditions, we can begin to obtain the UI module pointer for the chatbox within the framework instance
             var uiModule = (IntPtr) Framework.Instance()->GetUiModule();
+                
             // create a payload for our chat message
             using var payload = new ChatPayload(message);
             /// MARSHAL -provides a collection of methods for allocating unmanaged memory, copying unmanaged memory blocks, 
             ///   and converting managed to unmanaged types & miscellaneous methods used when interacting with unmanaged code.
             /// AllocHGlobal - Allocates memory from the unmanaged memory of the process by using the specified number of bytes.
             /// Returns: A pointer to the newly allocated memory. This memory must be released using the Marshal.FreeHGlobal(nint) method.
-
             // Marshal the payload to a pointer in memory
             var mem1 = Marshal.AllocHGlobal(400);
             // StructureToPtr - Marshals data from a managed object to an unmanaged block of memory.

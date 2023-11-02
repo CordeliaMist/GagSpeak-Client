@@ -41,7 +41,7 @@ public class DalamudServices
 		services.AddSingleton(ObjectTable);
 		services.AddSingleton(PartyFinderGui);
 		services.AddSingleton(PartyList);
-		services.AddSingleton(SigScannerD);
+		services.AddSingleton(SigScanner);
 		services.AddSingleton(TargetManager);
 		services.AddSingleton(ToastGui);
 		services.AddSingleton(this);
@@ -68,7 +68,7 @@ public class DalamudServices
 	[PluginService] public IPartyFinderGui PartyFinderGui { get; private set; } = null!; // For interfacing with the party finder (may remove)
 	[PluginService] public IPartyList PartyList { get; private set; } = null!; // For interfacing with the party list to know if someone is in party
 	[PluginService] public IPluginLog PluginLog { get; private set; } = null!;
-	[PluginService] public ISigScanner SigScannerD { get; private set; } = null!; // Have no idea what this does
+	[PluginService] public ISigScanner SigScanner { get; private set; } = null!; // Have no idea what this does
 	[PluginService] public ITargetManager TargetManager { get; private set; } = null!; // For interfacing with the target manager (may not need)
 	[PluginService] public IToastGui ToastGui { get; private set; } = null!;
 	#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

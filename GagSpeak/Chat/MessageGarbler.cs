@@ -15,57 +15,10 @@ namespace GagSpeak.Chat;
 // The component that will handle the translation of the chat message
 public class MessageGarbler
 {
-    // include our readonlys
-    private readonly GagSpeakConfig _config;
-
-    // our constructor next
-    public MessageGarbler(GagSpeakConfig config)
-    {
-        // set the readonlys
-        _config = config;
-    }
-
-
-    // public void MessageGarbler(SeString message) {
-    //     try
-    //     {
-    //         // First try to see if we can even do all of this, very important to have a try catch
-    //         // because if something goes wrong it can be detectable
-    //         foreach (var payload in message.Payloads) {
-    //             // If the payload is a text payload
-    //             if(payload is TextPayload textPayload) {
-    //                 // set the input for the translator to the text payload
-    //                 var input = textPayload.Text;
-    //                 // if the input is null or empty, or contains the null character, continue
-    //                 if (string.IsNullOrEmpty(input) || input.Contains('\uE0BB')) {
-    //                     continue;
-    //                 }
-
-    //                 // set the output to the garbled translation if so.
-    //                 var output = GarbleMessage(input);
-    //                 // if the input is not equal to the output, set the text payload to the output
-    //                 if (!input.Equals(output)) {
-    //                     textPayload.Text = output;
-    //                     // log the input and output
-    //                     GagSpeak.Log.Debug($"{input}|{output}");
-    //                     // add the translation to the history
-    //                    // _historyService.AddTranslation(new Chat.TranslateMessage(input, output)); This line is broken atm, figure out how to fix it 
-    //                    // and structure the chat hierarchy later.
-    //                 }
-
-    //             }
-    //         }
-    //     }
-    //     // If something goes wrong, log the error
-    //     catch
-    //     {
-    //         GagSpeak.Log.Debug($"Failed to process message: {message}.");
-    //     }
-    // }
-
-    public string GarbleMessage(string beginString) {
+    // The method that will translate our messages
+    public string GarbleMessage(string beginString, int garbleLevel ) {
         // First we need to get the garble level from the config
-        int level = _config.GarbleLevel;
+        int level = garbleLevel;
         // Then we need to set the end string to null
         string endString = "";
         // Then we need to set the begin string to lowercase

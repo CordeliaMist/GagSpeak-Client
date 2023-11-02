@@ -3,8 +3,7 @@
 
 ![Banner Image](Assets/GagSpeakBannerAlt.png)
 ## Code Structure Documentation
-**The Hierarchy of our code works as follows:**
-
+**The Hierarchy of our code works as follows:**⠀⠀⠀⠀⠀⠀⠀
 Our code is based upon `GagSpeak.cs`, which is our highest level application.
 For `GagSpeak.cs` to run, along with all other applications within it, it needs it's own set of **Services**
 
