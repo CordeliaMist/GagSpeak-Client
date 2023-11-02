@@ -30,6 +30,6 @@
         "DownloadLinkInstall": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.0.1-beta/latest.zip",
         "DownloadLinkUpdate": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.0.1-beta/latest.zip",
         "DownloadLinkTesting": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.0.1-beta/latest.zip",
-        "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/Assets/GagSpeakIconNoRadial.png"
+        "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/images/icon.png"
     }
 ]
