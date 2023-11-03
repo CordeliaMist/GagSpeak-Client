@@ -220,7 +220,7 @@ public class ChatManager
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // Assign messageParts[0] + " " + messageParts[1] to decodedMessage[4]
             // FINISHED DECODING THE MESSAGE
-            GagSpeak.Log.Debug($"Determined Message Outcome: APPLY || decodedMessage: {decodedMessage}");
+            GagSpeak.Log.Debug($"Determined Message Outcome: APPLY || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
         }
         // unique string for /gag lock = "from her pocket and uses it to lock your"
