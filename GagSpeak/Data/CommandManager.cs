@@ -215,6 +215,7 @@ public class CommandManager : IDisposable // Our main command list manager
         string password = string.Empty;
         string layer = string.Empty;
         if (parts.Length == 2) { // Condition, no password.
+            GagSpeak.Log.Debug($"parts.Length == 2, parts[0] = {parts[0]}, parts[1] = {parts[1]}");
             targetplayer = parts[1].Trim(); // Get the target player name
             // take parts[0], which is [layer] [locktype], and split it so that layer == first word of parts[0] and locktype == the rest of[0]
             string[] layerAndLocktype = parts[0].Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -224,6 +225,7 @@ public class CommandManager : IDisposable // Our main command list manager
             locktype = string.Join(" ", layerAndLocktype.Skip(1));
         } 
         else if (parts.Length == 3) { // oh my, we have a password
+            GagSpeak.Log.Debug($"parts.Length == 3, parts[0] = {parts[0]}, parts[1] = {parts[1]}, parts[2] = {parts[2]}");
             targetplayer = parts[2].Trim(); // Get the target player name
             password = parts[1].Trim(); // Get the password
             // take parts[0], which is [layer] [locktype], and split it so that layer == first word of parts[0] and locktype == the rest of[0]
@@ -239,14 +241,14 @@ public class CommandManager : IDisposable // Our main command list manager
         // if our arguments are not valid, display help information
         if (! (Enum.IsDefined(typeof(GagPadlocks), locktype) && (layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
-            _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments").BuiltString);
+            _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments. Layer or Locktype or player name is incorrect").BuiltString);
             _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag lock ").AddYellow("layer").AddGreen("locktype").AddText(" | ").AddPurple("password")
                 .AddText(" | ").AddBlue("player name@homeworld").AddText(". Note that password is not required, and that")
                 .AddItalics("/gag lock layer locktype | player name@homeworld").AddText("is valid too.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
                 "The Layer field must be either 1, 2, or 3, indicating the slot the lock is used on.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Locktype field must be a valid locktype. Use").AddYellow("/gag showlist padlocks").AddText("to see all valid locktypes.").BuiltString);
+                "The Locktype field must be a valid locktype. Use").AddYellow("/gagspeak showlist padlocks").AddText("to see all valid locktypes.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
                 "The Password field must be a valid password for the associated locktype. To see spesifics, use").AddYellow("/gag showlist padlocks").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
