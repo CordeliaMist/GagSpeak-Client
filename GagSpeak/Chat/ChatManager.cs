@@ -210,7 +210,7 @@ public class ChatManager
             recievedMessage = recievedMessage.Trim('*');                               // trim off the *'s from the message
             string[] messageParts = recievedMessage.Split("over your mouth as the");   // Message = {playerPayload.PlayerName} from {playerPayload.World.Name} applies a {gagType} && {layer} layer of your concealment
             string trimmedMessage = string.Empty;                                      // setting here for future use
-            messageParts[1].Replace(" layer of your concealment", "");                 // trim off the "layers of your concealment" from the message     
+            messageParts[1] = messageParts[1].Replace(" layer of your concealment", "");                 // trim off the "layers of your concealment" from the message     
             decodedMessage[1] = messageParts[1].Trim(); // Assign the layer to decodedMessage[1]
             trimmedMessage = messageParts[0].Trim();                                   // trim off the extra spaces from the message
             messageParts = trimmedMessage.Split("applies a");                          // split messageParts[0] by "applies a". Message = {playerPayload.PlayerName} from {playerPayload.World.Name} && {gagType}
@@ -230,7 +230,7 @@ public class ChatManager
             recievedMessage = recievedMessage.Trim('*');
             string[] messageParts = recievedMessage.Split("from her pocket and uses it to lock your");
             string trimmedMessage = string.Empty;
-            messageParts[1].Replace(" gag", "");
+            messageParts[1] = messageParts[1].Replace(" gag", "");
             decodedMessage[1] = messageParts[1].Trim(); // we found layer
             trimmedMessage = messageParts[0].Trim();
             messageParts = trimmedMessage.Split("takes out a");
@@ -250,7 +250,7 @@ public class ChatManager
             recievedMessage = recievedMessage.Trim('*');
             string[] messageParts = recievedMessage.Split("before locking your");
             string trimmedMessage = string.Empty;
-            messageParts[1].Replace(" layer gag", "");
+            messageParts[1] = messageParts[1].Replace(" layer gag", "");
             decodedMessage[1] = messageParts[1].Trim(); // we found layer
             trimmedMessage = messageParts[0].Trim();
             messageParts = trimmedMessage.Split("from her pocket and sets the combination password to");
@@ -271,7 +271,7 @@ public class ChatManager
             // Template: *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck, taking off the lock that was keeping your {layer} gag layer fastened nice and tight.*
             decodedMessage[0] = "unlock";               // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
-            recievedMessage.Replace("gag layer fastened nice and tight.", "");
+            recievedMessage = recievedMessage.Replace("gag layer fastened nice and tight.", "");
             string[] messageParts = recievedMessage.Split("reaches behind your neck, taking off the lock that was keeping your");
             string trimmedMessage = string.Empty;
             decodedMessage[1] = messageParts[1].Trim(); // we found layer
@@ -288,7 +288,7 @@ public class ChatManager
             // Template: *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and sets the password to {password} on your {layer} layer gagstrap, unlocking it.*
             decodedMessage[0] = "unlockPassword";       // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
-            recievedMessage.Replace("layer gagstrap, unlocking it.", "");
+            recievedMessage = recievedMessage.Replace("layer gagstrap, unlocking it.", "");
             string[] messageParts = recievedMessage.Split("on your");
             string trimmedMessage = string.Empty;
             decodedMessage[1] = messageParts[1].Trim(); // we found layer
@@ -308,7 +308,7 @@ public class ChatManager
             // Template: *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and unfastens the buckle of your {layer} gag layer strap, allowing your voice to be a little clearer.*
             decodedMessage[0] = "remove";               // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
-            recievedMessage.Replace("gag layer strap, allowing your voice to be a little clearer.", "");
+            recievedMessage = recievedMessage.Replace("gag layer strap, allowing your voice to be a little clearer.", "");
             string[] messageParts = recievedMessage.Split("reaches behind your neck and unfastens the buckle of your");
             string trimmedMessage = string.Empty;
             decodedMessage[1] = messageParts[1].Trim(); // we found layer
@@ -325,7 +325,7 @@ public class ChatManager
             // Template: *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.*
             decodedMessage[0] = "removeall";            // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
-            recievedMessage.Replace("reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.", "");
+            recievedMessage = recievedMessage.Replace("reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.", "");
             string[] messageParts = recievedMessage.Split("from");
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
