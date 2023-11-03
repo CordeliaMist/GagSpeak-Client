@@ -240,7 +240,7 @@ public class ChatManager
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
             // FINISHED DECODING THE MESSAGE
-            GagSpeak.Log.Debug($"Determined Message Outcome: LOCK || decodedMessage: {decodedMessage}");
+            GagSpeak.Log.Debug($"Determined Message Outcome: LOCK || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
         }
         // unique string for /gag lock password == "from her pocket and sets the combination password to"
@@ -263,7 +263,7 @@ public class ChatManager
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
             // FINISHED DECODING THE MESSAGE
-            GagSpeak.Log.Debug($"Determined Message Outcome: LOCK PASSWORD || decodedMessage: {decodedMessage}");
+            GagSpeak.Log.Debug($"Determined Message Outcome: LOCK PASSWORD || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
         }
         // unique string for /gag unlock == "reaches behind your neck, taking off the lock that was keeping your"
@@ -280,7 +280,7 @@ public class ChatManager
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
             // FINISHED DECODING THE MESSAGE
-            GagSpeak.Log.Debug($"Determined Message Outcome: UNLOCK || decodedMessage: {decodedMessage}");
+            GagSpeak.Log.Debug($"Determined Message Outcome: UNLOCK || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
         }
         // unique string for /gag unlock password == "reaches behind your neck and sets the password to"
@@ -300,7 +300,7 @@ public class ChatManager
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
             // FINISHED DECODING THE MESSAGE
-            GagSpeak.Log.Debug($"Determined Message Outcome: UNLOCK PASSWORD || decodedMessage: {decodedMessage}");
+            GagSpeak.Log.Debug($"Determined Message Outcome: UNLOCK PASSWORD || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
         }
         // unique string for /gag remove == "reaches behind your neck and unfastens the buckle of your"
@@ -317,7 +317,7 @@ public class ChatManager
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
             // FINISHED DECODING THE MESSAGE
-            GagSpeak.Log.Debug($"Determined Message Outcome: REMOVE || decodedMessage: {decodedMessage}");
+            GagSpeak.Log.Debug($"Determined Message Outcome: REMOVE || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
         }
         // final condition means that it is a /gag removeall
@@ -331,7 +331,7 @@ public class ChatManager
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
             // FINISHED DECODING THE MESSAGE
-            GagSpeak.Log.Debug($"Determined Message Outcome: REMOVEALL || decodedMessage: {decodedMessage}");
+            GagSpeak.Log.Debug($"Determined Message Outcome: REMOVEALL || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
         } else {
             // should return a list of empty strings, letting us know it isnt any of the filters.
