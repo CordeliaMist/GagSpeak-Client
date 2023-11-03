@@ -365,26 +365,26 @@ public class ChatManager
             }
             
             // Our layer is valid, but we also need to make sure that we have a gag on this layer
-            if (_config.selectedGagTypes[layer] == "None") {
+            if (_config.selectedGagTypes[layer-1] == "None") {
                 throw new Exception($"There is no gag applied for layer {layer}, so no lock can be applied.");
             }
             // if we do have a gag on this layer, make sure that we dont already have a lock here
-            if (_config.selectedGagPadlocks[layer] != GagPadlocks.None) {
+            if (_config.selectedGagPadlocks[layer-1] != GagPadlocks.None) {
                 throw new Exception($"There is already a lock applied to gag layer {layer}!");
             }
             // we already made sure that we applied a valid password in the command manager, so no need to check it here.
             if (decodedMessage[3] != "") {
-                _config.selectedGagPadlocksPassword[layer] = decodedMessage[3]; // we have a password to set, so set it.
+                _config.selectedGagPadlocksPassword[layer-1] = decodedMessage[3]; // we have a password to set, so set it.
             }
             // and because everything above is valid, we can now set the lock type.
             if (Enum.TryParse(decodedMessage[2], out GagPadlocks parsedLockType)) {
-                _config.selectedGagPadlocks[layer] = parsedLockType;
+                _config.selectedGagPadlocks[layer-1] = parsedLockType;
             } else {
                 throw new Exception("Invalid lock type sent in.");
             }
             // now that we have applied our gagtype, and potentially password, set the assigner to the player if it is a mistress padlock.
-            if (_config.selectedGagPadlocks[layer] == GagPadlocks.MistressPadlock || _config.selectedGagPadlocks[layer] == GagPadlocks.MistressTimerPadlock) {
-                _config.selectedGagPadlocksAssigner[layer] = decodedMessage[4];
+            if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressPadlock || _config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressTimerPadlock) {
+                _config.selectedGagPadlocksAssigner[layer-1] = decodedMessage[4];
             }
             GagSpeak.Log.Debug("Determined Message Outcome: LOCK or LOCKPASSWORD || lock sucessfully applied.");
         }
@@ -396,33 +396,33 @@ public class ChatManager
                 throw new Exception("Invalid layer value.");
             }
             // our layer is valid, but we also need to make sure that this layer has a lock on it
-            if (_config.selectedGagPadlocks[layer] == GagPadlocks.None) {
+            if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.None) {
                 throw new Exception($"There is no lock applied for gag layer {layer}, so no lock can be removed.");
             }
             // Case where it is just unlock
             if (decodedMessage[3] == "") {
                 // Make sure it is not a MistressPadlock
-                if (_config.selectedGagPadlocks[layer] == GagPadlocks.MistressPadlock && _config.selectedGagPadlocksAssigner[layer] != decodedMessage[4]) {
+                if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressPadlock && _config.selectedGagPadlocksAssigner[layer-1] != decodedMessage[4]) {
                     throw new Exception("Cannot remove a mistress padlock's unless you are the one who assigned it.");
                 }
                 // if we made it here, we can just remove the lock
-                _config.selectedGagPadlocks[layer] = GagPadlocks.None;
-                _config.selectedGagPadlocksPassword[layer] = string.Empty;
-                _config.selectedGagPadlocksAssigner[layer] = "None";
+                _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
+                _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
+                _config.selectedGagPadlocksAssigner[layer-1] = "None";
             } else {
                 // if we do have a password, we need to make sure it matches the password on the lock
-                if (_config.selectedGagPadlocksPassword[layer] != decodedMessage[3]) {
+                if (_config.selectedGagPadlocksPassword[layer-1] != decodedMessage[3]) {
                     throw new Exception("Invalid Password, failed to unlock.");
                 }
                 // if the passwords do match, so remove the lock IF it is not a mistress padlock.
-                if (_config.selectedGagPadlocks[layer] == GagPadlocks.MistressTimerPadlock &&
-                    _config.selectedGagPadlocksAssigner[layer] != decodedMessage[4]) {
+                if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressTimerPadlock &&
+                    _config.selectedGagPadlocksAssigner[layer-1] != decodedMessage[4]) {
                     throw new Exception("Cannot remove a mistress padlock's unless you are the one who assigned it.");
                 }
                 // if we made it here, we can remove the lock.
-                _config.selectedGagPadlocks[layer] = GagPadlocks.None;
-                _config.selectedGagPadlocksPassword[layer] = string.Empty;
-                _config.selectedGagPadlocksAssigner[layer] = "None";
+                _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
+                _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
+                _config.selectedGagPadlocksAssigner[layer-1] = "None";
             }
         }
         // if the parsed type is "removeall"
@@ -447,18 +447,18 @@ public class ChatManager
                 throw new Exception("Invalid layer value.");
             }
             // our layer is valid, but we also need to make sure that this layer has a gag on it
-            if (_config.selectedGagTypes[layer] == "None") {
+            if (_config.selectedGagTypes[layer-1] == "None") {
                 throw new Exception($"There is no gag applied for gag layer {layer}, so no gag can be removed.");
             }
             // make sure there is no lock on that gags layer
-            if (_config.selectedGagPadlocks[layer] != GagPadlocks.None) {
+            if (_config.selectedGagPadlocks[layer-1] != GagPadlocks.None) {
                 throw new Exception("Cannot remove a gag while the lock is on for this layer.");
             }
             // if we made it here, we can remove the gag
-            _config.selectedGagTypes[layer] = "None";
-            _config.selectedGagPadlocks[layer] = GagPadlocks.None;
-            _config.selectedGagPadlocksPassword[layer] = string.Empty;
-            _config.selectedGagPadlocksAssigner[layer] = "None";
+            _config.selectedGagTypes[layer-1] = "None";
+            _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
+            _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
+            _config.selectedGagPadlocksAssigner[layer-1] = "None";
         }
         else if (decodedMessage[0] == "apply") {
             // see if our layer is a valid layer
@@ -466,16 +466,16 @@ public class ChatManager
             if (!int.TryParse(decodedMessage[1], out int layer)) { 
                 throw new Exception("Invalid layer value.");
             }
-            // see if our gagtype is in selectedGagTypes[layer]
+            // see if our gagtype is in selectedGagTypes[layer-1]
             if (!_config.GagTypes.ContainsKey(decodedMessage[2])) {
                 throw new Exception("Invalid gag type.");
             }
             // make sure gagType is set to none
-            if (_config.selectedGagTypes[layer] != "None") {
+            if (_config.selectedGagTypes[layer-1] != "None") {
                 throw new Exception($"There is already a gag applied for gag layer {layer}!");
             }
             // if we made it here, we can apply the gag
-            _config.selectedGagTypes[layer] = decodedMessage[2];
+            _config.selectedGagTypes[layer-1] = decodedMessage[2];
         } else {
             // we have an invalid type
             GagSpeak.Log.Debug($"INVALID MESSAGE TYPE");

@@ -378,6 +378,9 @@ public class CommandManager : IDisposable // Our main command list manager
     private bool GagRemoveAll(string argument) {
         string targetplayer = argument; // Get the playername
         // if our arguments are not valid, display help information
+        targetplayer = targetplayer.Trim('|');
+        targetplayer = targetplayer.Trim();
+
         if (!targetplayer.Contains("@"))
         {   // One of our parameters WAS invalid, so display to them the help.
             _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments").BuiltString);
