@@ -21,6 +21,9 @@ public class MessageGarbler
         int level = garbleLevel;
         // Then we need to set the end string to null
         string endString = "";
+
+        if (level == 0) { return beginString; } // incase we dont have any gags on
+        
         // Then we need to set the begin string to lowercase
         beginString = beginString.ToLower();
         // Then we need to loop through the begin string and start garbling it until it's done!
