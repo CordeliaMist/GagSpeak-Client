@@ -84,6 +84,8 @@ public class ChatManager
         //    Doing this at any point one our filters is not true is preferred to save on resources and runtime.
         if (isHandled) return;
 
+        // Maybe move isHandled 
+
     // NOTE: This may be able to be further optimized if we can find a way to compare sender to playername without doing all this beforehand.        
         // Still unsure about the spesifics of this, comment fully later
         var fmessage = new SeString(new List<Payload>());

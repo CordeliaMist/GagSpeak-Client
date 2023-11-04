@@ -150,9 +150,10 @@ public class ConfigSettingsTab : ITab
         try
         {
             ImGui.Text($"Version: {_config.Version}");
-            ImGui.Text($"Safeword: {_config.Safeword}");
             ImGui.Text($"Fresh Install?: {_config.FreshInstall}");
             ImGui.Text($"Is Enabled?: {_config.Enabled}");
+            ImGui.Text($"Debug Mode?: {_config.InDomMode}");
+            ImGui.Text($"Safeword: {_config.Safeword}");
             ImGui.Text($"Friends Only?: {_config.friendsOnly}");
             ImGui.Text($"Party Only?: {_config.partyOnly}");
             ImGui.Text($"Whitelist Only?: {_config.whitelistOnly}");
@@ -167,6 +168,11 @@ public class ConfigSettingsTab : ITab
 
             ImGui.Text($"Translatable Chat Types:");
             foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };
+            ImGui.Text($"Current ChatBox Channel: {_config.CurrentChannel.ToString()}");
+            ImGui.Text("Whitelist:"); ImGui.Indent();
+            foreach (var item in _config.Whitelist) { ImGui.Text(item); }
+            ImGui.Unindent();
+
         }
         catch (Exception e)
         {

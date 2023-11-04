@@ -18,7 +18,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 
 using GagSpeak.Services;
-using GagSpeak.UI;
+using GagSpeak.UI.Helpers;
 using GagSpeak.Events;
 using GagSpeak.Chat;
 
@@ -29,13 +29,15 @@ public class GeneralTab : ITab
 {
     // Begin by appending the readonlys and privates
     private readonly GagSpeakConfig _config;
+    private readonly GagListDrawer _gagDrawer;
     private string? _tempSafeword; // for initializing a temporary safeword for the text input field
 
     
-    public GeneralTab(GagSpeakConfig config)
+    public GeneralTab(GagSpeakConfig config, GagListDrawer gagdrawer)
     {
         // Set the readonlys
         _config = config;
+        _gagDrawer = gagdrawer;
     }
 
     // store our current safeword
@@ -84,21 +86,46 @@ public class GeneralTab : ITab
         ImGui.Separator();
         // Now let's draw our 3 gag appliers
 
-        // This will draw the filter combo for our first gag applier
+        DrawGaglist(); // prepare our lists
+
+        ImGui.Separator();
+        // Now let's draw our 3 gag appliers but this time better
         ImGui.Text("Currently Selected Gag (Layer 1):");
-        DrawFilterCombo(_config.GagTypes, _config.selectedGagTypes[0], _config.selectedGagTypes, 0);
+        DrawFilterCombo(10, _config.GagTypes, _config.selectedGagTypes[0], _config.selectedGagTypes, 0);
         ImGui.NewLine();
 
         // This will draw the filter combo for our first gag applier
         ImGui.Text("Currently Selected Gag (Layer 2):");
-        DrawFilterCombo(_config.GagTypes, _config.selectedGagTypes[1], _config.selectedGagTypes, 1);
+        DrawFilterCombo(20, _config.GagTypes, _config.selectedGagTypes[1], _config.selectedGagTypes, 1);
         ImGui.NewLine();
 
         // This will draw the filter combo for our first gag applier
         ImGui.Text("Currently Selected Gag (Layer 3):");
-        DrawFilterCombo(_config.GagTypes, _config.selectedGagTypes[2], _config.selectedGagTypes, 2);
+        DrawFilterCombo(30, _config.GagTypes, _config.selectedGagTypes[2], _config.selectedGagTypes, 2);
         ImGui.NewLine();
     }
+
+    // I have no idea what the fuck any of the following code below will do but hopefully it all works out.
+
+    private void DrawGaglist()
+    {
+        bool IsLocked = false;
+        _gagDrawer.Prepare(); // prepare our lists
+        
+        // void GagListDrawer.DrawGaglist(string slot, string currentArmor, out string replacedArmor, GagPadlocks cPadlocktype, out string rPadlocktype, bool locked)
+        _gagDrawer.DrawGaglist("LayerOneGagType", _config.selectedGagTypes[0], out var newGagType1, GagPadlocks.None, out var newPadlock1, IsLocked);
+        _gagDrawer.DrawGaglist("LayerTwoGagType", _config.selectedGagTypes[1], out var newGagType2, GagPadlocks.None, out var newPadlock2, IsLocked);
+        _gagDrawer.DrawGaglist("LayerThreeGagType", _config.selectedGagTypes[2], out var newGagType3, GagPadlocks.None, out var newPadlock3, IsLocked);
+
+        ImGui.Dummy(new Vector2(ImGui.GetTextLineHeight() / 2));
+    }
+
+
+
+
+    // this combo reliably works, but has some flaws with the search filter. It is the easiest to understand, and a lot more simpler than otter's.
+    // If only I could get the search filter to work properly, this would be the best option.
+    // maybe find a way to integrate their methods into this one as sub-methods?
 
     /// <summary>
     /// This function draws ImGui's Combo list, but with a search filter.
@@ -109,14 +136,14 @@ public class GeneralTab : ITab
     /// <item><c>layerIndex</c><param name="layerIndex"> - the index of the selectedTypes list to saved the selected option to</param></item>
     /// </list>
     /// </summary>
-    public void DrawFilterCombo(Dictionary<string, int> contentList, string label, List<string> selectedTypes, int layerIndex) {
+    public void DrawFilterCombo(int ID, Dictionary<string, int> contentList, string label, List<string> selectedTypes, int layerIndex) {
         // create an empty string for the search text
         var ComboSearchText = string.Empty;
         // Create the combo
         using( var gagTypeOneCombo = ImRaii.Combo( label, selectedTypes[layerIndex], ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) {
             // Assign it an ID if combo is sucessful.
             if( gagTypeOneCombo ) {
-                using var id = ImRaii.PushId( label ); // Push an ID for the combo box (based on label / name)
+                using var id = ImRaii.PushId(ID); // Push an ID for the combo box (based on label / name)
                 ImGui.SetNextItemWidth(ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X); // Set filter length to full
                 
                 // Draw filter bar
@@ -142,8 +169,6 @@ public class GeneralTab : ITab
                 }
             }
         }
-        // Personal Note - We cant put this in UI Helpers because UI helpers must remain
-        // a static class in order to not depend on being part of a service.
     }
 }
 

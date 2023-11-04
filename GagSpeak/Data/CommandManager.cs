@@ -91,6 +91,9 @@ public class CommandManager : IDisposable // Our main command list manager
             case "setmode":
                 Setmode(argument);         // when [/gagspeak setmode] is typed
                 return;
+            case "history":
+                _historyWindow.Toggle();   // when [/gagspeak history] is typed
+                return;
             case "":
                 _mainWindow.Toggle(); // when [/gagspeak] is typed
                 return;

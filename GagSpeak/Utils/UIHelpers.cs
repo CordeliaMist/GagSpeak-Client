@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using OtterGui;
 using OtterGui.Raii;
+using Lumina.Misc;
 
-using GagSpeak.Chat;
-using GagSpeak.Services;
-using GagSpeak.Events;
 
 // Practicing Modular Design
-namespace GagSpeak.UI;
+namespace GagSpeak.UI.Helpers;
+
 public static class UIHelpers // A class for all of the UI helpers, including basic functions for drawing repetative yet unique design elements
 {
     
@@ -35,6 +34,8 @@ public static class UIHelpers // A class for all of the UI helpers, including ba
     //         ImGuiUtil.HoverIcon(ptr, textureSize, size);
     //     }
     // }
+
+// ORIGINAL, STILL WORKING ONE:
     public static bool DrawCheckbox(string label, string tooltip, bool value, out bool on, bool locked)
     {
         using var disabled = ImRaii.Disabled(locked);
@@ -44,4 +45,11 @@ public static class UIHelpers // A class for all of the UI helpers, including ba
         return ret;
     }
     // Out of function here!
+
+    public static void OpenCombo(string comboLabel)
+    {
+        var windowId = ImGui.GetID(comboLabel);
+        var popupId  = ~Crc32.Get("##ComboPopup", windowId);
+        ImGui.OpenPopup(popupId); // was originally popup ID
+    }
 }
