@@ -148,7 +148,8 @@ public class ConfigSettingsTab : ITab
             ImGui.Text($"Version: {_config.Version}");
             ImGui.Text($"Fresh Install?: {_config.FreshInstall}");
             ImGui.Text($"Is Enabled?: {_config.Enabled}");
-            ImGui.Text($"Debug Mode?: {_config.InDomMode}");
+            ImGui.Text($"In Dom Mode?: {_config.InDomMode}");
+            ImGui.Text($"Debug Mode?: {_config.DebugMode}");
             ImGui.Text($"Safeword: {_config.Safeword}");
             ImGui.Text($"Friends Only?: {_config.friendsOnly}");
             ImGui.Text($"Party Only?: {_config.partyOnly}");

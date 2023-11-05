@@ -5,11 +5,8 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using Dalamud.Plugin.Services;
+using OtterGui.Raii;
 
-using GagSpeak.Chat;
-using GagSpeak.Events;
-using GagSpeak.UI;
-using GagSpeak.Services;
 
 // practicing modular design
 namespace GagSpeak.UI.Tabs.WhitelistTab;
@@ -54,7 +51,26 @@ public class WhitelistTab : ITab
     }
     // Draw the content for the window of the Whitelist Tab
     public void DrawContent() {
-        // Let us begin by creating an array of strings that store the whitelist of appended character names
+        // Create a child for the Main Window (not sure if we need this without a left selection panel)
+        using var child = ImRaii.Child("MainWindowChild");
+        if (!child)
+            return;
+
+        // Draw the child grouping for the Whitelist Tab
+        using (var child2 = ImRaii.Child("WhitelistChild")) {
+            DrawHeader();
+            DrawWhitelist();
+        }
+    }
+
+    private void DrawHeader() // Draw our header
+        => WindowHeader.Draw("Whitelist Manager", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
+        
+    // draw the actual whitelist
+    private void DrawWhitelist() {
+        // lets first draw in the child
+        using var child = ImRaii.Child("WhitelistPanel", -Vector2.One, true);
+        // Now we can begin by creating an array of strings that store the whitelist of appended character names
         string[] whitelist = _config.Whitelist.ToArray(); // Take whitelist list<string> from config and put into array of str.
 
         // If the whitelist is empty, then we should set the whitelist to "None"

@@ -61,7 +61,6 @@ public class GagListingsDrawer
             _requiredComboWidthUnscaled = _config.GagTypes.Keys.Max(key => ImGui.CalcTextSize(key).X) / ImGuiHelpers.GlobalScale;
         // get the scaled combo width
         _requiredComboWidth = _requiredComboWidthUnscaled * ImGuiHelpers.GlobalScale;
-        GagSpeak.Log.Debug($"We are preparing a listing");
     }
 
 
@@ -79,18 +78,13 @@ public class GagListingsDrawer
         // create a group for the 2 dropdowns and icon
         using var group = ImRaii.Group();
         if (DrawGagTypeItemCombo(ID, GagLabel, layerIndex, locked)) {
-            // maybe not the best place to log something
-            // GagSpeak.Log.Debug($"GagSpeak: Layer {layerIndex} GagType changed to {GagLabel}");
         }
 
         ImGui.SameLine();
         ImGui.TextUnformatted(displayLabel); // draw the label text
 
         if (DrawGagLockItemCombo(ID, LockLabel, layerIndex, locked)) {
-            // maybe not the best place to log something
-            // GagSpeak.Log.Debug($"GagSpeak: Layer {layerIndex} GagType changed to {GagLabel}");
         }
-        GagSpeak.Log.Debug($"We are drawing a listing");
     }
 
     // draw the gag item combo
@@ -117,7 +111,6 @@ public class GagListingsDrawer
 
         return true;
     }
-
 
     private bool DrawGagLockItemCombo(int ID, GagPadlocks label, int layerIndex, bool locked) {
         // set our combo the the combofilterlist we want to see

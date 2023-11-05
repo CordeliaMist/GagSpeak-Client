@@ -56,23 +56,23 @@ public sealed class GagLockFilterCombo
                     // add the popup state
                     using var id = ImRaii.PushId($"##{ID}_Enum"); // Push an ID for the combo box (based on label / name)
                     ImGui.SetNextItemWidth(ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X); // Set filter length to full
-                    if( ImGui.InputTextWithHint("##filter", "Filter...", ref _comboSearchText, 255 ) ) { // Draw filter bar
-                    // Filter logic for GagPadlocks enum based on _comboSearchText
-                        var filteredValues = Enum.GetValues(typeof(GagPadlocks))
-                            .Cast<GagPadlocks>()
-                            .Where(x => x.ToString().ToLower().Contains(_comboSearchText.ToLower()));
+                    // if( ImGui.InputTextWithHint("##filter", "Filter...", ref _comboSearchText, 255 ) ) { // Draw filter bar
+                    // // Filter logic for GagPadlocks enum based on _comboSearchText
+                    //     var filteredValues = Enum.GetValues(typeof(GagPadlocks))
+                    //         .Cast<GagPadlocks>()
+                    //         .Where(x => x.ToString().ToLower().Contains(_comboSearchText.ToLower()));
 
-                        foreach (var item in filteredValues) {
-                            if (ImGui.Selectable(item.ToString(), _config.selectedGagPadlocks[layerIndex] == item)) {
-                                _config.selectedGagPadlocks[layerIndex] = item;
-                                GagSpeak.Log.Debug($"GagSpeak: GagPadlock changed to {item}");
+                    //     foreach (var item in filteredValues) {
+                    //         if (ImGui.Selectable(item.ToString(), _config.selectedGagPadlocks[layerIndex] == item)) {
+                    //             _config.selectedGagPadlocks[layerIndex] = item;
+                    //             GagSpeak.Log.Debug($"GagSpeak: GagPadlock changed to {item}");
 
-                                _comboSearchText = string.Empty;
-                                ImGui.CloseCurrentPopup();
-                                return;
-                            }
-                        }
-                    }
+                    //             _comboSearchText = string.Empty;
+                    //             ImGui.CloseCurrentPopup();
+                    //             return;
+                    //         }
+                    //     }
+                    // }
 
                     foreach (var item in Enum.GetValues(typeof(GagPadlocks)).Cast<GagPadlocks>()) {
                         if (ImGui.Selectable(item.ToString(), _config.selectedGagPadlocks[layerIndex] == item)) {

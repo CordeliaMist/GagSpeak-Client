@@ -182,6 +182,15 @@ public class ChatManager
             ////// Once we have reached this point, we know we have recieved a tell, and that it is from one of our filtered players. //////
             GagSpeak.Log.Debug($"Recieved tell from PNAME: {pName} | SNAME: {sName} | SenderName: {senderName} | Message: {fmessage}");
 
+            // FILTER CONDITION THREE:
+            // if the _config.InDomMode is set to true, just return
+            if (_config.InDomMode) {
+                GagSpeak.Log.Debug("Player attempted to gag you, but you are in Dominant mode, so ignoring");
+                return;
+            }
+            
+            // otherwise they are submissive, so accept it.
+
             // get the type of command given to us based on the disguised message
             // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
             List<string> decodedMessageCommand = DetermineIncomingDiguisedMessageType(fmessage.ToString());

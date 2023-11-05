@@ -33,12 +33,13 @@ public static class WindowHeader
 
         style.Pop();
         // This line seems redundant too.
-        style.Push(ImGuiStyleVar.ButtonTextAlign, new Vector2(0.5f / midSize, 0.5f));
+        style.Push(ImGuiStyleVar.ButtonTextAlign, new Vector2(0.5f, 0.5f));
         
         // If our text has a color, draw it with the color, otherwise, draw it without.
-        if (textColor != 0)
+        if (textColor != 0) {
             ImGuiUtil.DrawTextButton(text, new Vector2(midSize, ImGui.GetFrameHeight()), frameColor, textColor);
-        else
+            GagSpeak.Log.Debug("Drawing Header");
+        } else
             ImGuiUtil.DrawTextButton(text, new Vector2(midSize, ImGui.GetFrameHeight()), frameColor);
         
         // Pop that off our styles, then push the one for the borders

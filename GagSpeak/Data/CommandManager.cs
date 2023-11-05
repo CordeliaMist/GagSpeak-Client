@@ -135,9 +135,9 @@ public class CommandManager : IDisposable // Our main command list manager
             _chat.Print("Please specify the mode. Usage: /gagspeak setmode [dom/sub]"); return false; }
         var mode = argument.ToLower(); // set what we typed to lowercases to match checks
         if (mode == "dom") {
-            _chat.Print(new SeStringBuilder().AddText("Your mode has been set to").AddRed("Dom.").BuiltString); _config.InDomMode = true; return true;
+            _chat.Print(new SeStringBuilder().AddText("Your mode has been set to").AddRed("Dom.").BuiltString); _config.InDomMode = true; _config.Save(); return true;
         } else if (mode == "sub") {
-            _chat.Print(new SeStringBuilder().AddText("Your mode has been set to").AddRed("Sub.").BuiltString); _config.InDomMode = false; return true;
+            _chat.Print(new SeStringBuilder().AddText("Your mode has been set to").AddRed("Sub.").BuiltString); _config.InDomMode = false; _config.Save(); return true;
         } else {
             _chat.Print("Invalid mode. Usage: /gagspeak setmode [dom/sub]"); return false;
         }
@@ -459,17 +459,24 @@ public class CommandManager : IDisposable // Our main command list manager
             PrintHelpGSM("?");
             return;
         }
-        // Otherwise, what we have after should be a message to translate into GagSpeak
-        GagSpeak.Log.Debug($"Translating message: {arguments}");
-        var input = arguments; // get the text input
-        var output = this._messageGarbler.GarbleMessage(arguments, _config.GarbleLevel);
-        GagSpeak.Log.Debug($"Translated message in gagspeak: {output}");
-        try {
-            _realChatInteraction.SendMessage(output);
-            _historyService.AddTranslation(new Translation(input, output));
-        }
-        catch (Exception e) {
-            GagSpeak.Log.Error($"Error sending message to chatbox: {e.Message}");
+        // see if our currently selected channel in _config.CurrentChannel is in our list of enabled channels
+        if (_config.Channels.Contains(_config.CurrentChannel)) {
+            try {
+                // Otherwise, what we have after should be a message to translate into GagSpeak
+                GagSpeak.Log.Debug($"Translating message: {arguments}");
+                var input = arguments; // get the text input
+                var output = this._messageGarbler.GarbleMessage(arguments, _config.GarbleLevel);
+                GagSpeak.Log.Debug($"Translated message in gagspeak: {output}");
+                _realChatInteraction.SendMessage(output);
+                _historyService.AddTranslation(new Translation(input, output));
+            }
+            catch (Exception e) {
+                GagSpeak.Log.Error($"Error sending message to chatbox: {e.Message}");
+            }
+        } else {
+            _chat.Print(new SeStringBuilder().AddRed("Invalid Channel").BuiltString);
+            _chat.Print(new SeStringBuilder().AddText("The channel you have selected is not enabled in the config. Please select a valid channel.").BuiltString);
+            return;
         }
         
     }
