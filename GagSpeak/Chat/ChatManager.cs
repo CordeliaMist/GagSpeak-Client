@@ -134,11 +134,10 @@ public class ChatManager
 
 
         // Precursor to condition2, if the message satisfied senderName == PlayerName && XivChatType != _config.CurrentChatType, change it
-        if (pName == senderName && type != _config.CurrentChannel) {
+        if (pName == senderName && _config.Channels.Contains(type) && type != _config.CurrentChannel) {
             _config.CurrentChannel = type; // log the current chatbox channel & save
             _config.Save();
         }
-
 
         // FILTER CONDITION TWO:
         //  - Is the chat message an incoming tell? If yes, proceed into the inner function, if not read over
@@ -188,7 +187,7 @@ public class ChatManager
                 GagSpeak.Log.Debug("Player attempted to gag you, but you are in Dominant mode, so ignoring");
                 return;
             }
-            
+
             // otherwise they are submissive, so accept it.
 
             // get the type of command given to us based on the disguised message
