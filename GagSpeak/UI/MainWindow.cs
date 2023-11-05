@@ -1,21 +1,11 @@
-using Dalamud.Game.Text;
 using Dalamud.Plugin;
 using ImGuiNET;
-using OtterGui.Custom;
 using OtterGui.Widgets;
-using Dalamud.Interface.Colors;
-using System.Linq;
 using System;
 using System.Diagnostics;
-using Num = System.Numerics;
 using Dalamud.Interface.Windowing;
 using System.Numerics;
 using Dalamud.Interface.Utility;
-
-
-// Practicing Modular Design
-using GagSpeak.Events;
-using GagSpeak.UI.Tabs;
 using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.UI.Tabs.WhitelistTab;
 using GagSpeak.UI.Tabs.ConfigSettingsTab;
@@ -69,8 +59,6 @@ public class MainWindow : Window //, IDisposable
             whitelist,
             configsettings,
         };
-        // lets subscribe to the event so we can write custom code once this event is raised.
-       // _event.Subscribe(OnTabSelected, TabSelected.Priority.MainWindow);
     }
 
     // Prepare to draw the sick window thing
@@ -81,11 +69,6 @@ public class MainWindow : Window //, IDisposable
             ? Flags | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize
             : Flags & ~(ImGuiWindowFlags.NoMove |ImGuiWindowFlags.NoResize);
     }
-
-    // The function called when the mainwindow must be DISPOSED OF
-    // public void Dispose()
-    //     => _event.Unsubscribe(OnTabSelected); // Best to unsubscribe to events we subscribed to after disposal!
-
 
     // Now that we are THE READY. Yis. Let us, LE DRAW (This should be called by the windowManager)
     public override void Draw() {
@@ -113,8 +96,6 @@ public class MainWindow : Window //, IDisposable
             _config.Save();
 
         }
-
-        // This appears to use a completely seperate style of ImGui drawing, look into further later.
 
         // In that same line...
         ImGui.SameLine();

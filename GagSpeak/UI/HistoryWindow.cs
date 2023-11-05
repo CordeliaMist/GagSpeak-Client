@@ -1,29 +1,13 @@
-﻿﻿using Dalamud.Game.Text;
+﻿﻿
 using Dalamud.Plugin;
 using ImGuiNET;
 using Dalamud.Interface.Colors;
 using System.Linq;
-using System;
-
-
-using OtterGui.Custom;
-using OtterGui.Widgets;
-
-using System.Diagnostics;
-using Num = System.Numerics;
 using Dalamud.Interface.Windowing;
 using System.Numerics;
-using Dalamud.Interface.Utility;
-
-// Practicing Modular Design
 using GagSpeak.Services;
-using GagSpeak.Events;
-using GagSpeak.UI.Tabs;
-using GagSpeak.UI.Tabs.GeneralTab;
-using GagSpeak.UI.Tabs.WhitelistTab;
-using GagSpeak.UI.Tabs.ConfigSettingsTab;
-using Dalamud.IoC;
-// Also taken from sillychat
+
+// taken from sillychat as reference material to adopt for our translator
 
 namespace GagSpeak.UI;
 
