@@ -79,7 +79,6 @@ public class ConfigSettingsTab : ITab
             "(Does NOT need to be enabled for you to use /gag (target) commands on them)", _config.whitelistOnly, v => _config.whitelistOnly = v);
 
         // Checkbox to display debug information
-        ImGui.Separator();
         Checkbox("Debug Display", "Displays information for plugin variables. For developer", _config.DebugMode, v => _config.DebugMode = v);
         // Checkbox will dictate if only players from their party are allowed to use /gag (target) commands on them.
         
@@ -116,9 +115,6 @@ public class ConfigSettingsTab : ITab
 
         // Set the columns back to 1 now and space over to next section
         ImGui.Columns(1);
-        ImGui.NewLine();
-        ImGui.Separator();
-        ImGui.NewLine();
     }
 
     /// <summary>
@@ -172,6 +168,9 @@ public class ConfigSettingsTab : ITab
             ImGui.Text("Whitelist:"); ImGui.Indent();
             foreach (var item in _config.Whitelist) { ImGui.Text(item); }
             ImGui.Unindent();
+            // print the width of the imgui screen and the height
+            ImGui.Text($"ImGui Screen Width: {ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X}");
+            ImGui.Text($"ImGui Screen Height: {ImGui.GetWindowContentRegionMax().Y - ImGui.GetWindowContentRegionMin().Y}");
 
         }
         catch (Exception e)

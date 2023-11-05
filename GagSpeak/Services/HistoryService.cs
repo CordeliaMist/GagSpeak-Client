@@ -33,9 +33,9 @@ public class HistoryService {
         _config = config;
         
         // Set the translations to a new concurrent queue
-        this.Translations = new ConcurrentQueue<MessageGarbler>();
+        this.Translations = new ConcurrentQueue<Translation>();
         // Set the translations display to a new list of translations
-        this.TranslationsDisplay = new List<MessageGarbler>();
+        this.TranslationsDisplay = new List<Translation>();
         // Set the process translations timer to a new timer
         _processTranslationsTimer = new Timer {
             Interval = _config.ProcessTranslationInterval,
@@ -49,13 +49,13 @@ public class HistoryService {
     public bool IsProcessing { get; private set; }
 
     /// Gets list of current historical records for display.
-    public List<MessageGarbler> TranslationsDisplay { get; private set; }
+    public List<Translation> TranslationsDisplay { get; private set; }
 
     /// Gets queue for historical translations.
-    public ConcurrentQueue<MessageGarbler> Translations { get; }
+    public ConcurrentQueue<Translation> Translations { get; }
 
     /// Add a translation to queue.
-    public void AddTranslation(MessageGarbler translation) {
+    public void AddTranslation(Translation translation) {
         // I honestly dont fully understand this process, comment on it once you learn more about it!
         this.Translations.Enqueue(translation);
         if (!this.IsProcessing) {

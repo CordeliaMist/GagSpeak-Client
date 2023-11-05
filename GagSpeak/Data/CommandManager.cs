@@ -24,6 +24,7 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly ICommandManager _commands;
     private readonly MainWindow _mainWindow;
     private readonly HistoryWindow _historyWindow;
+    private readonly HistoryService _historyService;
     private readonly IChatGui _chat;
     private readonly GagSpeakConfig _config;
     private readonly ChatManager _chatManager;
@@ -33,8 +34,8 @@ public class CommandManager : IDisposable // Our main command list manager
 
     private readonly MessageGarbler _messageGarbler;
     // Constructor for the command manager
-    public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow, IChatGui chat,
-        GagSpeakConfig config, ChatManager chatManager, IClientState clientState, IFramework framework, 
+    public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow, HistoryService historyService,
+        IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, IFramework framework, 
         RealChatInteraction realchatinteraction)
     {
         // set the private readonly's to the passed in data of the respective names
@@ -48,6 +49,7 @@ public class CommandManager : IDisposable // Our main command list manager
         _clientState = clientState;
         _framework = framework;
         _messageGarbler = new MessageGarbler();
+        _historyService = historyService;
 
         // Add handlers to the main commands
         _commands.AddHandler(MainCommandString, new CommandInfo(OnGagSpeak) {
@@ -459,12 +461,12 @@ public class CommandManager : IDisposable // Our main command list manager
         }
         // Otherwise, what we have after should be a message to translate into GagSpeak
         GagSpeak.Log.Debug($"Translating message: {arguments}");
-        string translatedMessage = this._messageGarbler.GarbleMessage(arguments, _config.GarbleLevel);
-        GagSpeak.Log.Debug($"Translated message in gagspeak: {translatedMessage}");
-        // attempt to send the message in the current chatbox's set mode, if it is one of the filtered chat types.
-        GagSpeak.Log.Debug($"Still struggling to get te current chattype");
+        var input = arguments; // get the text input
+        var output = this._messageGarbler.GarbleMessage(arguments, _config.GarbleLevel);
+        GagSpeak.Log.Debug($"Translated message in gagspeak: {output}");
         try {
-            _realChatInteraction.SendMessage(translatedMessage);
+            _realChatInteraction.SendMessage(output);
+            _historyService.AddTranslation(new Translation(input, output));
         }
         catch (Exception e) {
             GagSpeak.Log.Error($"Error sending message to chatbox: {e.Message}");

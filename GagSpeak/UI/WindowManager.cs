@@ -1,8 +1,9 @@
 using System;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
-using GagSpeak.Chat;
-using OtterGui.Widgets;
+using Dalamud.Plugin.Services;
+using Dalamud.Game.Text.SeStringHandling;
+using OtterGui.Classes;
 
 // practicing modular design
 namespace GagSpeak.UI;
@@ -14,19 +15,33 @@ public class GagSpeakWindowManager : IDisposable
     private readonly UiBuilder                  _uiBuilder;
     private readonly MainWindow                 _ui;
     private readonly HistoryWindow              _uiHistory;
+    private readonly IChatGui                   _chatGui;
 
-    public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config, HistoryWindow uiHistory)
+    public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config, IChatGui chatGui, HistoryWindow uiHistory)
     {
         // set the main ui window
         _uiBuilder       = uiBuilder;
         _ui              = ui;
         _uiHistory       = uiHistory;
+        _chatGui         = chatGui;
         _windowSystem.AddWindow(ui);
         _windowSystem.AddWindow(uiHistory);
-//        _windowSystem.AddWindow(Changelog.Changelog);
+//        _windowSystem.AddWindow(Changelog.Changelog);             // May add this in later lol. Idk, maybe if I feel fancy and shit
         // Draw the ui and the toggles
         _uiBuilder.Draw                  += _windowSystem.Draw;     // for drawing the UI stuff
         _uiBuilder.OpenConfigUi          += _ui.Toggle;             // for toggling the UI stuff
+
+        //handle a fresh install
+        if (config.FreshInstall){
+            // They are new, so print some nice messages
+            _chatGui.Print(new SeStringBuilder().AddText("Thank you for installing ").AddBlue("GagSpeak!").BuiltString);
+            _chatGui.Print(new SeStringBuilder().AddYellow("Instructions: ").AddText("You can use ").AddBlue("/gagspeak help ")
+                .AddText("to see main functions, ").AddBlue("/gag ").AddText("to view gagging commands, and ").AddBlue("/gsm ")
+                .AddText("to chat in gagspeak.").BuiltString);
+            config.FreshInstall = false;
+            config.Save();
+            _ui.Toggle();
+        }
     }
 
     // for disposing the UI things

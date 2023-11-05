@@ -4,7 +4,6 @@ using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using ImGuiScene;
 using OtterGui;
-using OtterGui.Raii;
 ﻿using Dalamud.Game.Text;
 using Dalamud.Plugin;
 using System.Diagnostics;
@@ -19,8 +18,8 @@ using Dalamud.Interface.Utility;
 
 using GagSpeak.Services;
 using GagSpeak.UI.Helpers;
-using GagSpeak.Events;
-using GagSpeak.Chat;
+using GagSpeak.UI.GagListings;
+using Dalamud.Interface.Utility.Raii;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 
@@ -29,20 +28,26 @@ public class GeneralTab : ITab
 {
     // Begin by appending the readonlys and privates
     private readonly GagSpeakConfig _config;
-    private readonly GagListDrawer _gagDrawer;
-    private string? _tempSafeword; // for initializing a temporary safeword for the text input field
 
+    private readonly GagListingsDrawer _gagListingsDrawer;
+    private string? _tempSafeword; // for initializing a temporary safeword for the text input field
+    // style variables
+    private bool _isLocked;
     
-    public GeneralTab(GagSpeakConfig config, GagListDrawer gagdrawer)
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config)
     {
+        _isLocked = false;
         // Set the readonlys
         _config = config;
-        _gagDrawer = gagdrawer;
+        _gagListingsDrawer = gagListingsDrawer;
+
+        // draw out our gagpadlock filter combo listings
+
+
     }
 
     // store our current safeword
     public string _currentSafeword = string.Empty;
-
     // Apply our lable for the tab
     public ReadOnlySpan<byte> Label
         => "General"u8;
@@ -54,10 +59,8 @@ public class GeneralTab : ITab
         // Definitely need to refine the ImGui code here, but this is a good start.
         // Create a child for the Main Window (not sure if we need this without a left selection panel)
         using var child = ImRaii.Child("MainWindowChild");
-        
         // Draw the child grouping for the ConfigSettings Tab
-        using (var child2 = ImRaii.Child("GeneralTabChild"))
-        {
+        using (var child2 = ImRaii.Child("GeneralTabChild")) {
             DrawHeader();
             DrawGeneral();
         }
@@ -69,7 +72,6 @@ public class GeneralTab : ITab
 
     // Draw the actual general tab contents
     private void DrawGeneral() {
-
         // create a name variable for the safeword
         var safeword  = _tempSafeword ?? _config.Safeword;;
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemSpacing.Y };
@@ -85,90 +87,28 @@ public class GeneralTab : ITab
         
         ImGui.Separator();
         // Now let's draw our 3 gag appliers
+        _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
 
-        DrawGaglist(); // prepare our lists
-
+        // draw our listings
+        _gagListingsDrawer.DrawGagAndLockListing(00, _config.selectedGagTypes[0], _config.selectedGagPadlocks[0], 0, "Gag Slot 1", _isLocked);
         ImGui.Separator();
-        // Now let's draw our 3 gag appliers but this time better
-        ImGui.Text("Currently Selected Gag (Layer 1):");
-        DrawFilterCombo(10, _config.GagTypes, _config.selectedGagTypes[0], _config.selectedGagTypes, 0);
+        _gagListingsDrawer.DrawGagAndLockListing(01, _config.selectedGagTypes[1], _config.selectedGagPadlocks[1], 1, "Gag Slot 2", _isLocked);
+        ImGui.Separator();
+        _gagListingsDrawer.DrawGagAndLockListing(02, _config.selectedGagTypes[2], _config.selectedGagPadlocks[2], 2, "Gag Slot 3", _isLocked);
+    
+        // let users know information about the plugin
         ImGui.NewLine();
-
-        // This will draw the filter combo for our first gag applier
-        ImGui.Text("Currently Selected Gag (Layer 2):");
-        DrawFilterCombo(20, _config.GagTypes, _config.selectedGagTypes[1], _config.selectedGagTypes, 1);
+        ImGui.Separator();
+        ImGui.Text("GagSpeak Pre-Release v0.1");
         ImGui.NewLine();
-
-        // This will draw the filter combo for our first gag applier
-        ImGui.Text("Currently Selected Gag (Layer 3):");
-        DrawFilterCombo(30, _config.GagTypes, _config.selectedGagTypes[2], _config.selectedGagTypes, 2);
+        // let the user then know that we have yet to polish the UI, but that all commands and interfaces should be accessable.
+        ImGui.Text("This is a pre-release version of GagSpeak. The UI is not yet polished,");
+        ImGui.Text("but all commands and interfaces should be accessable.");
         ImGui.NewLine();
-    }
+        ImGui.Text("Feature Plan: Whitelist User Profile actions, proper sub/dom mode & more.");
+        ImGui.Text("Should probably figure out why window flickers every time you left-click.");
 
-    // I have no idea what the fuck any of the following code below will do but hopefully it all works out.
-
-    private void DrawGaglist()
-    {
-        bool IsLocked = false;
-        _gagDrawer.Prepare(); // prepare our lists
-        
-        // void GagListDrawer.DrawGaglist(string slot, string currentArmor, out string replacedArmor, GagPadlocks cPadlocktype, out string rPadlocktype, bool locked)
-        _gagDrawer.DrawGaglist("LayerOneGagType", _config.selectedGagTypes[0], out var newGagType1, GagPadlocks.None, out var newPadlock1, IsLocked);
-        _gagDrawer.DrawGaglist("LayerTwoGagType", _config.selectedGagTypes[1], out var newGagType2, GagPadlocks.None, out var newPadlock2, IsLocked);
-        _gagDrawer.DrawGaglist("LayerThreeGagType", _config.selectedGagTypes[2], out var newGagType3, GagPadlocks.None, out var newPadlock3, IsLocked);
-
-        ImGui.Dummy(new Vector2(ImGui.GetTextLineHeight() / 2));
-    }
-
-
-
-
-    // this combo reliably works, but has some flaws with the search filter. It is the easiest to understand, and a lot more simpler than otter's.
-    // If only I could get the search filter to work properly, this would be the best option.
-    // maybe find a way to integrate their methods into this one as sub-methods?
-
-    /// <summary>
-    /// This function draws ImGui's Combo list, but with a search filter.
-    /// <list type="bullet">
-    /// <item><c>contentList</c><param name="contentList"> - The list of items to display in the combo box</param></item>
-    /// <item><c>label</c><param name="label"> - The label to display outside the combo box</param></item>
-    /// <item><c>selectedTypes</c><param name="selectedTypes"> - a list where the stored selection from the list is saved</param></item>
-    /// <item><c>layerIndex</c><param name="layerIndex"> - the index of the selectedTypes list to saved the selected option to</param></item>
-    /// </list>
-    /// </summary>
-    public void DrawFilterCombo(int ID, Dictionary<string, int> contentList, string label, List<string> selectedTypes, int layerIndex) {
-        // create an empty string for the search text
-        var ComboSearchText = string.Empty;
-        // Create the combo
-        using( var gagTypeOneCombo = ImRaii.Combo( label, selectedTypes[layerIndex], ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) {
-            // Assign it an ID if combo is sucessful.
-            if( gagTypeOneCombo ) {
-                using var id = ImRaii.PushId(ID); // Push an ID for the combo box (based on label / name)
-                ImGui.SetNextItemWidth(ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X); // Set filter length to full
-                
-                // Draw filter bar
-                if( ImGui.InputTextWithHint("##filter", "Filter...", ref ComboSearchText, 255 ) ) {
-                    // Query: if the search bar is empty, display all the gag types, otherwise, display only search matches
-                    contentList = string.IsNullOrEmpty(ComboSearchText) ? (
-                        _config.GagTypes
-                    ) : (
-                        _config.GagTypes.Where(x=>x.Key.ToLower().Contains(ComboSearchText.ToLower())).ToDictionary(x=>x.Key, x=>x.Value)
-                    );
-                }
-                
-                // Now that we have our results, be sure to draw them! (does this so filter list remains visible)
-                using var child = ImRaii.Child( "Child", new Vector2( ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X, 200),true);
-                // We will draw out one listing for each item.
-                foreach( var item in contentList.Keys ) {
-                    // If our item is selected, set it and break
-                    if( ImGui.Selectable( item, item == selectedTypes[layerIndex] ) ) {
-                        selectedTypes[layerIndex] = item;
-                        //SaveConfig(); // also update the config so we can see. (should either remove this or add something to update it.)
-                        break;
-                    }
-                }
-            }
-        }
+        ImGui.Dummy(new Vector2(0, 10));
     }
 }
 

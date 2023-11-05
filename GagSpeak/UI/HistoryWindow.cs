@@ -69,10 +69,10 @@ public class HistoryWindow : Window //, IDisposable
                 // Now that labels are in place, we can display the source and translation of each message
                 foreach (var translation in translations) {
                     // wrap tesxt into the space, and display the input
-                    //ImGui.TextWrapped(translation.Input);
+                    ImGui.TextWrapped(translation.Input);
                     ImGui.NextColumn();
                     // Then the output
-                    //ImGui.TextWrapped(translation.Output);
+                    ImGui.TextWrapped(translation.Output);
                     ImGui.NextColumn();
                     // Place a seperator between each message for good measure.
                     ImGui.Separator();
