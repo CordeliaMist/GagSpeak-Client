@@ -34,7 +34,7 @@ public class HelpPageTab : ITab
 
     // Apply our lable for the tab
     public ReadOnlySpan<byte> Label
-        => "Settings"u8;
+        => "HelpPage"u8;
 
     /// <summary>
     /// This Function draws the content for the window of the ConfigSettings Tab
@@ -50,7 +50,7 @@ public class HelpPageTab : ITab
         using (var child2 = ImRaii.Child("HelpPageChild"))
         {
             DrawHeader();
-            DrawConfigSettings();
+            DrawHelpPage();
         }
     }
 
@@ -58,7 +58,7 @@ public class HelpPageTab : ITab
         => WindowHeader.Draw("Plugin Information & Usage", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
 
     // Draw the actual config settings
-    private void DrawConfigSettings() {
+    private void DrawHelpPage() {
         // Lets start by drawing the child.
         using var child = ImRaii.Child("##HelpPagePanel", -Vector2.One, true);
         // define our spacing
