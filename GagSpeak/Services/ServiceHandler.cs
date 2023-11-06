@@ -2,6 +2,8 @@ using Dalamud.Plugin;
 using GagSpeak.Events;
 using GagSpeak.Chat;
 using GagSpeak.UI;
+using GagSpeak.UI.Helpers;
+using GagSpeak.UI.Tabs.HelpPageTab;
 using GagSpeak.UI.GagListings;
 using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.UI.Tabs.WhitelistTab;
@@ -72,6 +74,7 @@ public static class ServiceHandler
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HistoryWindow>()
             .AddSingleton<MainWindow>()
+            .AddSingleton<HelpPageTab>()
             .AddSingleton<GagListingsDrawer>();
 
     // SERVICES FOR API, INCLUDE IF EVER NEEDED. (Commands, Config?)

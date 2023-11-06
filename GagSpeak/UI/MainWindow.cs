@@ -9,6 +9,7 @@ using Dalamud.Interface.Utility;
 using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.UI.Tabs.WhitelistTab;
 using GagSpeak.UI.Tabs.ConfigSettingsTab;
+using GagSpeak.UI.Tabs.HelpPageTab;
 
 namespace GagSpeak.UI;
 
@@ -20,7 +21,8 @@ public class MainWindow : Window //, IDisposable
         None            = -1,
         General         = 0, // Where you select your gags and safewords and lock types. Put into own tab for future proofing beauty spam
         Whitelist       = 1, // Where you can append peoples names to a whitelist, which is used to account for permissions on command usage.
-        ConfigSettings  = 2 // Where you can change the plugin settings, such as debug mode, and other things.
+        ConfigSettings  = 2, // Where you can change the plugin settings, such as debug mode, and other things.
+        HelpPage        = 3 // Where you can find information on how to use the plugin, and how to get support.
     }
 
     // Private readonly variables here, fill in rest later. (or rather take out)
@@ -32,9 +34,10 @@ public class MainWindow : Window //, IDisposable
     public readonly GeneralTab          General;
     public readonly WhitelistTab        Whitelist;
     public readonly ConfigSettingsTab   ConfigSettings;
+    public readonly HelpPageTab         HelpPage;
     public TabType SelectTab = TabType.None; // What tab is selected?
     public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general,
-        WhitelistTab whitelist, ConfigSettingsTab configsettings): base(GetLabel())
+        WhitelistTab whitelist, ConfigSettingsTab configsettings, HelpPageTab helpPageTab): base(GetLabel())
     {
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
@@ -49,6 +52,8 @@ public class MainWindow : Window //, IDisposable
         General = general;
         Whitelist = whitelist;
         ConfigSettings = configsettings;
+        HelpPage = helpPageTab;
+        
         // Below are the stuff besides the tabs that are passed through
         //_event     = @event;
         _config    = config;
@@ -58,6 +63,7 @@ public class MainWindow : Window //, IDisposable
             general,
             whitelist,
             configsettings,
+            helpPageTab
         };
     }
 
@@ -122,6 +128,7 @@ public class MainWindow : Window //, IDisposable
             TabType.General         => General.Label,
             TabType.Whitelist       => Whitelist.Label,
             TabType.ConfigSettings  => ConfigSettings.Label,
+            TabType.HelpPage        => HelpPage.Label,
             _                       => ReadOnlySpan<byte>.Empty, // This label confuses me a bit. I think it is just a blank label?
         };
 
@@ -132,37 +139,10 @@ public class MainWindow : Window //, IDisposable
         if (label == General.Label)     return TabType.General;
         if (label == Whitelist.Label)    return TabType.Whitelist;
         if (label == ConfigSettings.Label)   return TabType.ConfigSettings;
+        if (label == HelpPage.Label)     return TabType.HelpPage;
         // @formatter:on
         return TabType.None;
     }
-
-    // Cordy Note: General Support Group buttons, not nessisary for overall design
-    // / <summary> Draw the support button group on the right-hand side of the window. </summary>
-    // public static void DrawSupportButtons(Changelog changelog)
-    // {
-    //     var width = ImGui.CalcTextSize("Join Discord for Support").X + ImGui.GetStyle().FramePadding.X * 2;
-    //     var xPos  = ImGui.GetWindowWidth() - width;
-    //     // Respect the scroll bar width.
-    //     if (ImGui.GetScrollMaxY() > 0)
-    //         xPos -= ImGui.GetStyle().ScrollbarSize + ImGui.GetStyle().FramePadding.X;
-
-    //     ImGui.SetCursorPos(new Vector2(xPos, 0));
-    //     CustomGui.DrawDiscordButton("Sample Text", width);
-
-    //     ImGui.SetCursorPos(new Vector2(xPos, ImGui.GetFrameHeightWithSpacing()));
-    //     CustomGui.DrawGuideButton(Glamourer.Messager, width);
-
-    //     ImGui.SetCursorPos(new Vector2(xPos, 2 * ImGui.GetFrameHeightWithSpacing()));
-    //     if (ImGui.Button("Show Changelogs", new Vector2(width, 0)))
-    //         changelog.ForceOpen = true;
-    // }
-
-
-    // this coordinates what to execute once the mouse clicks on a different tab than the one we are on.
-
-    // Still stuck figuring out what the Style? _ is for, but I think it is just a blank style?
-    // private void OnTabSelected(TabType type, Style? _)
-    //     => SelectTab = type;
 
     // basic string function to get the label of title for the window
     private static string GetLabel() => "GagSpeak###GagSpeakMainWindow";

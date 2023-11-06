@@ -34,7 +34,7 @@ public class ConfigSettingsTab : ITab
 
     // Apply our lable for the tab
     public ReadOnlySpan<byte> Label
-        => "ConfigSettings"u8;
+        => "Settings"u8;
 
     /// <summary>
     /// This Function draws the content for the window of the ConfigSettings Tab
@@ -47,7 +47,7 @@ public class ConfigSettingsTab : ITab
 
 
         // Draw the child grouping for the ConfigSettings Tab
-        using (var child2 = ImRaii.Child("ConfigSettingsChild"))
+        using (var child2 = ImRaii.Child("SettingsChild"))
         {
             DrawHeader();
             DrawConfigSettings();
@@ -60,7 +60,7 @@ public class ConfigSettingsTab : ITab
     // Draw the actual config settings
     private void DrawConfigSettings() {
         // Lets start by drawing the child.
-        using var child = ImRaii.Child("##ConfigSettingsPanel", -Vector2.One, true);
+        using var child = ImRaii.Child("##SettingsPanel", -Vector2.One, true);
         // define our spacing
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);

@@ -255,7 +255,7 @@ public class CommandManager : IDisposable // Our main command list manager
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
                 "The Locktype field must be a valid locktype. Use").AddYellow("/gagspeak showlist padlocks").AddText("to see all valid locktypes.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Password field must be a valid password for the associated locktype. To see spesifics, use").AddYellow("/gag showlist padlocks").BuiltString);
+                "The Password field must be a valid password for the associated locktype. To see spesifics, use").AddYellow("/gagspeak showlist padlocks").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
                 "The Player field must be a valid player name and homeworld. Example:").AddYellow("FirstName LastName@Bahamut.").BuiltString);
             return false;
@@ -348,8 +348,10 @@ public class CommandManager : IDisposable // Our main command list manager
         // step 1, split by " | " to get the components into the parts we need.
         string[] parts = argument.Split(" | ");
         // if our parts == 2, then we have no password, if our parts == 3, then we have a password. Set our vars now so we dont set them in both statements
-        string targetplayer = parts[1].Trim(); // Get the password
-        string layer = parts[0].Trim(); // get the layer
+        string targetplayer = string.Empty;
+        targetplayer = parts[1].Trim(); // Get the password
+        string layer = string.Empty;
+        layer = parts[0].Trim(); // get the layer
 
         // if our arguments are not valid, display help information
         if (! ((layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
@@ -478,7 +480,6 @@ public class CommandManager : IDisposable // Our main command list manager
             _chat.Print(new SeStringBuilder().AddText("The channel you have selected is not enabled in the config. Please select a valid channel.").BuiltString);
             return;
         }
-        
     }
 
     private bool PrintHelpGagSpeak(string argument) { // Primary help command

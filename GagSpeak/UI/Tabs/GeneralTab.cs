@@ -148,18 +148,6 @@ public class GeneralTab : ITab
             ImGui.NewLine();
         }
         // let users know information about the plugin
-
-        ImGui.Separator();
-        ImGui.Text("GagSpeak Pre-Release v0.1");
-        ImGui.NewLine();
-        // let the user then know that we have yet to polish the UI, but that all commands and interfaces should be accessable.
-        ImGui.Text("This is a pre-release version of GagSpeak. The UI is not yet polished,");
-        ImGui.Text("but all commands and interfaces should be accessable.");
-        ImGui.NewLine();
-        ImGui.Text("Feature Plan: Whitelist User Profile actions, proper sub/dom mode & more.");
-        ImGui.Text("Should probably figure out why window flickers every time you left-click.");
-
-        ImGui.Dummy(new Vector2(0, 10));
     }
 }
 

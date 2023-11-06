@@ -134,7 +134,7 @@ public class ChatManager
 
 
         // Precursor to condition2, if the message satisfied senderName == PlayerName && XivChatType != _config.CurrentChatType, change it
-        if (pName == senderName && _config.Channels.Contains(type) && type != _config.CurrentChannel) {
+        if ((pName == senderName) && (_config._allowedChannels.Contains(type)) && (type != _config.CurrentChannel)) {
             _config.CurrentChannel = type; // log the current chatbox channel & save
             _config.Save();
         }
