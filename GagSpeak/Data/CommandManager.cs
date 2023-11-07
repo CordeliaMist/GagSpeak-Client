@@ -135,9 +135,9 @@ public class CommandManager : IDisposable // Our main command list manager
             _chat.Print("Please specify the mode. Usage: /gagspeak setmode [dom/sub]"); return false; }
         var mode = argument.ToLower(); // set what we typed to lowercases to match checks
         if (mode == "dom") {
-            _chat.Print(new SeStringBuilder().AddText("Your mode has been set to").AddRed("Dom.").BuiltString); _config.InDomMode = true; _config.Save(); return true;
+            _chat.Print(new SeStringBuilder().AddText("Your mode has been set to ").AddRed("Dom.").BuiltString); _config.InDomMode = true; _config.Save(); return true;
         } else if (mode == "sub") {
-            _chat.Print(new SeStringBuilder().AddText("Your mode has been set to").AddRed("Sub.").BuiltString); _config.InDomMode = false; _config.Save(); return true;
+            _chat.Print(new SeStringBuilder().AddText("Your mode has been set to ").AddRed("Sub.").BuiltString); _config.InDomMode = false; _config.Save(); return true;
         } else {
             _chat.Print("Invalid mode. Usage: /gagspeak setmode [dom/sub]"); return false;
         }
@@ -205,6 +205,7 @@ public class CommandManager : IDisposable // Our main command list manager
         }
         catch (Exception e) {
             GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
+            _chat.PrintError($"Error sending chat message to player: {e.Message}");
             return false;
         }
         return true; // sucessful!
@@ -247,19 +248,29 @@ public class CommandManager : IDisposable // Our main command list manager
         if (! (Enum.IsDefined(typeof(GagPadlocks), locktype) && (layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
             _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments. Layer or Locktype or player name is incorrect").BuiltString);
-            _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag lock ").AddYellow("layer").AddGreen("locktype").AddText(" | ").AddPurple("password")
-                .AddText(" | ").AddBlue("player name@homeworld").AddText(". Note that password is not required, and that")
-                .AddItalics("/gag lock layer locktype | player name@homeworld").AddText("is valid too.").BuiltString);
+            // display correct information
+            if(parts.Length == 2) {
+                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag lock ").AddYellow("layer ").AddGreen("locktype").AddText(" | ")
+                .AddBlue("player name@homeworld").BuiltString);
+            } else if(parts.Length == 3) {
+                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag lock ").AddYellow("layer ").AddGreen("locktype").AddText(" | ")
+                .AddPurple("password").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
+            } else {
+                // default case.
+                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag lock ").AddYellow("layer ").AddGreen("locktype").AddText(" | ")
+                .AddPurple("password").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
+            }
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
                 "The Layer field must be either 1, 2, or 3, indicating the slot the lock is used on.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Locktype field must be a valid locktype. Use").AddYellow("/gagspeak showlist padlocks").AddText("to see all valid locktypes.").BuiltString);
+                "The Locktype field must be a valid locktype. Use ").AddYellow("/gagspeak showlist padlocks ").AddText("to see all valid locktypes.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Password field must be a valid password for the associated locktype. To see spesifics, use").AddYellow("/gagspeak showlist padlocks").BuiltString);
+                "The Password field must be a valid password for the associated locktype. To see spesifics, use ").AddYellow("/gagspeak showlist padlocks ").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Player field must be a valid player name and homeworld. Example:").AddYellow("FirstName LastName@Bahamut.").BuiltString);
+                "The Player field must be a valid player name and homeworld. Example: ").AddYellow("FirstName LastName@Bahamut.").BuiltString);
             return false;
         }
+
         // we have passed in the correct arguments, so begin applying the logic.
         PlayerPayload playerPayload; // get player payload
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
@@ -275,10 +286,12 @@ public class CommandManager : IDisposable // Our main command list manager
                 // unique string for /gag lock password == "from her pocket and sets the combination password to"
                 _chatManager.SendRealMessage($"/tell {targetplayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} takes out a {locktype} from her pocket and sets the combination password to {password} before locking your {layer} layer gag*");
             } else {
+                _chat.PrintError("Something unexpected occured!");
                 throw new Exception("Something unexpected occured!");
             }
         } catch (Exception e) {
             GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
+            _chat.PrintError($"Error sending chat message to player: {e.Message}");
             return false;
         }
         return true; // sucessful!
@@ -309,14 +322,24 @@ public class CommandManager : IDisposable // Our main command list manager
         if (! ((layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
             _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments").BuiltString);
-            _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag unlock ").AddYellow("layer").AddText(" | ").AddPurple("password") .AddText(" | ").AddBlue("player name@homeworld")
-                .AddText(". Note that password is not always required.").AddItalics("/gag unlock layer locktype | player name@homeworld").AddText("is also valid.").BuiltString);
+            // do the same if else stuff we did in gaglock
+            if(parts.Length == 2){
+                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag unlock ").AddYellow("layer").AddText(" | ").AddPurple("password")
+                .AddText(" | ").AddBlue("player name@homeworld").BuiltString);
+            } else if (parts.Length == 3) {
+                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag unlock ").AddYellow("layer").AddText(" | ")
+                .AddBlue("player name@homeworld").BuiltString);
+            } else {
+                // default case.
+                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag unlock ").AddYellow("layer").AddText(" | ").AddPurple("password")
+                .AddText(" | ").AddBlue("player name@homeworld").BuiltString);
+            }
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
                 "The Layer field must be either 1, 2, or 3, indicating the slot the lock is used on.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
                 "The Password, if used must be a valid password for the associated locktype on the recieving end, otherwise this will do nothing.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Player field must be a valid player name and homeworld. Example:").AddYellow("FirstName LastName@Bahamut.").BuiltString);
+                "The Player field must be a valid player name and homeworld. Example: ").AddYellow("FirstName LastName@Bahamut.").BuiltString);
             return false;
         }
         // we have passed in the correct arguments, so begin applying the logic.
@@ -334,10 +357,12 @@ public class CommandManager : IDisposable // Our main command list manager
                 // unique string for /gag unlock password == "reaches behind your neck and sets the password to"
                 _chatManager.SendRealMessage($"/tell {targetplayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and sets the password to {password} on your {layer} layer gagstrap, unlocking it.*");
             } else {
+                _chat.PrintError("Something unexpected occured!");
                 throw new Exception("Something unexpected occured!");
             }
         } catch (Exception e) {
             GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
+            _chat.PrintError($"Error sending chat message to player: {e.Message}");
             return false;
         }
         return true; // sucessful!
@@ -349,9 +374,14 @@ public class CommandManager : IDisposable // Our main command list manager
         string[] parts = argument.Split(" | ");
         // if our parts == 2, then we have no password, if our parts == 3, then we have a password. Set our vars now so we dont set them in both statements
         string targetplayer = string.Empty;
-        targetplayer = parts[1].Trim(); // Get the password
         string layer = string.Empty;
-        layer = parts[0].Trim(); // get the layer
+
+        if (parts.Length == 2) { // we just need to make sure that we actually have valid arguements.
+            targetplayer = parts[1].Trim(); // Get the password
+            layer = parts[0].Trim(); // get the layer
+        }
+        // log all our variables how they are now
+        GagSpeak.Log.Debug($"parts.Length == {parts.Length}, parts[0] = {parts[0]}");
 
         // if our arguments are not valid, display help information
         if (! ((layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
@@ -361,7 +391,7 @@ public class CommandManager : IDisposable // Our main command list manager
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
                 "The Layer field must be either 1, 2, or 3, indicating the slot the lock is used on.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Player field must be a valid player name and homeworld. Example:").AddYellow("FirstName LastName@Bahamut.").BuiltString);
+                "The Player field must be a valid player name and homeworld. Example: ").AddYellow("FirstName LastName@Bahamut.").BuiltString);
             return false;
         }
         // we have passed in the correct arguments, so begin applying the logic.
@@ -375,6 +405,7 @@ public class CommandManager : IDisposable // Our main command list manager
             // unique string for /gag remove == "reaches behind your neck and unfastens the buckle of your"
             _chatManager.SendRealMessage($"/tell {targetplayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and unfastens the buckle of your {layer} gag layer strap, allowing your voice to be a little clearer.*");
         } catch (Exception e) {
+            _chat.PrintError($"Error sending chat message to player: {e.Message}");
             GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
             return false;
         }
@@ -391,9 +422,9 @@ public class CommandManager : IDisposable // Our main command list manager
         if (!targetplayer.Contains("@"))
         {   // One of our parameters WAS invalid, so display to them the help.
             _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments").BuiltString);
-            _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag removeall ").AddBlue("player name@homeworld").BuiltString);
+            _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag removeall").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Player field must be a valid player name and homeworld. Example:").AddYellow("FirstName LastName@Bahamut.").BuiltString);
+                "The Player field must be a valid player name and homeworld. Example: ").AddYellow("FirstName LastName@Bahamut.").BuiltString);
             return false;
         }
         // we have passed in the correct arguments, so begin applying the logic.
@@ -406,18 +437,12 @@ public class CommandManager : IDisposable // Our main command list manager
             // unique string for /gag remove == "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more."
             _chatManager.SendRealMessage($"/tell {targetplayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.*");
         } catch (Exception e) {
+            _chat.PrintError($"Error sending chat message to player: {e.Message}");
             GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
             return false;
         }
         return true; // sucessful!
     }
-
-
-    /// <summary>
-    /// Something to note:
-    /// Event that allows you to stop messages from appearing in chat by setting the isHandled parameter to true.
-    ///     public event ChatGui.OnCheckMessageHandledDelegate CheckMessageHandled
-    /// </summary>
 
     /// <summary>
     /// Verifies that the password is valid for the locktype.
@@ -428,6 +453,7 @@ public class CommandManager : IDisposable // Our main command list manager
     private bool IsInvalidPassword(string _locktype, string _password) { // will return false if it password does not pass all condition checks
         if (Enum.TryParse(typeof(GagPadlocks), _locktype, out object parsedEnum)) // find the index of our locktype in enum
         {
+            GagSpeak.Log.Debug($"Lock Type: {_locktype} | Password: {_password}");
             // make sure it is a padlock that allows a password
             var index = (int)parsedEnum;
             // if index == 0,1,4,6,7
@@ -473,6 +499,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 _historyService.AddTranslation(new Translation(input, output));
             }
             catch (Exception e) {
+                _chat.PrintError($"Error sending message to chatbox: {e.Message}");
                 GagSpeak.Log.Error($"Error sending message to chatbox: {e.Message}");
             }
         } else {
@@ -493,6 +520,7 @@ public class CommandManager : IDisposable // Our main command list manager
         _chat.Print(new SeStringBuilder().AddCommand("safeword", "Sets your safeword. Use without arguments for help.").BuiltString);
         _chat.Print(new SeStringBuilder().AddCommand("showlist", "Displays the list of padlocks or gags. Use without arguments for help.").BuiltString);
         _chat.Print(new SeStringBuilder().AddCommand("setmode", "Sets plugin mode to domme or sub. Has Cooldown time. Use without arguments for help.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddCommand("history", "Displays the history window.").BuiltString);
         return true;
     }
 
@@ -505,14 +533,16 @@ public class CommandManager : IDisposable // Our main command list manager
         _chat.Print(new SeStringBuilder().AddYellow(" -- Default /gag Usage --").BuiltString);
         // print a chat message to explain the default definition of /gag [layer] [gagtype] | [player target] message
         _chat.Print(new SeStringBuilder().AddText("/gag ").AddRed("layer ").AddGreen("gagtype").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
-        _chat.Print(new SeStringBuilder().AddText("    》").AddRed("layer").AddText(" defines which layer the gag is applied to. // ").AddGreen("gagtype")
-            .AddText(" defines which gag is applied to the layer. // ").AddBlue("player Name@Homeworld").AddText(" defines who the gag is applied to.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddText("    》").AddText("The Layer field defines which layer the gag is applied to.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddText("    》").AddText("The Gagtype field defines which gag is applied to the layer.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddText("    》").AddText("The Player field defines who the gag is applied to.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddText("Example: ").AddItalics("/gag 1 Ball Gag | Sample Player@Bahamut").BuiltString);
         // print chat message to explain the arguments for /gag
-        _chat.Print(new SeStringBuilder().AddYellow(" -- Argument for /gag --").BuiltString);   
-        _chat.Print(new SeStringBuilder().AddCommand("lock", "Locks a gag on the target. Use without arguments for help.").BuiltString);
-        _chat.Print(new SeStringBuilder().AddCommand("unlock", "Unlocks a gag on the target. Use without arguments for help.").BuiltString);
-        _chat.Print(new SeStringBuilder().AddCommand("remove", "Removes a gag from the target. Use without arguments for help.").BuiltString);
-        _chat.Print(new SeStringBuilder().AddCommand("removeall", "Removes all gags from the target. Use without arguments for help.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddYellow(" -- Accessible Submenu's for /gag --").BuiltString);   
+        _chat.Print(new SeStringBuilder().AddCommand("/gag lock", "Locks a gag on target. Use without arguments for help.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddCommand("/gag unlock", "Unlocks a gag on target. Use without arguments for help.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddCommand("/gag remove", "Removes a gag from target. Use without arguments for help.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddCommand("/gag removeall", "Removes all gags from target. Use without arguments for help.").BuiltString);
         return true;
     }
 

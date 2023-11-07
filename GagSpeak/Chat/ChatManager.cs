@@ -7,12 +7,9 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using System.Collections.Generic;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Enums;
-using GagSpeak.Services;
 using XivCommon.Functions;
-using Dalamud.Game;
 using System.Diagnostics;
-using System.Reflection;
-
+using OtterGui.Classes;
 namespace GagSpeak.Chat;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
@@ -26,10 +23,6 @@ public class ChatManager
     private readonly IFramework _framework; // framework from XIVClientStructs
     private Queue<string> messageQueue = new Queue<string>();
     private Stopwatch messageTimer = new Stopwatch();
-    
-    // future note for cordy, you can store the currently present channel when doing /gsm by just logging the information of the channel the
-    // last chat message sent by you was. This is an easy way to make sure /gsm only goes to the correct channels.
-
 
     // future future note: the chat handling came from simpletweaks i found out after enough digging, and they have some other fancy inturruptions,
     // that could possibly make you not need to use /gsm at all.
@@ -48,6 +41,12 @@ public class ChatManager
         // Begin our OnChatMessage Detection
         _clientChat.CheckMessageHandled += Chat_OnCheckMessageHandled;
         _clientChat.ChatMessage += Chat_OnChatMessage;
+        }
+
+    public void Dispose() {
+        _framework.Update -= framework_Update;
+        _clientChat.CheckMessageHandled -= Chat_OnCheckMessageHandled;
+        _clientChat.ChatMessage -= Chat_OnChatMessage;
     }
 
     // Helper function List that stores all of the encodeed message keywords
@@ -63,17 +62,63 @@ public class ChatManager
 
     // FOR NOW EVERYTHING WILL BE STUFFED INTO HERE, AND LATER DIVIDED OUT INTO THE OTHER CHATS
     private void Chat_OnCheckMessageHandled(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool isHandled) {
-        // get the text value of the message
+        // we will want to make sure that if our message contains a combination of all words from each of our encoded message strings, to hide it entirely
         var textVal = message.TextValue;
-
-        // See if it is a tell
-        if (type == XivChatType.TellIncoming || type == XivChatType.TellOutgoing) {
-            // if it contains one of the keywords from the commands we send then hide it's visibility
-            
-            // This seems to be a RMT ad - let's not show it
-            GagSpeak.Log.Debug("THIS IS IN INCOMING OR OUTGOING TELL: ");
-            // isHandled = true;
-            return;
+        // See if it is an outgoing tell
+        if ( type == XivChatType.TellOutgoing) {
+            // Scan if the message contains all words from the /gag encoded tell
+            if (textVal.Contains("from") && textVal.Contains("applies a") 
+             && textVal.Contains("over your mouth as the") && textVal.Contains("layer of your concealment*")) {
+                // its the incoded message, so seet handled to true and print debug
+                isHandled = true;
+                GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag ENCODED TELL");
+                return;
+            }
+            // scan if the message contains all words from the /gag lock encoded tell
+            else if (textVal.Contains("from") && textVal.Contains("takes out a") && ((
+                        textVal.Contains("from her pocket and sets the combination password to") &&
+                        textVal.Contains("before locking your") && textVal.Contains("layer gag*")
+                    ) || (
+                        textVal.Contains("from her pocket and uses it to lock your") && textVal.Contains("gag*")
+                    ))) {
+                // its the incoded message, so seet handled to true and print debug
+                isHandled = true;
+                GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag lock ENCODED TELL");
+                return;
+            }
+            // scan if the message contains all words from the /gag unlock encoded tell
+            else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck") && ((
+                     textVal.Contains("and sets the password to") && textVal.Contains("on your")
+                  && textVal.Contains("layer gagstrap, unlocking it.*")
+                    ) || (
+                     textVal.Contains(", taking off the lock that was keeping your") && textVal.Contains("gag layer fastened nice and tight.*")
+                    ))) {
+                // its the incoded message, so seet handled to true and print debug
+                isHandled = true;
+                GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag unlock ENCODED TELL");
+                return;
+            }
+            // scan if the message contains all words from the /gag remove encoded tell
+            else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck") && textVal.Contains("and unfastens the buckle of your")
+                  && textVal.Contains("gag layer strap, allowing your voice to be a little clearer.*")) {
+                // its the incoded message, so seet handled to true and print debug
+                isHandled = true;
+                GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag remove ENCODED TELL");
+                return;
+            }
+            // scan if the message contains all words from the /gag removeall encoded tell
+            else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck")
+                  && textVal.Contains("and unbuckles all of your gagstraps, allowing you to speak freely once more.*")) {
+                // its the incoded message, so seet handled to true and print debug
+                isHandled = true;
+                GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag removeall ENCODED TELL");
+                return;
+            }
+            // otherwise its just a normal outgoing tell so do nothing
+            else {
+                isHandled = false;
+                return;
+            }
         }
     }
 
@@ -187,16 +232,21 @@ public class ChatManager
                 GagSpeak.Log.Debug("Player attempted to gag you, but you are in Dominant mode, so ignoring");
                 return;
             }
-
             // otherwise they are submissive, so accept it.
 
             // get the type of command given to us based on the disguised message
             // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
             List<string> decodedMessageCommand = DetermineIncomingDiguisedMessageType(fmessage.ToString());
 
-            DetermineMessageOutcome(fmessage.ToString(), decodedMessageCommand); // function that will determine what happens to the player as a result of the tell.
+            // function that will determine what happens to the player as a result of the tell.
+            if( DetermineMessageOutcome(fmessage.ToString(), decodedMessageCommand, isHandled) ) {
+                isHandled = true; // make sure it doesnt display to the chat
+            }
+            
 
             _config.Save(); // save our config
+
+            // set our handled to true so we dont see it
         }
         // skipping to here if it isnt a tell, or it fails any conditions, optimizing the code (hopefully)
     }
@@ -363,7 +413,7 @@ public class ChatManager
     /// <item><c>gag remove LAYER | PLAYER</c> - Remove gag from defined layer</item>
     /// <para><c>recievedMessage</c><param name="receivedMessage"> - The message that was recieved from the player</param></para>
     /// </summary>
-    private void DetermineMessageOutcome(string receivedMessage, List<string> decodedMessage)
+    private bool DetermineMessageOutcome(string receivedMessage, List<string> decodedMessage, bool isHandled)
     {
         // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
         // if the parsed type is "lock" or "lockPassword"
@@ -371,16 +421,28 @@ public class ChatManager
             // see if our layer is a valid layer
             if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
             if (!int.TryParse(decodedMessage[1], out int layer)) { 
-                throw new Exception("Invalid layer value.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug("ERROR, Invalid layer value.");
+                _clientChat.PrintError($"ERROR, Invalid layer value.");
+                return true;
             }
             
             // Our layer is valid, but we also need to make sure that we have a gag on this layer
             if (_config.selectedGagTypes[layer-1] == "None") {
-                throw new Exception($"There is no gag applied for layer {layer}, so no lock can be applied.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug($"ERROR, There is no gag applied for layer {layer}, so no lock can be applied.");
+                _clientChat.PrintError($"ERROR, There is no gag applied for layer {layer}, so no lock can be applied.");
+                return true;
             }
             // if we do have a gag on this layer, make sure that we dont already have a lock here
             if (_config.selectedGagPadlocks[layer-1] != GagPadlocks.None) {
-                throw new Exception($"There is already a lock applied to gag layer {layer}!");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug($"ERROR, There is already a lock applied to gag layer {layer}!");
+                _clientChat.PrintError($"ERROR, There is already a lock applied to gag layer {layer}!");
+                return true;
             }
             // we already made sure that we applied a valid password in the command manager, so no need to check it here.
             if (decodedMessage[3] != "") {
@@ -390,30 +452,47 @@ public class ChatManager
             if (Enum.TryParse(decodedMessage[2], out GagPadlocks parsedLockType)) {
                 _config.selectedGagPadlocks[layer-1] = parsedLockType;
             } else {
-                throw new Exception("Invalid lock type sent in.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug("ERROR, Invalid lock type sent in.");
+                _clientChat.PrintError($"ERROR, Invalid lock type sent in.");
+                return true;
             }
             // now that we have applied our gagtype, and potentially password, set the assigner to the player if it is a mistress padlock.
             if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressPadlock || _config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressTimerPadlock) {
                 _config.selectedGagPadlocksAssigner[layer-1] = decodedMessage[4];
             }
-            GagSpeak.Log.Debug("Determined Message Outcome: LOCK or LOCKPASSWORD || lock sucessfully applied.");
+            GagSpeak.Log.Debug($"Determined income message as a [lock] type encoded message, hiding from chat!");
+            return true; // sucessful parse
         }
         // if the parsed type is "unlock" or "unlockPassword"
         else if (decodedMessage[0] == "unlock" || decodedMessage[0] == "unlockPassword") {
             // see if our layer is a valid layer
             if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
             if (!int.TryParse(decodedMessage[1], out int layer)) { 
-                throw new Exception("Invalid layer value.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug("ERROR, Invalid layer value.");
+                _clientChat.PrintError($"ERROR, Invalid layer value.");
+                return true;
             }
             // our layer is valid, but we also need to make sure that this layer has a lock on it
             if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.None) {
-                throw new Exception($"There is no lock applied for gag layer {layer}, so no lock can be removed.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug($"ERROR, There is no lock applied for gag layer {layer}, so no lock can be removed.");
+                _clientChat.PrintError($"ERROR, There is no lock applied for gag layer {layer}, so no lock can be removed.");
+                return true;
             }
             // Case where it is just unlock
             if (decodedMessage[3] == "") {
                 // Make sure it is not a MistressPadlock
                 if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressPadlock && _config.selectedGagPadlocksAssigner[layer-1] != decodedMessage[4]) {
-                    throw new Exception("Cannot remove a mistress padlock's unless you are the one who assigned it.");
+                    // hide original message & throw exception
+                    isHandled = true;
+                    GagSpeak.Log.Debug("ERROR, Cannot remove a mistress padlock's unless you are the one who assigned it.");
+                    _clientChat.PrintError($"ERROR, Cannot remove a mistress padlock's unless you are the one who assigned it.");
+                    return true;
                 }
                 // if we made it here, we can just remove the lock
                 _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
@@ -422,24 +501,38 @@ public class ChatManager
             } else {
                 // if we do have a password, we need to make sure it matches the password on the lock
                 if (_config.selectedGagPadlocksPassword[layer-1] != decodedMessage[3]) {
-                    throw new Exception("Invalid Password, failed to unlock.");
+                    // hide original message & throw exception
+                    isHandled = true;
+                    GagSpeak.Log.Debug("ERROR, Invalid Password, failed to unlock.");
+                    _clientChat.PrintError($"ERROR, Invalid Password, failed to unlock.");
+                    return true;
                 }
                 // if the passwords do match, so remove the lock IF it is not a mistress padlock.
                 if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressTimerPadlock &&
                     _config.selectedGagPadlocksAssigner[layer-1] != decodedMessage[4]) {
-                    throw new Exception("Cannot remove a mistress padlock's unless you are the one who assigned it.");
+                    // hide original message & throw exception
+                    isHandled = true;
+                    GagSpeak.Log.Debug("ERROR, Cannot remove a mistress padlock's unless you are the one who assigned it.");
+                    _clientChat.PrintError($"ERROR, Cannot remove a mistress padlock's unless you are the one who assigned it.");
+                    return true;
                 }
                 // if we made it here, we can remove the lock.
                 _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
                 _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
                 _config.selectedGagPadlocksAssigner[layer-1] = "None";
             }
+            GagSpeak.Log.Debug($"Determined income message as a [unlock] type encoded message, hiding from chat!");
+            return true; // sucessful parse
         }
         // if the parsed type is "removeall"
         else if (decodedMessage[0] == "removeall") {
             // make sure all of our gagpadlocks are none, if they are not, throw exception
             if (_config.selectedGagPadlocks.Any(padlock => padlock != GagPadlocks.None)) {
-                throw new Exception("Cannot remove all gags while locks are on any of them.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug("ERROR, Cannot remove all gags while locks are on any of them.");
+                _clientChat.PrintError($"ERROR, Cannot remove all gags while locks are on any of them.");
+                return true;
             }
             // if we made it here, we can remove them all
             for (int i = 0; i < _config.selectedGagPadlocks.Count; i++) {
@@ -448,47 +541,78 @@ public class ChatManager
                 _config.selectedGagPadlocksPassword[i] = string.Empty;
                 _config.selectedGagPadlocksAssigner[i] = "None";
             }
+            GagSpeak.Log.Debug($"Determined income message as a [removeall] type encoded message, hiding from chat!");
+            return true; // sucessful parse
         }
         // if the parsed type is "remove"
         else if (decodedMessage[0] == "remove") {
             // see if our layer is a valid layer
             if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
             if (!int.TryParse(decodedMessage[1], out int layer)) { 
-                throw new Exception("Invalid layer value.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug("ERROR, Invalid layer value.");
+                _clientChat.PrintError($"ERROR, Invalid layer value.");
+                return true;
             }
             // our layer is valid, but we also need to make sure that this layer has a gag on it
             if (_config.selectedGagTypes[layer-1] == "None") {
-                throw new Exception($"There is no gag applied for gag layer {layer}, so no gag can be removed.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug($"ERROR, There is no gag applied for gag layer {layer}, so no gag can be removed.");
+                _clientChat.PrintError($"ERROR, There is no gag applied for gag layer {layer}, so no gag can be removed.");
+                return true;
             }
             // make sure there is no lock on that gags layer
             if (_config.selectedGagPadlocks[layer-1] != GagPadlocks.None) {
-                throw new Exception("Cannot remove a gag while the lock is on for this layer.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug("ERROR, Cannot remove a gag while the lock is on for this layer.");
+                _clientChat.PrintError($"ERROR, Cannot remove a gag while the lock is on for this layer.");
+                return true;
             }
             // if we made it here, we can remove the gag
             _config.selectedGagTypes[layer-1] = "None";
             _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
             _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
             _config.selectedGagPadlocksAssigner[layer-1] = "None";
+            GagSpeak.Log.Debug($"Determined income message as a [remove] type encoded message, hiding from chat!");
+            return true; // sucessful parse
         }
         else if (decodedMessage[0] == "apply") {
             // see if our layer is a valid layer
             if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
             if (!int.TryParse(decodedMessage[1], out int layer)) { 
-                throw new Exception("Invalid layer value.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug("ERROR, Invalid layer value.");
+                _clientChat.PrintError($"ERROR, Invalid layer value.");
+                return true;
             }
             // see if our gagtype is in selectedGagTypes[layer-1]
             if (!_config.GagTypes.ContainsKey(decodedMessage[2])) {
-                throw new Exception("Invalid gag type.");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug("ERROR, Invalid gag type.");
+                _clientChat.PrintError($"ERROR, Invalid gag type.");
+                return true;
             }
             // make sure gagType is set to none
             if (_config.selectedGagTypes[layer-1] != "None") {
-                throw new Exception($"There is already a gag applied for gag layer {layer}!");
+                // hide original message & throw exception
+                isHandled = true;
+                GagSpeak.Log.Debug($"ERROR, There is already a gag applied for gag layer {layer}!");
+                _clientChat.PrintError($"ERROR, There is already a gag applied for gag layer {layer}!");
+                return true;
             }
             // if we made it here, we can apply the gag
             _config.selectedGagTypes[layer-1] = decodedMessage[2];
+            GagSpeak.Log.Debug($"Determined income message as a [applier] type encoded message, hiding from chat!");
+            return true; // sucessful parse
         } else {
             // we have an invalid type
-            GagSpeak.Log.Debug($"INVALID MESSAGE TYPE");
+            GagSpeak.Log.Debug($"INVALID MESSAGE TYPE FOR GAGSPEAK, DISPLAYING MESSAGE NORMALLY");
+            return false;
         }
     }
 

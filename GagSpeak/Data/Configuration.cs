@@ -54,6 +54,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public XivChatType CurrentChannel { get; set; } // What is the current channel?
     public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
     public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
+    public string ErrorMessage { get; set; } = ""; // Gets or sets the error message
 
     // public List<XivChatType> _order = new() {
     //     XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None, 
@@ -125,6 +126,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         // set default values for selectedGagPadlocksAssigner
         if (this.selectedGagPadlocksAssigner == null || !this.selectedGagPadlocksAssigner.Any() || this.selectedGagPadlocksAssigner.Count > 3) {
             this.selectedGagPadlocksAssigner = new List<string> { "", "", "" };}
+        if (this.ErrorMessage == null || this.ErrorMessage.Any()) {
+            this.ErrorMessage = "";}
     }
 
     public void Save() {
@@ -183,8 +186,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     // create an dictionary for all the gag types and their strengths
     public Dictionary<string, int> GagTypes {get; set; } = new() {
         { "None", 0},
-        { "Ball Gag", 5 },
-        { "Ball Gag Mask", 5 },
+        { "Ball Gag", 3 },
+        { "Ball Gag Mask", 4 },
         { "Bamboo Gag", 4 },
         { "Bit Gag", 2 },
         { "Bone Gag", 2 },
@@ -204,9 +207,9 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         { "Exposed Dog Muzzle", 4 },
         { "Funnel Gag", 5 },
         { "Fur Scarf", 2 },
-        { "Futuristic Ball Gag", 6 },
-        { "Futuristic Harness Panel Gag", 7 },
-        { "Futuristic Panel Gag", 5 },
+        { "Futuristic Ball Gag", 5 },
+        { "Futuristic Harness Panel Gag", 6 },
+        { "Futuristic Panel Gag", 4 },
         { "Gas Mask", 3 },
         { "Harness Ball Gag", 5 },
         { "Harness Ball Gag XL", 6 },

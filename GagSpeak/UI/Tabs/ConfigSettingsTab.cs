@@ -145,6 +145,7 @@ public class ConfigSettingsTab : ITab
         ImGui.Text("DEBUG INFORMATION:");
         try
         {
+            ImGui.Text($"CURRENT ERROR MESSAGE: {_config.ErrorMessage}");
             ImGui.Text($"Version: {_config.Version}");
             ImGui.Text($"Fresh Install?: {_config.FreshInstall}");
             ImGui.Text($"Is Enabled?: {_config.Enabled}");
