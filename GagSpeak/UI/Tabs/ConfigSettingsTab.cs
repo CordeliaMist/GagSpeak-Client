@@ -145,12 +145,8 @@ public class ConfigSettingsTab : ITab
         ImGui.Text("DEBUG INFORMATION:");
         try
         {
-            ImGui.Text($"CURRENT ERROR MESSAGE: {_config.ErrorMessage}");
-            ImGui.Text($"Version: {_config.Version}");
-            ImGui.Text($"Fresh Install?: {_config.FreshInstall}");
-            ImGui.Text($"Is Enabled?: {_config.Enabled}");
-            ImGui.Text($"In Dom Mode?: {_config.InDomMode}");
-            ImGui.Text($"Debug Mode?: {_config.DebugMode}");
+            ImGui.Text($"Fresh Install?: {_config.FreshInstall} || Is Enabled?: {_config.Enabled}");
+            ImGui.Text($"In Dom Mode?: {_config.InDomMode} || Debug Mode?: {_config.DebugMode}");
             ImGui.Text($"Safeword: {_config.Safeword}");
             ImGui.Text($"Friends Only?: {_config.friendsOnly}");
             ImGui.Text($"Party Only?: {_config.partyOnly}");
@@ -163,6 +159,11 @@ public class ConfigSettingsTab : ITab
             foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
             ImGui.Text("Selected GagPadlocks:"); ImGui.SameLine(); ImGui.Text($"{_config.selectedGagPadlocks.Count}"); ImGui.SameLine();
             foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text(gagPadlock.ToString()); };
+            ImGui.Text("Selected GagPadlocks Passwords:"); ImGui.SameLine(); ImGui.Text($"{_config.selectedGagPadlocksPassword.Count}"); ImGui.SameLine();
+            foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text(gagPadlockPassword); };
+            ImGui.Text("Selected GagPadlocks Assigners:"); ImGui.SameLine(); ImGui.Text($"{_config.selectedGagPadlocksAssigner.Count}"); ImGui.SameLine();
+            foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text(gagPadlockAssigner); };
+
 
             ImGui.Text($"Translatable Chat Types:");
             foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };

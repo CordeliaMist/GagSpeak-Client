@@ -9,6 +9,7 @@ using GagSpeak.Chat;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using XivCommon.Functions;
 using Dalamud.Game;
+using Lumina.Data.Parsing.Layer;
 
 // practicing modular design
 namespace GagSpeak.Services;
@@ -108,8 +109,16 @@ public class CommandManager : IDisposable // Our main command list manager
     private bool Safeword(string argument) { // Handler for the safeword subcommand
         if (string.IsNullOrWhiteSpace(argument)) { // If no safeword is provided
             _chat.Print("Please provide a safeword. Usage: /gagspeak safeword [your_safeword]"); return false; }
-        _config.Safeword = argument; // Otherwise, handle setting the safeword using 'argument'
-        _chat.Print(new SeStringBuilder().AddText("Your safeword has been set to ").AddBlue(argument).BuiltString); 
+        if (_config.Safeword == argument) { // If the safeword is the same as the one we are trying to set
+            _chat.Print("Safeword matched, deactivating all gags and locks"); 
+            for (int layerIndex = 0; layerIndex < _config.selectedGagTypes.Count; layerIndex++) {
+                _config.selectedGagTypes[layerIndex] = "None";
+                _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None;
+                _config.selectedGagPadlocksPassword[layerIndex] = "";
+                _config.selectedGagPadlocksAssigner[layerIndex] = "";
+            }
+        }
+
         return true;
     }
 
@@ -455,21 +464,27 @@ public class CommandManager : IDisposable // Our main command list manager
         {
             GagSpeak.Log.Debug($"Lock Type: {_locktype} | Password: {_password}");
             // make sure it is a padlock that allows a password
-            var index = (int)parsedEnum;
+            int index = 0;
+            index = (int)parsedEnum;
+            GagSpeak.Log.Debug($"{index}");
             // if index == 0,1,4,6,7
             if (index == 0 || index == 1 || index == 4 || index == 6 || index == 7) { // it's a padlock that isnt meant to take any password
                 _chat.Print(new SeStringBuilder().AddRed("Invalid Locktype").BuiltString);
                 _chat.Print(new SeStringBuilder().AddText("The locktype you have provided does not allow a password. Please use a locktype that allows a password.").BuiltString);
                 return true;
-            } else if ( (index == 2) && (!(_password.Length == 4 && _password.All(char.IsDigit))) ) { // its a combination padlock
-                _chat.Print(new SeStringBuilder().AddRed("Invalid Combination Lock").BuiltString);
-                _chat.Print(new SeStringBuilder().AddText("The password must be a 4 digit combination. EX: 0529 , 6921, ext..").BuiltString);
-                return true;
-
-            } else if (_password.Length > 30 || _password.Length == 0) { // if the password is longer than 30 characters, it is invalid.
-                _chat.Print(new SeStringBuilder().AddRed("Invalid Password").BuiltString);
-                _chat.Print(new SeStringBuilder().AddText("The password you have provided is too long. Passwords must be 30 characters or less.").BuiltString);
-                return true;
+            } else if (index == 2) {
+                if(!(_password.Length == 4 && _password.All(char.IsDigit))) { // its a combination padlock
+                    _chat.Print(new SeStringBuilder().AddRed("Invalid Combination Lock").BuiltString);
+                    _chat.Print(new SeStringBuilder().AddText("The password must be a 4 digit combination. EX: 0529 , 6921, ext..").BuiltString);
+                    return true;
+                }
+            } else if ( index == 3 || index == 5) {
+                GagSpeak.Log.Debug($"Doing a Password Check for {_locktype}");
+                if (_password.Length > 30 || _password.Length == 0) { // if the password is longer than 30 characters, it is invalid.
+                    _chat.Print(new SeStringBuilder().AddRed("Invalid Password").BuiltString);
+                    _chat.Print(new SeStringBuilder().AddText("The password you have provided is too long. Passwords must be 30 characters or less.").BuiltString);
+                    return true;
+                }
             } else { // something unexpected occured.
                 _chat.Print(new SeStringBuilder().AddRed("Something unexpected occured!").BuiltString);
                 _chat.Print(new SeStringBuilder().AddText("You shouldnt be here!").BuiltString);

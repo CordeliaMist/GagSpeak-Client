@@ -230,6 +230,7 @@ public class ChatManager
             // if the _config.InDomMode is set to true, just return
             if (_config.InDomMode) {
                 GagSpeak.Log.Debug("Player attempted to gag you, but you are in Dominant mode, so ignoring");
+                isHandled = true;
                 return;
             }
             // otherwise they are submissive, so accept it.

@@ -27,6 +27,7 @@ public class GagListingsDrawer
     
     private float _requiredComboWidthUnscaled;
     private float _requiredComboWidth;
+    private string _passwordField = "";
     
     // I believe this dictates the data for the stain list, swap out for padlock list probably
     
@@ -66,7 +67,14 @@ public class GagListingsDrawer
 
     // Draw the listings
     public void DrawGagAndLockListing(int ID, string GagLabel, GagPadlocks LockLabel,
-                                      int layerIndex, string displayLabel, bool locked) {
+                                      int layerIndex, string displayLabel, bool locked)
+    {
+        // Get our boolean on if we are locked or not
+        bool isPadlockEquipped = _config.selectedGagPadlocks[layerIndex] != GagPadlocks.None;
+        // if we are locked, set the locked to true
+        if(isPadlockEquipped)
+            ImGui.BeginDisabled();
+
         // push our styles
         using var    id = ImRaii.PushId($"{ID}_listing"); // push the ID
         var     spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemSpacing.Y }; // push spacing
@@ -84,6 +92,32 @@ public class GagListingsDrawer
         ImGui.TextUnformatted(displayLabel); // draw the label text
 
         if (DrawGagLockItemCombo(ID, LockLabel, layerIndex, locked)) {
+            if(isPadlockEquipped) {
+                ImGui.EndDisabled();
+                // to the right of this combo, add a input text field
+                ImGui.SameLine();
+                var password  = _passwordField; // temp storage to hold until we de-select the text input
+                ImGui.SetNextItemWidth(_comboLength - _requiredComboWidth);
+                if (ImGui.InputText("##Password_Input", ref password, 30, ImGuiInputTextFlags.None))
+                    _passwordField = password;
+                if (ImGui.IsItemDeactivatedAfterEdit() || ImGui.IsKeyPressed(ImGuiKey.Enter)) { // will only update our safeword once we click away from the safeword bar
+                    // reset the password field
+                    _passwordField = "";
+                    // check if the password we have entered matches the password we have saved
+                    if(_config.selectedGagPadlocksPassword[layerIndex] == password) {
+                        // the password we have entered does match the password we have saved, so disable the lock and print status to debug
+                        _config.selectedGagPadlocksPassword[layerIndex] = ""; // clear the password
+                        _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None; // clear the padlock
+                        GagSpeak.Log.Debug($"Padlock on slot {layerIndex} has been unlocked & lock removed.");
+                        // remember, plugins are one fat loop, so the moment we set our GagPadlocks to none, we set
+                        // `isPadlockEquipped` to be false, thus making the group interactable again.
+                        _config.selectedGagPadlocksPassword[layerIndex] = password;
+                    } else {
+                        // the password we have entered does not match the password we have saved, so print status to debug
+                        GagSpeak.Log.Debug($"Password for Padlock is incorrect, try again.");
+                    }
+                }
+            }
         }
     }
 
