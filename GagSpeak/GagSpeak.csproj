@@ -20,6 +20,12 @@
     </Content>
   </ItemGroup>
     
+	<PropertyGroup>
+		<DalamudLibPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+
   <ItemGroup>
       <Reference Include="Dalamud">
           <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
@@ -44,6 +50,10 @@
       <Reference Include="Newtonsoft.Json">
         <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
         <Private>False</Private>
+      </Reference>
+      <Reference Include="JetBrains.Annotations">
+              <Private>false</Private>
+              <HintPath>$(DalamudLibPath)\JetBrains.Annotations.dll</HintPath>
       </Reference>
   </ItemGroup>
 

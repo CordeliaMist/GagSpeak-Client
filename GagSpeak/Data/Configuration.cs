@@ -40,6 +40,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public bool FreshInstall { get; set; } = true; // Is user on a fresh install?
     public bool Enabled { get; set; } = true; // Is plugin enabled?
     public bool InDomMode { get; set; } = false; // Is plugin in dom mode?
+    public bool DirectChatGarbler { get; set; } = false; // Is direct chat garbler enabled?
     public string Safeword { get; set; } = "safeword"; // What is the safeword?
     public bool friendsOnly { get; set; } = false; // is friend only enabled?
     public bool partyOnly { get; set; } = false; // Is party only enabled?

@@ -10,7 +10,7 @@ using Lumina;
 using GagSpeak.Services;
 
 // practicing modular design
-namespace GagSpeak.Chat;
+namespace GagSpeak.Chat.Garbler;
 
 // The component that will handle the translation of the chat message
 public class MessageGarbler

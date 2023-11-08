@@ -13,7 +13,10 @@ using OtterGui.Classes;
 using OtterGui.Log;
 using XivCommon.Functions;
 using Dalamud.Game;
+
 using Lumina.Excel.GeneratedSheets;
+using GagSpeak.Utility;
+using Dalamud.Plugin.Services;
 
 
 // practicing modular design
@@ -63,7 +66,14 @@ public static class ServiceHandler
     //SERVICES FOR ONCHAT, INCLUDE IF EVER NEEDED.
     private static IServiceCollection AddChat(this IServiceCollection services)
         => services.AddSingleton<ChatManager>()
-             .AddSingleton<RealChatInteraction>(_ => {var sigService = _.GetRequiredService<ISigScanner>(); return new RealChatInteraction(sigService);});
+             .AddSingleton<RealChatInteraction>(_ => {var sigService = _.GetRequiredService<ISigScanner>(); return new RealChatInteraction(sigService);})
+             .AddSingleton<ChatInputProcessor>(_ => {
+                //    internal ChatInputProcessor(ISigScanner scanner, IGameInteropProvider interop, GagSpeakConfig config, HistoryService historyService, MessageGarbler messageGarbler) {
+                var sigService = _.GetRequiredService<ISigScanner>(); 
+                var interop = _.GetRequiredService<IGameInteropProvider>();
+                var config = _.GetRequiredService<GagSpeakConfig>();
+                var historyService = _.GetRequiredService<HistoryService>();
+                return new ChatInputProcessor(sigService, interop, config, historyService);});
               /* I want to add ISigService service here */
 
     // SERVICES FOR UI, INCLUDE IF EVER NEEDED.

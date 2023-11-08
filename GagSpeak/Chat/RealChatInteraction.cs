@@ -5,8 +5,9 @@ using System.Text;
 using Dalamud.Game;
 using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 using GagSpeak.Services;
+using GagSpeak.Chat;
 // practicing modular design
-namespace XivCommon.Functions {
+namespace XivCommon.Functions;
     /// <summary>
     /// This class, in essence, is modifying a packet BEFORE it gets sent to the server,
     /// allowing us to send a message to the chat itself, and not just to dalamud chat.
@@ -144,4 +145,3 @@ namespace XivCommon.Functions {
             }
         }
     }
-}

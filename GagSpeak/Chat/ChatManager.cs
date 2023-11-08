@@ -72,6 +72,7 @@ public class ChatManager
                 // its the incoded message, so seet handled to true and print debug
                 isHandled = true;
                 GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag ENCODED TELL");
+                GagSpeak.Log.Debug($"Message: {message}");
                 return;
             }
             // scan if the message contains all words from the /gag lock encoded tell

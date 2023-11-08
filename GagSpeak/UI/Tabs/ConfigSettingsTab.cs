@@ -69,15 +69,18 @@ public class ConfigSettingsTab : ITab
         // Checkbox will dictate if only players from their friend list are allowed to use /gag (target) commands on them.
         Checkbox("Only Friends", "Only processes process /gag (target) commands from others if they are on your friend list.\n" +
             "(Does NOT need to be enabled for you to use /gag (target) commands on them)", _config.friendsOnly, v => _config.friendsOnly = v);
-
+        ImGui.SameLine();
         // Checkbox will dictate if only players from their friend list are allowed to use /gag (target) commands on them.
         Checkbox("Only Party Members", "Only processes /gag (target) commands from others if they are in your current party list.\n" +
             "(Does NOT need to be enabled for you to use /gag (target) commands on them)", _config.partyOnly, v => _config.partyOnly = v);
-
+        ImGui.SameLine();
         // Checkbox will dictate if only players from their friend list are allowed to use /gag (target) commands on them.
         Checkbox("Only Whitelist", "Only processes /gag (target) commands from others if they are in your whitelist.\n" +
             "(Does NOT need to be enabled for you to use /gag (target) commands on them)", _config.whitelistOnly, v => _config.whitelistOnly = v);
-
+        
+        Checkbox("DirectChatGarblerMode", "Automatically translate chat messages in all enabled channels to gagspeak automatically. (WITHOUT commands).\n" +
+            "This does make use of chat to server interception. Even though now it is ensured safe, always turn this OFF after any patch or game update, until the plug curator says it's safe",
+            _config.DirectChatGarbler, v => _config.DirectChatGarbler = v);
         // Checkbox to display debug information
         Checkbox("Debug Display", "Displays information for plugin variables. For developer", _config.DebugMode, v => _config.DebugMode = v);
         // Checkbox will dictate if only players from their party are allowed to use /gag (target) commands on them.
@@ -145,26 +148,17 @@ public class ConfigSettingsTab : ITab
         ImGui.Text("DEBUG INFORMATION:");
         try
         {
-            ImGui.Text($"Fresh Install?: {_config.FreshInstall} || Is Enabled?: {_config.Enabled}");
-            ImGui.Text($"In Dom Mode?: {_config.InDomMode} || Debug Mode?: {_config.DebugMode}");
+            ImGui.Text($"Fresh Install?: {_config.FreshInstall} || Is Enabled?: {_config.Enabled} || In Dom Mode?: {_config.InDomMode}");
+            ImGui.Text($"Debug Mode?: {_config.DebugMode} || In DirectChatGarbler Mode?: {_config.DirectChatGarbler}");
             ImGui.Text($"Safeword: {_config.Safeword}");
-            ImGui.Text($"Friends Only?: {_config.friendsOnly}");
-            ImGui.Text($"Party Only?: {_config.partyOnly}");
-            ImGui.Text($"Whitelist Only?: {_config.whitelistOnly}");
+            ImGui.Text($"Friends Only?: {_config.friendsOnly} || Party Only?: {_config.partyOnly} || Whitelist Only?: {_config.whitelistOnly}");
             ImGui.Text($"Garble Level: {_config.GarbleLevel}");
-            ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval}");
-            ImGui.Text($"Max Translation History: {_config.TranslationHistoryMax}");
+            ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval} || Max Translation History: {_config.TranslationHistoryMax}");
             ImGui.Text($"Total Gag List Count: {_config.GagTypes.Count}");
-            ImGui.Text("Selected GagTypes:"); ImGui.SameLine(); ImGui.Text($"{_config.selectedGagTypes.Count}"); ImGui.SameLine();
-            foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-            ImGui.Text("Selected GagPadlocks:"); ImGui.SameLine(); ImGui.Text($"{_config.selectedGagPadlocks.Count}"); ImGui.SameLine();
-            foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text(gagPadlock.ToString()); };
-            ImGui.Text("Selected GagPadlocks Passwords:"); ImGui.SameLine(); ImGui.Text($"{_config.selectedGagPadlocksPassword.Count}"); ImGui.SameLine();
-            foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text(gagPadlockPassword); };
-            ImGui.Text("Selected GagPadlocks Assigners:"); ImGui.SameLine(); ImGui.Text($"{_config.selectedGagPadlocksAssigner.Count}"); ImGui.SameLine();
-            foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text(gagPadlockAssigner); };
-
-
+            ImGui.Text("Selected GagTypes:"); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
+            ImGui.Text("Selected GagPadlocks:"); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text(gagPadlock.ToString()); };
+            ImGui.Text("Selected GagPadlocks Passwords:"); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text(gagPadlockPassword); };
+            ImGui.Text("Selected GagPadlocks Assigners:"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text(gagPadlockAssigner); };
             ImGui.Text($"Translatable Chat Types:");
             foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };
             ImGui.Text($"Current ChatBox Channel: {_config.CurrentChannel.ToString()}");

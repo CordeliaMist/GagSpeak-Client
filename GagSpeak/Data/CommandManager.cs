@@ -6,6 +6,7 @@ using Dalamud.Plugin.Services;
 using GagSpeak.UI;
 using OtterGui.Classes;
 using GagSpeak.Chat;
+using GagSpeak.Chat.Garbler;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using XivCommon.Functions;
 using Dalamud.Game;

@@ -92,6 +92,7 @@ public class GagSpeak : IDalamudPlugin
             _services.GetRequiredService<GagSpeakWindowManager>(); // Initialize the UI
             _services.GetRequiredService<CommandManager>(); // Initialize the command manager
             _services.GetRequiredService<ChatManager>(); // Initialize the OnChatMessage handler
+            _services.GetRequiredService<ChatInputProcessor>(); // Initialize the OnChatMessage handler
             Log.Information($"GagSpeak version{Version} loaded successfully."); // Log the version
         }
         catch
