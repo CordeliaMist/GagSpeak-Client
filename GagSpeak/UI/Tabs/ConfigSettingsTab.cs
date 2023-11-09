@@ -15,6 +15,7 @@ using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using OtterGui.Widgets;
 using Dalamud.Interface;
+using GagSpeak.Data;
 
 namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
 
@@ -97,19 +98,15 @@ public class ConfigSettingsTab : ITab
         }
 
         ImGui.Columns(4);
-        foreach (var e in (XivChatType[]) Enum.GetValues(typeof(XivChatType))) {
-            // If the chat type is a valid chat type
-            if (_config.ChannelsIsActive[i]) {
-                // See if it is already enabled by default
-                var enabled = _config.Channels.Contains(e);
-                // If a checkbox exists (it always will)...
-                if (ImGui.Checkbox($"{e}", ref enabled)) {
-                    // See If checkbox is clicked, If not, add to list of enabled channels, otherwise, remove it.
-                    if (enabled) _config.Channels.Add(e);
-                    else _config.Channels.Remove(e);
-                }
-                ImGui.NextColumn();
+        foreach (var e in (ChatChannel.ChatChannels[]) Enum.GetValues(typeof(ChatChannel.ChatChannels))) {
+            // See if it is already enabled by default
+            var enabled = _config.Channels.Contains(e);
+            if (ImGui.Checkbox($"{e}", ref enabled)) {
+                // See If checkbox is clicked, If not, add to list of enabled channels, otherwise, remove it.
+                if (enabled) _config.Channels.Add(e);
+                else _config.Channels.Remove(e);
             }
+            ImGui.NextColumn();
             i++;
         }
 
@@ -167,7 +164,7 @@ public class ConfigSettingsTab : ITab
 
             ImGui.Text($"Translatable Chat Types:");
             foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };
-            ImGui.Text($"Current ChatBox Channel: {_config.CurrentChannel.ToString()}");
+            ImGui.Text($"Current ChatBox Channel: {ChatChannel.GetChatChannel()}");
             ImGui.Text("Whitelist:"); ImGui.Indent();
             foreach (var item in _config.Whitelist) { ImGui.Text(item); }
             ImGui.Unindent();
