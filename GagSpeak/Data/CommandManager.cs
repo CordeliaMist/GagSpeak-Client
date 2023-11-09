@@ -67,6 +67,10 @@ public class CommandManager : IDisposable // Our main command list manager
             HelpMessage = "Translates everything after /gsm into GagSpeak into currently selected chat type in the chat box.",
             ShowInHelp = true
         });
+        // let user know on launch of their direct chat garbler is still enabled
+        if (_config.DirectChatGarbler) {
+            _chat.PrintError("Direct Chat Garbler is still enabled. If you don't want this on, remember to disable it!");
+        }
     }
 
     // Dispose of the command manager

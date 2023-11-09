@@ -155,10 +155,10 @@ public class ConfigSettingsTab : ITab
             ImGui.Text($"Garble Level: {_config.GarbleLevel}");
             ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval} || Max Translation History: {_config.TranslationHistoryMax}");
             ImGui.Text($"Total Gag List Count: {_config.GagTypes.Count}");
-            ImGui.Text("Selected GagTypes:"); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-            ImGui.Text("Selected GagPadlocks:"); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text(gagPadlock.ToString()); };
-            ImGui.Text("Selected GagPadlocks Passwords:"); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text(gagPadlockPassword); };
-            ImGui.Text("Selected GagPadlocks Assigners:"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text(gagPadlockAssigner); };
+            ImGui.Text("Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
+            ImGui.Text("Selected GagPadlocks: || "); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
+            ImGui.Text("Selected GagPadlocks Passwords: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };
+            ImGui.Text("Selected GagPadlocks Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
             ImGui.Text($"Translatable Chat Types:");
             foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };
             ImGui.Text($"Current ChatBox Channel: {_config.CurrentChannel.ToString()}");
@@ -166,8 +166,8 @@ public class ConfigSettingsTab : ITab
             foreach (var item in _config.Whitelist) { ImGui.Text(item); }
             ImGui.Unindent();
             // print the width of the imgui screen and the height
-            ImGui.Text($"ImGui Screen Width: {ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X}");
-            ImGui.Text($"ImGui Screen Height: {ImGui.GetWindowContentRegionMax().Y - ImGui.GetWindowContentRegionMin().Y}");
+            // ImGui.Text($"ImGui Screen Width: {ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X}");
+            // ImGui.Text($"ImGui Screen Height: {ImGui.GetWindowContentRegionMax().Y - ImGui.GetWindowContentRegionMin().Y}");
 
         }
         catch (Exception e)

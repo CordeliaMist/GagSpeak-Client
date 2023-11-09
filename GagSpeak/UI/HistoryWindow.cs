@@ -24,7 +24,7 @@ public class HistoryWindow : Window //, IDisposable
 
         // Next let's set the size of the window
         SizeConstraints = new WindowSizeConstraints() {
-            MinimumSize = new Vector2(700, 675),     // Minimum size of the window
+            MinimumSize = new Vector2(300, 400),     // Minimum size of the window
             MaximumSize = ImGui.GetIO().DisplaySize, // Maximum size of the window
         };
 

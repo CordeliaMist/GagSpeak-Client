@@ -147,7 +147,9 @@ public class GeneralTab : ITab
             _gagListingsDrawer.DrawGagAndLockListing(slot, _config.selectedGagTypes[slot], _config.selectedGagPadlocks[slot], slot, $"Gag Slot {slot + 1}", _isLocked);
             ImGui.NewLine();
         }
-        // let users know information about the plugin
+        // leave some space for unlock minigames
+        ImGui.NewLine();
+        ImGui.Separator();
     }
 }
 

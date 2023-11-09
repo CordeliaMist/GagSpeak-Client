@@ -109,9 +109,6 @@ public class GagListingsDrawer
                         _config.selectedGagPadlocksPassword[layerIndex] = ""; // clear the password
                         _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None; // clear the padlock
                         GagSpeak.Log.Debug($"Padlock on slot {layerIndex} has been unlocked & lock removed.");
-                        // remember, plugins are one fat loop, so the moment we set our GagPadlocks to none, we set
-                        // `isPadlockEquipped` to be false, thus making the group interactable again.
-                        _config.selectedGagPadlocksPassword[layerIndex] = password;
                     } else {
                         // the password we have entered does not match the password we have saved, so print status to debug
                         GagSpeak.Log.Debug($"Password for Padlock is incorrect, try again.");
@@ -139,6 +136,7 @@ public class GagListingsDrawer
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
                 _config.selectedGagTypes[layerIndex] = _config.GagTypes.Keys.First(); // update config
                 label = _config.GagTypes.Keys.First(); // to the first option, none
+                _config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
         }
@@ -163,6 +161,9 @@ public class GagListingsDrawer
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
                 _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None; // update config
                 label = GagPadlocks.None; // to the first option, none
+                _config.selectedGagPadlocksPassword[layerIndex] = "";
+                _config.selectedGagPadlocksAssigner[layerIndex] = "";
+                _config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
         }

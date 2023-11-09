@@ -99,8 +99,19 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public bool ShowQuickBarInTabs               { get; set; } = true;  // Show the quickbar in the tabs?
     public bool LockMainWindow                   { get; set; } = false; // Lock the main window?
 
-
     // Configuration options for the whitelist tab
+    // create a small class for storing character data
+    // private class WhitelistCharData {
+    //     Include:
+    //      -- Name
+    //      -- World
+    //      -- IsMistress (make sure you cant remove players with this set to true or else removing mistress padlock becomes impossible)
+    //      -- IsSubmissive
+    //      -- IsSlave
+    //      -- Gag List (dunno how to link this crap)
+    //      -- Padlock List (really dunno how to link this crap)
+    // }
+
     private List<string> whitelist = new List<string>(); // appears to be baseline for whitelist
     public List<string> Whitelist { get => whitelist; set => whitelist = value; } // Note sure why, document later
 
@@ -139,48 +150,38 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         _saveService.DelaySave(this);
     }
 
-    public void Load(ConfigMigrationService migrator)
-    {
-        static void HandleDeserializationError(object? sender, ErrorEventArgs errorArgs)
-        {
-            GagSpeak.Log.Error(
-                $"Error parsing Configuration at {errorArgs.ErrorContext.Path}, using default or migrating:\n{errorArgs.ErrorContext.Error}");
+    public void Load(ConfigMigrationService migrator) {
+        static void HandleDeserializationError(object? sender, ErrorEventArgs errorArgs) {
+            GagSpeak.Log.Error( $"Error parsing Configuration at {errorArgs.ErrorContext.Path}, using default or migrating:\n{errorArgs.ErrorContext.Error}");
             errorArgs.ErrorContext.Handled = true;
         }
-
         if (!File.Exists(_saveService.FileNames.ConfigFile))
             return;
 
         if (File.Exists(_saveService.FileNames.ConfigFile))
-            try
-            {
+            try {
                 var text = File.ReadAllText(_saveService.FileNames.ConfigFile);
-                JsonConvert.PopulateObject(text, this, new JsonSerializerSettings
-                {
+                JsonConvert.PopulateObject(text, this, new JsonSerializerSettings {
                     Error = HandleDeserializationError,
                 });
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 GagSpeak.Messager.NotificationMessage(ex,
                     "Error reading Configuration, reverting to default.\nYou may be able to restore your configuration using the rolling backups in the XIVLauncher/backups/GagSpeak directory.",
                     "Error reading Configuration", NotificationType.Error);
             }
-
         migrator.Migrate(this);
     }
     public string ToFilename(FilenameService fileNames)
         => fileNames.ConfigFile;
 
-    public void Save(StreamWriter writer)
-    {
+    public void Save(StreamWriter writer) {
         using var jWriter    = new JsonTextWriter(writer) { Formatting = Formatting.Indented };
         var       serializer = new JsonSerializer { Formatting         = Formatting.Indented };
         serializer.Serialize(jWriter, this);
     }
 
-    public static class Constants
-    {
+    public static class Constants {
         public const int CurrentVersion = 4;
     }
 

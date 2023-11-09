@@ -39,6 +39,7 @@ public class MainWindow : Window //, IDisposable
     public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general,
         WhitelistTab whitelist, ConfigSettingsTab configsettings, HelpPageTab helpPageTab): base(GetLabel())
     {
+        // let the user know if their direct chat garlber is still enabled upon launch
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
 
