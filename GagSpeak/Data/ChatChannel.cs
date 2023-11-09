@@ -10,12 +10,12 @@ public static class ChatChannel
     public enum ChatChannels
     {
         //Need Confirm (still missing a lot)
-        Whisper = 0,
+        Tell = 0,
         Say = 1,
         Party = 2,
         Alliance = 3,
-        Shout = 4,
-        Yell = 5,
+        Yell = 4,
+        Shout = 5,
         FreeCompany = 6,
         //NoviceNetwork = 
 
