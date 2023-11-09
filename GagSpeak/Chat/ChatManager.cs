@@ -179,11 +179,11 @@ public class ChatManager
         var senderName = sName?.PlayerName != null ? sName.PlayerName : pName; // if the sender name is not null, set it to the sender name, otherwise set it to the local player name
 
 
-        // Precursor to condition2, if the message satisfied senderName == PlayerName && XivChatType != _config.CurrentChatType, change it
-        if ((pName == senderName) && (_config._allowedChannels.Contains(type)) && (type != _config.CurrentChannel)) {
-            _config.CurrentChannel = type; // log the current chatbox channel & save
-            _config.Save();
-        }
+        //// Precursor to condition2, if the message satisfied senderName == PlayerName && XivChatType != _config.CurrentChatType, change it
+        //if ((pName == senderName) && (_config._allowedChannels.Contains(type)) && (type != _config.CurrentChannel)) {
+        //    _config.CurrentChannel = type; // log the current chatbox channel & save
+        //    _config.Save();
+        //}
 
         // FILTER CONDITION TWO:
         //  - Is the chat message an incoming tell? If yes, proceed into the inner function, if not read over
