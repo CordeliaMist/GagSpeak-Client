@@ -46,7 +46,7 @@ public static class ChatChannel
         {
             channel = (ChatChannels)ChatlogAgent->CurrentChannel;
         }
-        return channel;
+        return channel; //return the channel now using
     }
 
 }
