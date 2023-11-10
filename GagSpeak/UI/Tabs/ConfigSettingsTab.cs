@@ -163,7 +163,18 @@ public class ConfigSettingsTab : ITab
             foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };
             ImGui.Text($"Current ChatBox Channel: {_config.CurrentChannel.ToString()}");
             ImGui.Text("Whitelist:"); ImGui.Indent();
-            foreach (var item in _config.Whitelist) { ImGui.Text(item); }
+            foreach (var whitelistPlayerData in _config.Whitelist) {
+                ImGui.Text(whitelistPlayerData.name);
+                ImGui.Indent();
+                ImGui.Text($"Relationship to this Player: {whitelistPlayerData.relationshipStatus}");
+                ImGui.Text($"Commitment Duration: {whitelistPlayerData.commitmentDuration}");
+                ImGui.Text($"Locked Live Chat Garbler: {whitelistPlayerData.lockedLiveChatGarbler}");
+                ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in whitelistPlayerData.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
+                ImGui.Text($"Selected GagPadlocks: || "); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in whitelistPlayerData.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
+                ImGui.Text($"Selected GagPadlocks Passwords: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in whitelistPlayerData.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };
+                ImGui.Text($"Selected GagPadlocks Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in whitelistPlayerData.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
+                ImGui.Unindent();
+            }
             ImGui.Unindent();
             // print the width of the imgui screen and the height
             // ImGui.Text($"ImGui Screen Width: {ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X}");

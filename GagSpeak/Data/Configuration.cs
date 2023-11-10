@@ -1,10 +1,7 @@
 ﻿using System;
-using System.ComponentModel;
 using Dalamud.Configuration;
 using Dalamud.Game.Text; // Interacting with game chat, XIVChatType, ext.
 using System.Collections.Generic;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using System.Threading.Channels;
 using System.Linq; // For enabling lists
 using System.IO;
 using Newtonsoft.Json;
@@ -14,6 +11,7 @@ using OtterGui.Classes;
 // practicing modular design
 using GagSpeak.UI;
 using GagSpeak.Services;
+using GagSpeak.Data; // for our whitelist character data.
 
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
@@ -21,8 +19,6 @@ using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 // Sets up the configuration controls for the GagSpeak Plugin
 namespace GagSpeak;
 
-// create an enumeration for all the gag types
-// A majority of these likely wont be implemented, but its nice to have.
 public enum GagPadlocks {
     None, // No gag
     MetalPadlock, // Metal Padlock, can be picked
@@ -55,7 +51,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public XivChatType CurrentChannel { get; set; } // What is the current channel?
     public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
     public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
-    public string ErrorMessage { get; set; } = ""; // Gets or sets the error message
 
     // public List<XivChatType> _order = new() {
     //     XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None, 
@@ -99,21 +94,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public bool ShowQuickBarInTabs               { get; set; } = true;  // Show the quickbar in the tabs?
     public bool LockMainWindow                   { get; set; } = false; // Lock the main window?
 
-    // Configuration options for the whitelist tab
-    // create a small class for storing character data
-    // private class WhitelistCharData {
-    //     Include:
-    //      -- Name
-    //      -- World
-    //      -- IsMistress (make sure you cant remove players with this set to true or else removing mistress padlock becomes impossible)
-    //      -- IsSubmissive
-    //      -- IsSlave
-    //      -- Gag List (dunno how to link this crap)
-    //      -- Padlock List (really dunno how to link this crap)
-    // }
-
-    private List<string> whitelist = new List<string>(); // appears to be baseline for whitelist
-    public List<string> Whitelist { get => whitelist; set => whitelist = value; } // Note sure why, document later
+    private List<WhitelistCharData> whitelist = new List<WhitelistCharData>(); // appears to be baseline for whitelist
+    public List<WhitelistCharData> Whitelist { get => whitelist; set => whitelist = value; } // Note sure why, document later
 
     // There was stuiff about a colorId dictionary here, if you ever need to include it later, you know where to put it so it fits into the hierarchy
     private readonly SaveService _saveService;
@@ -138,8 +120,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         // set default values for selectedGagPadlocksAssigner
         if (this.selectedGagPadlocksAssigner == null || !this.selectedGagPadlocksAssigner.Any() || this.selectedGagPadlocksAssigner.Count > 3) {
             this.selectedGagPadlocksAssigner = new List<string> { "", "", "" };}
-        if (this.ErrorMessage == null || this.ErrorMessage.Any()) {
-            this.ErrorMessage = "";}
     }
 
     public void Save() {

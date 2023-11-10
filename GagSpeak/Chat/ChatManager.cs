@@ -60,6 +60,45 @@ public class ChatManager
         "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.", // gag removeall
     };
 
+    // Helper function to check if the tell is encoded for the plugin or not
+    private bool IsEncodedMessage(string textVal) {
+        // the gag apply encoded message
+        if (textVal.Contains("from") && textVal.Contains("applies a")
+            && textVal.Contains("over your mouth as the") && textVal.Contains("layer of your concealment*")) {
+            GagSpeak.Log.Debug($"THIS IS IN OUTGOING/INCOMING /gag ENCODED TELL");
+            return true;
+        // the gag lock encoded message and lock password
+        } else if (textVal.Contains("from") && textVal.Contains("takes out a") &&
+            ((textVal.Contains("from her pocket and sets the combination password to") &&
+            textVal.Contains("before locking your") && textVal.Contains("layer gag*")) || (
+            textVal.Contains("from her pocket and uses it to lock your") && textVal.Contains("gag*")))) {
+            GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag lock ENCODED TELL");
+            return true;
+        // the gag unlock and unlock password encoded message
+        } else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck") &&
+            ((textVal.Contains("and sets the password to") && textVal.Contains("on your") &&
+            textVal.Contains("layer gagstrap, unlocking it.*")) || (
+            textVal.Contains(", taking off the lock that was keeping your") &&
+            textVal.Contains("gag layer fastened nice and tight.*")))) {
+            GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag unlock ENCODED TELL");
+            return true;
+        // the gag remove encoded message
+        } else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck") &&
+            textVal.Contains("and unfastens the buckle of your") &&
+            textVal.Contains("gag layer strap, allowing your voice to be a little clearer.*")) {
+            GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag remove ENCODED TELL");
+            return true;
+        // the gag removeall encoded message
+        } else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck") &&
+            textVal.Contains("and unbuckles all of your gagstraps, allowing you to speak freely once more.*")) {
+            GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag removeall ENCODED TELL");
+            return true;
+        }
+        // any other message that isnt encoded.
+        return false;
+    }
+
+
     // FOR NOW EVERYTHING WILL BE STUFFED INTO HERE, AND LATER DIVIDED OUT INTO THE OTHER CHATS
     private void Chat_OnCheckMessageHandled(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool isHandled) {
         // we will want to make sure that if our message contains a combination of all words from each of our encoded message strings, to hide it entirely
@@ -67,57 +106,9 @@ public class ChatManager
         // See if it is an outgoing tell
         if ( type == XivChatType.TellOutgoing) {
             // Scan if the message contains all words from the /gag encoded tell
-            if (textVal.Contains("from") && textVal.Contains("applies a") 
-             && textVal.Contains("over your mouth as the") && textVal.Contains("layer of your concealment*")) {
+            if(IsEncodedMessage(textVal)) {
                 // its the incoded message, so seet handled to true and print debug
                 isHandled = true;
-                GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag ENCODED TELL");
-                GagSpeak.Log.Debug($"Message: {message}");
-                return;
-            }
-            // scan if the message contains all words from the /gag lock encoded tell
-            else if (textVal.Contains("from") && textVal.Contains("takes out a") && ((
-                        textVal.Contains("from her pocket and sets the combination password to") &&
-                        textVal.Contains("before locking your") && textVal.Contains("layer gag*")
-                    ) || (
-                        textVal.Contains("from her pocket and uses it to lock your") && textVal.Contains("gag*")
-                    ))) {
-                // its the incoded message, so seet handled to true and print debug
-                isHandled = true;
-                GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag lock ENCODED TELL");
-                return;
-            }
-            // scan if the message contains all words from the /gag unlock encoded tell
-            else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck") && ((
-                     textVal.Contains("and sets the password to") && textVal.Contains("on your")
-                  && textVal.Contains("layer gagstrap, unlocking it.*")
-                    ) || (
-                     textVal.Contains(", taking off the lock that was keeping your") && textVal.Contains("gag layer fastened nice and tight.*")
-                    ))) {
-                // its the incoded message, so seet handled to true and print debug
-                isHandled = true;
-                GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag unlock ENCODED TELL");
-                return;
-            }
-            // scan if the message contains all words from the /gag remove encoded tell
-            else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck") && textVal.Contains("and unfastens the buckle of your")
-                  && textVal.Contains("gag layer strap, allowing your voice to be a little clearer.*")) {
-                // its the incoded message, so seet handled to true and print debug
-                isHandled = true;
-                GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag remove ENCODED TELL");
-                return;
-            }
-            // scan if the message contains all words from the /gag removeall encoded tell
-            else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck")
-                  && textVal.Contains("and unbuckles all of your gagstraps, allowing you to speak freely once more.*")) {
-                // its the incoded message, so seet handled to true and print debug
-                isHandled = true;
-                GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag removeall ENCODED TELL");
-                return;
-            }
-            // otherwise its just a normal outgoing tell so do nothing
-            else {
-                isHandled = false;
                 return;
             }
         }
@@ -125,14 +116,7 @@ public class ChatManager
 
     //// CHATGUI FUNCTIONS: ////
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString chatmessage, ref bool isHandled) {
-        // FILTER CONDITION ONE:
-        //  - If isHandled is true, we want to immidiately back out of the function. and abort, not nessisary to read the rest.
-        //    Doing this at any point one our filters is not true is preferred to save on resources and runtime.
-        if (isHandled) return;
-
-        // Maybe move isHandled 
-
-    // NOTE: This may be able to be further optimized if we can find a way to compare sender to playername without doing all this beforehand.        
+        // NOTE: This may be able to be further optimized if we can find a way to compare sender to playername without doing all this beforehand.        
         // Still unsure about the spesifics of this, comment fully later
         var fmessage = new SeString(new List<Payload>());
         var nline = new SeString(new List<Payload>());
@@ -227,14 +211,15 @@ public class ChatManager
             ////// Once we have reached this point, we know we have recieved a tell, and that it is from one of our filtered players. //////
             GagSpeak.Log.Debug($"Recieved tell from PNAME: {pName} | SNAME: {sName} | SenderName: {senderName} | Message: {fmessage}");
 
-            // FILTER CONDITION THREE:
-            // if the _config.InDomMode is set to true, just return
-            if (_config.InDomMode) {
-                GagSpeak.Log.Debug("Player attempted to gag you, but you are in Dominant mode, so ignoring");
-                isHandled = true;
-                return;
+            // if the incoming tell is an encoded message, lets check if we are in dom mode before accepting changes
+            if (IsEncodedMessage(chatmessage.TextValue)) {
+                if (_config.InDomMode) {
+                    GagSpeak.Log.Debug("Player attempted to gag you, but you are in Dominant mode, so ignoring");
+                    isHandled = true;
+                    return;
+                }
             }
-            // otherwise they are submissive, so accept it.
+            // if we get here, we know we are in sub mode and under right filters.
 
             // get the type of command given to us based on the disguised message
             // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
@@ -244,11 +229,8 @@ public class ChatManager
             if( DetermineMessageOutcome(fmessage.ToString(), decodedMessageCommand, isHandled) ) {
                 isHandled = true; // make sure it doesnt display to the chat
             }
-            
 
             _config.Save(); // save our config
-
-            // set our handled to true so we dont see it
         }
         // skipping to here if it isnt a tell, or it fails any conditions, optimizing the code (hopefully)
     }
@@ -665,10 +647,10 @@ public class ChatManager
         foreach (var t in _objectTable) {
             if (!(t is PlayerCharacter pc)) continue;
             if (pc.Name.TextValue == nameInput) {
-                foreach (var name in _config.Whitelist) {
+                foreach (var whitelistChar in _config.Whitelist) {
                     // name in the whitelist is a part of the name string
-                    GagSpeak.Log.Debug($"Whitelist name: {name} | NameInput: {nameInput}");
-                    if (name.Contains(nameInput)) {
+                    GagSpeak.Log.Debug($"Whitelist name: {whitelistChar.name} | NameInput: {nameInput}");
+                    if (whitelistChar.name.Contains(nameInput)) {
                         GagSpeak.Log.Debug($"Match Found!");
                         return true;
                     }

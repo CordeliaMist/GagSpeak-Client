@@ -45,9 +45,10 @@ public sealed class GagLockFilterCombo
     /// <item><c>layerindex</c><param name="layerIndex"> - a list where the stored selection from the list is saved</param></item>
     /// </list>
     /// </summary>
-    public void Draw(int ID, GagPadlocks label, int layerIndex) {
+    public void Draw(int ID, GagPadlocks label, int layerIndex, int width) {
         try
         {
+            ImGui.SetNextItemWidth(width);
             using( var gagLockCombo = ImRaii.Combo($"##{ID}_Enum",  _config.selectedGagPadlocks[layerIndex].ToString(), 
                                       ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) 
             {
@@ -55,7 +56,7 @@ public sealed class GagLockFilterCombo
                 if( gagLockCombo ) { // Assign it an ID if combo is sucessful.
                     // add the popup state
                     using var id = ImRaii.PushId($"##{ID}_Enum"); // Push an ID for the combo box (based on label / name)
-                    ImGui.SetNextItemWidth(ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X); // Set filter length to full
+                    ImGui.SetNextItemWidth(width); // Set filter length to full
                     // if( ImGui.InputTextWithHint("##filter", "Filter...", ref _comboSearchText, 255 ) ) { // Draw filter bar
                     // // Filter logic for GagPadlocks enum based on _comboSearchText
                     //     var filteredValues = Enum.GetValues(typeof(GagPadlocks))

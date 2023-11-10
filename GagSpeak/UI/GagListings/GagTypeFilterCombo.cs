@@ -47,15 +47,16 @@ public sealed class GagTypeFilterCombo
     /// <item><c>layerindex</c><param name="layerIndex"> - a list where the stored selection from the list is saved</param></item>
     /// </list>
     /// </summary>
-    public void Draw(int ID, string label, int layerIndex) {
+    public void Draw(int ID, string label, int layerIndex, int width) {
         try
         {
+        ImGui.SetNextItemWidth(width);
         using( var gagTypeOneCombo = ImRaii.Combo($"##{ID}_Type", _config.selectedGagTypes[layerIndex], ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) { // Create the combo
             //ImGui.SetKeyboardFocusHere(); // focus our text into the filter thingy
             if( gagTypeOneCombo ) { // Assign it an ID if combo is sucessful.
                 // add the popup state
                 using var id = ImRaii.PushId($"##{ID}_Type"); // Push an ID for the combo box (based on label / name)
-                ImGui.SetNextItemWidth(ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X); // Set filter length to full
+                ImGui.SetNextItemWidth(width); // Set filter length to full
                 if( ImGui.InputTextWithHint("##filter", "Filter...", ref _comboSearchText, 255 ) ) { // Draw filter bar
                     // If the search bar is empty, display all the types from the strings in contentList, otherwise, display only search matches
                     _gagTypes = string.IsNullOrEmpty(_comboSearchText) ? (
@@ -66,7 +67,7 @@ public sealed class GagTypeFilterCombo
                 }
                 // Now that we have our results, so draw the childs
                 var       height = ImGui.GetTextLineHeightWithSpacing() * 12 - ImGui.GetFrameHeight() - ImGui.GetStyle().WindowPadding.Y;
-                using var child = ImRaii.Child("Child", new Vector2( ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X, 200),true);
+                using var child = ImRaii.Child("Child", new Vector2( width, 200),true);
                 using var indent = ImRaii.PushIndent(ImGuiHelpers.GlobalScale);
 
                 // draw list

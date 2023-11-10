@@ -6,6 +6,7 @@ using Dalamud.Plugin.Services;
 using GagSpeak.UI;
 using OtterGui.Classes;
 using GagSpeak.Chat;
+using GagSpeak.Data;
 using GagSpeak.Chat.Garbler;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using XivCommon.Functions;
@@ -23,6 +24,7 @@ public class CommandManager : IDisposable // Our main command list manager
     private const string TranslateCommandString = "/gsm"; // convient subcommand for translating messages
 
     // Include our other classes
+    private readonly GagMessages _gagMessages;
     private readonly ICommandManager _commands;
     private readonly MainWindow _mainWindow;
     private readonly HistoryWindow _historyWindow;
@@ -50,6 +52,7 @@ public class CommandManager : IDisposable // Our main command list manager
         _chatManager = chatManager;
         _clientState = clientState;
         _framework = framework;
+        _gagMessages = new GagMessages();
         _messageGarbler = new MessageGarbler();
         _historyService = historyService;
 
@@ -215,7 +218,7 @@ public class CommandManager : IDisposable // Our main command list manager
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             // unique string for /gag apply == "over your mouth as the"
-            _chatManager.SendRealMessage($"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} applies a {gagType} over your mouth as the {layer} layer of your concealment*");
+            _chatManager.SendRealMessage(_gagMessages.GagApplyMessage(playerPayload, targetPlayer, gagType, layer));
         }
         catch (Exception e) {
             GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
@@ -295,10 +298,10 @@ public class CommandManager : IDisposable // Our main command list manager
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             if (parts.Length == 2) {
                 // unique string for /gag lock == "from her pocket and uses it to lock your"
-                _chatManager.SendRealMessage($"/tell {targetplayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} takes out a {locktype} from her pocket and uses it to lock your {layer} gag*");
+                _chatManager.SendRealMessage(_gagMessages.GagLockMessage(playerPayload, targetplayer, locktype, layer));
             } else if (parts.Length == 3) {
                 // unique string for /gag lock password == "from her pocket and sets the combination password to"
-                _chatManager.SendRealMessage($"/tell {targetplayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} takes out a {locktype} from her pocket and sets the combination password to {password} before locking your {layer} layer gag*");
+                _chatManager.SendRealMessage(_gagMessages.GagLockMessage(playerPayload, targetplayer, locktype, layer, password));
             } else {
                 _chat.PrintError("Something unexpected occured!");
                 throw new Exception("Something unexpected occured!");
@@ -366,10 +369,10 @@ public class CommandManager : IDisposable // Our main command list manager
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             if (parts.Length == 2) {
                 // unique string for /gag unlock == "reaches behind your neck, taking off the lock that was keeping your"
-                _chatManager.SendRealMessage($"/tell {targetplayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck, taking off the lock that was keeping your {layer} gag layer fastened nice and tight.*");
+                _chatManager.SendRealMessage(_gagMessages.GagUnlockMessage(playerPayload, targetplayer, layer));
             } else if (parts.Length == 3) {
                 // unique string for /gag unlock password == "reaches behind your neck and sets the password to"
-                _chatManager.SendRealMessage($"/tell {targetplayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and sets the password to {password} on your {layer} layer gagstrap, unlocking it.*");
+                _chatManager.SendRealMessage(_gagMessages.GagLockMessage(playerPayload, targetplayer, layer, password));
             } else {
                 _chat.PrintError("Something unexpected occured!");
                 throw new Exception("Something unexpected occured!");
@@ -417,7 +420,7 @@ public class CommandManager : IDisposable // Our main command list manager
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             // unique string for /gag remove == "reaches behind your neck and unfastens the buckle of your"
-            _chatManager.SendRealMessage($"/tell {targetplayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and unfastens the buckle of your {layer} gag layer strap, allowing your voice to be a little clearer.*");
+            _chatManager.SendRealMessage(_gagMessages.GagRemoveMessage(playerPayload, targetplayer, layer));
         } catch (Exception e) {
             _chat.PrintError($"Error sending chat message to player: {e.Message}");
             GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
@@ -449,7 +452,7 @@ public class CommandManager : IDisposable // Our main command list manager
             GagSpeak.Log.Debug($"{playerPayload.PlayerName} is attempting removeall of {targetplayer}'s gags."); // log the action
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             // unique string for /gag remove == "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more."
-            _chatManager.SendRealMessage($"/tell {targetplayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.*");
+            _chatManager.SendRealMessage(_gagMessages.GagRemoveAllMessage(playerPayload, targetplayer));
         } catch (Exception e) {
             _chat.PrintError($"Error sending chat message to player: {e.Message}");
             GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");

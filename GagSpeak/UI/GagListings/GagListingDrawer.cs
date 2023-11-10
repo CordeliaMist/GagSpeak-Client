@@ -67,7 +67,7 @@ public class GagListingsDrawer
 
     // Draw the listings
     public void DrawGagAndLockListing(int ID, string GagLabel, GagPadlocks LockLabel,
-                                      int layerIndex, string displayLabel, bool locked)
+                                      int layerIndex, string displayLabel, bool locked, int width)
     {
         // Get our boolean on if we are locked or not
         bool isPadlockEquipped = _config.selectedGagPadlocks[layerIndex] != GagPadlocks.None;
@@ -85,13 +85,13 @@ public class GagListingsDrawer
         ImGui.SameLine();
         // create a group for the 2 dropdowns and icon
         using var group = ImRaii.Group();
-        if (DrawGagTypeItemCombo(ID, GagLabel, layerIndex, locked)) {
+        if (DrawGagTypeItemCombo(ID, GagLabel, layerIndex, locked, width)) {
         }
 
         ImGui.SameLine();
         ImGui.TextUnformatted(displayLabel); // draw the label text
 
-        if (DrawGagLockItemCombo(ID, LockLabel, layerIndex, locked)) {
+        if (DrawGagLockItemCombo(ID, LockLabel, layerIndex, locked, width)) {
             if(isPadlockEquipped) {
                 ImGui.EndDisabled();
                 // to the right of this combo, add a input text field
@@ -119,7 +119,7 @@ public class GagListingsDrawer
     }
 
     // draw the gag item combo
-    private bool DrawGagTypeItemCombo(int ID, string label, int layerIndex, bool locked) {
+    public bool DrawGagTypeItemCombo(int ID, string label, int layerIndex, bool locked, int width) {
         // set our combo the the combofilterlist we want to see
         var combo = _gagTypeFilterCombo[layerIndex]; // get the combo
 
@@ -130,7 +130,7 @@ public class GagListingsDrawer
         // using the var disabled, disable this if it is locked.
         using var disabled = ImRaii.Disabled(locked);
         // draw the thing
-        combo.Draw(ID, label, layerIndex);
+        combo.Draw(ID, label, layerIndex, width);
 
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
@@ -144,7 +144,7 @@ public class GagListingsDrawer
         return true;
     }
 
-    private bool DrawGagLockItemCombo(int ID, GagPadlocks label, int layerIndex, bool locked) {
+    public bool DrawGagLockItemCombo(int ID, GagPadlocks label, int layerIndex, bool locked, int width) {
         // set our combo the the combofilterlist we want to see
         var combo = _gagLockFilterCombo[layerIndex]; // get the combo
 
@@ -155,7 +155,7 @@ public class GagListingsDrawer
         // using the var disabled, disable this if it is locked.
         using var disabled = ImRaii.Disabled(locked);
         // draw the thing
-        combo.Draw(ID, label, layerIndex);
+        combo.Draw(ID, label, layerIndex, width);
 
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {

@@ -142,9 +142,10 @@ public class GeneralTab : ITab
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
 
+        int DDwidth = (int)(ImGui.GetContentRegionAvail().X / 2);
         // draw our 3 gag listings
         foreach(var slot in Enumerable.Range(0, 3)) {
-            _gagListingsDrawer.DrawGagAndLockListing(slot, _config.selectedGagTypes[slot], _config.selectedGagPadlocks[slot], slot, $"Gag Slot {slot + 1}", _isLocked);
+            _gagListingsDrawer.DrawGagAndLockListing(slot, _config.selectedGagTypes[slot], _config.selectedGagPadlocks[slot], slot, $"Gag Slot {slot + 1}", _isLocked, DDwidth);
             ImGui.NewLine();
         }
         // leave some space for unlock minigames
