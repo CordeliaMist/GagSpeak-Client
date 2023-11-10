@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Dalamud.Configuration;
 using Dalamud.Game.Text; // Interacting with game chat, XIVChatType, ext.
@@ -9,6 +9,7 @@ using System.Linq; // For enabling lists
 using System.IO;
 using Newtonsoft.Json;
 using Dalamud.Interface.Internal.Notifications;
+using GagSpeak.Data;
 using OtterGui.Classes;
 
 // practicing modular design
@@ -51,8 +52,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public List<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
     public List<string> selectedGagPadlocksAssigner { get; set; } // name of who assigned the padlocks to the user
-    public List<XivChatType> Channels { get; set; } // Which channels are currently enabled / allowed?
-    public XivChatType CurrentChannel { get; set; } // What is the current channel?
+    public List<ChatChannel.ChatChannels> Channels { get; set; } // Which channels are currently enabled / allowed?
+    //public ChatChannel.ChatChannels CurrentChannel { get; set; } // What is the current channel?
     public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
     public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
     public string ErrorMessage { get; set; } = ""; // Gets or sets the error message
@@ -70,19 +71,19 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     //     XivChatType.CrossLinkShell4, XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7,
     //     XivChatType.CrossLinkShell8
     // }; May not need for now!!!!! Keeping for good reference for the CHANNEL_IS_ACTIVE below
-    public bool[] ChannelsIsActive = {
-        false, false, false, false, // None, None, None, None
-        true, true, true, true,     // Say, Shout, TellOutgoing, TellIncoming
-        true, true, true, true,     // Party, Alliance, Ls1, Ls2
-        true, true, true, true,     // Ls3, Ls4, Ls5, Ls6
-        true, true, true, true,     // Ls7, Ls8, FreeCompany, NoviceNetwork
-        true, true, true, true,     // CustomEmote, StandardEmote, Yell, CrossParty
-        true, true, true, false,    // PvPTeam, CrossLinkShell1, Echo, None
-        false, false, false, false, // None, None, None, None
-        false, false, true, true,   // None, None, CWL2, CWL3
-        true, true, true, true,     // CWL4, CWL5, CWL6, CWL7
-        true                        // CWL8
-    }; // Which channels are currently enabled?
+    //public bool[] ChannelsIsActive = {
+    //    false, false, false, false, // None, None, None, None
+    //    true, true, true, true,     // Say, Shout, TellOutgoing, TellIncoming
+    //    true, true, true, true,     // Party, Alliance, Ls1, Ls2
+    //    true, true, true, true,     // Ls3, Ls4, Ls5, Ls6
+    //    true, true, true, true,     // Ls7, Ls8, FreeCompany, NoviceNetwork
+    //    true, true, true, true,     // CustomEmote, StandardEmote, Yell, CrossParty
+    //    true, true, true, false,    // PvPTeam, CrossLinkShell1, Echo, None
+    //    false, false, false, false, // None, None, None, None
+    //    false, false, true, true,   // None, None, CWL2, CWL3
+    //    true, true, true, true,     // CWL4, CWL5, CWL6, CWL7
+    //    true                        // CWL8
+    //}; // Which channels are currently enabled?
 
     public XivChatType[] _allowedChannels = { // Dont think we need this but may be wrong
         XivChatType.Say, XivChatType.Shout, XivChatType.TellOutgoing, XivChatType.TellIncoming, XivChatType.Party,
@@ -131,7 +132,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
             this.selectedGagPadlocks = new List<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
         // set default values for selected channels/
         if (this.Channels == null || !this.Channels.Any()) {
-            this.Channels = new List<XivChatType>(){XivChatType.Say};}
+            this.Channels = new List<ChatChannel.ChatChannels>(){ChatChannel.ChatChannels.Say};}
         // set default values for selectedGagPadlocksPassword
         if (this.selectedGagPadlocksPassword == null || !this.selectedGagPadlocksPassword.Any() || this.selectedGagPadlocksPassword.Count > 3) {
             this.selectedGagPadlocksPassword = new List<string> { "", "", "" };}
