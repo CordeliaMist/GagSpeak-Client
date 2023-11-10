@@ -163,10 +163,10 @@ public class WhitelistTab : ITab
             // Message to display based on target proximity
             string targetedPlayerText = "Add Targetted Player"; // Displays if no target
             if (!playerTargetted) {
-                targetedPlayerText += " (No Target)"; // If not tagetting a player, display "No Target"
+                targetedPlayerText = "No Player Target!"; // If not tagetting a player, display "No Target"
                 ImGui.BeginDisabled(); // Disable the button since no target to add
             } else if (playerTargetted && !playerCloseEnough) {
-                targetedPlayerText += " (Too Far)"; // If target is too far, display "Too Far"
+                targetedPlayerText = "Player Too Far!"; // If target is too far, display "Too Far"
                 ImGui.BeginDisabled(); // Disable the button since target is too far
             }
 

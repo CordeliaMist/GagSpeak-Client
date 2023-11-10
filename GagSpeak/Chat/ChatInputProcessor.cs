@@ -1,47 +1,20 @@
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game;
-using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 using GagSpeak.Services;
-using GagSpeak;
-using OtterGui.Log;
-// using Lumina.Data.Parsing;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using ImGuiNET;
 using GagSpeak.Utility;
 using GagSpeak.Chat.Garbler;
-// using GagSpeak.HookSystem; 
-
-using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.IoC;
-using Dalamud.Networking.Http;
 using Dalamud.Plugin.Services;
-using FFXIVClientStructs.Attributes;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using FFXIVClientStructs.FFXIV.Client.System.String;
-using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.Interop;
-using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
-using Dalamud.Hooking;
+
 // Signatures located and adopted from sourcecode:
 // https://github.com/Caraxi/SimpleTweaksPlugin/blob/6a9e32489d75b63d1915d90720f45f5d75366a87/Tweaks/CommandAlias.cs
 // Check for any potential sig changes or changes to code each update and altar accordingly
-
+#pragma warning disable IDE1006
 namespace GagSpeak.Chat;
-    // [TweakHook, Signature("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86", DetourName = nameof(ProcessChatInputDetour))]
-
-    // Suposedly, if all goes well, should be able to read messages before they go out to the server.
-public unsafe class ChatInputProcessor {
+public unsafe class ChatInputProcessor : IDisposable {
     private readonly GagSpeakConfig _config; // for config options
     private readonly HistoryService _historyService; // for history service
     private readonly MessageGarbler _messageGarbler; // for message garbler
@@ -194,3 +167,4 @@ public unsafe class ChatInputProcessor {
         Enabled = false;
     }
 }
+#pragma warning restore IDE1006
