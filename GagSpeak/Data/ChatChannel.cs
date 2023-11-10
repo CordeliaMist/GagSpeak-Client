@@ -17,7 +17,7 @@ public static class ChatChannel
         Yell = 4,
         Shout = 5,
         FreeCompany = 6,
-        //NoviceNetwork = 
+        NoviceNetwork = 8,
 
 
         CWL1 = 9,
