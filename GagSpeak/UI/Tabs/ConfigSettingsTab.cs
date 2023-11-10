@@ -104,6 +104,19 @@ public class ConfigSettingsTab : ITab
         foreach (var e in (ChatChannel.ChatChannels[]) Enum.GetValues(typeof(ChatChannel.ChatChannels))) {
             // See if it is already enabled by default
             var enabled = _config.Channels.Contains(e);
+
+            //Move to next row if it is LS1 or CWLS1
+            if (e is ChatChannel.ChatChannels.Ls1 or ChatChannel.ChatChannels.CWL1)
+            {
+                while (i % 4 !=0)
+                {
+                    ImGui.NextColumn();
+                    i++;
+                }
+                //More beautiful
+                ImGui.Separator();
+            }
+
             if (ImGui.Checkbox($"{e}", ref enabled)) {
                 // See If checkbox is clicked, If not, add to list of enabled channels, otherwise, remove it.
                 if (enabled) _config.Channels.Add(e);
