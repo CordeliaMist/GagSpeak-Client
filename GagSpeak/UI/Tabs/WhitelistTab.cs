@@ -1,5 +1,6 @@
 using System;
 using ImGuiNET;
+using Lumina.Excel.GeneratedSheets;
 using OtterGui.Widgets;
 using Dalamud.Game.ClientState.Objects.Enums;
 using System.Numerics;
@@ -14,12 +15,10 @@ using GagSpeak.UI.GagListings;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using GagSpeak.Chat;
-using Lumina.Excel.GeneratedSheets;
-using System.Runtime.CompilerServices;
-using System.Dynamic;
-using Dalamud.Interface.Internal.Windows.StyleEditor;
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.ClientState.Objects.SubKinds;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
 
-// practicing modular design
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
@@ -30,6 +29,7 @@ public class WhitelistTab : ITab
     private readonly ChatManager _chatManager; // snag the chatmanager from the main plugin for obvious reasons
     private readonly GagSpeakConfig _config; // snag the conmfig from the main plugin for obvious reasons
     private readonly IClientState _clientState; // snag the clientstate from the main plugin for obvious reasons
+    private readonly IDataManager _dataManager; // for parsing objects
     private readonly GagListingsDrawer _gagListingsDrawer; // snag the gaglistingsdrawer from the main plugin for obvious reasons
     private int _currentWhitelistItem; // store a value so we know which item is selected in whitelist
     public ReadOnlySpan<byte> Label => "Whitelist"u8; // set label for the whitelist tab
@@ -45,10 +45,11 @@ public class WhitelistTab : ITab
     private float interactionButtonsDisabledTime = 0f; // store the time since we pressed the button
 
     // Constructor for the whitelist tab
-    public WhitelistTab(GagSpeakConfig config, IClientState clientState, GagListingsDrawer gagListingsDrawer, ChatManager chatManager) {
+    public WhitelistTab(GagSpeakConfig config, IClientState clientState, GagListingsDrawer gagListingsDrawer, ChatManager chatManager, IDataManager dataManager) {
         // Set the readonlys
         _config = config;
         _clientState = clientState;
+        _dataManager = dataManager;
         _gagListingsDrawer = gagListingsDrawer;
         _gagMessages = new GagMessages();
         _chatManager = chatManager;
@@ -115,7 +116,7 @@ public class WhitelistTab : ITab
         List<WhitelistCharData> whitelist = _config.Whitelist;
         // create the dropdowns
         if(whitelist.Count == 0) {
-            whitelist.Add(new WhitelistCharData("None", "None"));
+            whitelist.Add(new WhitelistCharData("None", "None", "None"));
             _config.Save();
         }
 
@@ -213,14 +214,24 @@ public class WhitelistTab : ITab
             if (ImGui.Button(targetedPlayerText, buttonWidth)) {
                 if (_clientState.LocalPlayer.TargetObject.ObjectKind == ObjectKind.Player) { // if the player is targetting another player
                     string targetName = CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
+                    // if the object kind of the target is a player, then get the character parse of that player
+                    var targetCharacter = (PlayerCharacter)_clientState.LocalPlayer.TargetObject;
+                    // now we can get the name and world from them
+                    var name = targetCharacter.Name.TextValue;
+                    var world = targetCharacter.HomeWorld.Id;
+                    var worldName = _dataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.World>()?.GetRow((uint)world)?.Name?.ToString();
+                    
+                    
+                    GagSpeak.Log.Debug($"Targetted Player: {targetName} from {world}, {worldName}");
+
                     // And now, if the player is not already in our whitelist, we will add them. Otherwise just do nothing.
                     if (!_config.Whitelist.Any(item => item.name == targetName)) {
                         GagSpeak.Log.Debug($"Adding targetted player to whitelist {_clientState.LocalPlayer.TargetObject})");
                         if(whitelist.Count == 1 && whitelist[0].name == "None") { // If our whitelist just shows none, replace it with first addition.
-                            whitelist[0] = new WhitelistCharData(targetName,"None");
+                            whitelist[0] = new WhitelistCharData(targetName, worldName, "None");
                             _config.Save();
                         } else {
-                            _config.Whitelist.Add(new WhitelistCharData(targetName,"None")); // Add the player to the whitelist
+                            _config.Whitelist.Add(new WhitelistCharData(targetName, worldName, "None")); // Add the player to the whitelist
                             _config.Save();
                         }
                     }
@@ -234,7 +245,7 @@ public class WhitelistTab : ITab
             ImGui.SameLine();
             if (ImGui.Button("Remove Player", buttonWidth)) {
                 if (whitelist.Count == 1) {
-                    whitelist[0] = new WhitelistCharData("None", "None");
+                    whitelist[0] = new WhitelistCharData("None None", "None", "None");
                 } else {
                     _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
                 }
@@ -264,17 +275,10 @@ public class WhitelistTab : ITab
             ImGui.Combo("##Layer", ref layer, new string[] { "Layer 1", "Layer 2", "Layer 3" }, 3);
             _layer = layer;
 
-
             ImGui.SameLine();
             // create a dropdown for the gag type,
             int width = (int)(ImGui.GetContentRegionAvail().X / 2.5);
-            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, // offset ensures unique ID
-                                                    whitelist[_currentWhitelistItem],
-                                                    layer,
-                                                    false,
-                                                    width,
-                                                    _gagTypeFilterCombo[layer]
-            );
+            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, whitelist[_currentWhitelistItem], layer, false, width, _gagTypeFilterCombo[layer]);
             ImGui.SameLine();
 
             // Create the button for the first row, third column
@@ -288,12 +292,7 @@ public class WhitelistTab : ITab
             // for our second row, gag lock options and buttons
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             // set up a temp password storage field here.
-            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10,
-                                                    whitelist[_currentWhitelistItem],
-                                                    layer,
-                                                    false,
-                                                    width,
-                                                    _gagLockFilterCombo[layer]);
+            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, whitelist[_currentWhitelistItem], layer, false, width, _gagLockFilterCombo[layer]);
             ImGui.SameLine();
             var password = _tempPassword ?? _storedPassword; // temp storage to hold until we de-select the text input
             // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == CombinationPadlock, draw a text inputwith hint field for the password with a ref length of 4.
@@ -306,10 +305,6 @@ public class WhitelistTab : ITab
                     _tempPassword = null;
                 }
             }
-
-
-
-
 
             // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == TimerPasswordPadlock || MistressTimerPadlock, draw a text input with hint field labeled time set, with ref length of 3.
             if (_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == GagPadlocks.TimerPasswordPadlock ||

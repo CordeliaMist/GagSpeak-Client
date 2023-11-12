@@ -14,33 +14,6 @@ namespace GagSpeak.UI.Helpers;
 
 public static class UIHelpers // A class for all of the UI helpers, including basic functions for drawing repetative yet unique design elements
 {
-
-
-// using System;
-// using System.Drawing;
-// using System.Reflection;
-// namespace SamplePlugin
-// {
-//     public class ImageLoader
-//     {
-//         public Image LoadEmbeddedImage()
-//         {
-//             string resourceName = "SamplePlugin.goat.png"; // Update the resource path with your project's namespace
-//             // Load the image from embedded resources
-//             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
-//             {
-//                 if (stream == null)
-//                 {
-//                     throw new Exception("Resource not found in assembly.");
-//                 }
-//                 return Image.FromStream(stream);
-//             }
-//         }
-//     }
-// }
-
-
-// ORIGINAL, STILL WORKING ONE:
     public static bool DrawCheckbox(string label, string tooltip, bool value, out bool on, bool locked)
     {
         using var disabled = ImRaii.Disabled(locked);
@@ -49,7 +22,6 @@ public static class UIHelpers // A class for all of the UI helpers, including ba
         on = value;
         return ret;
     }
-    // Out of function here!
 
     public static void OpenCombo(string comboLabel)
     {

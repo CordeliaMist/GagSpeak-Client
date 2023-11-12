@@ -5,7 +5,7 @@ namespace GagSpeak.Data;
 // a struct to hold information on whitelisted players.
 public struct WhitelistCharData {
     public string name; // get the character name
-    // public string World; // get the characters world (dont know how to get this for now)
+    public string homeworld; // get the characters world (dont know how to get this for now)
     public string relationshipStatus; // get the relationship status of the character to you
     // relation status can be "Mistress", "Pet", "Slave", or "None"
     public int commitmentDuration; // how long has your commitment with this player lasted?
@@ -15,10 +15,10 @@ public struct WhitelistCharData {
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
     public List<string> selectedGagPadlocksAssigner { get; set; } // who assigned the padlocks, if any
     // Constructor for the struct
-    public WhitelistCharData(string _name, string _relationshipStatus)
+    public WhitelistCharData(string _name, string _homeworld, string _relationshipStatus)
     {
         this.name = _name;
-        // this.World = world;
+        this.homeworld = _homeworld;
         this.relationshipStatus = _relationshipStatus;
         this.commitmentDuration = 0;
         this.lockedLiveChatGarbler = false;

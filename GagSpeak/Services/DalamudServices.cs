@@ -30,6 +30,7 @@ public class DalamudServices
 		services.AddSingleton(ClientState);
 		services.AddSingleton(CommandManager);
 		services.AddSingleton(Condition);
+		services.AddSingleton(DataManager);
 		services.AddSingleton(DutyStage);
 		services.AddSingleton(FateTable);
 		services.AddSingleton(FlyTextGui);
@@ -56,6 +57,7 @@ public class DalamudServices
 	[PluginService] public IClientState ClientState { get; private set; } = null!; // For interfacing with the client state
 	[PluginService] public ICommandManager CommandManager { get; private set; } = null!; // For interfacing with commands
 	[PluginService] public ICondition Condition { get; private set; } = null!; // For interfacing with conditions
+	[PluginService] public IDataManager DataManager { get; set; } = null!; // for parsing object data
 	[PluginService] public IDutyState DutyStage { get; private set; } = null!; // To know if we are currently in duty (may not be needed)
 	[PluginService] public IFateTable FateTable { get; private set; } = null!; // Very much likely not needed
 	[PluginService] public IFlyTextGui FlyTextGui { get; private set; } = null!; // For fly by text (may not be needed)

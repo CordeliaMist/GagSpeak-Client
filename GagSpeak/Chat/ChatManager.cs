@@ -10,6 +10,8 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using XivCommon.Functions;
 using System.Diagnostics;
 using OtterGui.Classes;
+using GagSpeak.Services;
+
 namespace GagSpeak.Chat;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention

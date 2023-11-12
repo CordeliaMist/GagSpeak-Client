@@ -3,15 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
-using Dalamud.Logging;
-using Dalamud.Plugin;
-using Dalamud.Game;
-using Dalamud.Game.ClientState.Objects;
-using Dalamud.IoC;
-using Dalamud.Plugin.Services;
-using Microsoft.Extensions.DependencyInjection;
-
-using GagSpeak.Chat;
 
 // Pulled from Sillychat, used for logging a history of the translations
 

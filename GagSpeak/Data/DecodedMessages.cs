@@ -10,7 +10,10 @@ public class GagMessages
         return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} applies a {gagType} over your mouth as the {layer} layer of your concealment*";
     }
 
-    public string GagLockMessage(PlayerPayload playerPayload, string targetPlayer, string lockType, string layer) { return GagLockMessage(playerPayload, targetPlayer, lockType, layer, ""); }
+    public string GagLockMessage(PlayerPayload playerPayload, string targetPlayer, string lockType, string layer) { 
+        return GagLockMessage(playerPayload, targetPlayer, lockType, layer, "");
+    }
+    
     public string GagLockMessage(PlayerPayload playerPayload, string targetPlayer, string lockType, string layer, string password) {
         if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
         if (password != null) {
@@ -20,7 +23,10 @@ public class GagMessages
         }
     }
 
-    public string GagUnlockMessage(PlayerPayload playerPayload, string targetPlayer, string layer) { return GagUnlockMessage(playerPayload, targetPlayer, layer, ""); }
+    public string GagUnlockMessage(PlayerPayload playerPayload, string targetPlayer, string layer) {
+        return GagUnlockMessage(playerPayload, targetPlayer, layer, "");
+    }
+    
     public string GagUnlockMessage(PlayerPayload playerPayload, string targetPlayer, string layer, string password) {
         if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
         if (password != null) {
