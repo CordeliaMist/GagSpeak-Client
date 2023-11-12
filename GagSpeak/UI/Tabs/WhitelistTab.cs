@@ -114,8 +114,12 @@ public class WhitelistTab : ITab
         // Now we can begin by creating an array of strings that store the whitelist of appended character names
         List<WhitelistCharData> whitelist = _config.Whitelist;
         // create the dropdowns
+        if(whitelist.Count == 0) {
+            whitelist.Add(new WhitelistCharData("None", "None"));
+            _config.Save();
+        }
 
-        // If the whitelist is empty, disable lower section
+        // If the whitelist is has only none listed, disable lower section
         if (whitelist.Count == 1 && whitelist[0].name == "None") {
             emptyList = true;
         } else {
