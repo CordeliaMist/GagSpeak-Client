@@ -55,33 +55,38 @@ public static class MessageDictionary {
             return true;
 
         // the gag request mistress encoded message
-        } else if (textVal == null){
-            // Encoded message for the REQUEST MISTRESS button
-
+        } else if (textVal.Contains("from") && textVal.Contains("looks down upon you from above") &&
+                   textVal.Contains("a smirk in her eyes as she sees the pleading look in your own* \"Well now darling, " +
+                   "your actions speak for you well enough, so tell me, do you wish for me to become your mistress?\"")) {
+            GagSpeak.Log.Debug($"THIS IS IN OUTGOING /gag request mistress ENCODED TELL");
+            encodedMsgIndex = 6;
             return true;
 
         // the gag request pet encoded message
-        } else if (textVal == null){
-            // Encoded message for the REQUEST TO PET button
+        } else if (textVal.Contains("from") && textVal.Contains("looks up at you") &&
+                   textVal.Contains("her nervous tone clear and cheeks blushing red as she studders out the words.* \"U-um, If it's ok " +
+                   "with you, could I become your pet?\"")) {
             return true;
 
         // the gag request slave encoded message
-        } else if (textVal == null) {
-            // Encoded message for the REQUEST TO SLAVE button
-        
+        } else if (textVal.Contains("from") && textVal.Contains("hears the sound of her leash's chain rattling along the floor") &&
+                   textVal.Contains("as she crawls up to your feet. Stopping, looking up with pleading eyes in an embarassed tone* \"Would it be ok if I became your slave?\"")) {
+            return true;
+
         // the gag request removal encoded message
-        } else if (textVal == null) {
-            // Encoded message for the REQUEST REMOVAL button
+        } else if (textVal.Contains("from") && textVal.Contains("looks up at you with tears in her eyes") &&
+                   textVal.Contains("She never wanted this moment to come, but also knows due to the circumstances it was enivtable.* \"I'm sorry, but I cant keep our relationship going right now, there is just too much going on\"")) {
             return true;
         
         // the gag request lock encoded message
-        } else if (textVal == null) {
-            // Encoded message for the LOCK LIVE CHAT GARBLED button
+        } else if (textVal.Contains("from") && textVal.Contains("looks down sternly at looks down sternly at the property they owned below them.") &&
+                   textVal.Contains("firmly slapped her companion across the cheek and held onto her chin firmly.") && 
+                   textVal.Contains("You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.")) {
             return true;
         
-        // the gag request unlock encoded message
-        } else if (textVal == null) {
-            // Encoded message for the REQUEST PLAYER INFO button
+        // the gag request info encoded message
+        } else if (textVal.Contains("from") && textVal.Contains("looks down upon you with a smile,*") &&
+                   textVal.Contains("I'd love to hear you describe your situation to me my dear, I want hear all about how you feel right now")) {
             return true;
         }
 

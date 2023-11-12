@@ -67,23 +67,24 @@ public class MessageEncoder // change to message encoder later
     // summarize later, for now, just know it encodes request slave messages
     public string RequestSlaveEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} hears the sound of her leash's chain rattling along the floor as she crawls up to your feet. Stopping, looking up " +
-        "with pleading eyes in an embarassed tone* \"Would it be ok if I became your pet?\"";
+        "with pleading eyes in an embarassed tone* \"Would it be ok if I became your slave?\"";
     }
 
     // summarize later, for now, just know it encodes relation removal messages
     public string RequestRemovalEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
-        // format the following tell
-        // player name from player world looks up at you with tears in her eyes. She never wanted this moment to come, but also knows due to the circumstances it was enivtable.* "I'm sorry, but I cant keep our relationship going right now, there is just too much going on"
         return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks up at you with tears in her eyes. She never wanted this moment to come, but also knows due to the circumstances " +
         "it was enivtable.* \"I'm sorry, but I cant keep our relationship going right now, there is just too much going on\"";
     }
 
     // summarize later, for now, just know it encodes the locking of live garbler messages
     public string LiveGarblerLockEncodedMessage(PlayerPayload playerPayload, string targetPlayer, string lockType) {
-        // format the following tell
-        // player name from player world looks down sternly at the girl she owned below her. player name slapped her companion across the cheek and held onto her chin firmly.* "You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say."
         return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down sternly at looks down sternly at the property they owned below them. {playerPayload.PlayerName} firmly slapped " +
         "her companion across the cheek and held onto her chin firmly.* \"You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.\"";
+    }
+
+    // summarize later, for now, just know it encodes the requesting of player information
+    public string RequestInfoEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down upon you with a smile,* \"I'd love to hear you describe your situation to me my dear, I want hear all about how you feel right now";
     }
 
 }

@@ -131,6 +131,30 @@ public class MessageDecoder {
             // FINISHED DECODING THE MESSAGE
             GagSpeak.Log.Debug($"Determined Message Outcome: REMOVEALL || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
+        } else if (encodedMsgIndex == 8) {
+    // handle the request mistress message
+
+            return decodedMessage;
+        } else if (encodedMsgIndex == 9) {
+    // handle the request pet message
+
+            return decodedMessage;
+        } else if (encodedMsgIndex == 10) {
+    // handle the request slave message
+
+            return decodedMessage;
+        } else if (encodedMsgIndex == 11) {
+    // handle the relation removal message
+
+            return decodedMessage;
+        } else if (encodedMsgIndex == 12) {
+    // handle the live chat garbler lock message
+
+            return decodedMessage;
+        } else if (encodedMsgIndex == 13) {
+    // handle the information request
+    
+            return decodedMessage;
         } else {
             // should return a list of empty strings, letting us know it isnt any of the filters.
             decodedMessage[0] = "none";

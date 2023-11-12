@@ -253,4 +253,20 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true; // sucessful parse
     }
 
+    // handle the request mistress message
+
+
+    // handle the request pet message
+
+
+    // handle the request slave message
+
+
+    // handle the relation removal message
+
+
+    // handle the live chat garbler lock message
+
+
+    // handle the information request
 }

@@ -47,24 +47,10 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
     public List<string> selectedGagPadlocksAssigner { get; set; } // name of who assigned the padlocks to the user
     public List<ChatChannel.ChatChannels> Channels { get; set; } // Which channels are currently enabled / allowed?
-    //public ChatChannel.ChatChannels CurrentChannel { get; set; } // What is the current channel?
+    public List<DateTimeOffset> selectedGagPadLockTimer { get; set; } // timer of each padlock
     public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
     public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
-    public XivChatType[] _allowedChannels = { // Dont think we need this but may be wrong
-        XivChatType.Say, XivChatType.Shout, XivChatType.TellOutgoing, XivChatType.TellIncoming, XivChatType.Party,
-        XivChatType.Alliance, XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4, XivChatType.Ls5,
-        XivChatType.Ls6, XivChatType.Ls7, XivChatType.Ls8, XivChatType.FreeCompany, XivChatType.NoviceNetwork,
-        XivChatType.CustomEmote, XivChatType.StandardEmote, XivChatType.Yell, XivChatType.CrossParty, XivChatType.CrossLinkShell1,
-        XivChatType.CrossLinkShell2, XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4, XivChatType.CrossLinkShell5,
-        XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8
-    };
-    // Config Options brought over for UI purposes / Implementation purposes
     public MainWindow.TabType SelectedTab          { get; set; } = MainWindow.TabType.General; // Default to the general tab
-    public bool ShowDesignQuickBar               { get; set; } = false; // Show the design quickbar?
-    public bool LockDesignQuickBar               { get; set; } = false; // Lock the design quickbar?
-    public bool ShowQuickBarInTabs               { get; set; } = true;  // Show the quickbar in the tabs?
-    public bool LockMainWindow                   { get; set; } = false; // Lock the main window?
-
     private List<WhitelistCharData> whitelist = new List<WhitelistCharData>(); // appears to be baseline for whitelist
     public List<WhitelistCharData> Whitelist { get => whitelist; set => whitelist = value; } // Note sure why, document later
 
