@@ -14,7 +14,7 @@ using GagSpeak.UI.Tabs.HelpPageTab;
 namespace GagSpeak.UI;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
-public class MainWindow : Window //, IDisposable
+public class MainWindow : Window
 {
     public enum TabType 
     {
@@ -72,21 +72,13 @@ public class MainWindow : Window //, IDisposable
     public override void PreDraw() {
         // Before we draw, lets lock the window in place, just so until its finished being drawn, we dont have anyone dragging shit everywhere.
         // It also helps to make sure the very modular precent based widths we will configure function properly.
-        //Flags |= ImGuiWindowFlags.NoResize;
+        //Flags |= ImGuiWindowFlags.NoResize;   <--- UNCOMMMENT THIS ONCE READY FOR RELEASE 
     }
 
-    // Now that we are THE READY. Yis. Let us, LE DRAW (This should be called by the windowManager)
     public override void Draw() {
         // get our cursors Y position and store it into YPOS
         var yPos = ImGui.GetCursorPosY();
 
-        // Lets begin drawing the top bar of the UI, which will contain all of the tabs, And an optional few buttons to trigger additional pop-out windows maybe.
-        /// FORMAT: [string label]              - The label for the tab bar (its identification tag)
-        /// [ImGuiTabBarFlags flags]            - Any flags we want to include in the design of the tab bar
-        /// [ReadOnlySpan<byte> selectTab]      - The tab that we are currently on.
-        /// [out ReadOnlySpan<byte> currentTab] - the current tab selected we are on, read in byte span format
-        /// [Action buttons]                    - UNSURE ATM
-        /// [params ITab[] tabs]                - the list of tabs that will will want to have displayed
         if (TabBar.Draw("##tabs", ImGuiTabBarFlags.None, ToLabel(SelectTab), out var currentTab, () => { }, _tabs)) {
             SelectTab           = TabType.None; // set the selected tab to none
             _config.SelectedTab = FromLabel(currentTab); // set the config selected tab to the current tab
@@ -99,7 +91,6 @@ public class MainWindow : Window //, IDisposable
         if (ImGui.Button("Save & Close")) {
             Toggle();
             _config.Save();
-
         }
 
         // In that same line...

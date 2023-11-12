@@ -1,4 +1,3 @@
-
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -9,6 +8,8 @@ using GagSpeak.Utility;
 using GagSpeak.Chat.Garbler;
 using Dalamud.Plugin.Services;
 
+// I swear to god, if any contributors even attempt to tinker with this file, I will swat you over the head. DO NOT DO IT.
+
 // Signatures located and adopted from sourcecode:
 // https://github.com/Caraxi/SimpleTweaksPlugin/blob/6a9e32489d75b63d1915d90720f45f5d75366a87/Tweaks/CommandAlias.cs
 // Check for any potential sig changes or changes to code each update and altar accordingly
@@ -18,8 +19,6 @@ public unsafe class ChatInputProcessor : IDisposable {
     private readonly GagSpeakConfig _config; // for config options
     private readonly HistoryService _historyService; // for history service
     private readonly MessageGarbler _messageGarbler; // for message garbler
-
-    // private readonly MessageGarbler messageGarbler;
     public virtual bool Ready { get; protected set; } // see if ready
     public virtual bool Enabled { get; protected set; } // set if enabled
     private nint processChatInputAddress;

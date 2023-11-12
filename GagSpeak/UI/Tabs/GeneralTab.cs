@@ -1,46 +1,17 @@
 ﻿using System;
 using System.Numerics;
-using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using ImGuiScene;
 using OtterGui;
-﻿using Dalamud.Game.Text;
-using Dalamud.Plugin;
-using System.Diagnostics;
-using Num = System.Numerics;
-using System.Collections.Generic;
 using System.Linq;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
 using OtterGui.Widgets;
-using Dalamud.Interface;
-using Dalamud.Interface.Utility;
-
-using GagSpeak.Services;
-using GagSpeak.UI.Helpers;
 using GagSpeak.UI.GagListings;
 using Dalamud.Interface.Utility.Raii;
-﻿using Dalamud.Game.Command;
-using Dalamud.IoC;
-using Dalamud.Plugin;
-using System.IO;
-using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
-﻿using System;
-using System.Numerics;
-using Dalamud.Interface.Internal;
-using Dalamud.Interface.Windowing;
-using ImGuiNET;
-using Microsoft.VisualBasic;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 public class GeneralTab : ITab
 {
-    // Begin by appending the readonlys and privates
-    private readonly IDalamudTextureWrap _dalamudTextureWrap; // for image display
-    private readonly UiBuilder _uiBuilder; // for image display
     private readonly GagSpeakConfig _config;
     private readonly GagListingsDrawer _gagListingsDrawer;
     private GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
@@ -50,18 +21,11 @@ public class GeneralTab : ITab
     private bool _isLocked;
     private bool? _inDomMode;
     
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config,
-            UiBuilder uiBuilder, DalamudPluginInterface pluginInterface)
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config)
     {
         _isLocked = false;
         _config = config;
         _gagListingsDrawer = gagListingsDrawer;
-        _uiBuilder = uiBuilder;
-
-        var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "icon.png");
-        var IconImage = _uiBuilder.LoadImage(imagePath);
-        _dalamudTextureWrap = IconImage;
-
 
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
             new GagTypeFilterCombo(_config.GagTypes, _config),
@@ -74,15 +38,12 @@ public class GeneralTab : ITab
             new GagLockFilterCombo(_config),
             new GagLockFilterCombo(_config)
         };
-
-
     }
 
     // store our current safeword
     public string _currentSafeword = string.Empty;
     // Apply our lable for the tab
-    public ReadOnlySpan<byte> Label
-        => "General"u8;
+    public ReadOnlySpan<byte> Label => "General"u8;
 
     /// <summary>
     /// This Function draws the content for the window of the General Tab
@@ -94,21 +55,17 @@ public class GeneralTab : ITab
         if (!child)
             return;
 
-        
         // Draw the child grouping for the ConfigSettings Tab
-        using (var child2 = ImRaii.Child("GeneralTabChild"))
-        {
+        using (var child2 = ImRaii.Child("GeneralTabChild")) {
             DrawHeader();
             DrawGeneral();
         }
     }
 
-    // Draw the header stuff
-    private void DrawHeader()
+    private void DrawHeader() // Draw the header stuff
         => WindowHeader.Draw("Gag Selections / Inspector", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
 
-    // Draw the actual general tab contents
-    private void DrawGeneral() {
+    private void DrawGeneral() { // Draw the actual general tab contents
         // let's start by drawing the outline for the container
         using var child = ImRaii.Child("GeneralTabPanel", -Vector2.One, true);
         // Let's create a table in this panel
@@ -179,6 +136,7 @@ public class GeneralTab : ITab
                     _gagLockFilterCombo[slot], slot, $"Gag Slot {slot + 1}", _isLocked, DDwidth);
             ImGui.NewLine();
         }
+        // we started at the bottom now we here... wait, i mean the reverse of that. Actually you know what, nevermind
     }
 }
 

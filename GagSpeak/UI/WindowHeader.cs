@@ -1,20 +1,16 @@
-using System;
-using System.Linq;
 using System.Numerics;
-using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui;
 using OtterGui.Raii;
 
-// practicing modular design
 namespace GagSpeak.UI.Tabs;
 
 // This class draws the header of each of our tabs (not the tab list, but the line below it, listing the title)
 public static class WindowHeader
 {
     /// <summary>
-    /// This function draws the header for the window.
+    /// This function draws the header for the window. (the fancy label at the top of each tab's window you see "Whitelist Manager" ext.)
     /// <list type="bullet">
     /// <item><c>text</c><param name="text"> - The text to display in the header</param></item>
     /// <item><c>textColor</c><param name="textColor"> - The color of the text</param></item>

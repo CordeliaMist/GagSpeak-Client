@@ -19,9 +19,6 @@ public static class ChatChannel
         Alliance = 3,
         NoviceNetwork = 8,
 
-        //NoviceNetwork = 
-
-
         CWL1 = 9,
         CWL2 = 10,
         CWL3 = 11,

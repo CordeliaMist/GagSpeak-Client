@@ -1,13 +1,8 @@
-using System.Numerics;
 using ImGuiNET;
-using System.Collections.Generic;
-using System.Linq;
 using OtterGui;
 using OtterGui.Raii;
 using Lumina.Misc;
-using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Plugin.Services;
-
+using System.Text.RegularExpressions;
 
 // Practicing Modular Design
 namespace GagSpeak.UI.Helpers;
@@ -29,4 +24,26 @@ public static class UIHelpers // A class for all of the UI helpers, including ba
         var popupId  = ~Crc32.Get("##ComboPopup", windowId);
         ImGui.OpenPopup(popupId); // was originally popup ID
     }
+
+    // Helper function to clean senders name off the list of clientstate objects
+    public static string CleanSenderName(string senderName) {
+        GagSpeak.Log.Debug($"Sender Name: {senderName}");
+        string[] senderStrings = SplitCamelCase(RemoveSpecialSymbols(senderName)).Split(" ");
+        string playerSender = senderStrings.Length == 1 ? senderStrings[0] : senderStrings.Length == 2 ?
+            (senderStrings[0] + " " + senderStrings[1]) :
+            (senderStrings[0] + " " + senderStrings[2]);
+        return playerSender;
+    }
+
+    // Helper functions for parsing payloads and clientstruct information
+    public static string SplitCamelCase(string input) {
+        return System.Text.RegularExpressions.Regex.Replace(input, "([A-Z])", " $1",
+            System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
+    }
+    public static string RemoveSpecialSymbols(string value) {
+        Regex rgx = new Regex(@"[^a-zA-Z:/._\ -]");
+        return rgx.Replace(value, "");
+    }
+
+
 }

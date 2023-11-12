@@ -1,29 +1,14 @@
 using System;
 using System.Numerics;
-using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using ImGuiScene;
-using OtterGui;
 using OtterGui.Raii;
-﻿using Dalamud.Game.Text;
-using Dalamud.Plugin;
-using System.Diagnostics;
-using Num = System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
-using OtterGui.Widgets;
-using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-
-using GagSpeak.Services;
-using GagSpeak.UI.Helpers;
-using GagSpeak.Chat;
 
 namespace GagSpeak.UI.GagListings;
 
-public sealed class GagTypeFilterCombo
+public sealed class GagTypeFilterCombo 
 {
     private GagSpeakConfig _config;
     private string _comboSearchText;

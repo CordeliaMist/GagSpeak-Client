@@ -1,23 +1,21 @@
 using System;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using OtterGui.Widgets;
 using Dalamud.Game.ClientState.Objects.Enums;
 using System.Numerics;
-using System.Text.RegularExpressions;
 using Dalamud.Plugin.Services;
 using OtterGui;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface.Utility;
 using GagSpeak.Data;
+using GagSpeak.UI.Helpers;
 using GagSpeak.UI.GagListings;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using GagSpeak.Chat;
-using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Objects.SubKinds;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
+using GagSpeak.Chat.MsgEncoder;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 
@@ -25,7 +23,7 @@ namespace GagSpeak.UI.Tabs.WhitelistTab;
 public class WhitelistTab : ITab
 {
     // When going back through this, be sure to try and reference anything possible to include from the glamourer convention, since it is more modular.
-    private readonly GagMessages _gagMessages; // snag the whitelistchardata from the main plugin for obvious reasons
+    private readonly MessageEncoder _gagMessages; // snag the whitelistchardata from the main plugin for obvious reasons
     private readonly ChatManager _chatManager; // snag the chatmanager from the main plugin for obvious reasons
     private readonly GagSpeakConfig _config; // snag the conmfig from the main plugin for obvious reasons
     private readonly IClientState _clientState; // snag the clientstate from the main plugin for obvious reasons
@@ -36,6 +34,8 @@ public class WhitelistTab : ITab
     private string _tempPassword; // password temp stored during typing
     private string _storedPassword; // password stored to buffer
     private int _layer; // layer of the gag
+    private string _gagLabel; // current selection on gag type DD
+    private string _lockLabel; // current selection on gag lock DD
     private readonly GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
     private readonly GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
 
@@ -51,10 +51,12 @@ public class WhitelistTab : ITab
         _clientState = clientState;
         _dataManager = dataManager;
         _gagListingsDrawer = gagListingsDrawer;
-        _gagMessages = new GagMessages();
+        _gagMessages = new MessageEncoder();
         _chatManager = chatManager;
         _tempPassword = "";
         _storedPassword = "";
+        _gagLabel = "None";
+        _lockLabel = "None";
         _layer = 0;
 
         // draw out our gagtype filter combo listings
@@ -71,25 +73,6 @@ public class WhitelistTab : ITab
         };
     }
     
-    // Helper function to clean senders name off the list of clientstate objects
-    public static string CleanSenderName(string senderName) {
-        GagSpeak.Log.Debug($"Sender Name: {senderName}");
-        string[] senderStrings = SplitCamelCase(RemoveSpecialSymbols(senderName)).Split(" ");
-        string playerSender = senderStrings.Length == 1 ? senderStrings[0] : senderStrings.Length == 2 ?
-            (senderStrings[0] + " " + senderStrings[1]) :
-            (senderStrings[0] + " " + senderStrings[2]);
-        return playerSender;
-    }
-
-    // Helper functions for parsing payloads and clientstruct information
-    public static string SplitCamelCase(string input) {
-        return System.Text.RegularExpressions.Regex.Replace(input, "([A-Z])", " $1",
-            System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
-    }
-    public static string RemoveSpecialSymbols(string value) {
-        Regex rgx = new Regex(@"[^a-zA-Z:/._\ -]");
-        return rgx.Replace(value, "");
-    }
     // Draw the content for the window of the Whitelist Tab
     public void DrawContent() {
         // Create a child for the Main Window (not sure if we need this without a left selection panel)
@@ -213,11 +196,10 @@ public class WhitelistTab : ITab
             // Create a button for adding the targetted player to the whitelist, assuming they are within proxy.
             if (ImGui.Button(targetedPlayerText, buttonWidth)) {
                 if (_clientState.LocalPlayer.TargetObject.ObjectKind == ObjectKind.Player) { // if the player is targetting another player
-                    string targetName = CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
+                    string targetName = UIHelpers.CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
                     // if the object kind of the target is a player, then get the character parse of that player
                     var targetCharacter = (PlayerCharacter)_clientState.LocalPlayer.TargetObject;
                     // now we can get the name and world from them
-                    var name = targetCharacter.Name.TextValue;
                     var world = targetCharacter.HomeWorld.Id;
                     var worldName = _dataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.World>()?.GetRow((uint)world)?.Name?.ToString();
                     
@@ -245,7 +227,7 @@ public class WhitelistTab : ITab
             ImGui.SameLine();
             if (ImGui.Button("Remove Player", buttonWidth)) {
                 if (whitelist.Count == 1) {
-                    whitelist[0] = new WhitelistCharData("None None", "None", "None");
+                    whitelist[0] = new WhitelistCharData("None", "None", "None");
                 } else {
                     _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
                 }
@@ -278,7 +260,7 @@ public class WhitelistTab : ITab
             ImGui.SameLine();
             // create a dropdown for the gag type,
             int width = (int)(ImGui.GetContentRegionAvail().X / 2.5);
-            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, whitelist[_currentWhitelistItem], layer, false, width, _gagTypeFilterCombo[layer]);
+            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, whitelist[_currentWhitelistItem], ref _gagLabel, layer, false, width, _gagTypeFilterCombo[layer]);
             ImGui.SameLine();
 
             // Create the button for the first row, third column
@@ -286,13 +268,13 @@ public class WhitelistTab : ITab
                 // execute the generation of the apply gag layer string
                 interactionButtonsDisabled = true; // Disable buttons for 5 seconds
                 interactionButtonsDisabledTime = (float)ImGui.GetTime();
-                ApplyGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem].selectedGagTypes[layer], _config.Whitelist[_currentWhitelistItem]);
+                ApplyGagOnPlayer(layer, _gagLabel, _config.Whitelist[_currentWhitelistItem]);
             }
 
             // for our second row, gag lock options and buttons
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             // set up a temp password storage field here.
-            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, whitelist[_currentWhitelistItem], layer, false, width, _gagLockFilterCombo[layer]);
+            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, whitelist[_currentWhitelistItem], ref _lockLabel, layer, false, width, _gagLockFilterCombo[layer]);
             ImGui.SameLine();
             var password = _tempPassword ?? _storedPassword; // temp storage to hold until we de-select the text input
             // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == CombinationPadlock, draw a text inputwith hint field for the password with a ref length of 4.
@@ -401,9 +383,10 @@ public class WhitelistTab : ITab
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // Assuming GagMessages is a class instance, replace it with the actual instance
-        _chatManager.SendRealMessage(_gagMessages.GagApplyMessage(playerPayload, selectedPlayer.name, selectedPlayer.selectedGagTypes[layer], layer.ToString()));
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.GagEncodedApplyMessage(playerPayload, targetPlayer, gagType, (layer+1).ToString()));
         // Update the selected player's data
-        selectedPlayer.selectedGagTypes[layer - 1] = gagType; // note that this wont always be accurate, and is why request info exists.
+        selectedPlayer.selectedGagTypes[layer] = gagType; // note that this wont always be accurate, and is why request info exists.
     }
 
     // we need a function for if the password is not given
@@ -414,18 +397,18 @@ public class WhitelistTab : ITab
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the chat message
-        _chatManager.SendRealMessage(_gagMessages.GagLockMessage(playerPayload, selectedPlayer.name, lockType, layer.ToString(), password));
+        _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, selectedPlayer.name, lockType, layer.ToString(), password));
 
         // Update the selected player's data
         if(Enum.TryParse(lockType, out GagPadlocks parsedLockType)) // update padlock
-            selectedPlayer.selectedGagPadlocks[layer - 1] = parsedLockType;
+            selectedPlayer.selectedGagPadlocks[layer] = parsedLockType;
         
         if(password != "") // logic for applying password
-            selectedPlayer.selectedGagPadlocksPassword[layer - 1] = password;
+            selectedPlayer.selectedGagPadlocksPassword[layer] = password;
 
         if ( (lockType == "MistressPadlock" || lockType == "MistressTimerPadlock") // logic for applying a mistress padlock
             && selectedPlayer.relationshipStatus == "Pet" || selectedPlayer.relationshipStatus == "Slave") {
-            selectedPlayer.selectedGagPadlocksAssigner[layer - 1] = playerPayload.PlayerName;
+            selectedPlayer.selectedGagPadlocksAssigner[layer] = playerPayload.PlayerName;
         }
     }
 
@@ -437,29 +420,29 @@ public class WhitelistTab : ITab
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the chat message
-        _chatManager.SendRealMessage(_gagMessages.GagLockMessage(playerPayload, selectedPlayer.name, layer.ToString(), password));
+        _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, selectedPlayer.name, layer.ToString(), password));
 
         // first handle logic for mistress padlocks
         if ( (selectedPlayer.selectedGagPadlocks[layer] == GagPadlocks.MistressPadlock || selectedPlayer.selectedGagPadlocks[layer] == GagPadlocks.MistressTimerPadlock) // logic for applying a mistress padlock
            && selectedPlayer.relationshipStatus == "Pet" || selectedPlayer.relationshipStatus == "Slave") {
             // remove it if the player is a pet or slave and your name matches the assigner
-            if (selectedPlayer.selectedGagPadlocksAssigner[layer - 1] == playerPayload.PlayerName) {
-                selectedPlayer.selectedGagPadlocksAssigner[layer - 1] = "";
-                selectedPlayer.selectedGagPadlocksPassword[layer - 1] = "";
-                selectedPlayer.selectedGagTypes[layer - 1] = "None";
+            if (selectedPlayer.selectedGagPadlocksAssigner[layer] == playerPayload.PlayerName) {
+                selectedPlayer.selectedGagPadlocksAssigner[layer] = "";
+                selectedPlayer.selectedGagPadlocksPassword[layer] = "";
+                selectedPlayer.selectedGagTypes[layer] = "None";
                 return;
             }
         }
         // next handle logic for other padlocks.
-        else if (password != "" && selectedPlayer.selectedGagPadlocksPassword[layer - 1] == password) {
-            selectedPlayer.selectedGagPadlocksPassword[layer - 1] = "";
-            selectedPlayer.selectedGagTypes[layer - 1] = "None";
+        else if (password != "" && selectedPlayer.selectedGagPadlocksPassword[layer] == password) {
+            selectedPlayer.selectedGagPadlocksPassword[layer] = "";
+            selectedPlayer.selectedGagTypes[layer] = "None";
             return;
         } 
         // its not a password lock, so just remove it
         else {
-            selectedPlayer.selectedGagPadlocksPassword[layer - 1] = "";
-            selectedPlayer.selectedGagTypes[layer - 1] = "None";
+            selectedPlayer.selectedGagPadlocksPassword[layer] = "";
+            selectedPlayer.selectedGagTypes[layer] = "None";
             return;
         }
     }
@@ -470,12 +453,12 @@ public class WhitelistTab : ITab
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the message
-        _chatManager.SendRealMessage(_gagMessages.GagRemoveMessage(playerPayload, selectedPlayer.name, layer.ToString()));
+        _chatManager.SendRealMessage(_gagMessages.GagEncodedRemoveMessage(playerPayload, selectedPlayer.name, layer.ToString()));
         // Update the selected player's data
-        selectedPlayer.selectedGagTypes[layer - 1] = "None";
-        selectedPlayer.selectedGagPadlocks[layer - 1] = GagPadlocks.None;
-        selectedPlayer.selectedGagPadlocksPassword[layer - 1] = "";
-        selectedPlayer.selectedGagPadlocksAssigner[layer - 1] = "";
+        selectedPlayer.selectedGagTypes[layer] = "None";
+        selectedPlayer.selectedGagPadlocks[layer] = GagPadlocks.None;
+        selectedPlayer.selectedGagPadlocksPassword[layer] = "";
+        selectedPlayer.selectedGagPadlocksAssigner[layer] = "";
     }
 
     private void RemoveAllGagsFromPlayer(WhitelistCharData selectedPlayer) {
@@ -484,7 +467,7 @@ public class WhitelistTab : ITab
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
 
-        _chatManager.SendRealMessage(_gagMessages.GagRemoveAllMessage(playerPayload, selectedPlayer.name));
+        _chatManager.SendRealMessage(_gagMessages.GagEncodedRemoveAllMessage(playerPayload, selectedPlayer.name));
 
         // Update the selected player's data
         for (int i = 0; i < selectedPlayer.selectedGagTypes.Count; i++) {

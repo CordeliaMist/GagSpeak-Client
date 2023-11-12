@@ -16,6 +16,9 @@ using Dalamud.Game;
 using Lumina.Excel.GeneratedSheets;
 using GagSpeak.Utility;
 using Dalamud.Plugin.Services;
+using GagSpeak.Chat.MsgDecoder;
+using GagSpeak.Chat.MsgEncoder;
+using GagSpeak.Chat.MsgResultLogic;
 
 
 // practicing modular design
@@ -69,8 +72,10 @@ public static class ServiceHandler
                 var interop = _.GetRequiredService<IGameInteropProvider>();
                 var config = _.GetRequiredService<GagSpeakConfig>();
                 var historyService = _.GetRequiredService<HistoryService>();
-                return new ChatInputProcessor(sigService, interop, config, historyService);});
-              /* I want to add ISigService service here */
+                return new ChatInputProcessor(sigService, interop, config, historyService);})
+             .AddSingleton<MessageEncoder>()
+             .AddSingleton<MessageDecoder>()
+             .AddSingleton<MessageResultLogic>();
 
     // SERVICES FOR UI, INCLUDE IF EVER NEEDED.
     private static IServiceCollection AddUi(this IServiceCollection services)

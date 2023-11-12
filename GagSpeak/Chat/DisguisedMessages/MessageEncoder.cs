@@ -1,20 +1,23 @@
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 
 
-namespace GagSpeak.Data;
+namespace GagSpeak.Chat.MsgEncoder;
 // a struct to hold information on whitelisted players.
-public class GagMessages
+public class MessageEncoder // change to message encoder later
 {
-    public string GagApplyMessage(PlayerPayload playerPayload, string targetPlayer, string gagType, string layer) {
+    // summarize later, for now, just know it encodes /gag apply messages
+    public string GagEncodedApplyMessage(PlayerPayload playerPayload, string targetPlayer, string gagType, string layer) {
         if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
         return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} applies a {gagType} over your mouth as the {layer} layer of your concealment*";
     }
 
-    public string GagLockMessage(PlayerPayload playerPayload, string targetPlayer, string lockType, string layer) { 
-        return GagLockMessage(playerPayload, targetPlayer, lockType, layer, "");
+    // summarize later, for now, just know it encodes /gag lock messages
+    public string GagEncodedLockMessage(PlayerPayload playerPayload, string targetPlayer, string lockType, string layer) { 
+        return GagEncodedLockMessage(playerPayload, targetPlayer, lockType, layer, "");
     }
     
-    public string GagLockMessage(PlayerPayload playerPayload, string targetPlayer, string lockType, string layer, string password) {
+    // summarize later, for now, just know it encodes /gag lock password messages
+    public string GagEncodedLockMessage(PlayerPayload playerPayload, string targetPlayer, string lockType, string layer, string password) {
         if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
         if (password != null) {
             return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} takes out a {lockType} from her pocket and sets the combination password to {password} before locking your {layer} layer gag*";
@@ -23,11 +26,13 @@ public class GagMessages
         }
     }
 
-    public string GagUnlockMessage(PlayerPayload playerPayload, string targetPlayer, string layer) {
-        return GagUnlockMessage(playerPayload, targetPlayer, layer, "");
+    // summarize later, for now, just know it encodes /gag unlock messages
+    public string GagEncodedUnlockMessage(PlayerPayload playerPayload, string targetPlayer, string layer) {
+        return GagEncodedUnlockMessage(playerPayload, targetPlayer, layer, "");
     }
     
-    public string GagUnlockMessage(PlayerPayload playerPayload, string targetPlayer, string layer, string password) {
+    // summarize later, for now, just know it encodes /gag unlock password messages
+    public string GagEncodedUnlockMessage(PlayerPayload playerPayload, string targetPlayer, string layer, string password) {
         if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
         if (password != null) {
             return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and sets the password to {password} on your {layer} layer gagstrap, unlocking it.*";
@@ -36,12 +41,14 @@ public class GagMessages
         }
     }
 
-    public string GagRemoveMessage(PlayerPayload playerPayload, string targetPlayer, string layer) {
+    // summarize later, for now, just know it encodes /gag remove messages
+    public string GagEncodedRemoveMessage(PlayerPayload playerPayload, string targetPlayer, string layer) {
         if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
         return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and unfastens the buckle of your {layer} gag layer strap, allowing your voice to be a little clearer.*";
     }
 
-    public string GagRemoveAllMessage(PlayerPayload playerPayload, string targetPlayer) {
+    // summarize later, for now, just know it encodes /gag removeall messages
+    public string GagEncodedRemoveAllMessage(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.*";
     }
 }

@@ -1,18 +1,7 @@
 using System;
 using System.Numerics;
-using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using ImGuiScene;
-using OtterGui;
 using OtterGui.Raii;
-﻿using Dalamud.Game.Text;
-using Dalamud.Plugin;
-using System.Diagnostics;
-using Num = System.Numerics;
-using System.Collections.Generic;
-using System.Linq;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
 using OtterGui.Widgets;
 using Dalamud.Interface;
 
@@ -110,6 +99,7 @@ public class HelpPageTab : ITab
         ImGui.Separator();
         ImGui.Text("AUTOMATION:");
         ImGui.Text("Use /gag, /gsm, or /gagspeak without arguments for more information on these commands.");
+        // Seriously rework this at some point, its a mess.
     }
 }
 

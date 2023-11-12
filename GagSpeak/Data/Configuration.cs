@@ -9,10 +9,8 @@ using Dalamud.Interface.Internal.Notifications;
 using GagSpeak.Data;
 using OtterGui.Classes;
 
-// practicing modular design
 using GagSpeak.UI;
 using GagSpeak.Services;
-using GagSpeak.Data; // for our whitelist character data.
 
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 

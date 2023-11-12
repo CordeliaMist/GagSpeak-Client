@@ -7,8 +7,6 @@ using Dalamud.Interface.Windowing;
 using System.Numerics;
 using GagSpeak.Services;
 
-// taken from sillychat as reference material to adopt for our translator
-
 namespace GagSpeak.UI;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention

@@ -49,16 +49,12 @@ public class GagListingsDrawer
     private float _requiredComboWidthUnscaled;
     private float _requiredComboWidth;
     private string _passwordField = "";
-    private string _gagLabel;
-    private string _lockLabel;
     
     // I believe this dictates the data for the stain list, swap out for padlock list probably
     
     public GagListingsDrawer(GagSpeakConfig config, DalamudPluginInterface dalamudPluginInterface) // Constructor
     {
         _config = config;
-        _gagLabel = "None";
-        _lockLabel = "None";
         //update interface
         _pluginInterface = dalamudPluginInterface;
 
@@ -211,15 +207,15 @@ public class GagListingsDrawer
         return true;
     }
 
-    public bool DrawGagTypeItemCombo(int ID,  WhitelistCharData charData, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
+    public bool DrawGagTypeItemCombo(int ID,  WhitelistCharData charData, ref string gagLabel, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
         var combo = gagtypecombo; // get the combo
         if (ImGui.IsItemClicked() && !locked)
             UIHelpers.OpenCombo($"{ID}_Type");
         using var disabled = ImRaii.Disabled(locked);
-        combo.Draw(ID, ref _gagLabel, charData.selectedGagTypes, layerIndex, width);
+        combo.Draw(ID, ref gagLabel, charData.selectedGagTypes, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                _gagLabel = _config.GagTypes.Keys.First();
+                gagLabel = _config.GagTypes.Keys.First();
                 _config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
@@ -249,16 +245,16 @@ public class GagListingsDrawer
     }
 
 
-    public bool DrawGagLockItemCombo(int ID, WhitelistCharData charData, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
+    public bool DrawGagLockItemCombo(int ID, WhitelistCharData charData, ref string lockLabel, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
         // This code is a shadow copy of the function above, used for accepting WhitelistCharData as a type
         var combo = gaglockcombo;
         if (ImGui.IsItemClicked() && !locked)
             UIHelpers.OpenCombo($"{ID}_Enum");
         using var disabled = ImRaii.Disabled(locked);
-        combo.Draw(ID, ref _lockLabel, charData.selectedGagPadlocks, layerIndex, width);
+        combo.Draw(ID, ref lockLabel, charData.selectedGagPadlocks, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                _lockLabel = "None";
+                lockLabel = "None";
                 _config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");

@@ -5,7 +5,6 @@ using Dalamud.Plugin.Services;
 using Dalamud.Game.Text.SeStringHandling;
 using OtterGui.Classes;
 
-// practicing modular design
 namespace GagSpeak.UI;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
@@ -26,7 +25,7 @@ public class GagSpeakWindowManager : IDisposable
         _chatGui         = chatGui;
         _windowSystem.AddWindow(ui);
         _windowSystem.AddWindow(uiHistory);
-//        _windowSystem.AddWindow(Changelog.Changelog);             // May add this in later lol. Idk, maybe if I feel fancy and shit
+        //        _windowSystem.AddWindow(Changelog.Changelog);             // May add this in later lol. Idk, maybe if I feel fancy and shit
         // Draw the ui and the toggles
         _uiBuilder.Draw                  += _windowSystem.Draw;     // for drawing the UI stuff
         _uiBuilder.OpenConfigUi          += _ui.Toggle;             // for toggling the UI stuff

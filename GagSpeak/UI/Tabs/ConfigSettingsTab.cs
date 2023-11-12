@@ -1,33 +1,14 @@
 using System;
 using System.Numerics;
-using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using ImGuiScene;
 using OtterGui;
 using OtterGui.Raii;
-﻿using Dalamud.Game.Text;
 using Dalamud.Plugin;
-using System.Diagnostics;
-using Num = System.Numerics;
-using System.Collections.Generic;
-using System.Linq;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
 using OtterGui.Widgets;
 using Dalamud.Interface;
 using GagSpeak.Data;
-﻿using Dalamud.Game.Command;
-using Dalamud.IoC;
-using Dalamud.Plugin;
 using System.IO;
-using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
-﻿using System;
-using System.Numerics;
 using Dalamud.Interface.Internal;
-using Dalamud.Interface.Windowing;
-using ImGuiNET;
-
 namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
@@ -52,9 +33,7 @@ public class ConfigSettingsTab : ITab
         _dalamudTextureWrap = IconImage;
     }
 
-    // Apply our lable for the tab
-    public ReadOnlySpan<byte> Label
-        => "Settings"u8;
+    public ReadOnlySpan<byte> Label => "Settings"u8; // apply the tab label
 
     /// <summary>
     /// This Function draws the content for the window of the ConfigSettings Tab
@@ -65,20 +44,17 @@ public class ConfigSettingsTab : ITab
         if (!child)
             return;
 
-
         // Draw the child grouping for the ConfigSettings Tab
-        using (var child2 = ImRaii.Child("SettingsChild"))
-        {
+        using (var child2 = ImRaii.Child("SettingsChild")) {
             DrawHeader();
             DrawConfigSettings();
         }
     }
 
-    private void DrawHeader()
+    private void DrawHeader() // draw the header for the tab
         => WindowHeader.Draw("Configuration & Settings", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
 
-    // Draw the actual config settings
-    private void DrawConfigSettings() {
+    private void DrawConfigSettings() { // Draw the actual config settings
         // Lets start by drawing the child.
         using var child = ImRaii.Child("##SettingsPanel", -Vector2.One, true);
         // define our spacing
@@ -107,19 +83,17 @@ public class ConfigSettingsTab : ITab
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 50);
         // you might normally want to embed resources and load them from the manifest stream
         ImGui.Image(_dalamudTextureWrap.ImGuiHandle, new Vector2(_dalamudTextureWrap.Width, _dalamudTextureWrap.Height));
-
         ImGui.Columns(1);
+
         // Show Debug Menu when Debug logging is enabled
         if (_config.DebugMode)
             DrawDebug();
 
-        ImGui.Text("Enabled Channels:");
-        ImGui.Separator();
+        ImGui.Text("Enabled Channels:"); ImGui.Separator();
         var i = 0;
         foreach (var e in (ChatChannel.ChatChannels[])Enum.GetValues(typeof(ChatChannel.ChatChannels))) {
             // See if it is already enabled by default
             var enabled = _config.Channels.Contains(e);
-
             // Create a new line after every 4 columns
             if (i % 4 == 0 && i != 0) {
                 ImGui.NewLine();
@@ -198,10 +172,6 @@ public class ConfigSettingsTab : ITab
                 ImGui.Unindent();
             }
             ImGui.Unindent();
-            // print the width of the imgui screen and the height
-            // ImGui.Text($"ImGui Screen Width: {ImGui.GetWindowContentRegionMax().X - ImGui.GetWindowContentRegionMin().X}");
-            // ImGui.Text($"ImGui Screen Height: {ImGui.GetWindowContentRegionMax().Y - ImGui.GetWindowContentRegionMin().Y}");
-
         }
         catch (Exception e)
         {
