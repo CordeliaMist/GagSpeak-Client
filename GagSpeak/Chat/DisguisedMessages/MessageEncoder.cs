@@ -80,10 +80,10 @@ public class MessageEncoder // change to message encoder later
 
     // summarize later, for now, just know it encodes the locking of live garbler messages
     public string LiveGarblerLockEncodedMessage(PlayerPayload playerPayload, string targetPlayer, string lockType) {
-        
+        // format the following tell
         // player name from player world looks down sternly at the girl she owned below her. player name slapped her companion across the cheek and held onto her chin firmly.* "You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say."
-        // format the tell in the call above
-        return 
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down sternly at looks down sternly at the property they owned below them. {playerPayload.PlayerName} firmly slapped " +
+        "her companion across the cheek and held onto her chin firmly.* \"You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.\"";
     }
 
 }
