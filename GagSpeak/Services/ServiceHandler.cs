@@ -1,5 +1,4 @@
 using Dalamud.Plugin;
-using GagSpeak.Events;
 using GagSpeak.Chat;
 using GagSpeak.UI;
 using GagSpeak.UI.Helpers;
@@ -35,7 +34,6 @@ public static class ServiceHandler
             // Add the rest of our needed services. Each service below is a CATAGORY. Scroll down to see sub-sections.
             .AddDalamud(pi)
             .AddMeta()
-            .AddEvents()
             .AddChat()
             .AddUi()
             .AddApi();
@@ -60,8 +58,6 @@ public static class ServiceHandler
              .AddSingleton<ConfigMigrationService>()
              .AddSingleton<MessageService>();
 
-    private static IServiceCollection AddEvents(this IServiceCollection services)
-        => services.AddSingleton<TabSelected>();
 
     //SERVICES FOR ONCHAT, INCLUDE IF EVER NEEDED.
     private static IServiceCollection AddChat(this IServiceCollection services)

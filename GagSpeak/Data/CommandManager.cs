@@ -10,8 +10,7 @@ using GagSpeak.Data;
 using GagSpeak.Chat.Garbler;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using XivCommon.Functions;
-using Dalamud.Game;
-using Lumina.Data.Parsing.Layer;
+using ChatChannel = GagSpeak.Data.ChatChannel;
 
 // practicing modular design
 namespace GagSpeak.Services;
@@ -511,7 +510,7 @@ public class CommandManager : IDisposable // Our main command list manager
             return;
         }
         // see if our currently selected channel in _config.CurrentChannel is in our list of enabled channels
-        if (_config.Channels.Contains(_config.CurrentChannel)) {
+        if (_config.Channels.Contains(ChatChannel.GetChatChannel())) {
             try {
                 // Otherwise, what we have after should be a message to translate into GagSpeak
                 GagSpeak.Log.Debug($"Translating message: {arguments}");

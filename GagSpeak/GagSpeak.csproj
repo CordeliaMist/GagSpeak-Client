@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="Dalamud.Plugin.Bootstrap.targets"/>
+    <Import Project="Dalamud.Plugin.Bootstrap.targets" />
 
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
     <Copyright>Copyright © 2023</Copyright>
     <LangVersion>latest</LangVersion>
-    <Version>0.9.1.0</Version>
+    <Version>0.9.2.0</Version>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
@@ -15,6 +15,14 @@
 
   <ItemGroup>
     <Content Include="..\images\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    <Content Include="..\Assets\ItemMouth\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    <Content Include="..\Assets\Padlocks\*.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
@@ -29,6 +37,10 @@
   <ItemGroup>
       <Reference Include="Dalamud">
           <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+          <Private>False</Private>
+      </Reference>
+      <Reference Include="FFXIVClientStructs">
+        <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
           <Private>False</Private>
       </Reference>
       <Reference Include="ImGui.NET">

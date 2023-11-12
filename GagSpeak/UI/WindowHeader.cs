@@ -45,12 +45,5 @@ public static class WindowHeader
         // Pop that off our styles, then push the one for the borders
         style.Pop();
         style.Push(ImGuiStyleVar.FrameBorderSize, ImGuiHelpers.GlobalScale);
-
-        // Also looks redundant.
-        // foreach (var button in buttons.Skip(leftButtons).Where(b => b.Visible))
-        // {
-        //     ImGui.SameLine();
-        //     button.Draw();
-        // }
     }
 }

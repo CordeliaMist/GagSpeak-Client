@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dalamud.Configuration;
 using Dalamud.Game.Text; // Interacting with game chat, XIVChatType, ext.
 using System.Collections.Generic;
@@ -6,6 +6,7 @@ using System.Linq; // For enabling lists
 using System.IO;
 using Newtonsoft.Json;
 using Dalamud.Interface.Internal.Notifications;
+using GagSpeak.Data;
 using OtterGui.Classes;
 
 // practicing modular design
@@ -47,38 +48,10 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public List<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
     public List<string> selectedGagPadlocksAssigner { get; set; } // name of who assigned the padlocks to the user
-    public List<XivChatType> Channels { get; set; } // Which channels are currently enabled / allowed?
-    public XivChatType CurrentChannel { get; set; } // What is the current channel?
+    public List<ChatChannel.ChatChannels> Channels { get; set; } // Which channels are currently enabled / allowed?
+    //public ChatChannel.ChatChannels CurrentChannel { get; set; } // What is the current channel?
     public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
     public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
-
-    // public List<XivChatType> _order = new() {
-    //     XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None, 
-    //     XivChatType.Say, XivChatType.Shout, XivChatType.TellOutgoing, XivChatType.TellIncoming,
-    //     XivChatType.Party, XivChatType.Alliance, XivChatType.Ls1, XivChatType.Ls2,
-    //     XivChatType.Ls3, XivChatType.Ls4, XivChatType.Ls5, XivChatType.Ls6,
-    //     XivChatType.Ls7, XivChatType.Ls8, XivChatType.FreeCompany, XivChatType.NoviceNetwork,
-    //     XivChatType.CustomEmote, XivChatType.StandardEmote, XivChatType.Yell, XivChatType.CrossParty,
-    //     XivChatType.PvPTeam, XivChatType.CrossLinkShell1, XivChatType.Echo, XivChatType.None,
-    //     XivChatType.None, XivChatType.None, XivChatType.None, XivChatType.None,
-    //     XivChatType.None, XivChatType.None, XivChatType.CrossLinkShell2, XivChatType.CrossLinkShell3,
-    //     XivChatType.CrossLinkShell4, XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7,
-    //     XivChatType.CrossLinkShell8
-    // }; May not need for now!!!!! Keeping for good reference for the CHANNEL_IS_ACTIVE below
-    public bool[] ChannelsIsActive = {
-        false, false, false, false, // None, None, None, None
-        true, true, true, true,     // Say, Shout, TellOutgoing, TellIncoming
-        true, true, true, true,     // Party, Alliance, Ls1, Ls2
-        true, true, true, true,     // Ls3, Ls4, Ls5, Ls6
-        true, true, true, true,     // Ls7, Ls8, FreeCompany, NoviceNetwork
-        true, true, true, true,     // CustomEmote, StandardEmote, Yell, CrossParty
-        true, true, true, false,    // PvPTeam, CrossLinkShell1, Echo, None
-        false, false, false, false, // None, None, None, None
-        false, false, true, true,   // None, None, CWL2, CWL3
-        true, true, true, true,     // CWL4, CWL5, CWL6, CWL7
-        true                        // CWL8
-    }; // Which channels are currently enabled?
-
     public XivChatType[] _allowedChannels = { // Dont think we need this but may be wrong
         XivChatType.Say, XivChatType.Shout, XivChatType.TellOutgoing, XivChatType.TellIncoming, XivChatType.Party,
         XivChatType.Alliance, XivChatType.Ls1, XivChatType.Ls2, XivChatType.Ls3, XivChatType.Ls4, XivChatType.Ls5,
@@ -113,7 +86,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
             this.selectedGagPadlocks = new List<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
         // set default values for selected channels/
         if (this.Channels == null || !this.Channels.Any()) {
-            this.Channels = new List<XivChatType>(){XivChatType.Say};}
+            this.Channels = new List<ChatChannel.ChatChannels>(){ChatChannel.ChatChannels.Say};}
         // set default values for selectedGagPadlocksPassword
         if (this.selectedGagPadlocksPassword == null || !this.selectedGagPadlocksPassword.Any() || this.selectedGagPadlocksPassword.Count > 3) {
             this.selectedGagPadlocksPassword = new List<string> { "", "", "" };}
@@ -171,68 +144,63 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         { "Ball Gag", 3 },
         { "Ball Gag Mask", 4 },
         { "Bamboo Gag", 4 },
-        { "Bit Gag", 2 },
+        { "Bit Gag", 3 },
         { "Bone Gag", 2 },
+        { "Cage Muzzle", 0},
         { "Chloroform Cloth", 1 },
-        { "Chopstick Gag", 4 },
+        { "Chopstick Gag", 2 },
         { "Cloth Gag", 1 },
         { "Cloth Stuffing", 2 },
-        { "Crop", 2 },
+        { "Crop", 1 },
         { "Cup Holder Gag", 3 },
         { "Custom Latex Hood", 4 },
         { "Deepthroat Penis Gag", 6 },
         { "Dental Gag", 2 },
         { "Dildo Gag", 5 },
-        { "Dog Hood", 4 },
         { "Duct Tape", 4 },
         { "Duster Gag", 3 },
         { "Exposed Dog Muzzle", 4 },
         { "Funnel Gag", 5 },
-        { "Fur Scarf", 2 },
         { "Futuristic Ball Gag", 5 },
         { "Futuristic Harness Panel Gag", 6 },
         { "Futuristic Panel Gag", 4 },
         { "Gas Mask", 3 },
         { "Harness Ball Gag", 5 },
         { "Harness Ball Gag XL", 6 },
-        { "Harness OTN Plug Gag", 8 },
-        { "Harness Pacifier", 2 },
         { "Harness Panel Gag", 3 },
         { "Hook Gag Mask", 3 },
         { "Inflatable Hood", 5 },
         { "Large Dildo", 4 },
         { "Latex Ball Muzzle Gag", 5 },
         { "Latex Posture Collar Gag", 4 },
-        { "Latex Respirator", 1 },
         { "Leather Corset Collar Gag", 4 },
         { "Leather Hood", 4 },
+        { "Lip Gag", 2 },
+        { "Medical Mask", 1},
         { "Muzzle Gag", 4 },
         { "Panty Stuffing", 2 },
         { "Plastic Wrap", 2 },
         { "Plug Gag", 5 },
-        { "Polished Steel Hood", 6 },
         { "Pony Hood", 4 },
         { "Prison Lockdown Gag", 4 },
-        { "Pump Gag lv1", 2 },
-        { "Pump Gag lv2", 3 },
-        { "Pump Gag lv3", 5 },
-        { "Pump Gag lv4", 7 },
+        { "Pump Gag lv.1", 2 },
+        { "Pump Gag lv.2", 3 },
+        { "Pump Gag lv.3", 5 },
+        { "Pump Gag lv.4", 7 },
         { "Ribbons", 2 },
         { "Ring Gag", 3 },
         { "Rope Gag", 2 },
         { "Rubber Carrot Gag", 5 },
         { "Scarf", 1 },
         { "Sensory Deprivation Hood", 6 },
-        { "Silicon Bit Gag", 4 },
-        { "Slime", 6 },
-        { "Smooth Latex Mask", 5 },
+        { "Slime", 4 },
         { "Sock Stuffing", 2 },
         { "Spider Gag", 3 },
         { "Steel Muzzle Gag", 4 },
         { "Stitched Muzzle Gag", 3 },
-        { "Stitches", 6 },
         { "Tentacle", 5 },
         { "Web Gag", 2 },
+        { "Wiffle Gag", 2 },
         { "XL Bone Gag", 4 },
     };
 }

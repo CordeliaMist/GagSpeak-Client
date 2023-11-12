@@ -34,7 +34,7 @@ public class HelpPageTab : ITab
 
     // Apply our lable for the tab
     public ReadOnlySpan<byte> Label
-        => "HelpPage"u8;
+        => "Help"u8;
 
     /// <summary>
     /// This Function draws the content for the window of the ConfigSettings Tab

@@ -20,6 +20,18 @@ using GagSpeak.Services;
 using GagSpeak.UI.Helpers;
 using GagSpeak.UI.GagListings;
 using Dalamud.Interface.Utility.Raii;
+﻿using Dalamud.Game.Command;
+using Dalamud.IoC;
+using Dalamud.Plugin;
+using System.IO;
+using Dalamud.Interface.Windowing;
+using Dalamud.Plugin.Services;
+﻿using System;
+using System.Numerics;
+using Dalamud.Interface.Internal;
+using Dalamud.Interface.Windowing;
+using ImGuiNET;
+using Microsoft.VisualBasic;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 
@@ -27,19 +39,43 @@ namespace GagSpeak.UI.Tabs.GeneralTab;
 public class GeneralTab : ITab
 {
     // Begin by appending the readonlys and privates
+    private readonly IDalamudTextureWrap _dalamudTextureWrap; // for image display
+    private readonly UiBuilder _uiBuilder; // for image display
     private readonly GagSpeakConfig _config;
-
     private readonly GagListingsDrawer _gagListingsDrawer;
+    private GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
+    private GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
     private string? _tempSafeword; // for initializing a temporary safeword for the text input field
     // style variables
     private bool _isLocked;
     private bool? _inDomMode;
     
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config)
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config,
+            UiBuilder uiBuilder, DalamudPluginInterface pluginInterface)
     {
         _isLocked = false;
         _config = config;
         _gagListingsDrawer = gagListingsDrawer;
+        _uiBuilder = uiBuilder;
+
+        var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "icon.png");
+        var IconImage = _uiBuilder.LoadImage(imagePath);
+        _dalamudTextureWrap = IconImage;
+
+
+        _gagTypeFilterCombo = new GagTypeFilterCombo[] {
+            new GagTypeFilterCombo(_config.GagTypes, _config),
+            new GagTypeFilterCombo(_config.GagTypes, _config),
+            new GagTypeFilterCombo(_config.GagTypes, _config)
+        };
+        // draw out our gagpadlock filter combo listings
+        _gagLockFilterCombo = new GagLockFilterCombo[] {
+            new GagLockFilterCombo(_config),
+            new GagLockFilterCombo(_config),
+            new GagLockFilterCombo(_config)
+        };
+
+
     }
 
     // store our current safeword
@@ -133,24 +169,16 @@ public class GeneralTab : ITab
         } // end our table
         ImGui.NewLine();
 
-        // style.Pop();
-        // var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemSpacing.Y };
-        // ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
-        // ImGui.SetNextItemWidth(330 * ImGuiHelpers.GlobalScale);
-
-
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
 
         int DDwidth = (int)(ImGui.GetContentRegionAvail().X / 2);
         // draw our 3 gag listings
         foreach(var slot in Enumerable.Range(0, 3)) {
-            _gagListingsDrawer.DrawGagAndLockListing(slot, _config.selectedGagTypes[slot], _config.selectedGagPadlocks[slot], slot, $"Gag Slot {slot + 1}", _isLocked, DDwidth);
+            _gagListingsDrawer.DrawGagAndLockListing(slot, _config, _gagTypeFilterCombo[slot],
+                    _gagLockFilterCombo[slot], slot, $"Gag Slot {slot + 1}", _isLocked, DDwidth);
             ImGui.NewLine();
         }
-        // leave some space for unlock minigames
-        ImGui.NewLine();
-        ImGui.Separator();
     }
 }
 

@@ -163,11 +163,11 @@ public class ChatManager
         var senderName = sName?.PlayerName != null ? sName.PlayerName : pName; // if the sender name is not null, set it to the sender name, otherwise set it to the local player name
 
 
-        // Precursor to condition2, if the message satisfied senderName == PlayerName && XivChatType != _config.CurrentChatType, change it
-        if ((pName == senderName) && (_config._allowedChannels.Contains(type)) && (type != _config.CurrentChannel)) {
-            _config.CurrentChannel = type; // log the current chatbox channel & save
-            _config.Save();
-        }
+        //// Precursor to condition2, if the message satisfied senderName == PlayerName && XivChatType != _config.CurrentChatType, change it
+        //if ((pName == senderName) && (_config._allowedChannels.Contains(type)) && (type != _config.CurrentChannel)) {
+        //    _config.CurrentChannel = type; // log the current chatbox channel & save
+        //    _config.Save();
+        //}
 
         // FILTER CONDITION TWO:
         //  - Is the chat message an incoming tell? If yes, proceed into the inner function, if not read over
@@ -218,19 +218,19 @@ public class ChatManager
                     isHandled = true;
                     return;
                 }
+                // if we get here, we know we are in sub mode and under right filters.
+
+                // get the type of command given to us based on the disguised message
+                // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
+                List<string> decodedMessageCommand = DetermineIncomingDiguisedMessageType(fmessage.ToString());
+
+                // function that will determine what happens to the player as a result of the tell.
+                if( DetermineMessageOutcome(fmessage.ToString(), decodedMessageCommand, isHandled) ) {
+                    isHandled = true; // make sure it doesnt display to the chat
+                }
+
+                _config.Save(); // save our config
             }
-            // if we get here, we know we are in sub mode and under right filters.
-
-            // get the type of command given to us based on the disguised message
-            // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
-            List<string> decodedMessageCommand = DetermineIncomingDiguisedMessageType(fmessage.ToString());
-
-            // function that will determine what happens to the player as a result of the tell.
-            if( DetermineMessageOutcome(fmessage.ToString(), decodedMessageCommand, isHandled) ) {
-                isHandled = true; // make sure it doesnt display to the chat
-            }
-
-            _config.Save(); // save our config
         }
         // skipping to here if it isnt a tell, or it fails any conditions, optimizing the code (hopefully)
     }

@@ -17,6 +17,7 @@ using GagSpeak.Chat;
 using Lumina.Excel.GeneratedSheets;
 using System.Runtime.CompilerServices;
 using System.Dynamic;
+using Dalamud.Interface.Internal.Windows.StyleEditor;
 
 // practicing modular design
 namespace GagSpeak.UI.Tabs.WhitelistTab;
@@ -34,8 +35,12 @@ public class WhitelistTab : ITab
     public ReadOnlySpan<byte> Label => "Whitelist"u8; // set label for the whitelist tab
     private string _tempPassword; // password temp stored during typing
     private string _storedPassword; // password stored to buffer
+    private int _layer; // layer of the gag
+    private readonly GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
+    private readonly GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
 
     // store real life time since button pressed
+    private bool emptyList = false; // if the whitelist is empty, disable lower section
     private bool interactionButtonsDisabled = false; // enable this once we press a button
     private float interactionButtonsDisabledTime = 0f; // store the time since we pressed the button
 
@@ -49,10 +54,25 @@ public class WhitelistTab : ITab
         _chatManager = chatManager;
         _tempPassword = "";
         _storedPassword = "";
+        _layer = 0;
+
+        // draw out our gagtype filter combo listings
+        _gagTypeFilterCombo = new GagTypeFilterCombo[] {
+            new GagTypeFilterCombo(_config.GagTypes, _config),
+            new GagTypeFilterCombo(_config.GagTypes, _config),
+            new GagTypeFilterCombo(_config.GagTypes, _config)
+        };
+        // draw out our gagpadlock filter combo listings
+        _gagLockFilterCombo = new GagLockFilterCombo[] {
+            new GagLockFilterCombo(_config),
+            new GagLockFilterCombo(_config),
+            new GagLockFilterCombo(_config)
+        };
     }
     
     // Helper function to clean senders name off the list of clientstate objects
     public static string CleanSenderName(string senderName) {
+        GagSpeak.Log.Debug($"Sender Name: {senderName}");
         string[] senderStrings = SplitCamelCase(RemoveSpecialSymbols(senderName)).Split(" ");
         string playerSender = senderStrings.Length == 1 ? senderStrings[0] : senderStrings.Length == 2 ?
             (senderStrings[0] + " " + senderStrings[1]) :
@@ -93,9 +113,13 @@ public class WhitelistTab : ITab
         
         // Now we can begin by creating an array of strings that store the whitelist of appended character names
         List<WhitelistCharData> whitelist = _config.Whitelist;
-        // If the whitelist is empty, then we should set the whitelist to "None"
-        if (whitelist.Count == 0) {
-            whitelist.Add(new WhitelistCharData("None", "None"));
+        // create the dropdowns
+
+        // If the whitelist is empty, disable lower section
+        if (whitelist.Count == 1 && whitelist[0].name == "None") {
+            emptyList = true;
+        } else {
+            emptyList = false;
         }
 
         // Create a bool for if the player is targetted (more detail on this later after experimentation)
@@ -109,7 +133,7 @@ public class WhitelistTab : ITab
             if (!table) { return; } // make sure our table was made
             // Create the headers for the table
             ImGui.TableSetupColumn("Player Whitelist", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 200);
-            ImGui.TableSetupColumn("Relation Manager", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 320);
+            ImGui.TableSetupColumn("Relation Manager", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 260);
 
             // NextRow
             ImGui.TableNextRow(); ImGui.TableNextColumn();
@@ -126,14 +150,20 @@ public class WhitelistTab : ITab
             using (var table2 = ImRaii.Table("RelationsManagerTable", 2, ImGuiTableFlags.RowBg)) {
                 if (!table2)
                     return;
+
+                // if our only player on the list is NONE, disable section
+                if (emptyList) {
+                    ImGui.BeginDisabled();
+                }
+
                 // Create the headers for the table
-                ImGui.TableSetupColumn("Statistic", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Become Their Mistressm").X);
+                ImGui.TableSetupColumn("Statistic", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Become Their Mistress").X);
                 ImGui.TableSetupColumn("Information", ImGuiTableColumnFlags.WidthStretch);
                 ImGui.TableNextRow(); ImGui.TableHeader("Relations Manager");
 
                 // Next Row (Relations towards you)
                 ImGui.TableNextRow(); ImGuiUtil.DrawFrameColumn("Relation towards You:"); ImGui.TableNextColumn();
-                var width2 = new Vector2(ImGui.GetContentRegionAvail().X,0);
+                var width2 = new Vector2(ImGui.GetContentRegionAvail().X-13, 0);
                 ImGui.Text("Player's Relation");
 
                 ImGuiUtil.DrawFrameColumn("Commitment Length: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
@@ -152,14 +182,19 @@ public class WhitelistTab : ITab
                     GagSpeak.Log.Debug("Sending Request to become their slave"); // _chatManager.SendRealMessage($"/tell {whitelist[_currentWhitelistItem].name} *{CleanSenderName(_clientState.LocalPlayer.Name.TextValue)} from {_clientState.LocalPlayer.HomeWorld.Id} requests to become your slave*");
             } // end our relations manager table
 
+            style.Pop();
             // here put if they want to request relation removal
-            var width = new Vector2(ImGui.GetContentRegionAvail().X,0);
-            if (ImGui.Button("Request To Remove Relation", width)) {
+            var width = new Vector2(-1, 35.0f * ImGuiHelpers.GlobalScale);
+            if (ImGui.Button("Request Relation Removal", width)) {
                 // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
             } 
 
-            ImGui.NewLine(); // Now add two buttons, one for adding the player, another for removing
-            var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X / 2, 0);
+            // but still allow them to be added
+            if (emptyList) {
+                ImGui.EndDisabled();
+            }
+
+            var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X / 2, 35.0f * ImGuiHelpers.GlobalScale );
             // Message to display based on target proximity
             string targetedPlayerText = "Add Targetted Player"; // Displays if no target
             if (!playerTargetted) {
@@ -176,8 +211,14 @@ public class WhitelistTab : ITab
                     string targetName = CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
                     // And now, if the player is not already in our whitelist, we will add them. Otherwise just do nothing.
                     if (!_config.Whitelist.Any(item => item.name == targetName)) {
-                        _config.Whitelist.Add(new WhitelistCharData(targetName,"None")); // Add the player to the whitelist
-                        _config.Save();
+                        GagSpeak.Log.Debug($"Adding targetted player to whitelist {_clientState.LocalPlayer.TargetObject})");
+                        if(whitelist.Count == 1 && whitelist[0].name == "None") { // If our whitelist just shows none, replace it with first addition.
+                            whitelist[0] = new WhitelistCharData(targetName,"None");
+                            _config.Save();
+                        } else {
+                            _config.Whitelist.Add(new WhitelistCharData(targetName,"None")); // Add the player to the whitelist
+                            _config.Save();
+                        }
                     }
                 }
             }
@@ -187,8 +228,12 @@ public class WhitelistTab : ITab
             
             // Also give people the option to remove someone from the whitelist.
             ImGui.SameLine();
-            if (ImGui.Button("Remove Selected Player", buttonWidth)) {
-                _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
+            if (ImGui.Button("Remove Player", buttonWidth)) {
+                if (whitelist.Count == 1) {
+                    whitelist[0] = new WhitelistCharData("None", "None");
+                } else {
+                    _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
+                }
                 _config.Save();
             }
             ImGui.NewLine();
@@ -199,7 +244,7 @@ public class WhitelistTab : ITab
             return;
 
         // see if our button disabler is true
-        if(interactionButtonsDisabled) {
+        if(interactionButtonsDisabled || emptyList) {
             ImGui.BeginDisabled();
         }
         
@@ -210,30 +255,45 @@ public class WhitelistTab : ITab
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
             // create a combo for the layer, with options 1, 2, 3. Store selection to variable layer
-            int layer = 1;
+            int layer = _layer;
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 5);
             ImGui.Combo("##Layer", ref layer, new string[] { "Layer 1", "Layer 2", "Layer 3" }, 3);
+            _layer = layer;
+
+
             ImGui.SameLine();
             // create a dropdown for the gag type,
             int width = (int)(ImGui.GetContentRegionAvail().X / 2.5);
-            _gagListingsDrawer.DrawGagTypeItemCombo((layer-1)+10, _config.Whitelist[_currentWhitelistItem].selectedGagTypes[layer-1], layer-1, false, width);
+            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, // offset ensures unique ID
+                                                    whitelist[_currentWhitelistItem],
+                                                    layer,
+                                                    false,
+                                                    width,
+                                                    _gagTypeFilterCombo[layer]
+            );
             ImGui.SameLine();
+
             // Create the button for the first row, third column
             if (ImGui.Button("Apply Gag To Player")) {
                 // execute the generation of the apply gag layer string
                 interactionButtonsDisabled = true; // Disable buttons for 5 seconds
                 interactionButtonsDisabledTime = (float)ImGui.GetTime();
-                ApplyGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem].selectedGagTypes[layer-1], _config.Whitelist[_currentWhitelistItem]);
+                ApplyGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem].selectedGagTypes[layer], _config.Whitelist[_currentWhitelistItem]);
             }
 
             // for our second row, gag lock options and buttons
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             // set up a temp password storage field here.
-            _gagListingsDrawer.DrawGagLockItemCombo((layer-1)+10, _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer-1], layer-1, false, width);
+            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10,
+                                                    whitelist[_currentWhitelistItem],
+                                                    layer,
+                                                    false,
+                                                    width,
+                                                    _gagLockFilterCombo[layer]);
             ImGui.SameLine();
             var password = _tempPassword ?? _storedPassword; // temp storage to hold until we de-select the text input
-            // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer-1] == CombinationPadlock, draw a text inputwith hint field for the password with a ref length of 4.
-            if (_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer-1] == GagPadlocks.CombinationPadlock) {
+            // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == CombinationPadlock, draw a text inputwith hint field for the password with a ref length of 4.
+            if (_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == GagPadlocks.CombinationPadlock) {
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 5);
                 if (ImGui.InputText("CombinationPassword##CombinationPassword", ref password, 4, ImGuiInputTextFlags.None))
                     _tempPassword = password;
@@ -242,9 +302,14 @@ public class WhitelistTab : ITab
                     _tempPassword = null;
                 }
             }
-            // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer-1] == TimerPasswordPadlock || MistressTimerPadlock, draw a text input with hint field labeled time set, with ref length of 3.
-            if (_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer-1] == GagPadlocks.TimerPasswordPadlock ||
-                _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer-1] == GagPadlocks.MistressTimerPadlock) {
+
+
+
+
+
+            // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == TimerPasswordPadlock || MistressTimerPadlock, draw a text input with hint field labeled time set, with ref length of 3.
+            if (_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == GagPadlocks.TimerPasswordPadlock ||
+                _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == GagPadlocks.MistressTimerPadlock) {
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 5);
                 if (ImGui.InputText("TimerPassword##TimerPassword", ref password, 3, ImGuiInputTextFlags.None))
                     _tempPassword = password;
@@ -253,8 +318,8 @@ public class WhitelistTab : ITab
                     _tempPassword = null;
                 }
             }
-            // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer-1] == PasswordPadlock, draw a text input with hint field labeled assigner, with ref length of 30.
-            if (_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer-1] == GagPadlocks.PasswordPadlock) {
+            // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == PasswordPadlock, draw a text input with hint field labeled assigner, with ref length of 30.
+            if (_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == GagPadlocks.PasswordPadlock) {
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 5);
                 if (ImGui.InputText("Password##Password", ref password, 30, ImGuiInputTextFlags.None))
                     _tempPassword = password;
@@ -269,7 +334,7 @@ public class WhitelistTab : ITab
                 // execute the generation of the apply gag layer string
                 interactionButtonsDisabled = true; // Disable buttons for 5 seconds
                 interactionButtonsDisabledTime = (float)ImGui.GetTime();
-                LockGagOnPlayer(layer, _config.selectedGagPadlocks[layer-1].ToString(), _config.Whitelist[_currentWhitelistItem]);
+                LockGagOnPlayer(layer, _config.selectedGagPadlocks[layer].ToString(), _config.Whitelist[_currentWhitelistItem]);
             }
             ImGui.SameLine();
             if (ImGui.Button("Unlock Selected Gag")) {
@@ -318,7 +383,7 @@ public class WhitelistTab : ITab
         } // end our info table
 
         // Use ImGui.EndDisabled() to end the disabled state
-        if (interactionButtonsDisabled) {
+        if (interactionButtonsDisabled || emptyList) {
             ImGui.EndDisabled();
         }
 

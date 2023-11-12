@@ -45,7 +45,7 @@ public class MainWindow : Window //, IDisposable
 
         // Next let's set the size of the window
         SizeConstraints = new WindowSizeConstraints() {
-            MinimumSize = new Vector2(550, 510),     // Minimum size of the window
+            MinimumSize = new Vector2(500, 510),     // Minimum size of the window
             MaximumSize = ImGui.GetIO().DisplaySize, // Maximum size of the window
         };
 
@@ -72,9 +72,7 @@ public class MainWindow : Window //, IDisposable
     public override void PreDraw() {
         // Before we draw, lets lock the window in place, just so until its finished being drawn, we dont have anyone dragging shit everywhere.
         // It also helps to make sure the very modular precent based widths we will configure function properly.
-        Flags = _config.LockMainWindow
-            ? Flags | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize
-            : Flags & ~(ImGuiWindowFlags.NoMove |ImGuiWindowFlags.NoResize);
+        //Flags |= ImGuiWindowFlags.NoResize;
     }
 
     // Now that we are THE READY. Yis. Let us, LE DRAW (This should be called by the windowManager)
@@ -96,9 +94,9 @@ public class MainWindow : Window //, IDisposable
         }
 
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 10 * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 9.5f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
         // Can use basic stuff for now, but if you want to look into locking buttons, reference glamourer's button / checkbox code.
-        if (ImGui.Button("Save and Close")) {
+        if (ImGui.Button("Save & Close")) {
             Toggle();
             _config.Save();
 

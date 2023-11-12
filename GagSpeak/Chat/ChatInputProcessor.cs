@@ -95,7 +95,7 @@ public unsafe class ChatInputProcessor : IDisposable {
             }
 
             // if our current channel is in our list of enabled channels AND we have enabled direct chat translation...
-            if ( _config.Channels.Contains(_config.CurrentChannel) && (_config.DirectChatGarbler == true) ) {
+            if ( _config.Channels.Contains(Data.ChatChannel.GetChatChannel()) && (_config.DirectChatGarbler == true) ) {
                 // if we satisfy this condition, it means we can try to attempt modifying the message.
                 GagSpeak.Log.Debug($"ChatInputDetour: Attempting to modify message!");
                 // we can try to attempt modifying the message.
@@ -167,4 +167,3 @@ public unsafe class ChatInputProcessor : IDisposable {
         Enabled = false;
     }
 }
-#pragma warning restore IDE1006
