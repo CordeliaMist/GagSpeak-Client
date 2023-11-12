@@ -1,8 +1,11 @@
 using System;
 using System.Numerics;
+using Dalamud.Interface.Windowing;
 using ImGuiNET;
+using ImGuiScene;
 using OtterGui;
 using OtterGui.Raii;
+﻿using Dalamud.Game.Text;
 using Dalamud.Plugin;
 using OtterGui.Widgets;
 using Dalamud.Interface;
@@ -91,13 +94,13 @@ public class ConfigSettingsTab : ITab
 
         ImGui.Text("Enabled Channels:"); ImGui.Separator();
         var i = 0;
-        foreach (var e in (ChatChannel.ChatChannels[])Enum.GetValues(typeof(ChatChannel.ChatChannels))) {
+        foreach (var e in ChatChannel.GetOrderedChannels()) {
             // See if it is already enabled by default
             var enabled = _config.Channels.Contains(e);
             // Create a new line after every 4 columns
-            if (i % 4 == 0 && i != 0) {
+            if (i != 0 && (i==5 || i==9 || i==13 || i==17 || i == 21)) {
                 ImGui.NewLine();
-                i = 0;
+                //i = 0;
             }
             // Move to the next row if it is LS1 or CWLS1
             if (e is ChatChannel.ChatChannels.LS1 or ChatChannel.ChatChannels.CWL1)

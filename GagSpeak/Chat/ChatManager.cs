@@ -62,6 +62,7 @@ public class ChatManager
             // Scan if the message contains all words from the an ncoded tell message
             if(MessageDictionary.EncodedMsgDictionary(message.TextValue)) {
                 isHandled = true;
+                _config.Save();
                 return;
             }
         }

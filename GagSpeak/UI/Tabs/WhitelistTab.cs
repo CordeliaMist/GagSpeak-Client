@@ -173,7 +173,7 @@ public class WhitelistTab : ITab
             style.Pop();
             // here put if they want to request relation removal
             var width = new Vector2(-1, 35.0f * ImGuiHelpers.GlobalScale);
-            if (ImGui.Button("Request Relation Removal", width)) {
+            if (ImGui.Button("Remove Relation To Player", width)) {
                 // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
             } 
 
@@ -274,13 +274,15 @@ public class WhitelistTab : ITab
             // for our second row, gag lock options and buttons
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             // set up a temp password storage field here.
+            width = (int)(ImGui.GetContentRegionAvail().X / 2.8);
             _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, whitelist[_currentWhitelistItem], ref _lockLabel, layer, false, width, _gagLockFilterCombo[layer]);
             ImGui.SameLine();
             var password = _tempPassword ?? _storedPassword; // temp storage to hold until we de-select the text input
             // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == CombinationPadlock, draw a text inputwith hint field for the password with a ref length of 4.
-            if (_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == GagPadlocks.CombinationPadlock) {
+            Enum.TryParse(_lockLabel, out GagPadlocks parsedLockType);
+            if (parsedLockType == GagPadlocks.CombinationPadlock) {
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 5);
-                if (ImGui.InputText("CombinationPassword##CombinationPassword", ref password, 4, ImGuiInputTextFlags.None))
+                if (ImGui.InputText("##CombinationPassword", ref password, 4, ImGuiInputTextFlags.None))
                     _tempPassword = password;
                 if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
                     _storedPassword = password;
@@ -289,10 +291,9 @@ public class WhitelistTab : ITab
             }
 
             // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == TimerPasswordPadlock || MistressTimerPadlock, draw a text input with hint field labeled time set, with ref length of 3.
-            if (_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == GagPadlocks.TimerPasswordPadlock ||
-                _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == GagPadlocks.MistressTimerPadlock) {
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 5);
-                if (ImGui.InputText("TimerPassword##TimerPassword", ref password, 3, ImGuiInputTextFlags.None))
+            if (parsedLockType  == GagPadlocks.TimerPasswordPadlock || parsedLockType == GagPadlocks.MistressTimerPadlock) {
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 4);
+                if (ImGui.InputText("##TimerPassword", ref password, 3, ImGuiInputTextFlags.None))
                     _tempPassword = password;
                 if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
                     _storedPassword = password;
@@ -300,9 +301,9 @@ public class WhitelistTab : ITab
                 }
             }
             // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == PasswordPadlock, draw a text input with hint field labeled assigner, with ref length of 30.
-            if (_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == GagPadlocks.PasswordPadlock) {
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 5);
-                if (ImGui.InputText("Password##Password", ref password, 30, ImGuiInputTextFlags.None))
+            if (parsedLockType == GagPadlocks.PasswordPadlock) {
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 2);
+                if (ImGui.InputText("##Password", ref password, 20, ImGuiInputTextFlags.None))
                     _tempPassword = password;
                 if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
                     _storedPassword = password;
@@ -311,14 +312,14 @@ public class WhitelistTab : ITab
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("Lock Selected Gag")) {
+            if (ImGui.Button("Lock Gag")) {
                 // execute the generation of the apply gag layer string
                 interactionButtonsDisabled = true; // Disable buttons for 5 seconds
                 interactionButtonsDisabledTime = (float)ImGui.GetTime();
-                LockGagOnPlayer(layer, _config.selectedGagPadlocks[layer].ToString(), _config.Whitelist[_currentWhitelistItem]);
+                LockGagOnPlayer(layer, _lockLabel, _config.Whitelist[_currentWhitelistItem]);
             }
             ImGui.SameLine();
-            if (ImGui.Button("Unlock Selected Gag")) {
+            if (ImGui.Button("Unlock Gag")) {
                 // execute the generation of the apply gag layer string
                 interactionButtonsDisabled = true; // Disable buttons for 5 seconds
                 interactionButtonsDisabledTime = (float)ImGui.GetTime();
@@ -397,7 +398,8 @@ public class WhitelistTab : ITab
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the chat message
-        _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, selectedPlayer.name, lockType, layer.ToString(), password));
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockType, (layer+1).ToString(), password));
 
         // Update the selected player's data
         if(Enum.TryParse(lockType, out GagPadlocks parsedLockType)) // update padlock
@@ -420,7 +422,8 @@ public class WhitelistTab : ITab
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the chat message
-        _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, selectedPlayer.name, layer.ToString(), password));
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(), password));
 
         // first handle logic for mistress padlocks
         if ( (selectedPlayer.selectedGagPadlocks[layer] == GagPadlocks.MistressPadlock || selectedPlayer.selectedGagPadlocks[layer] == GagPadlocks.MistressTimerPadlock) // logic for applying a mistress padlock
@@ -453,7 +456,8 @@ public class WhitelistTab : ITab
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the message
-        _chatManager.SendRealMessage(_gagMessages.GagEncodedRemoveMessage(playerPayload, selectedPlayer.name, layer.ToString()));
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.GagEncodedRemoveMessage(playerPayload, targetPlayer, (layer+1).ToString()));
         // Update the selected player's data
         selectedPlayer.selectedGagTypes[layer] = "None";
         selectedPlayer.selectedGagPadlocks[layer] = GagPadlocks.None;
@@ -467,7 +471,8 @@ public class WhitelistTab : ITab
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
 
-        _chatManager.SendRealMessage(_gagMessages.GagEncodedRemoveAllMessage(playerPayload, selectedPlayer.name));
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.GagEncodedRemoveAllMessage(playerPayload, targetPlayer));
 
         // Update the selected player's data
         for (int i = 0; i < selectedPlayer.selectedGagTypes.Count; i++) {
