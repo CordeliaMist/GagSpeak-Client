@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using Dalamud.Plugin.Services;
 using System.Collections.Generic;
+using Dalamud.Game.Text.SeStringHandling;
+using OtterGui.Classes;
 
 namespace GagSpeak.Chat.MsgResultLogic;
 
@@ -18,31 +20,76 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
     /// <item><c>remove LAYER | PLAYER</c> - Remove gag from defined layer</item></list>
     /// <para><c>recievedMessage</c><param name="receivedMessage"> - The message that was recieved from the player</param></para>
     /// </summary>
-    public bool PerformMsgResultLogic(string receivedMessage, List<string> decodedMessage, bool isHandled,
+    public bool CommandMsgResLogic(string receivedMessage, List<string> decodedMessage, bool isHandled,
             IChatGui clientChat, GagSpeakConfig config)
     {
+        var commandType = decodedMessage[0].ToLowerInvariant();
+        var _ = commandType switch
+        {
+            "lock"           => HandleLockMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "lockpassword"   => HandleLockMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "unlock"         => HandleUnlockMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "unlockpassword" => HandleUnlockMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "removeall"      => HandleRemoveAllMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "remove"         => HandleRemoveMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "apply"          => HandleApplyMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            _                => LogError("Invalid message parse, If you see this report it to cordy ASAP.")
+        };
+        return true;
+
+        bool LogError(string errorMessage) {
+            GagSpeak.Log.Debug(errorMessage);
+            clientChat.PrintError(errorMessage);
+            return false;
+        }
+    }
+
+    // another function nearly identical to the above, but for handling whitelist messages. These dont take as much processing.
+    public bool WhitelistMsgResLogic(string recieved, List<string> decodedMessage, bool isHandled,
+            IChatGui clientChat, GagSpeakConfig config)
+    {   
         // execute sub-function based on the input
-        // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
-        // if the parsed type is "lock" or "lockPassword"
-        if (decodedMessage[0] == "lock" || decodedMessage[0] == "lockPassword") {
-            return HandleLockMessage(ref decodedMessage, ref isHandled, clientChat, config);
+        // decoded messages will always contain the format: [commandtype, none, none, none, player] (may revise)
+        // if the parsed type is "requestMistressRelation"
+        if (decodedMessage[0] == "requestMistressRelation") {
+            GagSpeak.Log.Debug($"Determined income message as a [requestMistress] type encoded message, hiding from chat!"); return true;
         }
-        // if the parsed type is "unlock" or "unlockPassword"
-        else if (decodedMessage[0] == "unlock" || decodedMessage[0] == "unlockPassword") {
-            return HandleUnlockMessage(ref decodedMessage, ref isHandled, clientChat, config);
+        // if the parsed type is "requestPetRelation"
+        else if (decodedMessage[0] == "requestPetRelation") {
+            GagSpeak.Log.Debug($"Determined income message as a [requestPet] type encoded message, hiding from chat!"); return true;
         }
-        // if the parsed type is "removeall"
-        else if (decodedMessage[0] == "removeall") {
-            return HandleRemoveAllMessage(ref decodedMessage, ref isHandled, clientChat, config);
+        // if the parsed type is "requestSlaveRelation"
+        else if (decodedMessage[0] == "requestSlaveRelation") {
+            GagSpeak.Log.Debug($"Determined income message as a [requestSlave] type encoded message, hiding from chat!"); return true;
         }
-        // if the parsed type is "remove"
-        else if (decodedMessage[0] == "remove") {
-            return HandleRemoveMessage(ref decodedMessage, ref isHandled, clientChat, config);
+        // if the parsed type is "requestRemovalRelation"
+        else if (decodedMessage[0] == "removePlayerRelation") {
+            GagSpeak.Log.Debug($"Determined income message as a [relationRemoval] type encoded message, hiding from chat!"); return true;
         }
-        else if (decodedMessage[0] == "apply") {
-            return HandleApplyMessage(ref decodedMessage, ref isHandled, clientChat, config);
+        // if the parsed type is "orderForceGarbleLock"
+        else if (decodedMessage[0] == "orderForceGarbleLock") {
+            GagSpeak.Log.Debug($"Determined income message as a [liveChatGarblerLock] type encoded message, hiding from chat!"); return true;
         }
-        // remember to apply other keywords for the request commands.
+        // if the parsed type is "requestInfo"
+        else if (decodedMessage[0] == "requestInfo") {
+            GagSpeak.Log.Debug($"Determined income message as a [informationRequest] type encoded message, hiding from chat!"); return true;
+        }
+        // if the parsed type is "acceptMistressRelation"
+        else if (decodedMessage[0] == "acceptMistressRelation") {
+            GagSpeak.Log.Debug($"Determined income message as an [acceptMistress] type encoded message, hiding from chat!"); return true;
+        }
+        // if the parsed type is "acceptPetRelation"
+        else if (decodedMessage[0] == "acceptPetRelation") {
+            GagSpeak.Log.Debug($"Determined income message as an [acceptPet] type encoded message, hiding from chat!"); return true;
+        }
+        // if the parsed type is "acceptSlaveRelation"
+        else if (decodedMessage[0] == "acceptSlaveRelation") {
+            GagSpeak.Log.Debug($"Determined income message as an [acceptSlave] type encoded message, hiding from chat!"); return true;
+        }        
+        // if the parsed type is "provideInfo"
+        else if (decodedMessage[0] == "provideInfo") {
+            GagSpeak.Log.Debug($"Determined income message as a [provideInformation] type encoded message, hiding from chat!"); return true;
+        }
         else {
             GagSpeak.Log.Debug("ERROR, Invalid message parse, If you see this report it to cordy ASAP.");
             clientChat.PrintError($"ERROR, Invalid message parse, If you see this report it to cordy ASAP.");
@@ -254,19 +301,259 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
     }
 
     // handle the request mistress message
+    private bool HandleRequestMistressMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
+        try { // whole goal is just to apply the request update to the players whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                playerInWhitelist.PendingRelationshipRequest = "Mistress"; // this means, they want to become YOUR mistress.
+                // Notify the user that someone wishes to establish a relationship
+                _clientChat.Print(new SeStringBuilder().AddYellow($"Received a relationship request from {playerName}. View their Profile in the whitelist Tab to accept or deny it.").BuiltString);
+                GagSpeak.Log.Debug($"Received mistress request from {playerName}. Pending approval.");
+            }
+        } catch (Exception e) {
+            GagSpeak.Log.Debug($"ERROR, Invalid requestMistress message parse. {e}");
+            _clientChat.PrintError($"ERROR, Invalid requestMistress message parse. {e}");
+            return false;
+        }
+        return true;
+    }
 
-
-    // handle the request pet message
-
+    // handle the request pet message, will be exact same as mistress one.
+    private bool HandleRequestPetMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
+        try { // whole goal is just to apply the request update to the players whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                playerInWhitelist.PendingRelationshipRequest = "Pet"; // this means, they want to become YOUR pet.
+                // Notify the user that someone wishes to establish a relationship
+                _clientChat.Print(new SeStringBuilder().AddYellow($"Received a relationship request from {playerName}. View their Profile in the whitelist Tab to accept or deny it.").BuiltString);
+                GagSpeak.Log.Debug($"Received pet request from {playerName}. Pending approval.");
+            }
+        } catch (Exception e) {
+            GagSpeak.Log.Debug($"ERROR, Invalid requestPet message parse. {e}");
+            _clientChat.PrintError($"ERROR, Invalid requestPet message parse. {e}");
+            return false;
+        }
+        return true;
+    }
 
     // handle the request slave message
-
+    private bool HandleRequestSlaveMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
+        try { // whole goal is just to apply the request update to the players whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                playerInWhitelist.PendingRelationshipRequest = "Slave"; // this means, they want to become YOUR slave.
+                // Notify the user that someone wishes to establish a relationship
+                _clientChat.Print(new SeStringBuilder().AddYellow($"Received a relationship request from {playerName}. View their Profile in the whitelist Tab to accept or deny it.").BuiltString);
+                GagSpeak.Log.Debug($"Received slave request from {playerName}. Pending approval.");
+            }
+        } catch (Exception e) {
+            GagSpeak.Log.Debug($"ERROR, Invalid requestSlave message parse. {e}");
+            _clientChat.PrintError($"ERROR, Invalid requestSlave message parse. {e}");
+            return false;
+        }
+        return true;
+    }
 
     // handle the relation removal message
-
+    private bool HandleRelationRemovalMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
+        try { // whole goal is just to apply the request update to the players whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                // set the pending relationship to none and relationship with that player to none
+                playerInWhitelist.relationshipStatus = "None";
+                playerInWhitelist.PendingRelationshipRequest = "None"; // this means, they want to become YOUR slave.
+                _clientChat.Print(new SeStringBuilder().AddYellow($"Relationship with player removed sucessfully.").BuiltString);
+                GagSpeak.Log.Debug($"Received relationship removal request from {playerName}. Pending approval.");
+            }
+        } catch (Exception e) {
+            GagSpeak.Log.Debug($"ERROR, Invalid requestRemoval message parse. {e}");
+            _clientChat.PrintError($"ERROR, Invalid requestRemoval message parse. {e}");
+            return false;
+        }
+        return true;
+    }
 
     // handle the live chat garbler lock message
-
+    private bool HandleLiveChatGarblerLockMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
+        // just set the lockedLiveChatGarbler to true and print message
+        _config.LockDirectChatGarbler = true;
+        _clientChat.Print(new SeStringBuilder().AddRed($"Your Mistress has decided you no longer have permission to speak clearly....").BuiltString);
+        GagSpeak.Log.Debug($"Your Mistress has enforced a toggle on your livechatgarbler lock..");
+        return true;
+    }
 
     // handle the information request
+    private bool HandleInformationRequestMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
+        // because this command spits out our information about ourselves, we need an extra layer of security, making SURE the person 
+        // using this on us HAS TO BE inside of our whitelist.
+        try { 
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                // they are in our whitelist, so set our information sender to the players name.
+                _config.SendInfoName = playerName;
+                _clientChat.Print(new SeStringBuilder().AddYellow($"Received a information request from {playerName}. Responding with updated info.").BuiltString);
+                GagSpeak.Log.Debug($"Received information request from {playerName}.");
+            }
+        } catch (Exception e) {
+            GagSpeak.Log.Debug($"ERROR, Invalid requestInfo message parse. {e}");
+            _clientChat.PrintError($"ERROR, Invalid requestInfo message parse. {e}");
+            return false;
+        }
+        return true;
+    }
+
+    // handle the accept mistress request
+    private bool HandleAcceptMistressMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
+        try { // whole goal is just to apply the request update to the players whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                // set the pending relationship to none and relationship with that player to none
+                playerInWhitelist.relationshipStatus = "Mistress"; // no long pending, now official
+                playerInWhitelist.PendingRelationshipRequest = "None"; // no long pending, now official
+                _clientChat.Print(new SeStringBuilder().AddYellow($"{playerName} is now your Mistress, enjoy~.").BuiltString);
+                GagSpeak.Log.Debug($"{playerName} is now your Mistress, enjoy~.");
+            }
+        } catch (Exception e) {
+            GagSpeak.Log.Debug($"ERROR, Invalid acceptMistress message parse. {e}");
+            _clientChat.PrintError($"ERROR, Invalid acceptMistress message parse. {e}");
+            return false;
+        }
+        return true;
+    }
+
+    // handle the accept pet request
+    private bool HandleAcceptPetMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
+        try { // whole goal is just to apply the request update to the players whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                // set the pending relationship to none and relationship with that player to none
+                playerInWhitelist.relationshipStatus = "Pet"; // no long pending, now official
+                playerInWhitelist.PendingRelationshipRequest = "None"; // no long pending, now official
+                _clientChat.Print(new SeStringBuilder().AddYellow($"{playerName} is now your Pet, enjoy~.").BuiltString);
+                GagSpeak.Log.Debug($"{playerName} is now your Pet, enjoy~.");
+            }
+        } catch (Exception e) {
+            GagSpeak.Log.Debug($"ERROR, Invalid acceptPet message parse. {e}");
+            _clientChat.PrintError($"ERROR, Invalid acceptPet message parse. {e}");
+            return false;
+        }
+        return true;
+    }
+
+    // handle the accept slave request
+    private bool HandleAcceptSlaveMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
+        try { // whole goal is just to apply the request update to the players whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                // set the pending relationship to none and relationship with that player to none
+                playerInWhitelist.relationshipStatus = "Slave"; // no long pending, now official
+                playerInWhitelist.PendingRelationshipRequest = "None"; // no long pending, now official
+                _clientChat.Print(new SeStringBuilder().AddYellow($"{playerName} is now your Slave, enjoy~.").BuiltString);
+                GagSpeak.Log.Debug($"{playerName} is now your Slave, enjoy~.");
+            }
+        } catch (Exception e) {
+            GagSpeak.Log.Debug($"ERROR, Invalid acceptSlave message parse. {e}");
+            _clientChat.PrintError($"ERROR, Invalid acceptSlave message parse. {e}");
+            return false;
+        }
+        return true;
+    }
+
+    // handle the provide information message
+    private bool HandleProvideInfoMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
+    /* decodedMessageFormat:
+        [0] = commandtype  //  [1] = isDomMode // [2] = directChatGarblerLock // [3] = garbleLevel
+        [4] = player // [5] = relationship // [6] = selectedGagType1 // [7] = selectedGagType2 //
+        [8] = selectedGagType3 // [9] = selectedGagPadlock1 // [10] = selectedGagPadlock2 // 
+        [11] = selectedGagPadlock3 // [12] = selectedGagPadlockAssigner1 // [13] = selectedGagPadlockAssigner2 //
+        [14] = selectedGagPadlockAssigner3 // [15] = selectedGagPadlockTimer1 //  [16] = selectedGagPadlockTimer2 //
+        [17] = selectedGagPadlockTimer3  */
+        // find the user in the whitelist with the same name as the player identified in decodedmessage[4]
+        try { 
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                // set the pending relationship to none and relationship with that player to non
+                playerInWhitelist.isDomMode = decodedMessage[1] == "True" ? true : false;
+                playerInWhitelist.lockedLiveChatGarbler = decodedMessage[2] == "True" ? true : false;
+                playerInWhitelist.garbleLevel = int.Parse(decodedMessage[3]);
+                playerInWhitelist.relationshipStatus = decodedMessage[5];
+                playerInWhitelist.selectedGagTypes[0] = decodedMessage[6];
+                playerInWhitelist.selectedGagTypes[1] = decodedMessage[7];
+                playerInWhitelist.selectedGagTypes[2] = decodedMessage[8];
+                playerInWhitelist.selectedGagPadlocks[0] = (GagPadlocks)Enum.Parse(typeof(GagPadlocks), decodedMessage[9]);
+                playerInWhitelist.selectedGagPadlocks[1] = (GagPadlocks)Enum.Parse(typeof(GagPadlocks), decodedMessage[10]);
+                playerInWhitelist.selectedGagPadlocks[2] = (GagPadlocks)Enum.Parse(typeof(GagPadlocks), decodedMessage[11]);
+                playerInWhitelist.selectedGagPadlocksAssigner[0] = decodedMessage[12];
+                playerInWhitelist.selectedGagPadlocksAssigner[1] = decodedMessage[13];
+                playerInWhitelist.selectedGagPadlocksAssigner[2] = decodedMessage[14];
+                playerInWhitelist.selectedGagPadlocksTimer[0] = DateTimeOffset.Parse(decodedMessage[15]);
+                playerInWhitelist.selectedGagPadlocksTimer[1] = DateTimeOffset.Parse(decodedMessage[16]);
+                playerInWhitelist.selectedGagPadlocksTimer[2] = DateTimeOffset.Parse(decodedMessage[17]);
+                
+                _clientChat.Print(new SeStringBuilder().AddYellow($"Recieved Information from {playerName}. Updated their profile in the whitelist tab.").BuiltString);
+                GagSpeak.Log.Debug($"Received information response from {playerName}.");
+            }
+        } catch (Exception e) {
+            GagSpeak.Log.Debug($"ERROR, Invalid provideInfo message parse. {e}");
+            _clientChat.PrintError($"ERROR, Invalid provideInfo message parse. {e}");
+            return false;
+        }        
+
+        return true;
+    }
+
 }

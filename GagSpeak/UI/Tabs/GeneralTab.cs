@@ -20,6 +20,9 @@ public class GeneralTab : ITab
     // style variables
     private bool _isLocked;
     private bool? _inDomMode;
+
+    // testing with datetimeoffset
+    private DateTimeOffset ? submissiveButtonPressedTime; // for future logging magic
     
     public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config)
     {

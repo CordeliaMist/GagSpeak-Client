@@ -30,12 +30,15 @@ public enum GagPadlocks {
 }
 
 public class GagSpeakConfig : IPluginConfiguration, ISavable
-{
+{   // Plugin info
     public int Version { get; set; } = 0; // Version of the plugin
     public bool FreshInstall { get; set; } = true; // Is user on a fresh install?
     public bool Enabled { get; set; } = true; // Is plugin enabled?
+    
+    // Personal information 
     public bool InDomMode { get; set; } = false; // Is plugin in dom mode?
     public bool DirectChatGarbler { get; set; } = false; // Is direct chat garbler enabled?
+    public bool LockDirectChatGarbler { get; set; } = false; // Is live chat garbler enabled?
     public string Safeword { get; set; } = "safeword"; // What is the safeword?
     public bool friendsOnly { get; set; } = false; // is friend only enabled?
     public bool partyOnly { get; set; } = false; // Is party only enabled?
@@ -45,14 +48,17 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public List<string> selectedGagTypes { get; set; } // What gag types are selected?
     public List<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
-    public List<string> selectedGagPadlocksAssigner { get; set; } // name of who assigned the padlocks to the user
+    public List<DateTimeOffset> selectedGagPadLockTimer { get; set; } // stores time each padlock was assigned.
+    public List<string> selectedGagPadlocksAssigner { get; set; } // name of who assigned the padlocks
+    
+    // additonal information below
     public List<ChatChannel.ChatChannels> Channels { get; set; } // Which channels are currently enabled / allowed?
-    public List<DateTimeOffset> selectedGagPadLockTimer { get; set; } // timer of each padlock
     public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
     public int TranslationHistoryMax { get; set; } = 30; // Gets or sets max number of translations stored in history
-    public MainWindow.TabType SelectedTab          { get; set; } = MainWindow.TabType.General; // Default to the general tab
+    public MainWindow.TabType SelectedTab { get; set; } = MainWindow.TabType.General; // Default to the general tab
     private List<WhitelistCharData> whitelist = new List<WhitelistCharData>(); // appears to be baseline for whitelist
     public List<WhitelistCharData> Whitelist { get => whitelist; set => whitelist = value; } // Note sure why, document later
+    public string SendInfoName = ""; // Name of the person you are sending info to
 
     // There was stuiff about a colorId dictionary here, if you ever need to include it later, you know where to put it so it fits into the hierarchy
     private readonly SaveService _saveService;
@@ -77,6 +83,9 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         // set default values for selectedGagPadlocksAssigner
         if (this.selectedGagPadlocksAssigner == null || !this.selectedGagPadlocksAssigner.Any() || this.selectedGagPadlocksAssigner.Count > 3) {
             this.selectedGagPadlocksAssigner = new List<string> { "", "", "" };}
+        // set default values for selectedGagPadLockTimer
+        if (this.selectedGagPadLockTimer == null || !this.selectedGagPadLockTimer.Any() || this.selectedGagPadLockTimer.Count > 3) {
+            this.selectedGagPadLockTimer = new List<DateTimeOffset> { DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now };}
     }
 
     public void Save() {

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 
 namespace GagSpeak.Chat.MsgDecoder;
 // a struct to hold information on whitelisted players.
@@ -79,7 +80,7 @@ public class MessageDecoder {
             messageParts = trimmedMessage.Split("from");
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
-            // FINISHED DECODING THE MESSAGE
+            
             GagSpeak.Log.Debug($"Determined Message Outcome: UNLOCK || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
         }
@@ -128,37 +129,231 @@ public class MessageDecoder {
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
-            // FINISHED DECODING THE MESSAGE
             GagSpeak.Log.Debug($"Determined Message Outcome: REMOVEALL || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
-        } else if (encodedMsgIndex == 8) {
-    // handle the request mistress message
+        } 
 
+        // decoder for requesting a mistress relationship
+        else if (encodedMsgIndex == 8) {
+            decodedMessage[0] = "requestMistressRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("looks down upon you from above, a smirk in her eyes as she sees the pleading look in your own* \"Well now darling, your actions speak for you well enough, so tell me, do you wish for me to become your mistress?\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"Determined Message Outcome: REQUEST MISTRESS RELATION || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
-        } else if (encodedMsgIndex == 9) {
-    // handle the request pet message
+        }
 
+        // decoder for requesting a pet relationship        
+        else if (encodedMsgIndex == 9) {
+            decodedMessage[0] = "requestPetRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("looks up at you, her nervous tone clear and cheeks blushing red as she studders out the words.* \"U-um, If it's ok with you, could I become your pet?\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"Determined Message Outcome: REQUEST PET RELATION || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
             return decodedMessage;
-        } else if (encodedMsgIndex == 10) {
-    // handle the request slave message
+        }
+        // decoder for requesting a slave relationship
+        else if (encodedMsgIndex == 10) {
+            decodedMessage[0] = "requestSlaveRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("hears the sound of her leash's chain rattling along the floor as she crawls up to your feet. Stopping, looking up with pleading eyes in an embarassed tone* \"Would it be ok if I became your slave?\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"Determined Message Outcome: REQUEST SLAVE RELATION || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
+            return decodedMessage;
+        }
+        // decoder for requesting a removal of relationship
+        else if (encodedMsgIndex == 11) {
+            decodedMessage[0] = "removePlayerRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("looks up at you with tears in her eyes. She never wanted this moment to come, but also knows due to the circumstances it was enivtable.* \"I'm sorry, but I cant keep our relationship going right now, there is just too much going on\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"Determined Message Outcome: REQUEST REMOVAL RELATION || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
+            return decodedMessage;
+        }
+        // decoder for forcing a garbler locker
+        else if (encodedMsgIndex == 12) {
+            decodedMessage[0] = "orderForceGarbleLock";     // we found the command type
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("looks down sternly at looks down sternly at the property they owned below them. They firmly slapped their companion across the cheek and held onto her chin firmly.* \"You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"Determined Message Outcome: FORCING GARBLE LOCK TOGGLE || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
+            return decodedMessage;
+        }
+        // decoder for requesting information from whitelisted player.
+        else if (encodedMsgIndex == 13) {
+            decodedMessage[0] = "requestInfo";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("looks down upon you with a smile,* \"I'd love to hear you describe your situation to me my dear, I want hear all about how you feel right now","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"Determined Message Outcome: REQUEST PLAYER INFO || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}");
+            return decodedMessage;
+        }
+        // decoder for accepting mistress relation
+        else if (encodedMsgIndex == 14) {
+            decodedMessage[0] = "acceptMistressRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("smiles and gracefully and nods in agreement* \"Oh yes, most certainly. I would love to have you as my mistress.\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() +
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"Determined Message Outcome: ACCEPT MISTRESS RELATIONSHIP REQUEST || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, decodedMessage[3]: {decodedMessage[3]}");
+            return decodedMessage;
+        }
+        // decoder for accepting pet relation
+        else if (encodedMsgIndex == 15) {
+            decodedMessage[0] = "acceptPetRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("smiles upon hearing the request and nods in agreement as their blushed companion had a collar clicked shut around their neck.* \"Yes dear, I'd love to make you my pet.\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() +
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"Determined Message Outcome: ACCEPT PET RELATIONSHIP REQUEST || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}");
+            return decodedMessage;
+        }
+        // decoder for accepting slave relation
+        else if (encodedMsgIndex == 16) {
+            decodedMessage[0] = "acceptSlaveRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("glanced back down at her companion who had just crawled up to their legs with the pleading look and smiled.* \"Why I would love to make you my slave dearest.\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() +
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"Determined Message Outcome: ACCEPT SLAVE RELATIONSHIP REQUEST || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}");
+            return decodedMessage;
+        }
+        
+        // decoder for sharing info about player
+        else if (encodedMsgIndex == 17) {
+            decodedMessage[0] = "provideInfo";      // we found commandtype
+            /* decodedMessageFormat:
+             [0] = commandtype
+             [1] = isDomMode
+             [2] = directChatGarblerLock
+             [3] = garbleLevel
+             [4] = player
+             [5] = relationship
+             [6] = selectedGagType1
+             [7] = selectedGagType2
+             [8] = selectedGagType3
+             [9] = selectedGagPadlock1
+             [10] = selectedGagPadlock2
+             [11] = selectedGagPadlock3
+             [12] = selectedGagPadlockAssigner1
+             [13] = selectedGagPadlockAssigner2
+             [14] = selectedGagPadlockAssigner3
+             [15] = selectedGagPadlockTimer1
+             [16] = selectedGagPadlockTimer2
+             [17] = selectedGagPadlockTimer3 */
+            try
+            {
+                // Extract name and world information
+                int startIdx = recievedMessage.IndexOf("*") + 1;
+                int endIdx = recievedMessage.IndexOf("from");
+                string NameAndWorld = recievedMessage.Substring(startIdx, endIdx - startIdx).Trim() + " ";
+                recievedMessage = recievedMessage.Remove(startIdx, endIdx - startIdx + 4).Trim();
+                string world = recievedMessage.Split(' ')[0].Trim();
+                NameAndWorld += world;
+                decodedMessage[4] = NameAndWorld;
 
-            return decodedMessage;
-        } else if (encodedMsgIndex == 11) {
-    // handle the relation removal message
+                // Determine relationship
+                if (recievedMessage.Contains("looks at their companion and smiles")) { decodedMessage[5] = "None"; }
+                else if (recievedMessage.Contains("eyes their mistress and smiles")) { decodedMessage[5] = "Mistress"; }
+                else if (recievedMessage.Contains("eyes their pet and smiles")) { decodedMessage[5] = "Pet"; }
+                else if (recievedMessage.Contains("eyes their slave and smiles")) { decodedMessage[5] = "Slave"; }
+                else { decodedMessage[5] = "None"; }
 
-            return decodedMessage;
-        } else if (encodedMsgIndex == 12) {
-    // handle the live chat garbler lock message
+                // Remove the "while they were" part from the encoded message
+                recievedMessage = recievedMessage.Replace("while they were", "").Trim();
 
+                // Extract the dominance information
+                decodedMessage[1] = (recievedMessage.StartsWith("Dominant")).ToString();
+
+                // Extract the garble level
+                int garbleLevelStartIndex = recievedMessage.IndexOf("last") + 5;
+                int garbleLevelEndIndex = recievedMessage.IndexOf("minutes");
+                decodedMessage[3] = int.TryParse(recievedMessage.Substring(garbleLevelStartIndex, garbleLevelEndIndex - garbleLevelStartIndex).Trim(), 
+                                    out int garbleLevel) ? garbleLevel.ToString() : throw new System.Exception("Invalid garble level format");
+
+                // Iterate over layers
+                for (int i = 0; i < 3; i++) {
+                    string layerTerm = i == 0 ? "underlayer" : i == 1 ? "surfacelayer" : "topmostlayer";
+                    int layerStartIndex = recievedMessage.IndexOf(layerTerm);
+                    int layerEndIndex = i == 2 ? recievedMessage.IndexOf("Ontop") : recievedMessage.IndexOf(i == 0 ? "surfacelayer" : "topmostlayer");
+
+                    string layerString = recievedMessage.Substring(layerStartIndex, layerEndIndex - layerStartIndex).Trim();
+
+                    if (layerString.Contains("nothing")) {
+                        // Set layer gag info to all none
+                        decodedMessage[6 + 3 * i] = "None";   // gagtype
+                        decodedMessage[9 + 3 * i] = "None";   // padlock
+                        decodedMessage[12 + 3 * i] = "None";  // assigner
+                    }
+                    else {
+                        // Extract the gag type
+                        int gagTypeStartIndex = layerString.IndexOf("sealed off with a") + 17;
+                        int gagTypeEndIndex = layerString.IndexOf("gag");
+                        decodedMessage[6 + 3 * i] = layerString.Substring(gagTypeStartIndex, gagTypeEndIndex - gagTypeStartIndex).Trim();  // gagtype
+
+                        // Extract padlock information
+                        if (layerString.Contains("its strap locked with a")) {
+                            int padlockStartIndex = layerString.IndexOf("set to unlock in") + 17;
+                            int padlockEndIndex = layerString.IndexOf("TIME");
+                            decodedMessage[9 + 3 * i] = layerString.Substring(padlockStartIndex, padlockEndIndex - padlockStartIndex).Trim();  // padlock
+
+                            // Extract timer information (if present)
+                            if (layerString.Contains("set to unlock in")) {
+                                int timerStartIndex = layerString.IndexOf("set to unlock in") + 17;
+                                int timerEndIndex = layerString.IndexOf("TIME");
+                                decodedMessage[15 + 2 * i] = layerString.Substring(timerStartIndex, timerEndIndex - timerStartIndex).Trim();  // timer
+                            }
+
+                            // Extract assigner information (if present)
+                            if (layerString.Contains("by")) {
+                                int assignerStartIndex = layerString.IndexOf("by") + 2;
+                                int assignerEndIndex = layerString.IndexOf(".", assignerStartIndex);
+                                decodedMessage[12 + 3 * i] = layerString.Substring(assignerStartIndex, assignerEndIndex - assignerStartIndex).Trim();  // assigner
+                            }
+                        }
+                    }
+                }
+
+                // Extract direct chat garbler information
+                int garblerStartIndex = recievedMessage.IndexOf("Ontop");
+                int garblerEndIndex = recievedMessage.IndexOf("bindings");
+                bool directChatGarblerLocked = recievedMessage.Substring(garblerStartIndex, garblerEndIndex - garblerStartIndex).Trim().Contains("authority");
+            }
+            catch
+            {
+                GagSpeak.Log.Error("Error decoding message!");
+            } 
             return decodedMessage;
-        } else if (encodedMsgIndex == 13) {
-    // handle the information request
-    
-            return decodedMessage;
-        } else {
-            // should return a list of empty strings, letting us know it isnt any of the filters.
-            decodedMessage[0] = "none";
-            return decodedMessage;
+        }
+        // its not something meant to be decoded
+        else {
+        // should return a list of empty strings, letting us know it isnt any of the filters.
+        decodedMessage[0] = "none";
+        return decodedMessage;
         }
     }
 }

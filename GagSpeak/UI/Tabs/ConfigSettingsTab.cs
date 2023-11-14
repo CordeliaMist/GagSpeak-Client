@@ -166,7 +166,7 @@ public class ConfigSettingsTab : ITab
                 ImGui.Text(whitelistPlayerData.name);
                 ImGui.Indent();
                 ImGui.Text($"Relationship to this Player: {whitelistPlayerData.relationshipStatus}");
-                ImGui.Text($"Commitment Duration: {whitelistPlayerData.commitmentDuration}");
+                ImGui.Text($"Commitment Duration: {whitelistPlayerData.timeOfCommitment}");
                 ImGui.Text($"Locked Live Chat Garbler: {whitelistPlayerData.lockedLiveChatGarbler}");
                 ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in whitelistPlayerData.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
                 ImGui.Text($"Selected GagPadlocks: || "); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in whitelistPlayerData.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};

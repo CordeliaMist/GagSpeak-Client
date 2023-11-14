@@ -157,18 +157,26 @@ public class ChatManager
                     isHandled = true;
                     return;
                 }
-                // if our encodedmsgindex is between 1 and 7, if so, we have a encoded message via command
-                else if (encodedMsgIndex > 0 && encodedMsgIndex < 7) {
+                // if our encodedmsgindex is > 1 && < 6, we have a encoded message via command
+                else if (encodedMsgIndex > 0 && encodedMsgIndex <= 7) {
                     List<string> decodedCommandMsg = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
                     // function that will determine what happens to the player as a result of the tell.
-                    if(_msgResultLogic.PerformMsgResultLogic(fmessage.ToString(), decodedCommandMsg, isHandled, _clientChat, _config) ) {
+                    if(_msgResultLogic.CommandMsgResLogic(fmessage.ToString(), decodedCommandMsg, isHandled, _clientChat, _config) ) {
                         isHandled = true; // logic sucessfully parsed, so hide from chat
                     }
                     _config.Save(); // save our config
-                } 
-                // if our encodedmsgindex is 8 or more, we have a encoded message via whitelist 
-                else if (encodedMsgIndex == 8) { // placeholder for now, but this will handle the whitelist exclusive msgs
-                    // future TODO here
+                
+                // for now at least, anything beyond 7 is a whitelist exchange message
+                } else if (encodedMsgIndex > 7) {
+                    GagSpeak.Log.Debug("This is a whitelist exchange message!");
+                    List<string> decodedWhitelistMsg = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
+                    // function that will determine what happens to the player as a result of the tell.
+                    if(_msgResultLogic.WhitelistMsgResLogic(fmessage.ToString(), decodedWhitelistMsg, isHandled, _clientChat, _config) ) {
+                        isHandled = true; // logic sucessfully parsed, so hide from chat
+                    }
+                    
+                    isHandled = true;
+                    return;
                 }
             } // skipped to this point if not encoded message
         } // skips directly to here if not a tell

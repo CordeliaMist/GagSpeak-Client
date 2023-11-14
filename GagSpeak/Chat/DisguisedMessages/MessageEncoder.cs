@@ -1,4 +1,8 @@
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using System.Collections.Generic;
+using System.Linq;
+using System;
+using Lumina.Data.Parsing.Layer;
 
 
 namespace GagSpeak.Chat.MsgEncoder;
@@ -77,14 +81,71 @@ public class MessageEncoder // change to message encoder later
     }
 
     // summarize later, for now, just know it encodes the locking of live garbler messages
-    public string LiveGarblerLockEncodedMessage(PlayerPayload playerPayload, string targetPlayer, string lockType) {
-        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down sternly at looks down sternly at the property they owned below them. {playerPayload.PlayerName} firmly slapped " +
-        "her companion across the cheek and held onto her chin firmly.* \"You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.\"";
+    public string OrderGarblerLockEncodedMessage(PlayerPayload playerPayload, string targetPlayer, string lockType) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down sternly at looks down sternly at the property they owned below them. They firmly slapped their " +
+        "companion across the cheek and held onto her chin firmly.* \"You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.\"";
     }
 
     // summarize later, for now, just know it encodes the requesting of player information
     public string RequestInfoEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down upon you with a smile,* \"I'd love to hear you describe your situation to me my dear, I want hear all about how you feel right now";
     }
+
+    // for accepting a player as your mistress
+    public string AcceptMistressEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} smiles and gracefully and nods in agreement* \"Oh yes, most certainly. I would love to have you as my mistress.\"";
+    }
+
+    // for accepting a player as your pet
+    public string AcceptPetEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} smiles upon hearing the request and nods in agreement as their blushed companion had a collar clicked shut around their neck. \"Yes dear, I'd love to make you my pet.\"";
+    }
+
+    // for accepting a player as your slave
+    public string AcceptSlaveEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} glanced back down at her companion who had just crawled up to their legs with the pleading look and smiled. \"Why I would love to make you my slave dearest.\"";
+    }
+
+////// DO THIS LAST ///////
+    // for providing a player with your information (InDomMode, DirectChatGarbler, garbleLevel, selectedGagTypes, selectedGagPadlocks, selectedGagPadlocksPassword, selectedGagPadLockTimer, selectedGagPadlocksAssigner)
+    public string ProvideInfoEncodedMessage(PlayerPayload playerPayload, string targetPlayer, bool _inDomMode, bool _directChatGarbler, int _garbleLevel, List<string> _selectedGagTypes,
+    List<GagPadlocks> _selectedGagPadlocks, List<string> _selectedGagPadlocksAssigner, List<DateTimeOffset> _selectedGagPadlocksTimer, string relationship)
+    {
+        // we need to start applying some logic here, first create a base string
+        string baseString = $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} ";
+        // now we need to append our next part of the message, the relationship to that player.
+        if (relationship == "None") { baseString += "looks at their companion and smiles, "; } 
+                               else { baseString += $"eyes their {relationship} and smiles, "; }
+        baseString += $"While they were {(_inDomMode ? "Dominant" : "Submissive")} inside, the gags they wore for the last {_garbleLevel} minutes had them drooling already. ";
+
+        // next we need to describe each gagtype they are wearing, if at any point the gag type is none, we should skip over each gag sections text entirely and just write that they had nothing on that layer
+        string layerTerm = "underlayer";
+        for (int i = 0; i < 3; i++) {
+            if (i == 0) { layerTerm = "underlayer"; } else if (i == 1) { layerTerm = "surfacelayer"; } else if (i == 2) { layerTerm = "topmostlayer"; }
+            if (_selectedGagTypes[i] == "None") { 
+                baseString += $"Their {layerTerm} had nothing on it, "; // continuing on to describe the 2nd layer
+            } else {
+                baseString += $"Their {layerTerm} was sealed off with a {_selectedGagTypes[i]} gag";
+            }
+            if (_selectedGagPadlocks[i] != GagPadlocks.None) { // describe the lock, if any
+                baseString += $", its strap locked with a {_selectedGagPadlocks[i]} ";
+                //describe timer, if any
+                if(true) {
+                    baseString += $"set to unlock in {_selectedGagPadlocksTimer[i]} TIME, ";
+                }
+                // describe assigner, if any
+                if(_selectedGagPadlocksAssigner[i] != "") { 
+                    baseString += $"by {_selectedGagPadlocksAssigner[i]}"; }
+            }
+            baseString += $". ";
+        }
+        // finally, we need to describe the direct chat garbler, if any
+        if (_directChatGarbler) {
+            baseString += $"Ontop of it all, the bindings she had on weren't giving her much authority to change the way she sounded either..";
+        }
+        GagSpeak.Log.Debug($"Compiled Information Message: {baseString}");
+        return baseString;
+    }
+
 
 }
