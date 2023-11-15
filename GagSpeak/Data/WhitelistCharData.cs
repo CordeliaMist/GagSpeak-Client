@@ -41,7 +41,7 @@ public class WhitelistCharData {
             this.selectedGagPadlocksAssigner = new List<string> { "", "", "" };}
         // set default values for selectedGagPadLockTimer
         if (this.selectedGagPadlocksTimer == null || !this.selectedGagPadlocksTimer.Any() || this.selectedGagPadlocksTimer.Count > 3) {
-            this.selectedGagPadlocksTimer = new List<DateTimeOffset> { DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now };}
+            this.selectedGagPadlocksTimer = new List<DateTimeOffset> { default(DateTimeOffset), default(DateTimeOffset), default(DateTimeOffset)};}
     }
 
     public void SetTimeOfCommitment() {
@@ -52,10 +52,16 @@ public class WhitelistCharData {
     public string GetCommitmentDuration() {
         if (this.timeOfCommitment == default(DateTimeOffset))
             return ""; // Display nothing if commitment time is not set
-            
-        TimeSpan duration = DateTimeOffset.Now - this.timeOfCommitment; // get the duration
-        // Display the duration in days, hours, minutes
-        return $"{duration.Days} days, {duration.Hours} hours, {duration.Minutes} minutes";
+
+        TimeSpan duration = DateTimeOffset.Now - this.timeOfCommitment; // Get the duration
+
+        // Format the duration in years, months, days, hours
+        int years = duration.Days / 365;
+        int months = (duration.Days % 365) / 30;
+        int days = duration.Days % 30;
+
+        // Display the duration in the desired format
+        return $"{years}y{months}m{days}d{duration.Hours}h";
     }
 }
 

@@ -68,6 +68,9 @@ using OtterGui.Log;
 using GagSpeak.UI;
 using GagSpeak.Services;
 using GagSpeak.Chat;
+using GagSpeak.Data;
+using GagSpeak.Events;
+using GagSpeak.Utility;
 
 namespace GagSpeak; // The main namespace for the plugin.
 

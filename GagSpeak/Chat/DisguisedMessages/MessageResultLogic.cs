@@ -297,6 +297,10 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         // if we made it here, we can apply the gag
         _config.selectedGagTypes[layer-1] = decodedMessage[2];
         GagSpeak.Log.Debug($"Determined income message as a [applier] type encoded message, hiding from chat!");
+        string playerNameWorld = decodedMessage[4];
+        string[] parts = playerNameWorld.Split(' ');
+        string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+        _clientChat.Print(new SeStringBuilder().AddYellow($"[GAGSPEAK] You've been gagged by {playerName} with a {_config.selectedGagTypes[layer-1]}!").BuiltString);
         return true; // sucessful parse
     }
 

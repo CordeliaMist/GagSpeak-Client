@@ -6,7 +6,7 @@ using System.Timers;
 namespace GagSpeak.Services;
 
 // TimerService class manages timers and notifies when remaining time changes
-public class TimerService
+public class TimerService : IDisposable
 {
    // Event to notify subscribers when remaining time changes
    public event Action<string, TimeSpan> RemainingTimeChanged;
@@ -15,12 +15,12 @@ public class TimerService
    private readonly Dictionary<string, TimerData> timers = new Dictionary<string, TimerData>();
 
    // Method to start a new timer
-   public void StartTimer(string timerName, string input, Action onElapsed)
+   public void StartTimer(string timerName, string input,  int elapsedMilliSecPeriod, Action onElapsed)
    {
       // Check if a timer with the same name already exists
       if (timers.ContainsKey(timerName))
       {
-         // Console.WriteLine($"Timer with name '{timerName}' already exists. Use a different name.");
+         GagSpeak.Log.Debug($"Timer with name '{timerName}' already exists. Use a different name.");
          return;
       }
 
@@ -30,7 +30,7 @@ public class TimerService
       // Check if the duration is valid
       if (duration == TimeSpan.Zero)
       {
-         // Console.WriteLine($"Invalid time format for timer '{timerName}'.");
+         GagSpeak.Log.Debug($"Invalid time format for timer '{timerName}'.");
          return;
       }
 
@@ -38,7 +38,7 @@ public class TimerService
       DateTimeOffset endTime = DateTimeOffset.Now.Add(duration);
 
       // Create a new timer
-      Timer timer = new Timer(1000);
+      Timer timer = new Timer(elapsedMilliSecPeriod);
       timer.Elapsed += (sender, args) => OnTimerElapsed(timerName, timer, onElapsed);
       timer.Start();
 
@@ -54,10 +54,10 @@ public class TimerService
       {
          // Calculate remaining time
          TimeSpan remainingTime = timerData.EndTime - DateTimeOffset.Now;
-
          if (remainingTime <= TimeSpan.Zero)
          {
                // Timer expired
+               GagSpeak.Log.Debug($"Timer '{timerName}' expired.");
                timer.Stop();
                onElapsed?.Invoke();
                timers.Remove(timerName);
@@ -103,4 +103,14 @@ public class TimerService
             EndTime = endTime;
         }
     }
+
+      // Method to dispose the service
+      public void Dispose()
+      {
+         // Dispose all timers
+         foreach (var timerData in timers.Values)
+         {
+            timerData.Timer.Dispose();
+         }
+      }
 }

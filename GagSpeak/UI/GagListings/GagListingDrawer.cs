@@ -77,7 +77,7 @@ public class GagListingsDrawer : IDisposable
 
     // Draw the listings
     public void DrawGagAndLockListing(int ID, GagSpeakConfig config, GagTypeFilterCombo _gagTypeFilterCombo,
-            GagLockFilterCombo _gagLockFilterCombo, int layerIndex, string displayLabel, bool locked, int width) {
+    GagLockFilterCombo _gagLockFilterCombo, int layerIndex, string displayLabel, bool locked, int width1, int width2) {
         // Get our boolean on if we are locked or not
         bool isPadlockEquipped = config.selectedGagPadlocks[layerIndex] != GagPadlocks.None;
         // if we are locked, set the locked to true
@@ -111,18 +111,22 @@ public class GagListingsDrawer : IDisposable
         }
           
         ImGui.NextColumn();
-        ImGui.SetColumnWidth(1, width+10); // Set the desired widths);
+        ImGui.SetColumnWidth(1, width1+10); // Set the desired widths);
         // create a group for the 2 dropdowns and icon
         using (var group = ImRaii.Group()) {
             if(!isPadlockEquipped) { // inch our way down half the distance of a newline
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + ImGui.GetFrameHeight() / 1.4f);
             }
-            if (DrawGagTypeItemCombo(ID, config, layerIndex, locked, width, _gagTypeFilterCombo)) {}
-            if (DrawGagLockItemCombo(ID, config, layerIndex, locked, width, _gagLockFilterCombo)) {
+            // draw the combo boxes
+            GagPadlocks selected = GagPadlocks.None;
+            if (DrawGagTypeItemCombo(ID, config, layerIndex, locked, width1, _gagTypeFilterCombo)) {}
+            if (DrawGagLockItemCombo(ID, config, layerIndex, locked, width2, _gagLockFilterCombo, ref selected)) {
                 if(isPadlockEquipped) {
                     ImGui.EndDisabled();
+                    // going to do a lot of checks here for what field to display
+                    
                     var password  = _passwordField; // temp storage to hold until we de-select the text input
-                    ImGui.SetNextItemWidth(width);
+                    ImGui.SetNextItemWidth(width1);
                     if (ImGui.InputText("##Password_Input", ref password, 30, ImGuiInputTextFlags.None))
                         _passwordField = password;
                     if (ImGui.IsItemDeactivatedAfterEdit() || ImGui.IsKeyPressed(ImGuiKey.Enter)) { // will only update our safeword once we click away from the safeword bar
@@ -144,7 +148,11 @@ public class GagListingsDrawer : IDisposable
         }
         ImGui.NextColumn();
         ImGui.SetColumnWidth(2, 80);
-        DrawLocks(layerIndex, config);
+        if(config.selectedGagPadlocks[layerIndex] != GagPadlocks.None) {
+            if(layerIndex==0) { ImGui.Image(textureWrap4.ImGuiHandle, new Vector2(80, 80)); return;}
+            if(layerIndex==1) { ImGui.Image(textureWrap5.ImGuiHandle, new Vector2(80, 80)); return;}
+            if(layerIndex==2) { ImGui.Image(textureWrap6.ImGuiHandle, new Vector2(80, 80)); return;}
+        }
         // end our table
         ImGui.Columns(1);
     }
@@ -164,15 +172,7 @@ public class GagListingsDrawer : IDisposable
             if(e.Index==2)
                 textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagPadlocks[2].ToString()}.png"));
     }
-    // Draw the listings
-    public void DrawLocks(int layerIndex, GagSpeakConfig config) {
-        if(config.selectedGagPadlocks[layerIndex] != GagPadlocks.None) {
-            if(layerIndex==0) { ImGui.Image(textureWrap4.ImGuiHandle, new Vector2(80, 80)); return;}
-            if(layerIndex==1) { ImGui.Image(textureWrap5.ImGuiHandle, new Vector2(80, 80)); return;}
-            if(layerIndex==2) { ImGui.Image(textureWrap6.ImGuiHandle, new Vector2(80, 80)); return;}
-        }
-    }
-
+    
     // draw the gag item combo
     public bool DrawGagTypeItemCombo(int ID, GagSpeakConfig config, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
         var combo = gagtypecombo; // get the combo
@@ -192,7 +192,28 @@ public class GagListingsDrawer : IDisposable
         }
         return true;
     }
+    public bool DrawGagLockItemCombo(int ID, GagSpeakConfig config, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo, ref GagPadlocks selected) {
+        var combo = gaglockcombo; // get the combo
+        // if we left click and it is unlocked, open it
+        if (ImGui.IsItemClicked() && !locked)
+            UIHelpers.OpenCombo($"{ID}_Enum");
+        // using the var disabled, disable this if it is locked.
+        using var disabled = ImRaii.Disabled(locked);
+        // draw the thing
+        combo.Draw(ID, config.selectedGagPadlocks, layerIndex, width, ref selected);
+        if (!locked) { // if we right click on it, clear the selection
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
+                config.selectedGagPadlocks[layerIndex]= GagPadlocks.None; // to the first option, none
+                config.selectedGagPadlocksPassword[layerIndex] = "";
+                config.selectedGagPadlocksAssigner[layerIndex] = "";
+                config.Save();
+            }
+            ImGuiUtil.HoverTooltip("Right-click to clear.");
+        }
+        return true;
+    }
 
+    // for the whitelist page
     public bool DrawGagTypeItemCombo(int ID,  WhitelistCharData charData, ref string gagLabel, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
         var combo = gagtypecombo; // get the combo
         if (ImGui.IsItemClicked() && !locked)
@@ -208,29 +229,6 @@ public class GagListingsDrawer : IDisposable
         }
         return true;
     }
-
-    public bool DrawGagLockItemCombo(int ID, GagSpeakConfig config, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
-        var combo = gaglockcombo; // get the combo
-        // if we left click and it is unlocked, open it
-        if (ImGui.IsItemClicked() && !locked)
-            UIHelpers.OpenCombo($"{ID}_Enum");
-        // using the var disabled, disable this if it is locked.
-        using var disabled = ImRaii.Disabled(locked);
-        // draw the thing
-        combo.Draw(ID, config.selectedGagPadlocks, layerIndex, width);
-        if (!locked) { // if we right click on it, clear the selection
-            if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                config.selectedGagPadlocks[layerIndex]= GagPadlocks.None; // to the first option, none
-                config.selectedGagPadlocksPassword[layerIndex] = "";
-                config.selectedGagPadlocksAssigner[layerIndex] = "";
-                config.Save();
-            }
-            ImGuiUtil.HoverTooltip("Right-click to clear.");
-        }
-        return true;
-    }
-
-
     public bool DrawGagLockItemCombo(int ID, WhitelistCharData charData, ref string lockLabel, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
         // This code is a shadow copy of the function above, used for accepting WhitelistCharData as a type
         var combo = gaglockcombo;

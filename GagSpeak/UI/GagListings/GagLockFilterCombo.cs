@@ -55,7 +55,7 @@ public sealed class GagLockFilterCombo
         }
     }
 
-    public void Draw(int ID, ObservableList<GagPadlocks> listing, int layerIndex, int width) { // for player gag equips
+    public void Draw(int ID, ObservableList<GagPadlocks> listing, int layerIndex, int width, ref GagPadlocks label) { // for player gag equips
         try
         {
             ImGui.SetNextItemWidth(width);

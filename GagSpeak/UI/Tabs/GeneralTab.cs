@@ -8,6 +8,7 @@ using GagSpeak.UI.GagListings;
 using Dalamud.Interface.Utility.Raii;
 using GagSpeak.Services;
 using System.Collections.Generic;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 
@@ -26,7 +27,7 @@ public class GeneralTab : ITab, IDisposable
 
     // testing with datetimeoffset
     private Dictionary<string, string> remainingTimes = new Dictionary<string, string>();
-
+    private bool modeButtonsDisabled = false;
     
     public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService)
     {
@@ -49,12 +50,6 @@ public class GeneralTab : ITab, IDisposable
 
         // Subscribe to timer events
         _timerService.RemainingTimeChanged += OnRemainingTimeChanged;
-
-        // Start initial timers (you can customize the timer names and durations)
-        _timerService.StartTimer("SafewordCooldown", "1h", () => GagSpeak.Log.Debug("Safeword cooldown complete."));
-        _timerService.StartTimer("RoleSwitchCooldown", "30m", () => GagSpeak.Log.Debug("Role switch cooldown complete."));
-        _timerService.StartTimer("GagPadlockTimer0", "8h20m30s", () => GagSpeak.Log.Debug("Gag padlock timer complete."));
-        _timerService.StartTimer("WhitelistButtonCooldown", "5s", () => GagSpeak.Log.Debug("Whitelist button cooldown complete."));
     }
 
     // store our current safeword
@@ -65,6 +60,7 @@ public class GeneralTab : ITab, IDisposable
     public void Dispose() { 
         // Unsubscribe from timer events
         _timerService.RemainingTimeChanged -= OnRemainingTimeChanged;
+        remainingTimes = new Dictionary<string, string>();
     }
 
     /// <summary>
@@ -111,24 +107,28 @@ public class GeneralTab : ITab, IDisposable
                 _config.Safeword = safeword;
                 _tempSafeword = null;
             }
-
             // draw our our second row
             var mode = _inDomMode ?? _config.InDomMode;
             ImGuiUtil.DrawFrameColumn("Mode Selector");
             ImGui.TableNextColumn();
             // draw out our two buttons to set the modes. When the button labeled sub is pressed, it will switch isDomMode to false, and lock the interactability of the sub button.
             // when the button labeled dom is pressed, it will switch isDomMode to true, and lock the interactability of the dom button.
+            if(modeButtonsDisabled) {
+                ImGui.BeginDisabled();
+            }
             if (mode == true) {
                 // User is in Dom mode
-                ImGui.BeginDisabled();
+                if(!modeButtonsDisabled) {ImGui.BeginDisabled();}
                 if (ImGui.Button("Dominant")) {
                     // Dom mode is already active, do nothing or display a message
                 }
-                ImGui.EndDisabled();
+                if(!modeButtonsDisabled) {ImGui.EndDisabled();}
                 ImGui.SameLine();
                 if (ImGui.Button("Submissive")) {
                     _inDomMode = false; // Switch to Sub mode
                     _config.InDomMode = false;
+                    modeButtonsDisabled = true;
+                    _timerService.StartTimer("RoleSwitchCooldown", "10m", 1000, () => modeButtonsDisabled = false);
                     _config.Save();
                 }
             } else {
@@ -136,47 +136,55 @@ public class GeneralTab : ITab, IDisposable
                 if (ImGui.Button("Dominant")) {
                     _inDomMode = true; // Switch to Dom mode
                     _config.InDomMode = true;
+                    modeButtonsDisabled = true;
+                    _timerService.StartTimer("RoleSwitchCooldown", "10m", 1000, () => modeButtonsDisabled = false);
                     _config.Save();
                 }
-                ImGui.BeginDisabled();
+                if(!modeButtonsDisabled) {ImGui.BeginDisabled();}
                 ImGui.SameLine();
                 if (ImGui.Button("Submissive")) {
                     // do nothing
                 }
+                if(!modeButtonsDisabled) {ImGui.EndDisabled();}
+            }
+            if(modeButtonsDisabled) {
                 ImGui.EndDisabled();
+                ImGui.SameLine();
+                ImGui.Text($"[{(_config.InDomMode? "Dom" : "Sub")}] Swap Cooldown: {remainingTimes.GetValueOrDefault("RoleSwitchCooldown", "N/A")}");
             }
         } // end our table
         ImGui.NewLine();
+        // if we used our safeword
+        if(_config.SafewordUsed) {
+            ImGui.SameLine();
+            // create a timer that executes whenever you use the safeword command. This blocks all actions for the next 5m
+            ImGui.Text($"Safeword Used! Disabling All Actions! CD: {remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
+        }
 
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
 
-        int DDwidth = (int)(ImGui.GetContentRegionAvail().X / 2);
+        int DDwidth1 = (int)(ImGui.GetContentRegionAvail().X / 2);
+        int DDwidt2 = (int)(ImGui.GetContentRegionAvail().X / 3);
         // draw our 3 gag listings
         foreach(var slot in Enumerable.Range(0, 3)) {
-            _gagListingsDrawer.DrawGagAndLockListing(slot, _config, _gagTypeFilterCombo[slot],
-                    _gagLockFilterCombo[slot], slot, $"Gag Slot {slot + 1}", _isLocked, DDwidth);
+            _gagListingsDrawer.DrawGagAndLockListing(slot, _config, _gagTypeFilterCombo[slot], _gagLockFilterCombo[slot],
+                slot, $"Gag Slot {slot + 1}", _isLocked, DDwidth1, DDwidt2);
             ImGui.NewLine();
         }
         // we started at the bottom now we here... wait, i mean the reverse of that. Actually you know what, nevermind
-    // Display remaining time for each timer
-    ImGui.Text($"Safeword cooldown: {remainingTimes.GetValueOrDefault("SafewordCooldown", "N/A")}");
-    ImGui.Text($"Role switch cooldown: {remainingTimes.GetValueOrDefault("RoleSwitchCooldown", "N/A")}");
-    ImGui.Text($"Gag padlock timer: {remainingTimes.GetValueOrDefault("GagPadlockTimer0", "N/A")}");
-    ImGui.Text($"Whitelist button cooldown: {remainingTimes.GetValueOrDefault("WhitelistButtonCooldown", "N/A")}");
     }
 
     private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime)
     {
         // update display of remaining time
-        if (remainingTime <= TimeSpan.Zero) {
-            // Timer expired
-            GagSpeak.Log.Debug($"Timer '{timerName}' complete!");
-            remainingTimes[timerName] = "Timer Complete!";
-            return;
-        } else {
+        if(timerName == "RoleSwitchCooldown") {
             // Update the remaining time in the dictionary
-            remainingTimes[timerName] = $"{remainingTime.Hours}h{remainingTime.Minutes}m{remainingTime.Seconds}s";
+            remainingTimes[timerName] = $"{remainingTime.Minutes}m{remainingTime.Seconds}s";
+        }
+        if(timerName == "SafewordUsed") {
+            // Update the remaining time in the dictionary
+            remainingTimes[timerName] = $"{remainingTime.Minutes}m{remainingTime.Seconds}s";
         }
     }
 }

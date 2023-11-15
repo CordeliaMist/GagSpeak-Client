@@ -12,6 +12,7 @@ using Dalamud.Interface;
 using GagSpeak.Data;
 using System.IO;
 using Dalamud.Interface.Internal;
+using Dalamud.Interface.Internal.Windows.StyleEditor;
 namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
@@ -117,6 +118,7 @@ public class ConfigSettingsTab : ITab
         }
         // Set the columns back to 1 now and space over to next section
         ImGui.Columns(1);
+        ImGui.PopStyleVar();
     }
 
     /// <summary>

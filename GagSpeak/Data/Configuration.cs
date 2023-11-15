@@ -37,6 +37,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public bool Enabled { get; set; } = true; // Is plugin enabled?
 
     // Personal information 
+    public bool SafewordUsed { get; set; } = false; // Has the safeword been used?
     public bool InDomMode { get; set; } = false; // Is plugin in dom mode?
     public bool DirectChatGarbler { get; set; } = false; // Is direct chat garbler enabled?
     public bool LockDirectChatGarbler { get; set; } = false; // Is live chat garbler enabled?

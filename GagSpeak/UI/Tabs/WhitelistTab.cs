@@ -21,7 +21,7 @@ using GagSpeak.Services;
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
-public class WhitelistTab : ITab
+public class WhitelistTab : ITab, IDisposable
 {
     // When going back through this, be sure to try and reference anything possible to include from the glamourer convention, since it is more modular.
     private readonly MessageEncoder _gagMessages; // snag the whitelistchardata from the main plugin for obvious reasons
@@ -81,6 +81,13 @@ public class WhitelistTab : ITab
 
         // subscribe to our events
         _timerService.RemainingTimeChanged += OnRemainingTimeChanged;
+    }
+
+    // Dispose of the whitelist tab
+    public void Dispose() {
+        // Unsubscribe from timer events
+        _timerService.RemainingTimeChanged -= OnRemainingTimeChanged;
+        remainingTimes = new Dictionary<string, string>();
     }
     
     // Draw the content for the window of the Whitelist Tab
@@ -189,7 +196,7 @@ public class WhitelistTab : ITab
 
                     // Start a 5-second cooldown timer
                     interactionButtonPressed = true;
-                    _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                    _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
                 }
 
 
@@ -199,7 +206,7 @@ public class WhitelistTab : ITab
                     GagSpeak.Log.Debug("Sending Request to become their pet");
                     // Start a 5-second cooldown timer
                     interactionButtonPressed = true;
-                    _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                    _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
                 }
             
                 // send a encoded request to the player to request beooming their slave
@@ -208,7 +215,7 @@ public class WhitelistTab : ITab
                     GagSpeak.Log.Debug("Sending Request to become their slave"); 
                     // Start a 5-second cooldown timer
                     interactionButtonPressed = true;
-                    _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                    _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
                 }
             
             } // end our relations manager table
@@ -218,6 +225,7 @@ public class WhitelistTab : ITab
             if(whitelist[_currentWhitelistItem].relationshipStatus == "None") {
                 ImGui.BeginDisabled();
                 if (ImGui.Button("Remove Relation To Player", width)) {
+                    
                     // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
                 }
                 ImGui.EndDisabled();
@@ -230,7 +238,7 @@ public class WhitelistTab : ITab
             if(!enableInteractions || interactionButtonPressed)
                 ImGui.EndDisabled();
 
-            var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X / 2, 25.0f * ImGuiHelpers.GlobalScale );
+            var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X/2, 25.0f * ImGuiHelpers.GlobalScale );
             // Message to display based on target proximity
             string targetedPlayerText = "Add Targetted Player"; // Displays if no target
             if (!playerTargetted) {
@@ -275,7 +283,7 @@ public class WhitelistTab : ITab
             ImGui.SameLine();
             if (ImGui.Button("Remove Player", buttonWidth)) {
                 if (whitelist.Count == 1) {
-                    whitelist[0] = new WhitelistCharData("None", "None", "None");
+                    whitelist[0] = new WhitelistCharData("Cordelia Mist", "Balmung", "None");
                 } else {
                     _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
                 }
@@ -338,7 +346,7 @@ public class WhitelistTab : ITab
                 ApplyGagOnPlayer(layer, _gagLabel, _config.Whitelist[_currentWhitelistItem]);
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
-                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
             }
 
             // for our second row, gag lock options and buttons
@@ -386,14 +394,14 @@ public class WhitelistTab : ITab
                 LockGagOnPlayer(layer, _lockLabel, _config.Whitelist[_currentWhitelistItem]);
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
-                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
             }
             ImGui.SameLine();
             if (ImGui.Button("Unlock Gag")) {
                 UnlockGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem]);
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
-                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
             }
 
             ImGui.TableNextRow(); ImGui.TableNextColumn();
@@ -401,14 +409,14 @@ public class WhitelistTab : ITab
                 RemoveGagFromPlayer(layer, _config.Whitelist[_currentWhitelistItem]);
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
-                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
             }
             ImGui.SameLine();
             if (ImGui.Button("Remove All Gags")) {
                 RemoveAllGagsFromPlayer(_config.Whitelist[_currentWhitelistItem]);
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
-                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
             }
             
             // add a filler row
@@ -420,7 +428,7 @@ public class WhitelistTab : ITab
                 _config.Whitelist[_currentWhitelistItem] = selectedWhitelistItem; // update the whitelist
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
-                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
             }
             ImGui.SameLine();
             if (ImGui.Button("Request Player Info")) {
@@ -429,7 +437,7 @@ public class WhitelistTab : ITab
 
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
-                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
             }
         } // end our info table
 
@@ -440,8 +448,7 @@ public class WhitelistTab : ITab
 
     private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime) {
         if(timerName == "InteractionCooldown") {
-            //GagSpeak.Log.Debug($"'{timerName}' changed: {remainingTime.Hours} hours {remainingTime.Minutes} minutes {remainingTime.Seconds} seconds");
-            remainingTimes[timerName] = $"{remainingTime.Hours}h{remainingTime.Minutes}m{remainingTime.Seconds}s";
+            remainingTimes[timerName] = $"{remainingTime.TotalSeconds:F1}s";
             return;
         }
     }

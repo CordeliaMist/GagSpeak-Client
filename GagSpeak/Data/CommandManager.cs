@@ -15,6 +15,7 @@ using GagSpeak.Chat.Garbler;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using XivCommon.Functions;
 using ChatChannel = GagSpeak.Data.ChatChannel;
+using OtterGui;
 // practicing modular design
 namespace GagSpeak.Services;
 
@@ -37,12 +38,13 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly IClientState _clientState;
     private RealChatInteraction _realChatInteraction;
     private readonly IFramework _framework; // framework from XIVClientStructs
+    private readonly TimerService _timerService;
 
     private readonly MessageGarbler _messageGarbler;
     // Constructor for the command manager
     public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow, HistoryService historyService,
         IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, IFramework framework, 
-        RealChatInteraction realchatinteraction)
+        RealChatInteraction realchatinteraction, TimerService timerService)
     {
         // set the private readonly's to the passed in data of the respective names
         _commands = command;
@@ -57,6 +59,7 @@ public class CommandManager : IDisposable // Our main command list manager
         _gagMessages = new MessageEncoder();
         _messageGarbler = new MessageGarbler();
         _historyService = historyService;
+        _timerService = timerService;
 
         // Add handlers to the main commands
         _commands.AddHandler(MainCommandString, new CommandInfo(OnGagSpeak) {
@@ -127,6 +130,8 @@ public class CommandManager : IDisposable // Our main command list manager
                 _config.selectedGagPadlocksPassword[layerIndex] = "";
                 _config.selectedGagPadlocksAssigner[layerIndex] = "";
             }
+            _config.SafewordUsed = true;
+            _timerService.StartTimer("SafewordUsed", "5m", 1000, () => _config.SafewordUsed = false);
         }
 
         return true;
