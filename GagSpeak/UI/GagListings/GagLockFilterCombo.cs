@@ -1,25 +1,9 @@
 using System;
-using System.Numerics;
-using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using ImGuiScene;
-using OtterGui;
 using OtterGui.Raii;
-﻿using Dalamud.Game.Text;
-using Dalamud.Plugin;
-using System.Diagnostics;
-using Num = System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
-using OtterGui.Widgets;
-using Dalamud.Interface;
-using Dalamud.Interface.Utility;
-
-using GagSpeak.Services;
-using GagSpeak.UI.Helpers;
-using GagSpeak.Chat;
+using GagSpeak.Events;
 
 namespace GagSpeak.UI.GagListings;
 
@@ -42,7 +26,7 @@ public sealed class GagLockFilterCombo
     /// <item><c>layerindex</c><param name="layerIndex"> - a list where the stored selection from the list is saved</param></item>
     /// </list>
     /// </summary>
-    public void Draw(int ID, ref string label, List<GagPadlocks> listing, int layerIndex, int width) { // for whitelist gag selects
+    public void Draw(int ID, ref string label, ObservableList<GagPadlocks> listing, int layerIndex, int width) { // for whitelist gag selects
         try
         {
             ImGui.SetNextItemWidth(width);
@@ -57,8 +41,6 @@ public sealed class GagLockFilterCombo
                     foreach (var item in Enum.GetValues(typeof(GagPadlocks)).Cast<GagPadlocks>()) {
                         if (ImGui.Selectable(item.ToString(), listing[layerIndex] == item)) {
                             label = item.ToString(); // update label
-                            GagSpeak.Log.Debug($"GagSpeak: GagPadlock changed to {item}");
-
                             _comboSearchText = string.Empty;
                             ImGui.CloseCurrentPopup();
                             _config.Save();
@@ -73,7 +55,7 @@ public sealed class GagLockFilterCombo
         }
     }
 
-    public void Draw(int ID, List<GagPadlocks> listing, int layerIndex, int width) { // for player gag equips
+    public void Draw(int ID, ObservableList<GagPadlocks> listing, int layerIndex, int width) { // for player gag equips
         try
         {
             ImGui.SetNextItemWidth(width);
@@ -88,8 +70,6 @@ public sealed class GagLockFilterCombo
                     foreach (var item in Enum.GetValues(typeof(GagPadlocks)).Cast<GagPadlocks>()) {
                         if (ImGui.Selectable(item.ToString(), listing[layerIndex] == item)) {
                             listing[layerIndex] = item;
-                            GagSpeak.Log.Debug($"GagSpeak: GagPadlock changed to {item}");
-
                             _comboSearchText = string.Empty;
                             ImGui.CloseCurrentPopup();
                             _config.Save();

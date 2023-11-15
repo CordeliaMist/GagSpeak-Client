@@ -16,6 +16,7 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using GagSpeak.Chat;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using GagSpeak.Chat.MsgEncoder;
+using GagSpeak.Services;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 
@@ -29,6 +30,7 @@ public class WhitelistTab : ITab
     private readonly IClientState _clientState; // snag the clientstate from the main plugin for obvious reasons
     private readonly IDataManager _dataManager; // for parsing objects
     private readonly GagListingsDrawer _gagListingsDrawer; // snag the gaglistingsdrawer from the main plugin for obvious reasons
+    private readonly TimerService _timerService; // snag the timerservice from the main plugin for obvious reasons
     public ReadOnlySpan<byte> Label => "Whitelist"u8; // set label for the whitelist tab
     private bool emptyList = false; // if the whitelist is empty, disable lower section
 
@@ -44,13 +46,15 @@ public class WhitelistTab : ITab
 
     // store time information & control locks
     private bool enableInteractions = false; // determines if we can interact with with whitelist buttons or not (for safety to prevent accidental tells)
-    private bool interactionButtonPressed = false; // determines if we have pressed a button that communicates or not
-    private DateTimeOffset ? startInteractLockTime; // time to lock interactions once a button is pressed to prevent spamming of tells
+    private bool interactionButtonPressed; // determines if we have pressed a button that communicates or not
+    private Dictionary<string, string> remainingTimes = new Dictionary<string, string>();
 
     // Constructor for the whitelist tab
-    public WhitelistTab(GagSpeakConfig config, IClientState clientState, GagListingsDrawer gagListingsDrawer, ChatManager chatManager, IDataManager dataManager) {
+    public WhitelistTab(GagSpeakConfig config, IClientState clientState, GagListingsDrawer gagListingsDrawer, ChatManager chatManager,
+    IDataManager dataManager, TimerService timerService) {
         // Set the readonlys
         _config = config;
+        _timerService = timerService;
         _clientState = clientState;
         _dataManager = dataManager;
         _gagListingsDrawer = gagListingsDrawer;
@@ -74,6 +78,9 @@ public class WhitelistTab : ITab
             new GagLockFilterCombo(_config),
             new GagLockFilterCombo(_config)
         };
+
+        // subscribe to our events
+        _timerService.RemainingTimeChanged += OnRemainingTimeChanged;
     }
     
     // Draw the content for the window of the Whitelist Tab
@@ -149,51 +156,78 @@ public class WhitelistTab : ITab
 
                 //////////////////////////////////////////////////////////////////////////////////////////////////////
                 //// Here is the start of our relations manager. So calculate our timers and interaction toggles. ////
-                interactionButtonPressed = (startInteractLockTime == null || (DateTimeOffset.Now - startInteractLockTime.Value).TotalSeconds > 5);
                 // create handlers for interactions & permissions
                 ImGui.TableNextRow(); ImGui.TableNextColumn();
                 Checkbox("Interactions", "WARNING: Make sure other people on your whitelist have this plugin too! (sends tells to players)\n" +
                 "Allows for direct communication. Encoded to look natural, but still look wierd out of context!", enableInteractions, v => enableInteractions = v);
-                if (!interactionButtonPressed) {
+                
+                // the cooldown timer should be displayed here
+                if (interactionButtonPressed) {
                     ImGui.TableNextColumn();
-                    var remainingTime = 5 - (DateTimeOffset.Now - startInteractLockTime.Value).TotalSeconds;
-                    ImGui.Text($"Usage CD: {remainingTime:F1}s");
+                    ImGui.Text($"Usage CD: {remainingTimes.GetValueOrDefault("InteractionCooldown", "N/A")}");
                 }
                 ImGui.TableNextRow();
 
 
                 // if we dont have interactions enabled, or a communication button was pressed and we are on cooldown, disable them!
-                if(!enableInteractions || !interactionButtonPressed)
+                if(!enableInteractions || interactionButtonPressed)
                     ImGui.BeginDisabled();
                 
                 ImGuiUtil.DrawFrameColumn("Relation towards You:"); ImGui.TableNextColumn();
-                var width2 = new Vector2(ImGui.GetContentRegionAvail().X-13, 0);
+                var width2 = new Vector2(ImGui.GetContentRegionAvail().X, 0);
                 ImGui.Text($"{whitelist[_currentWhitelistItem].relationshipStatus}");
 
                 ImGuiUtil.DrawFrameColumn("Commitment Length: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
                 ImGui.Text($"{whitelist[_currentWhitelistItem].GetCommitmentDuration()}");
 
-                ImGuiUtil.DrawFrameColumn("Become Their Mistress: "); ImGui.TableNextColumn(); // Next Row (Request To Become Players Mistress)
-                if (ImGui.Button("Request Relation", width2)) // send a encoded request to the player to request beooming their mistress
-                    GagSpeak.Log.Debug("Sending Request to become their mistress"); // _chatManager.SendRealMessage($"/tell {whitelist[_currentWhitelistItem].name} *{CleanSenderName(_clientState.LocalPlayer.Name.TextValue)} from {_clientState.LocalPlayer.HomeWorld.Id} requests to become your Mistress*");
+                style.Pop();
                 
-                ImGuiUtil.DrawFrameColumn("Become Their Pet: "); ImGui.TableNextColumn(); // Next Row (Request To Become Players pet)
-                if (ImGui.Button("Request Relation", width2)) // send a encoded request to the player to request beooming their pet
-                    GagSpeak.Log.Debug("Sending Request to become their pet"); // _chatManager.SendRealMessage($"/tell {whitelist[_currentWhitelistItem].name} *{CleanSenderName(_clientState.LocalPlayer.Name.TextValue)} from {_clientState.LocalPlayer.HomeWorld.Id} requests to become your pet*");
+                // send a encoded request to the player to request beooming their mistress
+                ImGuiUtil.DrawFrameColumn("Become Their Mistress: "); ImGui.TableNextColumn(); // Next Row (Request To Become Players Mistress)
+                if (ImGui.Button("Request Relation", width2)) {
+                    GagSpeak.Log.Debug("Sending Request to become their mistress");
+
+                    // Start a 5-second cooldown timer
+                    interactionButtonPressed = true;
+                    _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                }
+
+
+                // send a encoded request to the player to request beooming their pet
+                ImGuiUtil.DrawFrameColumn("Become Their Pet: "); ImGui.TableNextColumn();
+                if (ImGui.Button("Request Relation", width2)) {
+                    GagSpeak.Log.Debug("Sending Request to become their pet");
+                    // Start a 5-second cooldown timer
+                    interactionButtonPressed = true;
+                    _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                }
             
-                ImGuiUtil.DrawFrameColumn("Become Their Slave: "); ImGui.TableNextColumn(); // Next Row (Request To Become Players slave)
-                if (ImGui.Button("Request Relation", width2)) // send a encoded request to the player to request beooming their slave
-                    GagSpeak.Log.Debug("Sending Request to become their slave"); // _chatManager.SendRealMessage($"/tell {whitelist[_currentWhitelistItem].name} *{CleanSenderName(_clientState.LocalPlayer.Name.TextValue)} from {_clientState.LocalPlayer.HomeWorld.Id} requests to become your slave*");
+                // send a encoded request to the player to request beooming their slave
+                ImGuiUtil.DrawFrameColumn("Become Their Slave: "); ImGui.TableNextColumn(); 
+                if (ImGui.Button("Request Relation", width2)) {
+                    GagSpeak.Log.Debug("Sending Request to become their slave"); 
+                    // Start a 5-second cooldown timer
+                    interactionButtonPressed = true;
+                    _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
+                }
+            
             } // end our relations manager table
 
-            style.Pop();
             // here put if they want to request relation removal
             var width = new Vector2(-1, 25.0f * ImGuiHelpers.GlobalScale);
-            if (ImGui.Button("Remove Relation To Player", width)) {
-                // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
+            if(whitelist[_currentWhitelistItem].relationshipStatus == "None") {
+                ImGui.BeginDisabled();
+                if (ImGui.Button("Remove Relation To Player", width)) {
+                    // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
+                }
+                ImGui.EndDisabled();
+            } else {
+                if (ImGui.Button("Remove Relation To Player", width)) {
+                    // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
+                }
             } 
 
-            if(!enableInteractions || !interactionButtonPressed)
+            if(!enableInteractions || interactionButtonPressed)
                 ImGui.EndDisabled();
 
             var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X / 2, 25.0f * ImGuiHelpers.GlobalScale );
@@ -249,12 +283,35 @@ public class WhitelistTab : ITab
             }
         } // end our main table
 
+        // create button widths 
+        var buttonWidth2 = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X / 2, 25.0f * ImGuiHelpers.GlobalScale );
+        if (whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Mistress" || 
+            whitelist[_currentWhitelistItem].relationshipStatus == "Pet" ||
+            whitelist[_currentWhitelistItem].relationshipStatus == "Slave") {
+            // Display buttons only if there is an incoming request
+            var relationText = whitelist[_currentWhitelistItem].PendingRelationshipRequest?.Split(' ')[0];
+            if (ImGui.Button($"Accept {whitelist[_currentWhitelistItem].name} as your {relationText}", new Vector2(200, 25)))
+            {
+                // Handle accept button action here
+                // set the relation request to established
+                whitelist[_currentWhitelistItem].PendingRelationshipRequest = "Established";
+                GagSpeak.Log.Debug($"Accepting incoming relation request from {whitelist[_currentWhitelistItem].name}");
+            }
+            ImGui.SameLine();
+            if (ImGui.Button($"Decline {whitelist[_currentWhitelistItem].name}", new Vector2(120, 25)))
+            {
+                // set the relation request to established
+                whitelist[_currentWhitelistItem].PendingRelationshipRequest = "Established";
+                GagSpeak.Log.Debug($"Declining incoming relation request from {whitelist[_currentWhitelistItem].name}");
+            }
+        }
+        
         // create a collapsing header for this.
         if(!ImGui.CollapsingHeader("PLAYER's Interaction Options"))
             return;
 
 
-        if(!enableInteractions || !interactionButtonPressed)
+        if(!enableInteractions || interactionButtonPressed)
             ImGui.BeginDisabled();
         
 
@@ -279,7 +336,9 @@ public class WhitelistTab : ITab
             if (ImGui.Button("Apply Gag To Player")) {
                 // execute the generation of the apply gag layer string
                 ApplyGagOnPlayer(layer, _gagLabel, _config.Whitelist[_currentWhitelistItem]);
-                startInteractLockTime = DateTimeOffset.Now; // Record the time when the Submissive button is pressed
+                // Start a 5-second cooldown timer
+                interactionButtonPressed = true;
+                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
             }
 
             // for our second row, gag lock options and buttons
@@ -325,23 +384,31 @@ public class WhitelistTab : ITab
             ImGui.SameLine();
             if (ImGui.Button("Lock Gag")) {
                 LockGagOnPlayer(layer, _lockLabel, _config.Whitelist[_currentWhitelistItem]);
-                startInteractLockTime = DateTimeOffset.Now; // Record the time when the Submissive button is pressed
+                // Start a 5-second cooldown timer
+                interactionButtonPressed = true;
+                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
             }
             ImGui.SameLine();
             if (ImGui.Button("Unlock Gag")) {
                 UnlockGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem]);
-                startInteractLockTime = DateTimeOffset.Now; // Record the time when the Submissive button is pressed
+                // Start a 5-second cooldown timer
+                interactionButtonPressed = true;
+                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
             }
 
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             if (ImGui.Button("Remove This Gag")) {
                 RemoveGagFromPlayer(layer, _config.Whitelist[_currentWhitelistItem]);
-                startInteractLockTime = DateTimeOffset.Now; // Record the time when the Submissive button is pressed
+                // Start a 5-second cooldown timer
+                interactionButtonPressed = true;
+                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
             }
             ImGui.SameLine();
             if (ImGui.Button("Remove All Gags")) {
                 RemoveAllGagsFromPlayer(_config.Whitelist[_currentWhitelistItem]);
-                startInteractLockTime = DateTimeOffset.Now; // Record the time when the Submissive button is pressed
+                // Start a 5-second cooldown timer
+                interactionButtonPressed = true;
+                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
             }
             
             // add a filler row
@@ -351,21 +418,34 @@ public class WhitelistTab : ITab
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
                 selectedWhitelistItem.lockedLiveChatGarbler = true; // modify property.
                 _config.Whitelist[_currentWhitelistItem] = selectedWhitelistItem; // update the whitelist
-                // some message to force the gag 
-                startInteractLockTime = DateTimeOffset.Now; // Record the time when the Submissive button is pressed
+                // Start a 5-second cooldown timer
+                interactionButtonPressed = true;
+                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
             }
             ImGui.SameLine();
             if (ImGui.Button("Request Player Info")) {
                 // send a message to the player requesting their current info
-                
-                startInteractLockTime = DateTimeOffset.Now; // Record the time when the Submissive button is pressed
+                GagSpeak.Log.Debug("Sending Request for Player Info");
+
+                // Start a 5-second cooldown timer
+                interactionButtonPressed = true;
+                _timerService.StartTimer("InteractionCooldown", "5s", () => { interactionButtonPressed = false; });
             }
         } // end our info table
 
         // Use ImGui.EndDisabled() to end the disabled state
-        if(!enableInteractions || !interactionButtonPressed)
+        if(!enableInteractions || interactionButtonPressed)
             ImGui.EndDisabled();
     } // end our draw whitelist function
+
+    private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime) {
+        if(timerName == "InteractionCooldown") {
+            //GagSpeak.Log.Debug($"'{timerName}' changed: {remainingTime.Hours} hours {remainingTime.Minutes} minutes {remainingTime.Seconds} seconds");
+            remainingTimes[timerName] = $"{remainingTime.Hours}h{remainingTime.Minutes}m{remainingTime.Seconds}s";
+            return;
+        }
+    }
+
 
     // Additional methods for applying, locking, unlocking, removing gags
     private void ApplyGagOnPlayer(int layer, string gagType, WhitelistCharData selectedPlayer) {

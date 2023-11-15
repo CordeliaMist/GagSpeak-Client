@@ -11,6 +11,7 @@ using OtterGui.Classes;
 
 using GagSpeak.UI;
 using GagSpeak.Services;
+using GagSpeak.Events;
 
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
@@ -34,7 +35,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public int Version { get; set; } = 0; // Version of the plugin
     public bool FreshInstall { get; set; } = true; // Is user on a fresh install?
     public bool Enabled { get; set; } = true; // Is plugin enabled?
-    
+
     // Personal information 
     public bool InDomMode { get; set; } = false; // Is plugin in dom mode?
     public bool DirectChatGarbler { get; set; } = false; // Is direct chat garbler enabled?
@@ -45,8 +46,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public bool whitelistOnly { get; set; } = false; // Is whitelist only enabled?
     public bool DebugMode { get; set; } = false; // Is debug mode enabled?
     public int GarbleLevel { get; set; } = 0; // Current Garble Level (0-20)
-    public List<string> selectedGagTypes { get; set; } // What gag types are selected?
-    public List<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
+    public ObservableList<string> selectedGagTypes { get; set; } // What gag types are selected?
+    public ObservableList<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
     public List<DateTimeOffset> selectedGagPadLockTimer { get; set; } // stores time each padlock was assigned.
     public List<string> selectedGagPadlocksAssigner { get; set; } // name of who assigned the padlocks
@@ -70,10 +71,10 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
 
         // Make sure we aren't getting any duplicates
         if (this.selectedGagTypes == null || !this.selectedGagTypes.Any() || this.selectedGagTypes.Count > 3) {
-            this.selectedGagTypes = new List<string> { "None", "None", "None" };}
+            this.selectedGagTypes = new ObservableList<string> { "None", "None", "None" };}
         // Set default values for selectedGagPadlocks
         if (this.selectedGagPadlocks == null || !this.selectedGagPadlocks.Any() || this.selectedGagPadlocks.Count > 3) {
-            this.selectedGagPadlocks = new List<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
+            this.selectedGagPadlocks = new ObservableList<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
         // set default values for selected channels/
         if (this.Channels == null || !this.Channels.Any()) {
             this.Channels = new List<ChatChannel.ChatChannels>(){ChatChannel.ChatChannels.Say};}

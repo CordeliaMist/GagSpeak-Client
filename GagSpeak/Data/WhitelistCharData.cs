@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using GagSpeak.Events;
 
 namespace GagSpeak.Data;
 // a struct to hold information on whitelisted players.
@@ -13,8 +14,8 @@ public class WhitelistCharData {
     public string PendingRelationshipRequest; // get the pending relationship request, if any
     public DateTimeOffset timeOfCommitment; // how long has your commitment with this player lasted? (data stores time of commitment start)
     public bool lockedLiveChatGarbler { get; set; } // is the live chat garbler locked?
-    public List<string> selectedGagTypes { get; set; } // What gag types are selected?
-    public List<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
+    public ObservableList<string> selectedGagTypes { get; set; } // What gag types are selected?
+    public ObservableList<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
     public List<DateTimeOffset> selectedGagPadlocksTimer { get; set; } // stores time each padlock was assigned.
     public List<string> selectedGagPadlocksAssigner { get; set; } // who assigned the padlocks, if any
@@ -28,10 +29,10 @@ public class WhitelistCharData {
         this.PendingRelationshipRequest = "None";
         // Make sure we aren't getting any duplicates
         if (this.selectedGagTypes == null || !this.selectedGagTypes.Any() || this.selectedGagTypes.Count > 3) {
-            this.selectedGagTypes = new List<string> { "None", "None", "None" };}
+            this.selectedGagTypes = new ObservableList<string> { "None", "None", "None" };}
         // Set default values for selectedGagPadlocks
         if (this.selectedGagPadlocks == null || !this.selectedGagPadlocks.Any() || this.selectedGagPadlocks.Count > 3) {
-            this.selectedGagPadlocks = new List<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
+            this.selectedGagPadlocks = new ObservableList<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
         // set default values for selectedGagPadlocksPassword
         if (this.selectedGagPadlocksPassword == null || !this.selectedGagPadlocksPassword.Any() || this.selectedGagPadlocksPassword.Count > 3) {
             this.selectedGagPadlocksPassword = new List<string> { "", "", "" };}

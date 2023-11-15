@@ -1,16 +1,106 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
+using System.Timers;
 
 namespace GagSpeak.Services;
 
-/* this class will determine the many various actions for tracking the time of things, or issuing out punishments for inproper actions
-   it will make use of the DateTimeOffset and TimeSpan classes to determine the time of things, and will also make use of the Timer class to determine the time of things
-   inside of the service should be a function for when when a timer padlock is assigned, an inproper message is sent, or the safeword is used.
-   they should all be able to store these times within a variable of the service, and be able to pass in a desireable time frame to have.
-   the service should also be able to determine if the user is in a time out, and if so, how long they have left in the time out. */
+// TimerService class manages timers and notifies when remaining time changes
 public class TimerService
 {
-    
+   // Event to notify subscribers when remaining time changes
+   public event Action<string, TimeSpan> RemainingTimeChanged;
+
+   // Dictionary to store active timers
+   private readonly Dictionary<string, TimerData> timers = new Dictionary<string, TimerData>();
+
+   // Method to start a new timer
+   public void StartTimer(string timerName, string input, Action onElapsed)
+   {
+      // Check if a timer with the same name already exists
+      if (timers.ContainsKey(timerName))
+      {
+         // Console.WriteLine($"Timer with name '{timerName}' already exists. Use a different name.");
+         return;
+      }
+
+      // Parse the input string to get the duration
+      TimeSpan duration = ParseTimeInput(input);
+
+      // Check if the duration is valid
+      if (duration == TimeSpan.Zero)
+      {
+         // Console.WriteLine($"Invalid time format for timer '{timerName}'.");
+         return;
+      }
+
+      // Calculate the end time of the timer
+      DateTimeOffset endTime = DateTimeOffset.Now.Add(duration);
+
+      // Create a new timer
+      Timer timer = new Timer(1000);
+      timer.Elapsed += (sender, args) => OnTimerElapsed(timerName, timer, onElapsed);
+      timer.Start();
+
+      // Store the timer data in the dictionary
+      timers[timerName] = new TimerData(timer, endTime);
+
+   }
+
+    // Method called when a timer elapses
+   private void OnTimerElapsed(string timerName, Timer timer, Action onElapsed)
+   {
+      if (timers.TryGetValue(timerName, out var timerData))
+      {
+         // Calculate remaining time
+         TimeSpan remainingTime = timerData.EndTime - DateTimeOffset.Now;
+
+         if (remainingTime <= TimeSpan.Zero)
+         {
+               // Timer expired
+               timer.Stop();
+               onElapsed?.Invoke();
+               timers.Remove(timerName);
+         }
+         else
+         {
+               // Notify subscribers about remaining time change
+               RemainingTimeChanged?.Invoke(timerName, remainingTime);
+         }
+      }
+   }
+
+   // Method to parse time input string
+   private static TimeSpan ParseTimeInput(string input)
+   {
+      // Match hours, minutes, and seconds in the input string
+      var match = Regex.Match(input, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+
+      if (match.Success)
+      {
+         // Parse hours, minutes, and seconds
+         int.TryParse(match.Groups[1].Value, out int hours);
+         int.TryParse(match.Groups[2].Value, out int minutes);
+         int.TryParse(match.Groups[3].Value, out int seconds);
+
+         // Return the total duration
+         return new TimeSpan(hours, minutes, seconds);
+      }
+
+      // If the input string is not in the correct format, return TimeSpan.Zero
+      return TimeSpan.Zero;
+      }
+
+    // Nested class to store timer data
+    private class TimerData
+    {
+        public Timer Timer { get; }
+        public DateTimeOffset EndTime { get; }
+
+        public TimerData(Timer timer, DateTimeOffset endTime)
+        {
+            Timer = timer;
+            EndTime = endTime;
+        }
+    }
 }

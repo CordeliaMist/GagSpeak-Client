@@ -1,39 +1,22 @@
 using System.Numerics;
 using ImGuiNET;
-using System.Collections.Generic;
 using System.Linq;
 using OtterGui;
 using OtterGui.Raii;
-using GagSpeak.Chat;
-using GagSpeak.Services;
-using OtterGui.Widgets;
-using Lumina;
 using Dalamud.Interface.Utility;
 using System;
-using OtterGui.Log;
 using GagSpeak.UI.Helpers;
-using System.Threading;
-using Lumina.Data.Parsing.Layer;
 using GagSpeak.Data;
-﻿using Dalamud.Game.Command;
-using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
-using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
-﻿using System;
-using GagSpeak.Services;
-using System.Numerics;
 using Dalamud.Interface.Internal;
-using Dalamud.Interface.Windowing;
-using ImGuiNET;
-using Microsoft.VisualBasic;
-using Dalamud.Interface;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
+
+using GagSpeak.Events;
+
 
 // Practicing Modular Design
 namespace GagSpeak.UI.GagListings;
-public class GagListingsDrawer
+public class GagListingsDrawer : IDisposable
 {
     IDalamudTextureWrap textureWrap1; // for image display
     IDalamudTextureWrap textureWrap2; // for image display
@@ -66,10 +49,18 @@ public class GagListingsDrawer
         textureWrap4 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[0].ToString()}.png"));
         textureWrap5 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[1].ToString()}.png"));
         textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[2].ToString()}.png"));
+    
+        _config.selectedGagTypes.ItemChanged += OnSelectedTypesChanged;
+        _config.selectedGagPadlocks.ItemChanged += OnSelectedTypesChanged;
     }
 
     private Vector2 _iconSize;
     private float _comboLength;
+
+    public void Dispose() {
+        _config.selectedGagTypes.ItemChanged -= OnSelectedTypesChanged;
+        _config.selectedGagPadlocks.ItemChanged -= OnSelectedTypesChanged;
+    }
 
     // This function just prepares our styleformat for the drawing
     public void PrepareGagListDrawing() {
@@ -87,12 +78,6 @@ public class GagListingsDrawer
     // Draw the listings
     public void DrawGagAndLockListing(int ID, GagSpeakConfig config, GagTypeFilterCombo _gagTypeFilterCombo,
             GagLockFilterCombo _gagLockFilterCombo, int layerIndex, string displayLabel, bool locked, int width) {
-        // get our current labels
-        bool updateGagTexture = false;
-        string currentGagLabel = config.selectedGagTypes[layerIndex];
-        bool updateLockTexture = false;
-        string currentLockLabel = config.selectedGagPadlocks[layerIndex].ToString();
-
         // Get our boolean on if we are locked or not
         bool isPadlockEquipped = config.selectedGagPadlocks[layerIndex] != GagPadlocks.None;
         // if we are locked, set the locked to true
@@ -162,22 +147,23 @@ public class GagListingsDrawer
         DrawLocks(layerIndex, config);
         // end our table
         ImGui.Columns(1);
-        // check if we need to update the textures
-        if (currentGagLabel != config.selectedGagTypes[layerIndex]) { updateGagTexture = true; }
-        if (currentLockLabel != config.selectedGagPadlocks[layerIndex].ToString()) { updateLockTexture = true; }
-        // if we need to update the textures, update them
-        if (updateGagTexture) {
-            if(layerIndex==0){textureWrap1 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagTypes[0]}.png"));}
-            if(layerIndex==1){textureWrap2 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagTypes[1]}.png"));}
-            if(layerIndex==2){textureWrap3 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagTypes[2]}.png"));}
-        }
-        if (updateLockTexture) {
-            if(layerIndex==0){textureWrap4 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[0].ToString()}.png"));}
-            if(layerIndex==1){textureWrap5 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[1].ToString()}.png"));}
-            if(layerIndex==2){textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[2].ToString()}.png"));}
-        }
     }
 
+    private void OnSelectedTypesChanged(object sender, ItemChangedEventArgs e) {
+        GagSpeak.Log.Debug($"Item at index {e.Index} changed from '{e.OldValue}' to '{e.NewValue}'");
+            if(e.Index==0) // gagtyped
+                textureWrap1 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagTypes[0]}.png"));
+            if(e.Index==1)
+                textureWrap2 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagTypes[1]}.png"));
+            if(e.Index==2)
+                textureWrap3 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagTypes[2]}.png"));
+            if(e.Index==0) // passwords
+                textureWrap4 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagPadlocks[0].ToString()}.png"));
+            if(e.Index==1)
+                textureWrap5 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagPadlocks[1].ToString()}.png"));
+            if(e.Index==2)
+                textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagPadlocks[2].ToString()}.png"));
+    }
     // Draw the listings
     public void DrawLocks(int layerIndex, GagSpeakConfig config) {
         if(config.selectedGagPadlocks[layerIndex] != GagPadlocks.None) {
@@ -234,7 +220,7 @@ public class GagListingsDrawer
         combo.Draw(ID, config.selectedGagPadlocks, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                config.selectedGagPadlocks[layerIndex ]= GagPadlocks.None; // to the first option, none
+                config.selectedGagPadlocks[layerIndex]= GagPadlocks.None; // to the first option, none
                 config.selectedGagPadlocksPassword[layerIndex] = "";
                 config.selectedGagPadlocksAssigner[layerIndex] = "";
                 config.Save();

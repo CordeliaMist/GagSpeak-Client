@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface.Utility;
 
+using GagSpeak.Events;
+
 namespace GagSpeak.UI.GagListings;
 
 public sealed class GagTypeFilterCombo 
@@ -29,7 +31,7 @@ public sealed class GagTypeFilterCombo
     /// <item><c>layerindex</c><param name="layerIndex"> - a list where the stored selection from the list is saved</param></item>
     /// </list>
     /// </summary>
-    public void Draw(int ID, ref string label, List<string> listing, int layerIndex, int width) {
+    public void Draw(int ID, ref string label, ObservableList<string> listing, int layerIndex, int width) {
         // distinguish between general tab appliers, and whitelist ones
         if(label == "Dummy") { 
             label = listing[layerIndex];
@@ -62,8 +64,6 @@ public sealed class GagTypeFilterCombo
                             if(isDummy)
                                 listing[layerIndex] = item; // update data (if for generaltab)
                             label = item; // update label
-                            GagSpeak.Log.Debug($"GagSpeak: Layer {layerIndex} GagType changed to {item}");
-                            // we need to clear the search filter now and close the window.
                             _comboSearchText = string.Empty;
                             _gagTypes = _config.GagTypes;
                             ImGui.CloseCurrentPopup();

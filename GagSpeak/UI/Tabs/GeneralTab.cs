@@ -6,13 +6,16 @@ using System.Linq;
 using OtterGui.Widgets;
 using GagSpeak.UI.GagListings;
 using Dalamud.Interface.Utility.Raii;
+using GagSpeak.Services;
+using System.Collections.Generic;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
-public class GeneralTab : ITab
+public class GeneralTab : ITab, IDisposable
 {
     private readonly GagSpeakConfig _config;
+    private readonly TimerService _timerService;
     private readonly GagListingsDrawer _gagListingsDrawer;
     private GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
     private GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
@@ -22,12 +25,14 @@ public class GeneralTab : ITab
     private bool? _inDomMode;
 
     // testing with datetimeoffset
-    private DateTimeOffset ? submissiveButtonPressedTime; // for future logging magic
+    private Dictionary<string, string> remainingTimes = new Dictionary<string, string>();
+
     
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config)
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService)
     {
         _isLocked = false;
         _config = config;
+        _timerService = timerService;
         _gagListingsDrawer = gagListingsDrawer;
 
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
@@ -41,12 +46,26 @@ public class GeneralTab : ITab
             new GagLockFilterCombo(_config),
             new GagLockFilterCombo(_config)
         };
+
+        // Subscribe to timer events
+        _timerService.RemainingTimeChanged += OnRemainingTimeChanged;
+
+        // Start initial timers (you can customize the timer names and durations)
+        _timerService.StartTimer("SafewordCooldown", "1h", () => GagSpeak.Log.Debug("Safeword cooldown complete."));
+        _timerService.StartTimer("RoleSwitchCooldown", "30m", () => GagSpeak.Log.Debug("Role switch cooldown complete."));
+        _timerService.StartTimer("GagPadlockTimer0", "8h20m30s", () => GagSpeak.Log.Debug("Gag padlock timer complete."));
+        _timerService.StartTimer("WhitelistButtonCooldown", "5s", () => GagSpeak.Log.Debug("Whitelist button cooldown complete."));
     }
 
     // store our current safeword
     public string _currentSafeword = string.Empty;
     // Apply our lable for the tab
     public ReadOnlySpan<byte> Label => "General"u8;
+
+    public void Dispose() { 
+        // Unsubscribe from timer events
+        _timerService.RemainingTimeChanged -= OnRemainingTimeChanged;
+    }
 
     /// <summary>
     /// This Function draws the content for the window of the General Tab
@@ -140,6 +159,25 @@ public class GeneralTab : ITab
             ImGui.NewLine();
         }
         // we started at the bottom now we here... wait, i mean the reverse of that. Actually you know what, nevermind
+    // Display remaining time for each timer
+    ImGui.Text($"Safeword cooldown: {remainingTimes.GetValueOrDefault("SafewordCooldown", "N/A")}");
+    ImGui.Text($"Role switch cooldown: {remainingTimes.GetValueOrDefault("RoleSwitchCooldown", "N/A")}");
+    ImGui.Text($"Gag padlock timer: {remainingTimes.GetValueOrDefault("GagPadlockTimer0", "N/A")}");
+    ImGui.Text($"Whitelist button cooldown: {remainingTimes.GetValueOrDefault("WhitelistButtonCooldown", "N/A")}");
+    }
+
+    private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime)
+    {
+        // update display of remaining time
+        if (remainingTime <= TimeSpan.Zero) {
+            // Timer expired
+            GagSpeak.Log.Debug($"Timer '{timerName}' complete!");
+            remainingTimes[timerName] = "Timer Complete!";
+            return;
+        } else {
+            // Update the remaining time in the dictionary
+            remainingTimes[timerName] = $"{remainingTime.Hours}h{remainingTime.Minutes}m{remainingTime.Seconds}s";
+        }
     }
 }
 
