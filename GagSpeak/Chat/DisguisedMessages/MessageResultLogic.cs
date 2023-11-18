@@ -519,9 +519,9 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 playerInWhitelist.selectedGagPadlocksAssigner[0] = decodedMessage[12];
                 playerInWhitelist.selectedGagPadlocksAssigner[1] = decodedMessage[13];
                 playerInWhitelist.selectedGagPadlocksAssigner[2] = decodedMessage[14];
-                playerInWhitelist.selectedGagPadlocksTimer[0] = DateTimeOffset.Parse(decodedMessage[15]);
-                playerInWhitelist.selectedGagPadlocksTimer[1] = DateTimeOffset.Parse(decodedMessage[16]);
-                playerInWhitelist.selectedGagPadlocksTimer[2] = DateTimeOffset.Parse(decodedMessage[17]);
+                playerInWhitelist.selectedGagPadlocksTimer[0] = TimeSpan.Parse(decodedMessage[15]);
+                playerInWhitelist.selectedGagPadlocksTimer[1] = TimeSpan.Parse(decodedMessage[16]);
+                playerInWhitelist.selectedGagPadlocksTimer[2] = TimeSpan.Parse(decodedMessage[17]);
                 
                 _clientChat.Print(new SeStringBuilder().AddYellow($"Recieved Information from {playerName}. Updated their profile in the whitelist tab.").BuiltString);
                 GagSpeak.Log.Debug($"Received information response from {playerName}.");
