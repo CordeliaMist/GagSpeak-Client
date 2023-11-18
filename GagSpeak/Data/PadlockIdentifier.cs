@@ -8,19 +8,29 @@ using System.Timers;
 #pragma warning disable IDE1006 
 namespace GagSpeak.Data;
 // a struct to hold information on whitelisted players.
-public class PadlockIdentifier
+public class PadlockIdentifier : IDisposable
 {
     private readonly GagSpeakConfig _config;
-    private readonly TimerService _timerService;
+    private TimerService _timerService;
+    public string _inputPassword { get; private set; } // This will hold the input password
+    public string _inputCombination { get; private set; } // This will hold the input combination
+    public string _inputTimer { get; private set; } // This will hold the input timer
     public string _storedPassword { get; private set; } // 20 character max string
     public string _storedCombination { get; private set; } // This will be a string in the format of 0000
-    public string _storedTimer { get; private set; } // This will be a string in the format of 00h00m00s
-    public GagPadlocks _padlockType { get; private set; } = GagPadlocks.None;
+    public string _storedTimer { get; private set; } // This will be a string in the format of 00h00m00s.
+    public GagPadlocks _padlockType { get; set; } = GagPadlocks.None;
 
     public PadlockIdentifier(GagSpeakConfig config, TimerService timerService)
     {
         _config = config;
         _timerService = timerService;
+        _inputCombination = "";
+        _inputPassword = "";
+        _inputTimer = "";
+        _storedCombination = "";
+        _storedPassword = "";
+        _storedTimer = "";
+
     }
 
     /// <summary>
@@ -29,7 +39,8 @@ public class PadlockIdentifier
     /// <param name="locktype"></param>
     /// <param name="password"></param>
     /// </summary>
-    public bool SetAndValidate(string locktype, string password = null)
+    public bool SetAndValidate(string locktype, string password = null,
+    string secondPassword = null)
     {
         if (!Enum.TryParse(locktype, true, out GagPadlocks padlockType))
             return false; // or throw an exception
@@ -44,6 +55,7 @@ public class PadlockIdentifier
                 break;
             case GagPadlocks.TimerPasswordPadlock:
                 this._storedTimer = password;
+                this._storedPassword = secondPassword;
                 break;
             case GagPadlocks.MistressPadlock:
                 // handle MistressPadlock case
@@ -53,33 +65,33 @@ public class PadlockIdentifier
                 break;
         }
 
-        return ValidatePadlockPasswords();
+        return ValidatePadlockPasswords(false);
     }
     /// <summary>
     /// This function will serve as the primary function called by anyone who is wanting to create a password field for their padlock dropdown.
     /// <param name="padlock">The padlock type we have selected.</param>
     /// </summary>
-    public void DisplayPasswordField(GagPadlocks padlockType) 
+    public bool DisplayPasswordField(GagPadlocks padlockType) 
     {
         _padlockType = padlockType;
         switch (padlockType) 
         {
             case GagPadlocks.CombinationPadlock:
-                _storedCombination = DisplayInputField("##Combination_Input", "Enter 4 digit combination...", _storedCombination, 4);
-                break;
+                _inputCombination = DisplayInputField("##Combination_Input", "Enter 4 digit combination...", _inputCombination, 4);
+                return true;
             case GagPadlocks.PasswordPadlock:
-                _storedPassword = DisplayInputField("##Password_Input", "Enter password", _storedPassword, 20);
-                break;
+                _inputPassword = DisplayInputField("##Password_Input", "Enter password", _inputPassword, 20);
+                return true;
             case GagPadlocks.TimerPasswordPadlock:
-                _storedPassword = DisplayInputField("##Password_Input", "Enter password", _storedPassword, 20, 2 / 3f);
-                _storedTimer = DisplayInputField("##Timer_Input", "[]h[]m[]s. ~Ex: 0h10m15s", _storedTimer, 10, 1 / 3f);
-                break;
+                _inputPassword = DisplayInputField("##Password_Input", "Enter password", _inputPassword, 20, 2 / 3f);
+                ImGui.SameLine();
+                _inputTimer = DisplayInputField("##Timer_Input", "Ex: 0h2m7s", _inputTimer, 10);
+                return true;
             case GagPadlocks.MistressTimerPadlock:
-                _storedTimer = DisplayInputField("##Timer_Input", "Enter timer", _storedTimer, 10);
-                break;
+                _inputTimer = DisplayInputField("##Timer_Input", "Enter timer", _inputTimer, 10);
+                return true;
             default:
-                // No password field should be displayed
-                break;
+                return false;
         }
     }
 
@@ -100,33 +112,51 @@ public class PadlockIdentifier
         return value;
     }
 
-    public bool ValidatePadlockPasswords() {
+    public bool ValidatePadlockPasswords(bool isUnlocking) {
+        bool ret = false;
         switch (_padlockType) {
-            case GagPadlocks.CombinationPadlock:
-                return ValidateCombination();
-            case GagPadlocks.PasswordPadlock:
-                return ValidatePassword();
-            case GagPadlocks.TimerPasswordPadlock:
-                return ValidatePassword() && ValidateTimer();
-            case GagPadlocks.MistressPadlock:
-                return ValidateMistress();
-            case GagPadlocks.MistressTimerPadlock:
-                return ValidateMistress() && ValidateTimer();
-            default:
+            case GagPadlocks.None:
                 return false;
+            case GagPadlocks.MetalPadlock:
+                return true;
+            case GagPadlocks.CombinationPadlock:
+                ret = ValidateCombination();
+                if(ret && !isUnlocking) {_storedCombination = _inputCombination; _inputCombination = "";}
+                return ret;
+            case GagPadlocks.PasswordPadlock:
+                ret = ValidatePassword();
+                if(ret && !isUnlocking) {_storedPassword = _inputPassword; _inputPassword = "";}
+                return ret;
+            case GagPadlocks.TimerPasswordPadlock:
+                ret = (ValidatePassword() && ValidateTimer());
+                if(ret && !isUnlocking) {
+                    _storedPassword = _inputPassword;
+                    _storedTimer = _inputTimer;
+                    _inputPassword = "";
+                    _inputTimer = "";}
+                return ret;
+            case GagPadlocks.MistressPadlock:
+                ret = ValidateMistress();
+                return ret;
+            case GagPadlocks.MistressTimerPadlock:
+                ret = (ValidateMistress() && ValidateTimer());
+                if(ret && !isUnlocking) {_storedTimer = _inputTimer; _inputTimer = "";}
+                return ret;
+            default:
+                return true;
         }
     }
     private bool ValidatePassword() {
         // Passwords must be less than 20 characters and cannot contain spaces
-        return !string.IsNullOrWhiteSpace(_storedPassword) && _storedPassword.Length <= 20 && !_storedPassword.Contains(" ");
+        return !string.IsNullOrWhiteSpace(_inputPassword) && _inputPassword.Length <= 20 && !_inputPassword.Contains(" ");
     }
     private bool ValidateCombination() {
         // Combinations must be 4 digits
-        return int.TryParse(_storedCombination, out _) && _storedCombination.Length == 4;
+        return int.TryParse(_inputCombination, out _) && _inputCombination.Length == 4;
     }
     private bool ValidateTimer() {
         // Timers must be in the format of 00h00m00s
-        var match = Regex.Match(_storedTimer, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+        var match = Regex.Match(_inputTimer, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
         return match.Success;
     }
     private bool ValidateMistress() {
@@ -134,9 +164,99 @@ public class PadlockIdentifier
         return true;
     }
 
+    // check the password when attempting to unlock it.
+    public bool CheckPassword() {
+        bool isValid = false;
+        switch (_padlockType) {
+            case GagPadlocks.None:
+                return false;
+            case GagPadlocks.MetalPadlock:
+                // handle MetalPadlock password check
+                break;
+            case GagPadlocks.CombinationPadlock:
+                isValid = _storedCombination == _inputCombination;
+                break;
+            case GagPadlocks.PasswordPadlock:
+                isValid = _storedPassword == _inputPassword;
+                break;
+            case GagPadlocks.TimerPasswordPadlock:
+                isValid = _storedPassword == _inputPassword;
+                break;
+            case GagPadlocks.MistressPadlock:
+                // handle MistressPadlock password check
+                break;
+            case GagPadlocks.MistressTimerPadlock:
+                isValid = _storedTimer == _inputTimer;
+                break;
+            default:
+                return false;
+        }
 
+        if (!isValid) {
+            _inputPassword = "";
+            _inputCombination = "";
+            _inputTimer = "";
+        }
+
+        return isValid;
+    }
+
+    // clear the passwords.
+    public void ClearPasswords() {
+    _inputPassword = "";
+    _inputCombination = "";
+    _inputTimer = "";
+    _storedPassword = "";
+    _storedCombination = "";
+    _storedTimer = "";
+    }
+    
+    // a way to update our password information in the config file. (For User Padlocks Only)
+    public void UpdateConfigPadlockPasswordInfo(int layerIndex, bool isUnlocking) {
+        GagPadlocks padlockType = _padlockType;
+        if (isUnlocking) { _padlockType = GagPadlocks.None; GagSpeak.Log.Debug("Unlocking Padlock");}
+        // timers are handled by the timer service so we dont need to worry about it.
+        switch (padlockType) {
+            case GagPadlocks.MetalPadlock:
+                _config.selectedGagPadlocks[layerIndex] = _padlockType;
+                break;
+            case GagPadlocks.CombinationPadlock:
+                _config.selectedGagPadlocks[layerIndex] = _padlockType;
+                _config.selectedGagPadlocksPassword[layerIndex] = _storedCombination;
+                break;
+            case GagPadlocks.PasswordPadlock:
+                _config.selectedGagPadlocks[layerIndex] = _padlockType;
+                _config.selectedGagPadlocksPassword[layerIndex] = _storedPassword;
+                break;
+            case GagPadlocks.FiveMinutesPadlock:
+                _config.selectedGagPadlocks[layerIndex] = _padlockType;
+                _storedTimer = "0h5m0s";
+                break;
+            case GagPadlocks.TimerPasswordPadlock:
+                _config.selectedGagPadlocks[layerIndex] = _padlockType;
+                _config.selectedGagPadlocksPassword[layerIndex] = _storedPassword;
+                // print the config stuff
+                GagSpeak.Log.Debug($"Padlock: {_config.selectedGagPadlocks[layerIndex]}");
+                GagSpeak.Log.Debug($"Password: {_config.selectedGagPadlocksPassword[layerIndex]}");
+                break;
+            case GagPadlocks.MistressPadlock:
+                // handle MistressPadlock case
+                _config.selectedGagPadlocks[layerIndex] = _padlockType;
+                _config.selectedGagPadlocksAssigner[layerIndex] = "TestDummy";
+                break;
+            case GagPadlocks.MistressTimerPadlock:
+                _config.selectedGagPadlocks[layerIndex] = _padlockType;
+                _config.selectedGagPadlocksAssigner[layerIndex] = "TestDummy";
+                break;
+            default:
+                // No password field should be displayed
+                break;
+        }
+    }
+
+    // create a dispose function
+    public void Dispose() {
+        _timerService?.Dispose();
+    }
 }
 #pragma warning restore IDE1006  
-
-// you just finished making this class, please start applying it into the general tab and the whitelist tab.
-// Additionally, set the checks for request and accepts.

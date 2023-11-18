@@ -47,52 +47,27 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
     // another function nearly identical to the above, but for handling whitelist messages. These dont take as much processing.
     public bool WhitelistMsgResLogic(string recieved, List<string> decodedMessage, bool isHandled,
             IChatGui clientChat, GagSpeakConfig config)
-    {   
-        // execute sub-function based on the input
-        // decoded messages will always contain the format: [commandtype, none, none, none, player] (may revise)
-        // if the parsed type is "requestMistressRelation"
-        if (decodedMessage[0] == "requestMistressRelation") {
-            GagSpeak.Log.Debug($"Determined income message as a [requestMistress] type encoded message, hiding from chat!"); return true;
-        }
-        // if the parsed type is "requestPetRelation"
-        else if (decodedMessage[0] == "requestPetRelation") {
-            GagSpeak.Log.Debug($"Determined income message as a [requestPet] type encoded message, hiding from chat!"); return true;
-        }
-        // if the parsed type is "requestSlaveRelation"
-        else if (decodedMessage[0] == "requestSlaveRelation") {
-            GagSpeak.Log.Debug($"Determined income message as a [requestSlave] type encoded message, hiding from chat!"); return true;
-        }
-        // if the parsed type is "requestRemovalRelation"
-        else if (decodedMessage[0] == "removePlayerRelation") {
-            GagSpeak.Log.Debug($"Determined income message as a [relationRemoval] type encoded message, hiding from chat!"); return true;
-        }
-        // if the parsed type is "orderForceGarbleLock"
-        else if (decodedMessage[0] == "orderForceGarbleLock") {
-            GagSpeak.Log.Debug($"Determined income message as a [liveChatGarblerLock] type encoded message, hiding from chat!"); return true;
-        }
-        // if the parsed type is "requestInfo"
-        else if (decodedMessage[0] == "requestInfo") {
-            GagSpeak.Log.Debug($"Determined income message as a [informationRequest] type encoded message, hiding from chat!"); return true;
-        }
-        // if the parsed type is "acceptMistressRelation"
-        else if (decodedMessage[0] == "acceptMistressRelation") {
-            GagSpeak.Log.Debug($"Determined income message as an [acceptMistress] type encoded message, hiding from chat!"); return true;
-        }
-        // if the parsed type is "acceptPetRelation"
-        else if (decodedMessage[0] == "acceptPetRelation") {
-            GagSpeak.Log.Debug($"Determined income message as an [acceptPet] type encoded message, hiding from chat!"); return true;
-        }
-        // if the parsed type is "acceptSlaveRelation"
-        else if (decodedMessage[0] == "acceptSlaveRelation") {
-            GagSpeak.Log.Debug($"Determined income message as an [acceptSlave] type encoded message, hiding from chat!"); return true;
-        }        
-        // if the parsed type is "provideInfo"
-        else if (decodedMessage[0] == "provideInfo") {
-            GagSpeak.Log.Debug($"Determined income message as a [provideInformation] type encoded message, hiding from chat!"); return true;
-        }
-        else {
-            GagSpeak.Log.Debug("ERROR, Invalid message parse, If you see this report it to cordy ASAP.");
-            clientChat.PrintError($"ERROR, Invalid message parse, If you see this report it to cordy ASAP.");
+    {
+        var commandType = decodedMessage[0].ToLowerInvariant();
+        var _ = commandType switch
+        {
+            "requestmistressrelation" => HandleRequestMistressMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "requestpetrelation"      => HandleRequestPetMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "requestslaverelation"    => HandleRequestSlaveMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "removeplayerrelation"    => HandleRelationRemovalMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "orderforcegarblelock"    => HandleLiveChatGarblerLockMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "requestinfo"             => HandleInformationRequestMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "acceptmistressrelation"  => HandleAcceptMistressMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "acceptpetrelation"       => HandleAcceptPetMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "acceptslaverelation"     => HandleAcceptSlaveMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            "provideinfo"             => HandleProvideInfoMessage(ref decodedMessage, ref isHandled, clientChat, config),
+            _                         => LogError("Invalid message parse, If you see this report it to cordy ASAP.")
+        };
+        return true;
+
+        bool LogError(string errorMessage) {
+            GagSpeak.Log.Debug(errorMessage);
+            clientChat.PrintError(errorMessage);
             return false;
         }
     }

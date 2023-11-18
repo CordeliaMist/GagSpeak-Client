@@ -51,17 +51,16 @@ public class WhitelistCharData {
     // function to get the commitment duration
     public string GetCommitmentDuration() {
         if (this.timeOfCommitment == default(DateTimeOffset))
-            return ""; // Display nothing if commitment time is not set
+            return "Testing"; // Display nothing if commitment time is not set
 
         TimeSpan duration = DateTimeOffset.Now - this.timeOfCommitment; // Get the duration
 
-        // Format the duration in years, months, days, hours
-        int years = duration.Days / 365;
+        // Format the duration in months, days, hours, minutes
         int months = (duration.Days % 365) / 30;
         int days = duration.Days % 30;
 
         // Display the duration in the desired format
-        return $"{years}y{months}m{days}d{duration.Hours}h";
+        return $"{months}Months, {days}d{duration.Hours}h{duration.Minutes}m";
     }
 }
 

@@ -9,6 +9,7 @@ using Dalamud.Interface.Utility.Raii;
 using GagSpeak.Services;
 using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
+using GagSpeak.Data;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 
@@ -20,18 +21,15 @@ public class GeneralTab : ITab, IDisposable
     private readonly GagListingsDrawer _gagListingsDrawer;
     private GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
     private GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
+    private bool? _inDomMode;
     private string? _tempSafeword; // for initializing a temporary safeword for the text input field
     // style variables
-    private bool _isLocked;
-    private bool? _inDomMode;
 
     // testing with datetimeoffset
-    private Dictionary<string, string> remainingTimes = new Dictionary<string, string>();
     private bool modeButtonsDisabled = false;
     
     public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService)
     {
-        _isLocked = false;
         _config = config;
         _timerService = timerService;
         _gagListingsDrawer = gagListingsDrawer;
@@ -60,7 +58,6 @@ public class GeneralTab : ITab, IDisposable
     public void Dispose() { 
         // Unsubscribe from timer events
         _timerService.RemainingTimeChanged -= OnRemainingTimeChanged;
-        remainingTimes = new Dictionary<string, string>();
     }
 
     /// <summary>
@@ -150,26 +147,31 @@ public class GeneralTab : ITab, IDisposable
             if(modeButtonsDisabled) {
                 ImGui.EndDisabled();
                 ImGui.SameLine();
-                ImGui.Text($"[{(_config.InDomMode? "Dom" : "Sub")}] Swap Cooldown: {remainingTimes.GetValueOrDefault("RoleSwitchCooldown", "N/A")}");
+                ImGui.Text($"[{(_config.InDomMode? "Dom" : "Sub")}] Swap Cooldown: {_timerService.remainingTimes.GetValueOrDefault("RoleSwitchCooldown", "N/A")}");
             }
         } // end our table
-        ImGui.NewLine();
         // if we used our safeword
         if(_config.SafewordUsed) {
             ImGui.SameLine();
             // create a timer that executes whenever you use the safeword command. This blocks all actions for the next 5m
-            ImGui.Text($"Safeword Used! Disabling All Actions! CD: {remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
+            ImGui.Text($"Safeword Used! Disabling All Actions! CD: {_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
         }
 
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
 
-        int DDwidth1 = (int)(ImGui.GetContentRegionAvail().X / 2);
-        int DDwidt2 = (int)(ImGui.GetContentRegionAvail().X / 3);
+        style.Pop();
+        int width2 = (int)(ImGui.GetContentRegionAvail().X / 2);
         // draw our 3 gag listings
         foreach(var slot in Enumerable.Range(0, 3)) {
             _gagListingsDrawer.DrawGagAndLockListing(slot, _config, _gagTypeFilterCombo[slot], _gagLockFilterCombo[slot],
-                slot, $"Gag Slot {slot + 1}", _isLocked, DDwidth1, DDwidt2);
+                slot, $"Gag Slot {slot + 1}", width2);
+            // disaplay timer here.
+            if((_gagListingsDrawer._padlockIdentifier[slot]._padlockType == GagPadlocks.FiveMinutesPadlock && _gagListingsDrawer._isLocked[slot] == true) || 
+            (_gagListingsDrawer._padlockIdentifier[slot]._padlockType == GagPadlocks.TimerPasswordPadlock && _gagListingsDrawer._isLocked[slot] == true) ||
+            (_gagListingsDrawer._padlockIdentifier[slot]._padlockType == GagPadlocks.MistressTimerPadlock && _gagListingsDrawer._isLocked[slot] == true)) {
+                ImGui.TextColored(new Vector4(1,1,0,0.5f),$"{_timerService.remainingTimes.GetValueOrDefault($"{_gagListingsDrawer._padlockIdentifier[slot]._padlockType}_Identifier{slot}", "Time Remaining:")}");
+            }
             ImGui.NewLine();
         }
         // we started at the bottom now we here... wait, i mean the reverse of that. Actually you know what, nevermind
@@ -180,11 +182,21 @@ public class GeneralTab : ITab, IDisposable
         // update display of remaining time
         if(timerName == "RoleSwitchCooldown") {
             // Update the remaining time in the dictionary
-            remainingTimes[timerName] = $"{remainingTime.Minutes}m{remainingTime.Seconds}s";
+            _timerService.remainingTimes[timerName] = $"{remainingTime.Minutes}m{remainingTime.Seconds}s";
         }
         if(timerName == "SafewordUsed") {
             // Update the remaining time in the dictionary
-            remainingTimes[timerName] = $"{remainingTime.Minutes}m{remainingTime.Seconds}s";
+            _timerService.remainingTimes[timerName] = $"{remainingTime.Minutes}m{remainingTime.Seconds}s";
+        }
+        // update timer padlocks
+        for (int i = 0; i < 3; i++) {
+            if (timerName == $"{GagPadlocks.FiveMinutesPadlock}_Identifier{i}") {
+                _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Minutes} Minutes, {remainingTime.Seconds}Seconds";
+            } else if (timerName == $"{GagPadlocks.TimerPasswordPadlock}_Identifier{i}") {
+                _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Hours} Hours, {remainingTime.Minutes} Minutes, {remainingTime.Seconds} Seconds";
+            } else if (timerName == $"{GagPadlocks.MistressTimerPadlock}_Identifier{i}") {
+                _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Days} Days, {remainingTime.Hours} Hours, {remainingTime.Minutes} Minutes, {remainingTime.Seconds} Seconds";
+            }
         }
     }
 }

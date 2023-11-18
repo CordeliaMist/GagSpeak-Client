@@ -20,6 +20,7 @@ using GagSpeak.Chat.MsgDecoder;
 using GagSpeak.Chat.MsgEncoder;
 using GagSpeak.Chat.MsgResultLogic;
 using GagSpeak.Events;
+using GagSpeak.Data;
 
 
 // practicing modular design
@@ -39,7 +40,7 @@ public static class ServiceHandler
             .AddDalamud(pi)
             .AddMeta()
             .AddChat()
-            // .AddEvent()
+            .AddEvent()
             .AddUi()
             .AddApi();
         // return the built services provider
@@ -62,7 +63,8 @@ public static class ServiceHandler
              .AddSingleton<BackupService>()
              .AddSingleton<ConfigMigrationService>()
              .AddSingleton<MessageService>()
-             .AddSingleton<TimerService>();
+             .AddSingleton<TimerService>()
+             .AddSingleton<PadlockIdentifier>();
 
 
     //SERVICES FOR ONCHAT, INCLUDE IF EVER NEEDED.
@@ -80,9 +82,9 @@ public static class ServiceHandler
              .AddSingleton<MessageDecoder>()
              .AddSingleton<MessageResultLogic>();
 
-    // SERVICES FOR EVENTS: INCLUDE IF EVER NEEDED.
-    // private static IServiceCollection AddEvent(this IServiceCollection services)
-    //     => services.AddSingleton<ObservableList<T>>(); // idk how to get it to work with generic type but whatever.
+    //SERVICES FOR EVENTS: INCLUDE IF EVER NEEDED.
+    private static IServiceCollection AddEvent(this IServiceCollection services)
+        => services.AddSingleton<SafewordUsedEvent>(); // idk how to get it to work with generic type but whatever.
 
     // SERVICES FOR UI, INCLUDE IF EVER NEEDED.
     private static IServiceCollection AddUi(this IServiceCollection services)

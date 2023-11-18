@@ -193,6 +193,7 @@ public class WhitelistTab : ITab, IDisposable
                 ImGuiUtil.DrawFrameColumn("Become Their Mistress: "); ImGui.TableNextColumn(); // Next Row (Request To Become Players Mistress)
                 if (ImGui.Button("Request Relation", width2)) {
                     GagSpeak.Log.Debug("Sending Request to become their mistress");
+                    RequestMistressToPlayer(_config.Whitelist[_currentWhitelistItem]);
 
                     // Start a 5-second cooldown timer
                     interactionButtonPressed = true;
@@ -204,6 +205,7 @@ public class WhitelistTab : ITab, IDisposable
                 ImGuiUtil.DrawFrameColumn("Become Their Pet: "); ImGui.TableNextColumn();
                 if (ImGui.Button("Request Relation", width2)) {
                     GagSpeak.Log.Debug("Sending Request to become their pet");
+                    RequestPetToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // Start a 5-second cooldown timer
                     interactionButtonPressed = true;
                     _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
@@ -212,7 +214,9 @@ public class WhitelistTab : ITab, IDisposable
                 // send a encoded request to the player to request beooming their slave
                 ImGuiUtil.DrawFrameColumn("Become Their Slave: "); ImGui.TableNextColumn(); 
                 if (ImGui.Button("Request Relation", width2)) {
-                    GagSpeak.Log.Debug("Sending Request to become their slave"); 
+                    GagSpeak.Log.Debug("Sending Request to become their slave");
+                    RequestSlaveToPlayer(_config.Whitelist[_currentWhitelistItem]);
+
                     // Start a 5-second cooldown timer
                     interactionButtonPressed = true;
                     _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
@@ -225,12 +229,15 @@ public class WhitelistTab : ITab, IDisposable
             if(whitelist[_currentWhitelistItem].relationshipStatus == "None") {
                 ImGui.BeginDisabled();
                 if (ImGui.Button("Remove Relation To Player", width)) {
-                    
+                    GagSpeak.Log.Debug("Sending Request to remove relation to player");
+                    RequestRelationRemovealToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
                 }
                 ImGui.EndDisabled();
             } else {
                 if (ImGui.Button("Remove Relation To Player", width)) {
+                    GagSpeak.Log.Debug("Sending Request to remove relation to player");
+                    RequestRelationRemovealToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
                 }
             } 
@@ -298,18 +305,28 @@ public class WhitelistTab : ITab, IDisposable
             whitelist[_currentWhitelistItem].relationshipStatus == "Slave") {
             // Display buttons only if there is an incoming request
             var relationText = whitelist[_currentWhitelistItem].PendingRelationshipRequest?.Split(' ')[0];
-            if (ImGui.Button($"Accept {whitelist[_currentWhitelistItem].name} as your {relationText}", new Vector2(200, 25)))
+            if (ImGui.Button($"Accept {whitelist[_currentWhitelistItem].name.Split(' ')[0]} as your {relationText}", new Vector2(ImGui.GetContentRegionAvail().X/2, 25)))
             {
                 // Handle accept button action here
+                // if relationship status is mistress, trigger the accept mistress function. If pet, trigger accept pet function. If slave, trigger accept slave function.
+                if (whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Mistress") {
+                    AcceptMistressRequestFromPlayer(_config.Whitelist[_currentWhitelistItem]);
+                } else if (whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Pet") {
+                    AcceptPetRequestFromPlayer(_config.Whitelist[_currentWhitelistItem]);
+                } else if (whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Slave") {
+                    AcceptSlaveRequestFromPlayer(_config.Whitelist[_currentWhitelistItem]);
+                }
+
+
                 // set the relation request to established
                 whitelist[_currentWhitelistItem].PendingRelationshipRequest = "Established";
                 GagSpeak.Log.Debug($"Accepting incoming relation request from {whitelist[_currentWhitelistItem].name}");
             }
             ImGui.SameLine();
-            if (ImGui.Button($"Decline {whitelist[_currentWhitelistItem].name}", new Vector2(120, 25)))
+            if (ImGui.Button($"Decline {whitelist[_currentWhitelistItem].name.Split(' ')[0]}'s Request", new Vector2(ImGui.GetContentRegionAvail().X, 25)))
             {
                 // set the relation request to established
-                whitelist[_currentWhitelistItem].PendingRelationshipRequest = "Established";
+                whitelist[_currentWhitelistItem].PendingRelationshipRequest = "None";
                 GagSpeak.Log.Debug($"Declining incoming relation request from {whitelist[_currentWhitelistItem].name}");
             }
         }
@@ -420,12 +437,15 @@ public class WhitelistTab : ITab, IDisposable
             }
             
             // add a filler row
-            ImGui.TableNextRow(); ImGui.TableNextColumn(); ImGui.NewLine();
+            ImGui.TableNextRow(); ImGui.TableNextColumn();
             // Create the button for the sixth row, first column
             if (ImGui.Button("Tooggle Lock Live Chat Garbler")) {
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
                 selectedWhitelistItem.lockedLiveChatGarbler = true; // modify property.
                 _config.Whitelist[_currentWhitelistItem] = selectedWhitelistItem; // update the whitelist
+                // send the message
+                OrderLiveGarbleLockToPlayer(_config.Whitelist[_currentWhitelistItem]);
+
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
@@ -434,6 +454,7 @@ public class WhitelistTab : ITab, IDisposable
             if (ImGui.Button("Request Player Info")) {
                 // send a message to the player requesting their current info
                 GagSpeak.Log.Debug("Sending Request for Player Info");
+                RequestInfoFromPlayer(_config.Whitelist[_currentWhitelistItem]);
 
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
@@ -560,6 +581,102 @@ public class WhitelistTab : ITab, IDisposable
             selectedPlayer.selectedGagPadlocksAssigner[i] = "";
         }
     }
+
+    private void RequestMistressToPlayer(WhitelistCharData selectedPlayer) {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
+            return;
+        // send the message
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.RequestMistressEncodedMessage(playerPayload, targetPlayer));
+    }
+
+
+    private void RequestPetToPlayer(WhitelistCharData selectedPlayer) {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
+            return;
+        // send the message
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.RequestPetEncodedMessage(playerPayload, targetPlayer));
+    }
+
+    private void RequestSlaveToPlayer(WhitelistCharData selectedPlayer) {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
+            return;
+        // send the message
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.RequestSlaveEncodedMessage(playerPayload, targetPlayer));
+    }
+
+    private void RequestRelationRemovealToPlayer(WhitelistCharData selectedPlayer) {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
+            return;
+        // send the message
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.RequestRemovalEncodedMessage(playerPayload, targetPlayer));
+    }
+
+    private void OrderLiveGarbleLockToPlayer(WhitelistCharData selectedPlayer) {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
+            return;
+        // send the message
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.OrderGarblerLockEncodedMessage(playerPayload, targetPlayer));
+    }
+
+
+    private void RequestInfoFromPlayer(WhitelistCharData selectedPlayer) {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
+            return;
+        // send the message
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.RequestInfoEncodedMessage(playerPayload, targetPlayer));
+    }
+
+    private void AcceptMistressRequestFromPlayer(WhitelistCharData selectedPlayer) {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
+            return;
+        // send the message
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.AcceptMistressEncodedMessage(playerPayload, targetPlayer));
+    }
+
+    private void AcceptPetRequestFromPlayer(WhitelistCharData selectedPlayer) {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
+            return;
+        // send the message
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.AcceptPetEncodedMessage(playerPayload, targetPlayer));
+    }
+
+    private void AcceptSlaveRequestFromPlayer(WhitelistCharData selectedPlayer) {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
+            return;
+        // send the message
+        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        _chatManager.SendRealMessage(_gagMessages.AcceptSlaveEncodedMessage(playerPayload, targetPlayer));
+    }
+
+
+
+
     private void Checkbox(string label, string tooltip, bool current, Action<bool> setter) {
         using var id  = ImRaii.PushId(label);
         var       tmp = current;

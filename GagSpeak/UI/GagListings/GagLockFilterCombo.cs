@@ -4,6 +4,7 @@ using OtterGui.Raii;
 using System.Collections.Generic;
 using System.Linq;
 using GagSpeak.Events;
+using GagSpeak.Data;
 
 namespace GagSpeak.UI.GagListings;
 
@@ -55,11 +56,13 @@ public sealed class GagLockFilterCombo
         }
     }
 
-    public void Draw(int ID, ObservableList<GagPadlocks> listing, int layerIndex, int width, ref GagPadlocks label) { // for player gag equips
+
+    // for the player gag equips
+    public void Draw(int ID, ObservableList<GagPadlocks> listing, int layerIndex, int width, PadlockIdentifier label) { // for player gag equips
         try
         {
             ImGui.SetNextItemWidth(width);
-            using( var gagLockCombo = ImRaii.Combo($"##{ID}_Enum",  listing[layerIndex].ToString(), 
+            using( var gagLockCombo = ImRaii.Combo($"##{ID}_Enum",  label._padlockType.ToString(), 
                                       ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) 
             {
                 if( gagLockCombo ) { // Assign it an ID if combo is sucessful.
@@ -69,7 +72,7 @@ public sealed class GagLockFilterCombo
 
                     foreach (var item in Enum.GetValues(typeof(GagPadlocks)).Cast<GagPadlocks>()) {
                         if (ImGui.Selectable(item.ToString(), listing[layerIndex] == item)) {
-                            listing[layerIndex] = item;
+                            label._padlockType = item; // sets the padlock identifier to that of the selected item
                             _comboSearchText = string.Empty;
                             ImGui.CloseCurrentPopup();
                             _config.Save();

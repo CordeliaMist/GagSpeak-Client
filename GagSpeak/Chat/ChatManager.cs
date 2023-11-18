@@ -152,7 +152,7 @@ public class ChatManager
             int encodedMsgIndex = 0; // get a index to know which encoded msg it is, if any
             if (MessageDictionary.EncodedMsgDictionary(chatmessage.TextValue, ref encodedMsgIndex)) {
                 // if in dom mode, back out, none of this will have any significance
-                if (_config.InDomMode) {
+                if (_config.InDomMode && encodedMsgIndex > 0 && encodedMsgIndex <= 7) {
                     GagSpeak.Log.Debug("Player attempted to gag you, but you are in Dominant mode, so ignoring");
                     isHandled = true;
                     return;

@@ -11,6 +11,7 @@ using GagSpeak.Chat.MsgDecoder;
 using GagSpeak.Chat.MsgResultLogic;
 using GagSpeak.Chat.MsgDictionary;
 using GagSpeak.Data;
+using GagSpeak.Events;
 using GagSpeak.Chat.Garbler;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using XivCommon.Functions;
@@ -39,12 +40,13 @@ public class CommandManager : IDisposable // Our main command list manager
     private RealChatInteraction _realChatInteraction;
     private readonly IFramework _framework; // framework from XIVClientStructs
     private readonly TimerService _timerService;
-
     private readonly MessageGarbler _messageGarbler;
+    private readonly SafewordUsedEvent _safewordCommandEvent;
+
     // Constructor for the command manager
     public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow, HistoryService historyService,
-        IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, IFramework framework, 
-        RealChatInteraction realchatinteraction, TimerService timerService)
+    IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, IFramework framework, 
+    RealChatInteraction realchatinteraction, TimerService timerService, SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder)
     {
         // set the private readonly's to the passed in data of the respective names
         _commands = command;
@@ -56,10 +58,11 @@ public class CommandManager : IDisposable // Our main command list manager
         _chatManager = chatManager;
         _clientState = clientState;
         _framework = framework;
-        _gagMessages = new MessageEncoder();
+        _gagMessages = messageEncoder;
         _messageGarbler = new MessageGarbler();
         _historyService = historyService;
         _timerService = timerService;
+        _safewordCommandEvent = safewordCommandEvent;
 
         // Add handlers to the main commands
         _commands.AddHandler(MainCommandString, new CommandInfo(OnGagSpeak) {
@@ -124,14 +127,28 @@ public class CommandManager : IDisposable // Our main command list manager
             _chat.Print("Please provide a safeword. Usage: /gagspeak safeword [your_safeword]"); return false; }
         if (_config.Safeword == argument) { // If the safeword is the same as the one we are trying to set
             _chat.Print("Safeword matched, deactivating all gags and locks"); 
+            
+            // Disable the ObserveList so we dont trigger the safeword event
+            _config.selectedGagTypes.IsSafewordCommandExecuting = true;
+            _config.selectedGagPadlocks.IsSafewordCommandExecuting = true;
+            
             for (int layerIndex = 0; layerIndex < _config.selectedGagTypes.Count; layerIndex++) {
                 _config.selectedGagTypes[layerIndex] = "None";
                 _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None;
                 _config.selectedGagPadlocksPassword[layerIndex] = "";
                 _config.selectedGagPadlocksAssigner[layerIndex] = "";
             }
+
+            // Re-enable the ObserveList
+            _config.selectedGagTypes.IsSafewordCommandExecuting = false;
+            _config.selectedGagPadlocks.IsSafewordCommandExecuting = false;
+
+            // Fire the safeword command event 
+            _safewordCommandEvent.Invoke();
+
+            // fire the safewordUsed bool to true so that we set the cooldown
             _config.SafewordUsed = true;
-            _timerService.StartTimer("SafewordUsed", "5m", 1000, () => _config.SafewordUsed = false);
+            _timerService.StartTimer("SafewordUsed", "5s", 1000, () => _config.SafewordUsed = false);
         }
 
         return true;

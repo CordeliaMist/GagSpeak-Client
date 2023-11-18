@@ -10,12 +10,17 @@ public class ObservableList<T> : List<T>
     public delegate void ItemChangedEventHandler(object sender, ItemChangedEventArgs e); // define the event handler
     public event ItemChangedEventHandler ItemChanged; // define the event
 
+    // add a property to indicate whether or not the safeword event is being fired. If so, dont run this.
+    public bool IsSafewordCommandExecuting { get; set; } 
+
     public new T this[int index] { // override the indexer
         get => base[index]; // get the item
         set {               // set the item
             var oldValue = base[index];
             base[index] = value;
-            ItemChanged?.Invoke(this, new ItemChangedEventArgs(index, oldValue, value)); // but this time, fire the invoker too.
+            if (!IsSafewordCommandExecuting) {
+                ItemChanged?.Invoke(this, new ItemChangedEventArgs(index, oldValue, value)); // but this time, fire the invoker too.
+            }
         }
     }
 }
