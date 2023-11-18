@@ -17,7 +17,7 @@ public class WhitelistCharData {
     public ObservableList<string> selectedGagTypes { get; set; } // What gag types are selected?
     public ObservableList<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
-    public List<DateTimeOffset> selectedGagPadlocksTimer { get; set; } // stores time each padlock was assigned.
+    public List<TimeSpan> selectedGagPadlocksTimer { get; set; } // stores the timespan left until unlock of the player.
     public List<string> selectedGagPadlocksAssigner { get; set; } // who assigned the padlocks, if any
     // Constructor for the struct
     public WhitelistCharData(string _name, string _homeworld, string _relationshipStatus)
@@ -41,7 +41,7 @@ public class WhitelistCharData {
             this.selectedGagPadlocksAssigner = new List<string> { "", "", "" };}
         // set default values for selectedGagPadLockTimer
         if (this.selectedGagPadlocksTimer == null || !this.selectedGagPadlocksTimer.Any() || this.selectedGagPadlocksTimer.Count > 3) {
-            this.selectedGagPadlocksTimer = new List<DateTimeOffset> { default(DateTimeOffset), default(DateTimeOffset), default(DateTimeOffset)};}
+            this.selectedGagPadlocksTimer = new List<TimeSpan> { TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero };}
     }
 
     public void SetTimeOfCommitment() {
@@ -55,12 +55,10 @@ public class WhitelistCharData {
 
         TimeSpan duration = DateTimeOffset.Now - this.timeOfCommitment; // Get the duration
 
-        // Format the duration in months, days, hours, minutes
-        int months = (duration.Days % 365) / 30;
         int days = duration.Days % 30;
 
         // Display the duration in the desired format
-        return $"{months}Months, {days}d{duration.Hours}h{duration.Minutes}m";
+        return $"{days}d, {duration.Hours}h, {duration.Minutes}m, {duration.Seconds}s";
     }
 }
 

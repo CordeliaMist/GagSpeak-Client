@@ -290,7 +290,7 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.SameLine();
             if (ImGui.Button("Remove Player", buttonWidth)) {
                 if (whitelist.Count == 1) {
-                    whitelist[0] = new WhitelistCharData("Cordelia Mist", "Balmung", "None");
+                    whitelist[0] = new WhitelistCharData("None","None", "None");
                 } else {
                     _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
                 }
@@ -651,6 +651,7 @@ public class WhitelistTab : ITab, IDisposable
             return;
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
         _chatManager.SendRealMessage(_gagMessages.AcceptMistressEncodedMessage(playerPayload, targetPlayer));
     }
 
@@ -661,6 +662,7 @@ public class WhitelistTab : ITab, IDisposable
             return;
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
         _chatManager.SendRealMessage(_gagMessages.AcceptPetEncodedMessage(playerPayload, targetPlayer));
     }
 
@@ -671,6 +673,7 @@ public class WhitelistTab : ITab, IDisposable
             return;
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
         _chatManager.SendRealMessage(_gagMessages.AcceptSlaveEncodedMessage(playerPayload, targetPlayer));
     }
 
