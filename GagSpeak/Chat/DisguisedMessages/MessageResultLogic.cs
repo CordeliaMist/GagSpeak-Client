@@ -4,10 +4,18 @@ using Dalamud.Plugin.Services;
 using System.Collections.Generic;
 using Dalamud.Game.Text.SeStringHandling;
 using OtterGui.Classes;
+using GagSpeak.UI.GagListings;
 
 namespace GagSpeak.Chat.MsgResultLogic;
 
 public class MessageResultLogic { // Purpose of class : To perform logic on client based on the type of the sucessfully decoded message.
+    
+    private GagListingsDrawer _gagListingsDrawer;
+
+    public MessageResultLogic(GagListingsDrawer gagListingsDrawer) {
+        _gagListingsDrawer = gagListingsDrawer;
+    }
+    
     /// <summary>
     /// Will take in a message, and determine what to do with it based on the contents of the message.
     /// <list>
@@ -105,10 +113,16 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         // we already made sure that we applied a valid password in the command manager, so no need to check it here.
         if (decodedMessage[3] != "") {
             _config.selectedGagPadlocksPassword[layer-1] = decodedMessage[3]; // we have a password to set, so set it.
+            // updating according thing in general tab.
+            _gagListingsDrawer._padlockIdentifier[layer-1]._storedCombination = decodedMessage[3];
+            GagSpeak.Log.Debug($"setting padlock identifier #{layer-1} to password {decodedMessage[3]}");
         }
         // and because everything above is valid, we can now set the lock type.
         if (Enum.TryParse(decodedMessage[2], out GagPadlocks parsedLockType)) {
             _config.selectedGagPadlocks[layer-1] = parsedLockType;
+            // updating according thing in general tab.
+            _gagListingsDrawer._padlockIdentifier[layer-1]._padlockType = parsedLockType;
+            GagSpeak.Log.Debug($"setting padlock identifier #{layer-1} to type {parsedLockType}");
         } else {
             // hide original message & throw exception
             isHandled = true;
@@ -121,6 +135,8 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             _config.selectedGagPadlocksAssigner[layer-1] = decodedMessage[4];
         }
         GagSpeak.Log.Debug($"Determined income message as a [lock] type encoded message, hiding from chat!");
+        _gagListingsDrawer._isLocked[layer-1] = true;
+        _gagListingsDrawer._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, false);
         return true; // sucessful parse
     }
 
@@ -399,7 +415,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             // see if they exist
             if(playerInWhitelist != null) {
                 // they are in our whitelist, so set our information sender to the players name.
-                _config.SendInfoName = playerName;
+                _config.SendInfoName = playerNameWorld;
                 _clientChat.Print(new SeStringBuilder().AddYellow($"Received a information request from {playerName}. Responding with updated info.").BuiltString);
                 GagSpeak.Log.Debug($"Received information request from {playerName}.");
             }

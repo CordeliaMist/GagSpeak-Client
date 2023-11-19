@@ -131,7 +131,7 @@ public class MessageEncoder // change to message encoder later
                 baseString += $", its strap locked with a {_selectedGagPadlocks[i]} ";
                 //describe timer, if any
                 if(true) {
-                    baseString += $"set to unlock in {_selectedGagPadlocksTimer[i]} TIME, ";
+                    baseString += $"set for {_selectedGagPadlocksTimer[i]} ";
                 }
                 // describe assigner, if any
                 if(_selectedGagPadlocksAssigner[i] != "") { 

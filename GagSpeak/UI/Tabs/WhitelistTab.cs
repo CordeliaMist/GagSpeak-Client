@@ -290,7 +290,7 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.SameLine();
             if (ImGui.Button("Remove Player", buttonWidth)) {
                 if (whitelist.Count == 1) {
-                    whitelist[0] = new WhitelistCharData("None","None", "None");
+                    whitelist[0] = new WhitelistCharData("Cordelia Mist","Balmung","None");
                 } else {
                     _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
                 }
@@ -408,14 +408,14 @@ public class WhitelistTab : ITab, IDisposable
 
             ImGui.SameLine();
             if (ImGui.Button("Lock Gag")) {
-                LockGagOnPlayer(layer, _lockLabel, _config.Whitelist[_currentWhitelistItem]);
+                LockGagOnPlayer(layer, _lockLabel, _config.Whitelist[_currentWhitelistItem], _storedPassword);
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
             }
             ImGui.SameLine();
             if (ImGui.Button("Unlock Gag")) {
-                UnlockGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem]);
+                UnlockGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem], _storedPassword);
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
@@ -463,8 +463,23 @@ public class WhitelistTab : ITab, IDisposable
         } // end our info table
 
         // Use ImGui.EndDisabled() to end the disabled state
-        if(!enableInteractions || interactionButtonPressed)
-            ImGui.EndDisabled();
+        if(!enableInteractions || interactionButtonPressed) {
+            ImGui.EndDisabled();}
+
+        // add a section here that scans to see if we are recieving any incoming information requests, and if we are, to respond, if off cooldown.
+        if(interactionButtonPressed == true && _config.SendInfoName != "") {
+            // if we are accepting info requests, and we have a name to send info to, then we will send the info, switch acceptinfo requests to false, and the name back to nothing, also start a timer that expires in 10seconds
+            GagSpeak.Log.Debug("Accepting Player Info");
+            SendInfoToPlayer();
+            // disable button usage, and the ability to accept info requests
+            _config.acceptingInfoRequests = false; _config.SendInfoName = "";
+            interactionButtonPressed = true;
+            _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
+            // add another timer named "RequestInfoCooldown" that expires in 20seconds, and when it does, it will set acceptingInfoRequests to true
+            _timerService.StartTimer("RequestInfoCooldown", "20s", 1000, () => { _config.acceptingInfoRequests = true; });
+        }
+
+        
     } // end our draw whitelist function
 
     private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime) {
@@ -492,6 +507,7 @@ public class WhitelistTab : ITab, IDisposable
     // we need a function for if the password is not given
     private void LockGagOnPlayer(int layer, string lockType, WhitelistCharData selectedPlayer) { LockGagOnPlayer(layer, lockType, selectedPlayer, ""); }
     private void LockGagOnPlayer(int layer, string lockType, WhitelistCharData selectedPlayer, string password) {
+        GagSpeak.Log.Debug($"Locking {lockType} on {selectedPlayer.name} with password {password}");
         PlayerPayload playerPayload;
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
@@ -642,6 +658,28 @@ public class WhitelistTab : ITab, IDisposable
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         _chatManager.SendRealMessage(_gagMessages.RequestInfoEncodedMessage(playerPayload, targetPlayer));
+    }
+
+    private void SendInfoToPlayer() {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        // format the player name from "firstname lastname homeworld" to "firstname lastname@homeworld"
+        int lastSpaceIndex = _config.SendInfoName.LastIndexOf(' ');
+        if (lastSpaceIndex >= 0) { // if we can do this, then do it.
+            string targetPlayer = _config.SendInfoName.Remove(lastSpaceIndex, 1).Insert(lastSpaceIndex, "@");
+            // get your relationship to that player, if any. Search for their name in the whitelist.
+            string relationshipVar = "None";
+            _config.Whitelist.ForEach(delegate(WhitelistCharData entry) {
+                if (_config.SendInfoName.Contains(entry.name)) {
+                    // set the relationship
+                    relationshipVar = entry.relationshipStatus;
+                }
+            });
+            // send the message
+            _chatManager.SendRealMessage(_gagMessages.ProvideInfoEncodedMessage(playerPayload, targetPlayer, _config.InDomMode,
+                _config.DirectChatGarbler, _config.GarbleLevel, _config.selectedGagTypes, _config.selectedGagPadlocks,
+                _config.selectedGagPadlocksAssigner, _config.selectedGagPadLockTimer, relationshipVar));
+        }
     }
 
     private void AcceptMistressRequestFromPlayer(WhitelistCharData selectedPlayer) {

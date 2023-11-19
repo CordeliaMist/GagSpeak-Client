@@ -60,7 +60,7 @@ namespace XivCommon.Functions;
 
             // Next, let us be sure that our message is not larger than the ammount of bytes a message should be allowed to send
             if (bytes.Length > 500) { // If it is, dont send the message and throw a message too long exception instead.
-                throw new ArgumentException("message is longer than 500 bytes", nameof(message));
+                throw new ArgumentException($"message is longer than 500 bytes, and is {bytes.Length}", nameof(message));
             }
 
             // Finally, we want to be sure that our processchatbox sucessfully got the delegate for our function pointer.

@@ -39,7 +39,7 @@ public class GagListingsDrawer : IDisposable
     private string _buttonLabel = "";
     private string _passwordField = "";
     public bool[] _isLocked;
-    private bool[] _adjustDisp;
+    public bool[] _adjustDisp;
     public string[]  displaytext;
     public PadlockIdentifier[] _padlockIdentifier;
 
@@ -213,7 +213,9 @@ public class GagListingsDrawer : IDisposable
             // Display the password fields based on the selected padlock type
             if(_padlockIdentifier[layerIndex].DisplayPasswordField(_padlockIdentifier[layerIndex]._padlockType)) {
                 _adjustDisp[layerIndex] = true;
-            }   
+            } else {
+                _adjustDisp[layerIndex] = false;
+            }
             // display the remaining time if we have a timer for this and we are locked
             if(_isLocked[layerIndex] && 
             (_padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||

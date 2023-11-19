@@ -12,12 +12,12 @@ public class PadlockIdentifier : IDisposable
 {
     private readonly GagSpeakConfig _config;
     private TimerService _timerService;
-    public string _inputPassword { get; private set; } // This will hold the input password
-    public string _inputCombination { get; private set; } // This will hold the input combination
-    public string _inputTimer { get; private set; } // This will hold the input timer
-    public string _storedPassword { get; private set; } // 20 character max string
-    public string _storedCombination { get; private set; } // This will be a string in the format of 0000
-    public string _storedTimer { get; private set; } // This will be a string in the format of 00h00m00s.
+    public string _inputPassword { get; set; } // This will hold the input password
+    public string _inputCombination { get; set; } // This will hold the input combination
+    public string _inputTimer { get; set; } // This will hold the input timer
+    public string _storedPassword { get; set; } // 20 character max string
+    public string _storedCombination { get; set; } // This will be a string in the format of 0000
+    public string _storedTimer { get; set; } // This will be a string in the format of 00h00m00s.
     public GagPadlocks _padlockType { get; set; } = GagPadlocks.None;
 
     public PadlockIdentifier(GagSpeakConfig config, TimerService timerService)
@@ -121,7 +121,8 @@ public class PadlockIdentifier : IDisposable
                 return true;
             case GagPadlocks.CombinationPadlock:
                 ret = ValidateCombination();
-                if(ret && !isUnlocking) {_storedCombination = _inputCombination; _inputCombination = "";}
+                if(ret && !isUnlocking) {
+                    _storedCombination = _inputCombination; _inputCombination = "";}
                 return ret;
             case GagPadlocks.PasswordPadlock:
                 ret = ValidatePassword();

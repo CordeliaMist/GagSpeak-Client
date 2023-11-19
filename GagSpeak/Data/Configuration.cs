@@ -50,9 +50,12 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public ObservableList<string> selectedGagTypes { get; set; } // What gag types are selected?
     public ObservableList<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
-    public List<DateTimeOffset> selectedGagPadLockTimer { get; set; } // stores time each padlock was assigned.
+    public List<DateTimeOffset> selectedGagPadLockTimer { get; set; } // stores time when the padlock will be unlocked.
     public List<string> selectedGagPadlocksAssigner { get; set; } // name of who assigned the padlocks
     
+    // dictionary to store timer data
+    public Dictionary<string, DateTimeOffset> TimerData { get; set; } = new Dictionary<string, DateTimeOffset>();
+
     // additonal information below
     public List<ChatChannel.ChatChannels> Channels { get; set; } // Which channels are currently enabled / allowed?
     public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
@@ -61,6 +64,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     private List<WhitelistCharData> whitelist = new List<WhitelistCharData>(); // appears to be baseline for whitelist
     public List<WhitelistCharData> Whitelist { get => whitelist; set => whitelist = value; } // Note sure why, document later
     public string SendInfoName = ""; // Name of the person you are sending info to
+    public bool acceptingInfoRequests = true; // Are you accepting info requests? (for cooldowns)
 
     // There was stuiff about a colorId dictionary here, if you ever need to include it later, you know where to put it so it fits into the hierarchy
     private readonly SaveService _saveService;

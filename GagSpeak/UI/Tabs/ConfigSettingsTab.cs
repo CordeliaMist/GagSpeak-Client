@@ -1,18 +1,14 @@
 using System;
 using System.Numerics;
-using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using ImGuiScene;
 using OtterGui;
 using OtterGui.Raii;
-﻿using Dalamud.Game.Text;
 using Dalamud.Plugin;
 using OtterGui.Widgets;
 using Dalamud.Interface;
 using GagSpeak.Data;
 using System.IO;
 using Dalamud.Interface.Internal;
-using Dalamud.Interface.Internal.Windows.StyleEditor;
 namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
