@@ -4,6 +4,8 @@ using System.Linq;
 using System;
 using Lumina.Data.Parsing.Layer;
 
+using GagSpeak.UI.Helpers;
+
 
 namespace GagSpeak.Chat.MsgEncoder;
 // a struct to hold information on whitelisted players.
@@ -114,38 +116,61 @@ public class MessageEncoder // change to message encoder later
         // we need to start applying some logic here, first create a base string
         string baseString = $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} ";
         // now we need to append our next part of the message, the relationship to that player.
-        if (relationship == "None") { baseString += "looks at their companion and smiles, "; } 
-                               else { baseString += $"eyes their {relationship} and smiles, "; }
-        baseString += $"While they were {(_inDomMode ? "Dominant" : "Submissive")} inside, the gags they wore for the last {_garbleLevel} minutes had them drooling already. ";
+        if (relationship == "None") { baseString += "looks at their companion, "; } 
+                               else { baseString += $"eyes their {relationship}, "; }
+        baseString += $"in a {(_inDomMode ? "dominant" : "submissive")} state, silenced over {_garbleLevel} minutes, already drooling. ";
 
         // next we need to describe each gagtype they are wearing, if at any point the gag type is none, we should skip over each gag sections text entirely and just write that they had nothing on that layer
         string layerTerm = "underlayer";
-        for (int i = 0; i < 3; i++) {
-            if (i == 0) { layerTerm = "underlayer"; } else if (i == 1) { layerTerm = "surfacelayer"; } else if (i == 2) { layerTerm = "topmostlayer"; }
+        for (int i = 0; i < 2; i++) {
+            if (i == 0) { layerTerm = "underlayer"; } else if (i == 1) { layerTerm = "surfacelayer"; }
             if (_selectedGagTypes[i] == "None") { 
-                baseString += $"Their {layerTerm} had nothing on it, "; // continuing on to describe the 2nd layer
+                baseString += $"Their {layerTerm} had nothing on it"; // continuing on to describe the 2nd layer
             } else {
-                baseString += $"Their {layerTerm} was sealed off with a {_selectedGagTypes[i]} gag";
+                baseString += $"Their {layerTerm} sealed off by a {_selectedGagTypes[i]}";
             }
             if (_selectedGagPadlocks[i] != GagPadlocks.None) { // describe the lock, if any
-                baseString += $", its strap locked with a {_selectedGagPadlocks[i]} ";
+                baseString += $", a {_selectedGagPadlocks[i]} securing it";
                 //describe timer, if any
                 if(true) {
-                    baseString += $"set for {_selectedGagPadlocksTimer[i]} ";
+                    baseString += $" with {UIHelpers.FormatTimeSpan(_selectedGagPadlocksTimer[i] - DateTimeOffset.Now)} left";
                 }
                 // describe assigner, if any
                 if(_selectedGagPadlocksAssigner[i] != "") { 
-                    baseString += $"by {_selectedGagPadlocksAssigner[i]}"; }
+                    baseString += $", locked shut by {_selectedGagPadlocksAssigner[i]}"; }
             }
             baseString += $". ";
         }
-        // finally, we need to describe the direct chat garbler, if any
-        if (_directChatGarbler) {
-            baseString += $"Ontop of it all, the bindings she had on weren't giving her much authority to change the way she sounded either..";
-        }
-        GagSpeak.Log.Debug($"Compiled Information Message: {baseString}");
+        baseString += " ->";
+        GagSpeak.Log.Debug($"Compiled Info Message of length {baseString.Length}: {baseString}");
         return baseString;
     }
 
-
+    public string ProvideInfoEncodedMessage2(PlayerPayload playerPayload, string targetPlayer, bool _inDomMode, bool _directChatGarbler, int _garbleLevel, List<string> _selectedGagTypes,
+    List<GagPadlocks> _selectedGagPadlocks, List<string> _selectedGagPadlocksAssigner, List<DateTimeOffset> _selectedGagPadlocksTimer, string relationship) {
+        string baseString = $"/tell {targetPlayer} || ";
+        if (_selectedGagTypes[2] == "None") { 
+            baseString += $"Finally, their topmostlayer had nothing on it"; // continuing on to describe the 2nd layer
+        } else {
+            baseString += $"Finally, their topmostlayer was covered with a {_selectedGagTypes[2]}";
+        }
+        if (_selectedGagPadlocks[2] != GagPadlocks.None) { // describe the lock, if any
+            baseString += $", a {_selectedGagPadlocks[2]} sealing it";
+            //describe timer, if any
+            if(true) {
+                baseString += $" with {UIHelpers.FormatTimeSpan(_selectedGagPadlocksTimer[2] - DateTimeOffset.Now)} left";
+            }
+            // describe assigner, if any
+            if(_selectedGagPadlocksAssigner[2] != "") { 
+                baseString += $" from {_selectedGagPadlocksAssigner[2]}"; }
+        }
+        // finally, we need to describe the direct chat garbler, if any
+        if (_directChatGarbler) {
+            baseString += $", their strained sounds muffled by everything.*";
+        } else {
+            baseString += ".*";
+        }
+        
+        return baseString; 
+    }
 }

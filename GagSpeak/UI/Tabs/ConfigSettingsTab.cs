@@ -72,10 +72,12 @@ public class ConfigSettingsTab : ITab
         // Checkbox will dictate if only players from their friend list are allowed to use /gag (target) commands on them.
         Checkbox("Only Whitelist", "Only processes /gag (target) commands from others if they are in your whitelist.\n" +
             "(Does NOT need to be enabled for you to use /gag (target) commands on them)", _config.whitelistOnly, v => _config.whitelistOnly = v);
-        
+        // only allow checkbox interaction iif _config.LockDirectChatGarbler is false
+        if(_config.LockDirectChatGarbler == true) {ImGui.BeginDisabled();}
         Checkbox("DirectChatGarblerMode", "Automatically translate chat messages in all enabled channels to gagspeak automatically. (WITHOUT commands).\n" +
             "This does make use of chat to server interception. Even though now it is ensured safe, always turn this OFF after any patch or game update, until the plug curator says it's safe",
             _config.DirectChatGarbler, v => _config.DirectChatGarbler = v);
+        if(_config.LockDirectChatGarbler == true) {ImGui.EndDisabled();}
         // Checkbox to display debug information
         Checkbox("Debug Display", "Displays information for plugin variables. For developer", _config.DebugMode, v => _config.DebugMode = v);
         // Checkbox will dictate if only players from their party are allowed to use /gag (target) commands on them.
@@ -88,7 +90,7 @@ public class ConfigSettingsTab : ITab
         // Show Debug Menu when Debug logging is enabled
         if (_config.DebugMode)
             DrawDebug();
-
+        if(_config.LockDirectChatGarbler == true) {ImGui.BeginDisabled();}
         ImGui.Text("Enabled Channels:"); ImGui.Separator();
         var i = 0;
         foreach (var e in ChatChannel.GetOrderedChannels()) {
@@ -115,6 +117,7 @@ public class ConfigSettingsTab : ITab
         // Set the columns back to 1 now and space over to next section
         ImGui.Columns(1);
         ImGui.PopStyleVar();
+        if(_config.LockDirectChatGarbler == true) {ImGui.EndDisabled();}
     }
 
     /// <summary>

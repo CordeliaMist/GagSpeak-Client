@@ -58,14 +58,7 @@ public class GagListingsDrawer : IDisposable
         textureWrap5 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[1].ToString()}.png"));
         textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[2].ToString()}.png"));
 
-        // _config.displaytext = new List<string> {"", "", ""};
-        // _config._isLocked = new List<bool> { false, false, false };
         _adjustDisp = new bool[] {false, false, false};
-        // _config._padlockIdentifier = new List<PadlockIdentifier> {
-        //     new PadlockIdentifier(),
-        //     new PadlockIdentifier(),
-        //     new PadlockIdentifier()
-        // };
         // Subscribe to the events
         _safewordUsedEvent.SafewordCommand += CleanupVariables;
         _config.selectedGagTypes.ItemChanged += OnSelectedTypesChanged;
@@ -189,13 +182,13 @@ public class GagListingsDrawer : IDisposable
                         _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock ||
                         _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock) {
                             // create the timer.
-                            _timerService.StartTimer($"{_config._padlockIdentifier[layerIndex]._padlockType}_Identifier{layerIndex}", _config._padlockIdentifier[layerIndex]._storedTimer, 1000, () => {
+                            _timerService.StartTimer($"{_config._padlockIdentifier[layerIndex]._padlockType}_Identifier{layerIndex}", _config._padlockIdentifier[layerIndex]._storedTimer, 
+                            1000, () => {
                                 // when the timer elapses, unlock padlock and clear data
                                 _config._isLocked[layerIndex] = false;
-                                _adjustDisp[layerIndex] = false;
                                 _config._padlockIdentifier[layerIndex].ClearPasswords();
                                 _config._padlockIdentifier[layerIndex].UpdateConfigPadlockPasswordInfo(layerIndex, !_config._isLocked[layerIndex], _config);
-                            });
+                            }, _config.selectedGagPadLockTimer, layerIndex);
                         }
                         config.Save();
                     }

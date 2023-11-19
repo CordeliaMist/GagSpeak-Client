@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Timers;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
+using GagSpeak.UI.Helpers;
 
 namespace GagSpeak.Services;
 
@@ -40,6 +41,7 @@ public class TimerService : IDisposable
       // Parse the input string to get the duration
       TimeSpan duration = ParseTimeInput(input);
 
+      GagSpeak.Log.Debug($"Timer '{timerName}' started with duration {duration}.");
       // Check if the duration is valid
       if (duration == TimeSpan.Zero){
          GagSpeak.Log.Debug($"Invalid time format for timer '{timerName}'.");
@@ -60,7 +62,7 @@ public class TimerService : IDisposable
       timer.Start();
 
       // Store the timer data in the dictionary
-      timers[timerName] = new TimerData(timer, endTime);
+      timers[timerName] = new TimerData(timer, endTime);//
 
       // save the timer data
       SaveTimerData(_config);
@@ -90,14 +92,16 @@ public class TimerService : IDisposable
    // Method to parse time input string
    public static TimeSpan ParseTimeInput(string input) {
       // Match hours, minutes, and seconds in the input string
-      var match = Regex.Match(input, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+      var match = Regex.Match(input, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
 
-      if (match.Success) { // Parse hours, minutes, and seconds
-         int.TryParse(match.Groups[1].Value, out int hours);
-         int.TryParse(match.Groups[2].Value, out int minutes);
-         int.TryParse(match.Groups[3].Value, out int seconds);
+      if (match.Success) { 
+         // Parse days, hours, minutes, and seconds
+         int.TryParse(match.Groups[1].Value, out int days);
+         int.TryParse(match.Groups[2].Value, out int hours);
+         int.TryParse(match.Groups[3].Value, out int minutes);
+         int.TryParse(match.Groups[4].Value, out int seconds);
          // Return the total duration
-         return new TimeSpan(hours, minutes, seconds);
+         return new TimeSpan(days, hours, minutes, seconds);
       }
 
       // If the input string is not in the correct format, return TimeSpan.Zero
@@ -119,38 +123,46 @@ public class TimerService : IDisposable
       config.Save();
    }
 
-   public void RestoreTimerData(GagSpeakConfig _config)
-   {
+   public void RestoreTimerData(GagSpeakConfig _config) {
       // Clear the existing timers
       timers.Clear();
 
-      // Restore the timers from the config
-      foreach (var pair in _config.TimerData)
-      {
-         // Create a new timer with the same name and end time
-         if(pair.Key.Contains("_Identifier0")) {
-            GagSpeak.Log.Debug($"Restoring timer {pair.Key} with end time {pair.Value}");
-            StartTimer(pair.Key, (pair.Value - DateTimeOffset.Now).ToString(), 1000, () => {
+      // Create a temporary list of timers to restore
+      var timersToRestore = new List<(string, TimeSpan)>();
+
+      // Populate the list from the config
+      foreach (var pair in _config.TimerData) {
+         // Calculate the remaining time
+         var remainingTime = pair.Value - DateTimeOffset.Now;
+         // Add the timer to the list
+         timersToRestore.Add((pair.Key, remainingTime));
+      }
+
+      // Restore the timers from the list
+      foreach (var (timerName, remainingTime) in timersToRestore) {
+         // Create a new timer with the same name and remaining time
+         if(timerName.Contains("_Identifier0")) {
+            GagSpeak.Log.Debug($"Restoring timer {timerName} with end time {remainingTime}");
+            StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                _config._isLocked[0] = false;
                _config._padlockIdentifier[0].ClearPasswords();
                _config._padlockIdentifier[0].UpdateConfigPadlockPasswordInfo(0, !_config._isLocked[0], _config);
             });
-         } else if (pair.Key.Contains("_Identifier1")) {
-            GagSpeak.Log.Debug($"Restoring timer {pair.Key} with end time {pair.Value}");
-            StartTimer(pair.Key, (pair.Value - DateTimeOffset.Now).ToString(), 1000, () => {
+         } else if(timerName.Contains("_Identifier1")) {
+            GagSpeak.Log.Debug($"Restoring timer {timerName} with end time {remainingTime}");
+            StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                _config._isLocked[1] = false;
                _config._padlockIdentifier[1].ClearPasswords();
                _config._padlockIdentifier[1].UpdateConfigPadlockPasswordInfo(1, !_config._isLocked[1], _config);
             });
-         } else if (pair.Key.Contains("_Identifier2")) {
-            GagSpeak.Log.Debug($"Restoring timer {pair.Key} with end time {pair.Value}");
-            StartTimer(pair.Key, (pair.Value - DateTimeOffset.Now).ToString(), 1000, () => {
+         } else if(timerName.Contains("_Identifier2")) {
+            GagSpeak.Log.Debug($"Restoring timer {timerName} with end time {remainingTime}");
+            StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                _config._isLocked[2] = false;
                _config._padlockIdentifier[2].ClearPasswords();
                _config._padlockIdentifier[2].UpdateConfigPadlockPasswordInfo(2, !_config._isLocked[2], _config);
             });
          }
-         // otherwise dont make any new padlock.
       }
    }
 
@@ -159,10 +171,10 @@ public class TimerService : IDisposable
       foreach (var pair in _config.TimerData)
       {
          // Calculate the remaining time in milliseconds
-         var remainingTime = (pair.Value - DateTimeOffset.Now).TotalMilliseconds;
+         var remainingTime = UIHelpers.FormatTimeSpan(pair.Value - DateTimeOffset.Now);
 
          // Print the timer name and remaining time
-         GagSpeak.Log.Debug($"Timer: {pair.Key}, Remaining Time: {remainingTime} ms");
+         GagSpeak.Log.Debug($"TimerData Timer: {pair.Key}, Remaining Time: {remainingTime}");
       }
    }
 
@@ -181,6 +193,10 @@ public class TimerService : IDisposable
    // Method to dispose the service
    public void Dispose()
    {
+      GagSpeak.Log.Debug("------------------------------------"); // save timers upon unloading.
+      SaveTimerData(_config);
+      DebugPrintRemainingTimers();
+      GagSpeak.Log.Debug("------------------------------------");
       // Dispose all timers
       foreach (var timerData in timers.Values) {
          timerData.Timer.Dispose();

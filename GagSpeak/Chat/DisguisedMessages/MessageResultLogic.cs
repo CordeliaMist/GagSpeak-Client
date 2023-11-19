@@ -395,9 +395,19 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
     // handle the live chat garbler lock message
     private bool HandleLiveChatGarblerLockMessage(ref List<string> decodedMessage, ref bool isHandled, IChatGui _clientChat, GagSpeakConfig _config) {
         // just set the lockedLiveChatGarbler to true and print message
-        _config.LockDirectChatGarbler = true;
-        _clientChat.Print(new SeStringBuilder().AddRed($"Your Mistress has decided you no longer have permission to speak clearly....").BuiltString);
-        GagSpeak.Log.Debug($"Your Mistress has enforced a toggle on your livechatgarbler lock..");
+        // if they are true, set to false, if false, set to true
+        if(_config.LockDirectChatGarbler == false) {
+            _config.DirectChatGarbler = true;
+            _config.LockDirectChatGarbler = true;
+            _clientChat.Print(new SeStringBuilder().AddRed($"Your Mistress has decided you no longer have permission to speak clearly....").BuiltString);
+            GagSpeak.Log.Debug($"Your Mistress has enforced a on toggle on your livechatgarbler lock..");
+        }
+        else {
+            _config.DirectChatGarbler = false;
+            _config.LockDirectChatGarbler = false;
+            _clientChat.Print(new SeStringBuilder().AddRed($"Your Mistress returns your permission to speak once more. How Generous...").BuiltString);
+            GagSpeak.Log.Debug($"Your Mistress has enforced a off toggle on your livechatgarbler lock..");
+        }
         return true;
     }
 

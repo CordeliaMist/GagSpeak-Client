@@ -34,7 +34,7 @@ public class MessageDecoder {
             string[] messageParts = recievedMessage.Split("from her pocket and uses it to lock your");
             string trimmedMessage = string.Empty;
             messageParts[1] = messageParts[1].Replace(" gag", "");
-            decodedMessage[1] = messageParts[1].Trim(); // we found layer
+            decodedMessage[1] = messageParts[1].Trim(); // we found layer//
             trimmedMessage = messageParts[0].Trim();
             messageParts = trimmedMessage.Split("takes out a");
             decodedMessage[2] = messageParts[1].Trim(); // we found locktype
@@ -247,24 +247,24 @@ public class MessageDecoder {
         else if (encodedMsgIndex == 17) {
             decodedMessage[0] = "provideInfo";      // we found commandtype
             /* decodedMessageFormat:
-             [0] = commandtype
-             [1] = isDomMode
-             [2] = directChatGarblerLock
-             [3] = garbleLevel
-             [4] = player
-             [5] = relationship
-             [6] = selectedGagType1
-             [7] = selectedGagType2
-             [8] = selectedGagType3
-             [9] = selectedGagPadlock1
-             [10] = selectedGagPadlock2
-             [11] = selectedGagPadlock3
-             [12] = selectedGagPadlockAssigner1
-             [13] = selectedGagPadlockAssigner2
-             [14] = selectedGagPadlockAssigner3
-             [15] = selectedGagPadlockTimer1
-             [16] = selectedGagPadlockTimer2
-             [17] = selectedGagPadlockTimer3 */
+                [0] = commandtype
+                [1] = isDomMode
+                [2] = directChatGarblerLock
+                [3] = garbleLevel
+                [4] = player
+                [5] = relationship
+                [6] = selectedGagType1
+                [7] = selectedGagType2
+                [8] = selectedGagType3
+                [9] = selectedGagPadlock1
+                [10] = selectedGagPadlock2
+                [11] = selectedGagPadlock3
+                [12] = selectedGagPadlockAssigner1
+                [13] = selectedGagPadlockAssigner2
+                [14] = selectedGagPadlockAssigner3
+                [15] = selectedGagPadlockTimer1
+                [16] = selectedGagPadlockTimer2
+                [17] = selectedGagPadlockTimer3 */
             try
             {
                 // Extract name and world information
@@ -283,27 +283,24 @@ public class MessageDecoder {
                 else if (recievedMessage.Contains("eyes their slave and smiles")) { decodedMessage[5] = "Slave"; }
                 else { decodedMessage[5] = "None"; }
 
-                // Remove the "while they were" part from the encoded message
-                recievedMessage = recievedMessage.Replace("while they were", "").Trim();
-
-                // Extract the dominance information
-                decodedMessage[1] = (recievedMessage.StartsWith("Dominant")).ToString();
+                // Extract the dominance information (definitely wrong fix later)
+                decodedMessage[1] = (recievedMessage.Contains("in a dominant state")).ToString();
 
                 // Extract the garble level
-                int garbleLevelStartIndex = recievedMessage.IndexOf("last") + 5;
+                int garbleLevelStartIndex = recievedMessage.IndexOf("silenced over") + 13;
                 int garbleLevelEndIndex = recievedMessage.IndexOf("minutes");
                 decodedMessage[3] = int.TryParse(recievedMessage.Substring(garbleLevelStartIndex, garbleLevelEndIndex - garbleLevelStartIndex).Trim(), 
-                                    out int garbleLevel) ? garbleLevel.ToString() : throw new System.Exception("Invalid garble level format");
+                                    out int garbleLevel) ? garbleLevel.ToString() : throw new System.Exception("Invalid garble level");
 
                 // Iterate over layers
-                for (int i = 0; i < 3; i++) {
-                    string layerTerm = i == 0 ? "underlayer" : i == 1 ? "surfacelayer" : "topmostlayer";
-                    int layerStartIndex = recievedMessage.IndexOf(layerTerm);
-                    int layerEndIndex = i == 2 ? recievedMessage.IndexOf("Ontop") : recievedMessage.IndexOf(i == 0 ? "surfacelayer" : "topmostlayer");
+                for (int i = 0; i < 2; i++) {
+                    string layerTerm = i == 0 ? "underlayer" : "surfacelayer";
+                    int layerStartIndex = recievedMessage.IndexOf($"Their {layerTerm}");
+                    int layerEndIndex = i == 1 ? recievedMessage.IndexOf(" ->") : recievedMessage.IndexOf("surfacelayer");
 
                     string layerString = recievedMessage.Substring(layerStartIndex, layerEndIndex - layerStartIndex).Trim();
 
-                    if (layerString.Contains("nothing")) {
+                    if (layerString.Contains("had nothing on it")) {
                         // Set layer gag info to all none
                         decodedMessage[6 + 3 * i] = "None";   // gagtype
                         decodedMessage[9 + 3 * i] = "None";   // padlock
@@ -311,42 +308,118 @@ public class MessageDecoder {
                     }
                     else {
                         // Extract the gag type
-                        int gagTypeStartIndex = layerString.IndexOf("sealed off with a") + 17;
-                        int gagTypeEndIndex = layerString.IndexOf("gag");
+                        int gagTypeStartIndex = layerString.IndexOf("sealed off by a") + 16;
+                        int gagTypeEndIndex = layerString.IndexOf(",");
                         decodedMessage[6 + 3 * i] = layerString.Substring(gagTypeStartIndex, gagTypeEndIndex - gagTypeStartIndex).Trim();  // gagtype
-
                         // Extract padlock information
-                        if (layerString.Contains("its strap locked with a")) {
-                            int padlockStartIndex = layerString.IndexOf("set to unlock in") + 17;
-                            int padlockEndIndex = layerString.IndexOf("TIME");
+                        if (layerString.Contains("securing it")) {
+                            int padlockStartIndex = layerString.IndexOf("securing it") + 12;
+                            int padlockEndIndex = layerString.Contains("with") ? layerString.IndexOf("with") : layerString.IndexOf(".");
                             decodedMessage[9 + 3 * i] = layerString.Substring(padlockStartIndex, padlockEndIndex - padlockStartIndex).Trim();  // padlock
 
                             // Extract timer information (if present)
-                            if (layerString.Contains("set to unlock in")) {
-                                int timerStartIndex = layerString.IndexOf("set to unlock in") + 17;
-                                int timerEndIndex = layerString.IndexOf("TIME");
+                            if (layerString.Contains("with")) {
+                                int timerStartIndex = layerString.IndexOf("with") + 5;
+                                int timerEndIndex = layerString.Contains("left") ? layerString.IndexOf("left") : layerString.IndexOf(".");
                                 decodedMessage[15 + 2 * i] = layerString.Substring(timerStartIndex, timerEndIndex - timerStartIndex).Trim();  // timer
                             }
 
                             // Extract assigner information (if present)
-                            if (layerString.Contains("by")) {
-                                int assignerStartIndex = layerString.IndexOf("by") + 2;
+                            if (layerString.Contains("locked shut by")) {
+                                int assignerStartIndex = layerString.IndexOf("locked shut by") + 14;
                                 int assignerEndIndex = layerString.IndexOf(".", assignerStartIndex);
                                 decodedMessage[12 + 3 * i] = layerString.Substring(assignerStartIndex, assignerEndIndex - assignerStartIndex).Trim();  // assigner
                             }
                         }
                     }
                 }
-
-                // Extract direct chat garbler information
-                int garblerStartIndex = recievedMessage.IndexOf("Ontop");
-                int garblerEndIndex = recievedMessage.IndexOf("bindings");
-                bool directChatGarblerLocked = recievedMessage.Substring(garblerStartIndex, garblerEndIndex - garblerStartIndex).Trim().Contains("authority");
+                GagSpeak.Log.Debug($"Determined Message Outcome: PROVIDE INFO || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, " +
+                                   $"decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}, decodedMessage[5]: {decodedMessage[5]}, decodedMessage[6]: {decodedMessage[6]}, " +
+                                   $"decodedMessage[7]: {decodedMessage[7]}, decodedMessage[8]: {decodedMessage[8]}, decodedMessage[9]: {decodedMessage[9]}, decodedMessage[10]: {decodedMessage[10]}, " +
+                                   $"decodedMessage[11]: {decodedMessage[11]}, decodedMessage[12]: {decodedMessage[12]}, decodedMessage[13]: {decodedMessage[13]}, decodedMessage[14]: {decodedMessage[14]}, " +
+                                   $"decodedMessage[15]: {decodedMessage[15]}, decodedMessage[16]: {decodedMessage[16]}, decodedMessage[17]: {decodedMessage[17]}");
             }
             catch
             {
                 GagSpeak.Log.Error("Error decoding message!");
             } 
+            return decodedMessage;
+        }
+        // its the second half of the request info message
+        else if (encodedMsgIndex == 18) {
+            decodedMessage[0] = "provideInfo";      // we found commandtype
+            /* decodedMessageFormat:
+                [0] = commandtype
+                [1] = isDomMode
+                [2] = directChatGarblerLock
+                [3] = garbleLevel
+                [4] = player
+                [5] = relationship
+                [6] = selectedGagType1
+                [7] = selectedGagType2
+                [8] = selectedGagType3
+                [9] = selectedGagPadlock1
+                [10] = selectedGagPadlock2
+                [11] = selectedGagPadlock3
+                [12] = selectedGagPadlockAssigner1
+                [13] = selectedGagPadlockAssigner2
+                [14] = selectedGagPadlockAssigner3
+                [15] = selectedGagPadlockTimer1
+                [16] = selectedGagPadlockTimer2
+                [17] = selectedGagPadlockTimer3 */
+            try {
+                // start by removing the || from the front
+                recievedMessage = recievedMessage.Replace("||", "");
+                if (recievedMessage.Contains("had nothing on it")) {
+                    // Set layer gag info to all none
+                    decodedMessage[8] = "None";   // gagtype
+                    decodedMessage[11] = "None";  // padlock
+                    decodedMessage[14] = "None";  // assigner
+                    decodedMessage[17] = "None";  // timer
+                }
+                else {
+                    // Extract the gag type
+                    int gagTypeStartIndex = recievedMessage.IndexOf("sealed off by a") + 16;
+                    int gagTypeEndIndex = recievedMessage.IndexOf(".*");
+                    decodedMessage[8] = recievedMessage.Substring(gagTypeStartIndex, gagTypeEndIndex - gagTypeStartIndex).Trim();  // gagtype
+                    // Extract padlock information
+                    if (recievedMessage.Contains("securing it")) {
+                        int padlockStartIndex = recievedMessage.IndexOf("securing it") + 12;
+                        int padlockEndIndex = recievedMessage.Contains("with") ? recievedMessage.IndexOf("with") : recievedMessage.IndexOf(".");
+                        decodedMessage[11] = recievedMessage.Substring(padlockStartIndex, padlockEndIndex - padlockStartIndex).Trim();  // padlock
+
+                        // Extract timer information (if present)
+                        if (recievedMessage.Contains("with")) {
+                            int timerStartIndex = recievedMessage.IndexOf("with") + 5;
+                            int timerEndIndex = recievedMessage.Contains("left") ? recievedMessage.IndexOf("left") : recievedMessage.IndexOf(".");
+                            decodedMessage[17] = recievedMessage.Substring(timerStartIndex, timerEndIndex - timerStartIndex).Trim();  // timer
+                        }
+
+                        // Extract assigner information (if present)
+                        if (recievedMessage.Contains("locked shut by")) {
+                            int assignerStartIndex = recievedMessage.IndexOf("locked shut by") + 14;
+                            int assignerEndIndex = recievedMessage.IndexOf(".", assignerStartIndex);
+                            decodedMessage[14] = recievedMessage.Substring(assignerStartIndex, assignerEndIndex - assignerStartIndex).Trim();  // assigner
+                        }
+                    }
+                }
+                // at this point we have reached the last bit
+                // finally, we need to describe the direct chat garbler, if any
+                if (recievedMessage.Contains("their strained sounds muffled by everything")) {
+                    decodedMessage[2] = "True";
+                } else {
+                    decodedMessage[2] = "False";
+                }
+                GagSpeak.Log.Debug($"Determined Message Outcome: PROVIDE INFO || decodedMessage[0]: {decodedMessage[0]}, decodedMessage[1]: {decodedMessage[1]}, decodedMessage[2]: {decodedMessage[2]}, " +
+                                   $"decodedMessage[3]: {decodedMessage[3]}, decodedMessage[4]: {decodedMessage[4]}, decodedMessage[5]: {decodedMessage[5]}, decodedMessage[6]: {decodedMessage[6]}, " +
+                                   $"decodedMessage[7]: {decodedMessage[7]}, decodedMessage[8]: {decodedMessage[8]}, decodedMessage[9]: {decodedMessage[9]}, decodedMessage[10]: {decodedMessage[10]}, " +
+                                   $"decodedMessage[11]: {decodedMessage[11]}, decodedMessage[12]: {decodedMessage[12]}, decodedMessage[13]: {decodedMessage[13]}, decodedMessage[14]: {decodedMessage[14]}, " +
+                                   $"decodedMessage[15]: {decodedMessage[15]}, decodedMessage[16]: {decodedMessage[16]}, decodedMessage[17]: {decodedMessage[17]}");
+
+            } 
+            catch {
+                GagSpeak.Log.Error("Error decoding message!");
+            }
             return decodedMessage;
         }
         // its not something meant to be decoded

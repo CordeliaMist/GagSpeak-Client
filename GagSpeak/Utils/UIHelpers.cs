@@ -3,6 +3,7 @@ using OtterGui;
 using OtterGui.Raii;
 using Lumina.Misc;
 using System.Text.RegularExpressions;
+using System;
 
 // Practicing Modular Design
 namespace GagSpeak.UI.Helpers;
@@ -43,6 +44,13 @@ public static class UIHelpers // A class for all of the UI helpers, including ba
     public static string RemoveSpecialSymbols(string value) {
         Regex rgx = new Regex(@"[^a-zA-Z:/._\ -]");
         return rgx.Replace(value, "");
+    }
+
+    public static string FormatTimeSpan(TimeSpan timeSpan) {
+        if (timeSpan <= TimeSpan.Zero) {
+            return "0d0h0m0s";        
+        }
+        return $"{timeSpan.Days % 30}d{timeSpan.Hours}h{timeSpan.Minutes}m{timeSpan.Seconds}s";
     }
 
 

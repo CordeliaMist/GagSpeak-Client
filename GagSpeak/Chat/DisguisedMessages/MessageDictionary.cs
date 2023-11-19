@@ -137,11 +137,21 @@ public static class MessageDictionary {
 
         // SHARE INFO
         else if (textVal.Contains("from") 
-             && (textVal.Contains("looks at their companion and smiles,") || (textVal.Contains("eyes their") && textVal.Contains("and smiles,")))
-             && textVal.Contains("While they were") && (textVal.Contains("inside, the gags they wore for the last")
+             && (textVal.Contains("looks at their companion,") || textVal.Contains("eyes their"))
+             && textVal.Contains("in a") && ((textVal.Contains("state, silenced over") && textVal.Contains("minutes, already drooling"))
              && textVal.Contains("minutes had them drooling already."))) {
             GagSpeak.Log.Debug($"THIS IS IN OUTGOING share info ENCODED TELL");
             encodedMsgIndex = 17;
+            return true;
+        }
+
+        // SHARE INFO PART 2 ELECTRIC BOOGAGLOO
+        else if (textVal.Contains("||")
+              && (textVal.Contains("Finally, their topmostlayer had nothing on it") || textVal.Contains("Finally, their topmostlayer was covered with a"))
+              && (textVal.Contains("sealing it") || (textVal.Contains("with") && textVal.Contains("from")))
+              && (textVal.Contains(".*"))) {
+            GagSpeak.Log.Debug($"THIS IS IN OUTGOING share info part 2 ENCODED TELL");
+            encodedMsgIndex = 18;
             return true;
         }
 

@@ -234,11 +234,11 @@ public class PadlockIdentifier {
             case GagPadlocks.MistressPadlock:
                 // handle MistressPadlock case
                 _config.selectedGagPadlocks[layerIndex] = _padlockType;
-                _config.selectedGagPadlocksAssigner[layerIndex] = "TestDummy";
+                _config.selectedGagPadlocksAssigner[layerIndex] = "mmmmmmmmmm mmmmmmmmmm";
                 break;
             case GagPadlocks.MistressTimerPadlock:
                 _config.selectedGagPadlocks[layerIndex] = _padlockType;
-                _config.selectedGagPadlocksAssigner[layerIndex] = "TestDummy";
+                _config.selectedGagPadlocksAssigner[layerIndex] = "mmmmmmmmmm mmmmmmmmmm";
                 break;
             default:
                 // No password field should be displayed

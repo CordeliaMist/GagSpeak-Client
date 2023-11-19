@@ -47,6 +47,7 @@ public class WhitelistTab : ITab, IDisposable
     // store time information & control locks
     private bool enableInteractions = false; // determines if we can interact with with whitelist buttons or not (for safety to prevent accidental tells)
     private bool interactionButtonPressed; // determines if we have pressed a button that communicates or not
+    private bool sendNext;
     private Dictionary<string, string> remainingTimes = new Dictionary<string, string>();
 
     // Constructor for the whitelist tab
@@ -65,6 +66,7 @@ public class WhitelistTab : ITab, IDisposable
         _gagLabel = "None";
         _lockLabel = "None";
         _layer = 0;
+        sendNext = false;
 
         // draw out our gagtype filter combo listings
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
@@ -466,20 +468,30 @@ public class WhitelistTab : ITab, IDisposable
         if(!enableInteractions || interactionButtonPressed) {
             ImGui.EndDisabled();}
 
-        // add a section here that scans to see if we are recieving any incoming information requests, and if we are, to respond, if off cooldown.
-        if(interactionButtonPressed == true && _config.SendInfoName != "") {
-            // if we are accepting info requests, and we have a name to send info to, then we will send the info, switch acceptinfo requests to false, and the name back to nothing, also start a timer that expires in 10seconds
-            GagSpeak.Log.Debug("Accepting Player Info");
-            SendInfoToPlayer();
-            // disable button usage, and the ability to accept info requests
-            _config.acceptingInfoRequests = false; _config.SendInfoName = "";
-            interactionButtonPressed = true;
-            _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
-            // add another timer named "RequestInfoCooldown" that expires in 20seconds, and when it does, it will set acceptingInfoRequests to true
-            _timerService.StartTimer("RequestInfoCooldown", "20s", 1000, () => { _config.acceptingInfoRequests = true; });
+        if(_config.acceptingInfoRequests == true && _config.SendInfoName == "") {
+            sendNext = false;
         }
 
-        
+        // add a section here that scans to see if we are recieving any incoming information requests, and if we are, to respond, if off cooldown.
+        if(interactionButtonPressed == false && _config.SendInfoName != "") {
+            // if we are accepting info requests, and we have a name to send info to, then we will send the info, switch acceptinfo requests to false, and the name back to nothing, also start a timer that expires in 10seconds
+            GagSpeak.Log.Debug("Accepting Player Info");
+            if(sendNext == false) {
+                // send the first half
+                SendInfoToPlayer();
+                sendNext = true; // now it will scan the second half
+                interactionButtonPressed = true;
+                _timerService.StartTimer("InteractionCooldown", "2s", 1000, () => { interactionButtonPressed = false; });
+            } else if(sendNext == true) {
+                // send the second half
+                SendInfoToPlayer2();
+                sendNext = false; // now it will scan the first half
+                _config.acceptingInfoRequests = false;
+                _config.SendInfoName = "";
+                // add another timer named "RequestInfoCooldown" that expires in 20seconds, and when it does, it will set acceptingInfoRequests to true
+                _timerService.StartTimer("RequestInfoCooldown", "20s", 1000, () => { _config.acceptingInfoRequests = true; });
+            }
+        }
     } // end our draw whitelist function
 
     private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime) {
@@ -679,8 +691,34 @@ public class WhitelistTab : ITab, IDisposable
             _chatManager.SendRealMessage(_gagMessages.ProvideInfoEncodedMessage(playerPayload, targetPlayer, _config.InDomMode,
                 _config.DirectChatGarbler, _config.GarbleLevel, _config.selectedGagTypes, _config.selectedGagPadlocks,
                 _config.selectedGagPadlocksAssigner, _config.selectedGagPadLockTimer, relationshipVar));
+            // set a timer for spacing
+            _timerService.StartTimer("InfoMessagePart2Cooldown", "8s", 1000, () => { sendNext = true; });
         }
     }
+
+    private void SendInfoToPlayer2() {
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        // format the player name from "firstname lastname homeworld" to "firstname lastname@homeworld"
+        int lastSpaceIndex = _config.SendInfoName.LastIndexOf(' ');
+        if (lastSpaceIndex >= 0) { // if we can do this, then do it.
+            string targetPlayer = _config.SendInfoName.Remove(lastSpaceIndex, 1).Insert(lastSpaceIndex, "@");
+            // get your relationship to that player, if any. Search for their name in the whitelist.
+            string relationshipVar = "None";
+            _config.Whitelist.ForEach(delegate(WhitelistCharData entry) {
+                if (_config.SendInfoName.Contains(entry.name)) {
+                    // set the relationship
+                    relationshipVar = entry.relationshipStatus;
+                }
+            });
+            // send the message
+            _chatManager.SendRealMessage(_gagMessages.ProvideInfoEncodedMessage2(playerPayload, targetPlayer, _config.InDomMode,
+                _config.DirectChatGarbler, _config.GarbleLevel, _config.selectedGagTypes, _config.selectedGagPadlocks,
+                _config.selectedGagPadlocksAssigner, _config.selectedGagPadLockTimer, relationshipVar));
+        }
+    }
+
+
 
     private void AcceptMistressRequestFromPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
