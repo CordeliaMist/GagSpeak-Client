@@ -9,8 +9,14 @@ namespace GagSpeak.Services;
 // TimerService class manages timers and notifies when remaining time changes
 public class TimerService : IDisposable
 {
+   private readonly GagSpeakConfig _config;
    // Event to notify subscribers when remaining time changes
    public event Action<string, TimeSpan> RemainingTimeChanged;
+
+   public TimerService(GagSpeakConfig config) {
+      _config = config;
+      RestoreTimerData(_config);
+   }
 
    // Dictionary to store active timers
    private readonly Dictionary<string, TimerData> timers = new Dictionary<string, TimerData>();
@@ -41,7 +47,7 @@ public class TimerService : IDisposable
       }
 
       // Calculate the end time of the timer
-      DateTimeOffset endTime = DateTimeOffset.Now.Add(duration);
+      DateTimeOffset endTime = DateTimeOffset.Now.Add(duration);//
 
       // update the selectedGagPadLockTimer list with the new end time. (only if using a list as input)
       if (padlockTimerList != null && index >= 0 && index < padlockTimerList.Count) {
@@ -55,6 +61,10 @@ public class TimerService : IDisposable
 
       // Store the timer data in the dictionary
       timers[timerName] = new TimerData(timer, endTime);
+
+      // save the timer data
+      SaveTimerData(_config);
+      DebugPrintRemainingTimers();
 
    }
 
@@ -109,17 +119,50 @@ public class TimerService : IDisposable
       config.Save();
    }
 
-   public void RestoreTimerData(GagSpeakConfig config)
+   public void RestoreTimerData(GagSpeakConfig _config)
    {
       // Clear the existing timers
       timers.Clear();
 
       // Restore the timers from the config
-      foreach (var pair in config.TimerData)
+      foreach (var pair in _config.TimerData)
       {
          // Create a new timer with the same name and end time
-         // Note: You need to provide the elapsedMilliSecPeriod and onElapsed parameters
-         StartTimer(pair.Key, (pair.Value - DateTimeOffset.Now).ToString(), 1000, );
+         if(pair.Key.Contains("_Identifier0")) {
+            GagSpeak.Log.Debug($"Restoring timer {pair.Key} with end time {pair.Value}");
+            StartTimer(pair.Key, (pair.Value - DateTimeOffset.Now).ToString(), 1000, () => {
+               _config._isLocked[0] = false;
+               _config._padlockIdentifier[0].ClearPasswords();
+               _config._padlockIdentifier[0].UpdateConfigPadlockPasswordInfo(0, !_config._isLocked[0], _config);
+            });
+         } else if (pair.Key.Contains("_Identifier1")) {
+            GagSpeak.Log.Debug($"Restoring timer {pair.Key} with end time {pair.Value}");
+            StartTimer(pair.Key, (pair.Value - DateTimeOffset.Now).ToString(), 1000, () => {
+               _config._isLocked[1] = false;
+               _config._padlockIdentifier[1].ClearPasswords();
+               _config._padlockIdentifier[1].UpdateConfigPadlockPasswordInfo(1, !_config._isLocked[1], _config);
+            });
+         } else if (pair.Key.Contains("_Identifier2")) {
+            GagSpeak.Log.Debug($"Restoring timer {pair.Key} with end time {pair.Value}");
+            StartTimer(pair.Key, (pair.Value - DateTimeOffset.Now).ToString(), 1000, () => {
+               _config._isLocked[2] = false;
+               _config._padlockIdentifier[2].ClearPasswords();
+               _config._padlockIdentifier[2].UpdateConfigPadlockPasswordInfo(2, !_config._isLocked[2], _config);
+            });
+         }
+         // otherwise dont make any new padlock.
+      }
+   }
+
+   public void DebugPrintRemainingTimers()
+   {
+      foreach (var pair in _config.TimerData)
+      {
+         // Calculate the remaining time in milliseconds
+         var remainingTime = (pair.Value - DateTimeOffset.Now).TotalMilliseconds;
+
+         // Print the timer name and remaining time
+         GagSpeak.Log.Debug($"Timer: {pair.Key}, Remaining Time: {remainingTime} ms");
       }
    }
 
