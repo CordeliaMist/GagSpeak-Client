@@ -114,14 +114,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         if (decodedMessage[3] != "") {
             _config.selectedGagPadlocksPassword[layer-1] = decodedMessage[3]; // we have a password to set, so set it.
             // updating according thing in general tab.
-            _gagListingsDrawer._padlockIdentifier[layer-1]._storedCombination = decodedMessage[3];
+            _config._padlockIdentifier[layer-1]._storedCombination = decodedMessage[3];
             GagSpeak.Log.Debug($"setting padlock identifier #{layer-1} to password {decodedMessage[3]}");
         }
         // and because everything above is valid, we can now set the lock type.
         if (Enum.TryParse(decodedMessage[2], out GagPadlocks parsedLockType)) {
             _config.selectedGagPadlocks[layer-1] = parsedLockType;
             // updating according thing in general tab.
-            _gagListingsDrawer._padlockIdentifier[layer-1]._padlockType = parsedLockType;
+            _config._padlockIdentifier[layer-1]._padlockType = parsedLockType;
             GagSpeak.Log.Debug($"setting padlock identifier #{layer-1} to type {parsedLockType}");
         } else {
             // hide original message & throw exception
@@ -135,8 +135,8 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             _config.selectedGagPadlocksAssigner[layer-1] = decodedMessage[4];
         }
         GagSpeak.Log.Debug($"Determined income message as a [lock] type encoded message, hiding from chat!");
-        _gagListingsDrawer._isLocked[layer-1] = true;
-        _gagListingsDrawer._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, false);
+        _config._isLocked[layer-1] = true;
+        _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, false, _config);
         return true; // sucessful parse
     }
 

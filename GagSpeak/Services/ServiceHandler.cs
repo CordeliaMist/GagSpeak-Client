@@ -63,8 +63,7 @@ public static class ServiceHandler
              .AddSingleton<BackupService>()
              .AddSingleton<ConfigMigrationService>()
              .AddSingleton<MessageService>()
-             .AddSingleton<TimerService>()
-             .AddSingleton<PadlockIdentifier>();
+             .AddSingleton<TimerService>();
 
 
     //SERVICES FOR ONCHAT, INCLUDE IF EVER NEEDED.
@@ -80,7 +79,7 @@ public static class ServiceHandler
                 return new ChatInputProcessor(sigService, interop, config, historyService);})
              .AddSingleton<MessageEncoder>()
              .AddSingleton<MessageDecoder>()
-             .AddSingleton<MessageResultLogic>();
+             .AddSingleton<MessageResultLogic>(); //
 
     //SERVICES FOR EVENTS: INCLUDE IF EVER NEEDED.
     private static IServiceCollection AddEvent(this IServiceCollection services)

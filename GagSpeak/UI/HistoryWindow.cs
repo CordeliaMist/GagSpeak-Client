@@ -119,10 +119,10 @@ public class HistoryWindow : Window //, IDisposable
             ImGui.NewLine();
             ImGui.Text("Padlock Identifiers Variables:");
             // output debug messages to display the gaglistingdrawers boolean list for _islocked, _adjustDisp. For each padlock identifer, diplay all of its public varaibles
-            ImGui.Text($"Listing Drawer _isLocked: ||"); ImGui.SameLine(); foreach(var index in _gagListingsDrawer._isLocked) { ImGui.SameLine(); ImGui.Text($"{index} ||"); };
+            ImGui.Text($"Listing Drawer _isLocked: ||"); ImGui.SameLine(); foreach(var index in _config._isLocked) { ImGui.SameLine(); ImGui.Text($"{index} ||"); };
             ImGui.Text($"Listing Drawer _adjustDisp: ||"); ImGui.SameLine(); foreach(var index in _gagListingsDrawer._adjustDisp) { ImGui.SameLine(); ImGui.Text($"{index} ||"); };
             var width = ImGui.GetContentRegionAvail().X / 3;
-            foreach(var index in _gagListingsDrawer._padlockIdentifier) {
+            foreach(var index in _config._padlockIdentifier) {
                 ImGui.Columns(3,"DebugColumns", true);
                 ImGui.SetColumnWidth(0,width); ImGui.SetColumnWidth(1,width); ImGui.SetColumnWidth(2,width);
                 ImGui.Text($"Input Password: {index._inputPassword}"); ImGui.NextColumn();

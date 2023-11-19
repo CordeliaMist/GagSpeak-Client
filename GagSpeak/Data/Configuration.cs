@@ -53,9 +53,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public List<DateTimeOffset> selectedGagPadLockTimer { get; set; } // stores time when the padlock will be unlocked.
     public List<string> selectedGagPadlocksAssigner { get; set; } // name of who assigned the padlocks
     
-    // dictionary to store timer data
-    public Dictionary<string, DateTimeOffset> TimerData { get; set; } = new Dictionary<string, DateTimeOffset>();
-
     // additonal information below
     public List<ChatChannel.ChatChannels> Channels { get; set; } // Which channels are currently enabled / allowed?
     public int ProcessTranslationInterval { get; set; } = 300000; // current process intervals for the history
@@ -64,7 +61,17 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     private List<WhitelistCharData> whitelist = new List<WhitelistCharData>(); // appears to be baseline for whitelist
     public List<WhitelistCharData> Whitelist { get => whitelist; set => whitelist = value; } // Note sure why, document later
     public string SendInfoName = ""; // Name of the person you are sending info to
-    public bool acceptingInfoRequests = true; // Are you accepting info requests? (for cooldowns)
+    public bool acceptingInfoRequests = true; // Are you accepting info requests? (for cooldowns)//
+
+    // store a timer dictionary to backup our timerservice data
+    public Dictionary<string, DateTimeOffset> TimerData { get; set; } = new Dictionary<string, DateTimeOffset>();
+    
+
+    // stuff for the gaglistingDrawer
+    public List<bool> _isLocked { get; set; } // determines if it is locked
+    public List<string> displaytext { get; set; } 
+    private List<PadlockIdentifier> padlockidentifier = new List<PadlockIdentifier>(); // stores the padlock identifier for each gaglisting
+    public List<PadlockIdentifier> _padlockIdentifier {get => padlockidentifier; set => padlockidentifier = value;} // stores the padlock identifier for each gaglisting
 
     // There was stuiff about a colorId dictionary here, if you ever need to include it later, you know where to put it so it fits into the hierarchy
     private readonly SaveService _saveService;
@@ -92,6 +99,14 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         // set default values for selectedGagPadLockTimer
         if (this.selectedGagPadLockTimer == null || !this.selectedGagPadLockTimer.Any() || this.selectedGagPadLockTimer.Count > 3) {
             this.selectedGagPadLockTimer = new List<DateTimeOffset> { DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now };}
+        // set default values for _isLocked
+        if (this._isLocked == null || !this._isLocked.Any() || this._isLocked.Count > 3) {
+            GagSpeak.Log.Debug($"_isLocked is null, creating new list");
+            this._isLocked = new List<bool> { false, false, false };} //
+        // set default values for displaytext
+        if (this.displaytext == null || !this.displaytext.Any() || this.displaytext.Count > 3) {
+            GagSpeak.Log.Debug($"displaytext is null, creating new list");
+            this.displaytext = new List<string> { "", "", "" };}
     }
 
     public void Save() {

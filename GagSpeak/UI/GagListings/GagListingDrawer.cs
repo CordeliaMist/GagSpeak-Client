@@ -38,13 +38,7 @@ public class GagListingsDrawer : IDisposable
     private float _requiredComboWidth;
     private string _buttonLabel = "";
     private string _passwordField = "";
-    public bool[] _isLocked;
-    public bool[] _adjustDisp;
-    public string[]  displaytext;
-    public PadlockIdentifier[] _padlockIdentifier;
-
-    
-    // I believe this dictates the data for the stain list, swap out for padlock list probably
+    public bool[] _adjustDisp; // used to adjust the display of the password field
     
     public GagListingsDrawer(GagSpeakConfig config, DalamudPluginInterface dalamudPluginInterface, 
     TimerService timerService, SafewordUsedEvent safewordUsedEvent) // Constructor
@@ -63,23 +57,22 @@ public class GagListingsDrawer : IDisposable
         textureWrap4 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[0].ToString()}.png"));
         textureWrap5 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[1].ToString()}.png"));
         textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[2].ToString()}.png"));
-    
-        _isLocked = new bool[] {false, false, false};
-        _adjustDisp = new bool[] {false, false, false};
-        displaytext = new string[] {"", "", ""};
-        _padlockIdentifier = new PadlockIdentifier[] {
-            new PadlockIdentifier(_config, _timerService),
-            new PadlockIdentifier(_config, _timerService),
-            new PadlockIdentifier(_config, _timerService)
-        };
 
+        // _config.displaytext = new List<string> {"", "", ""};
+        // _config._isLocked = new List<bool> { false, false, false };
+        _adjustDisp = new bool[] {false, false, false};
+        // _config._padlockIdentifier = new List<PadlockIdentifier> {
+        //     new PadlockIdentifier(),
+        //     new PadlockIdentifier(),
+        //     new PadlockIdentifier()
+        // };
         // Subscribe to the events
         _safewordUsedEvent.SafewordCommand += CleanupVariables;
         _config.selectedGagTypes.ItemChanged += OnSelectedTypesChanged;
         _config.selectedGagPadlocks.ItemChanged += OnSelectedTypesChanged;
     }
 
-    private Vector2 _iconSize;
+    private Vector2 _iconSize; // size
     private float _comboLength;
 
     public void Dispose() {
@@ -105,7 +98,7 @@ public class GagListingsDrawer : IDisposable
     public void DrawGagAndLockListing(int ID, GagSpeakConfig config, GagTypeFilterCombo _gagTypeFilterCombo, GagLockFilterCombo _gagLockFilterCombo,
     int layerIndex, string displayLabel, int width) {
         // if we are locked, set the locked to true
-        if(_isLocked[layerIndex]) {
+        if(_config._isLocked[layerIndex]) {
             ImGui.BeginDisabled();
         }
         // push our styles
@@ -143,37 +136,37 @@ public class GagListingsDrawer : IDisposable
             }
             
             // draw the combo boxes
-            if (DrawGagTypeItemCombo(ID, config, layerIndex, _isLocked[layerIndex], width, _gagTypeFilterCombo)) {
+            if (DrawGagTypeItemCombo(ID, config, layerIndex, _config._isLocked[layerIndex], width, _gagTypeFilterCombo)) {
                 // do stuff
             }
             
             // Adjust the width of the padlock dropdown to 3/4 of the original width
             int newWidth = (int)(width * 0.75f);
             // draw the padlock dropdown
-            if (DrawGagLockItemCombo(ID, config, layerIndex, _isLocked[layerIndex], newWidth, _gagLockFilterCombo, _padlockIdentifier[layerIndex])) {
+            if (DrawGagLockItemCombo(ID, config, layerIndex, _config._isLocked[layerIndex], newWidth, _gagLockFilterCombo, _config._padlockIdentifier[layerIndex])) {
                 // do stuff
             }
             // end our disabled fields, if any, here
-            if(_isLocked[layerIndex]) {
+            if(_config._isLocked[layerIndex]) {
                 ImGui.EndDisabled();
             }
             
             // get the type of button label that will display
-            _buttonLabel = _isLocked[layerIndex] ? "Unlock" : "Lock"; // we want to display unlock button if we are currently locked
+            _buttonLabel = _config._isLocked[layerIndex] ? "Unlock" : "Lock"; // we want to display unlock button if we are currently locked
             ImGui.SameLine();
             if (ImGui.Button(_buttonLabel, new Vector2(-1, 0))) {
                 // our button has been clicked while we were locked, so we are attempting to unlock
-                if(_isLocked[layerIndex]) {
+                if(_config._isLocked[layerIndex]) {
                     // attempt to validate the password when the button is pressed.
-                    if(_padlockIdentifier[layerIndex].ValidatePadlockPasswords(_isLocked[layerIndex])) {
+                    if(_config._padlockIdentifier[layerIndex].ValidatePadlockPasswords(_config._isLocked[layerIndex])) {
                         // see if the passwords compare after they are valid
-                        if(_padlockIdentifier[layerIndex].CheckPassword()) {
+                        if(_config._padlockIdentifier[layerIndex].CheckPassword()) {
                             // at this point, our password is valid, so we can successfully unlock the padlock
-                            _isLocked[layerIndex] = false;
+                            _config._isLocked[layerIndex] = false;
                             _adjustDisp[layerIndex] = false;
                             GagSpeak.Log.Debug($"Padlock on slot {layerIndex} has been unlocked.");
-                            _padlockIdentifier[layerIndex].ClearPasswords();
-                            _padlockIdentifier[layerIndex].UpdateConfigPadlockPasswordInfo(layerIndex, !_isLocked[layerIndex]);
+                            _config._padlockIdentifier[layerIndex].ClearPasswords();
+                            _config._padlockIdentifier[layerIndex].UpdateConfigPadlockPasswordInfo(layerIndex, !_config._isLocked[layerIndex], _config);
                             config.Save();
                         } 
                         else {     
@@ -186,22 +179,22 @@ public class GagListingsDrawer : IDisposable
                 // our button has been clicked while we were unlocked, so attempt to lock
                 else {
                     // attempt to validate the password when the button is pressed.
-                    if(_padlockIdentifier[layerIndex].ValidatePadlockPasswords(_isLocked[layerIndex])) {
+                    if(_config._padlockIdentifier[layerIndex].ValidatePadlockPasswords(_config._isLocked[layerIndex])) {
                         // at this point, our password is valid, so we can sucessfully lock the padlock
-                        _padlockIdentifier[layerIndex].UpdateConfigPadlockPasswordInfo(layerIndex, _isLocked[layerIndex]);
-                        _isLocked[layerIndex] = true;
+                        _config._padlockIdentifier[layerIndex].UpdateConfigPadlockPasswordInfo(layerIndex, _config._isLocked[layerIndex], _config);
+                        _config._isLocked[layerIndex] = true;
                         GagSpeak.Log.Debug($"Padlock on slot {layerIndex} has been locked.");
 
-                        if(_padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
-                        _padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock ||
-                        _padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock) {
+                        if(_config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
+                        _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock ||
+                        _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock) {
                             // create the timer.
-                            _timerService.StartTimer($"{_padlockIdentifier[layerIndex]._padlockType}_Identifier{layerIndex}", _padlockIdentifier[layerIndex]._storedTimer, 1000, () => {
+                            _timerService.StartTimer($"{_config._padlockIdentifier[layerIndex]._padlockType}_Identifier{layerIndex}", _config._padlockIdentifier[layerIndex]._storedTimer, 1000, () => {
                                 // when the timer elapses, unlock padlock and clear data
-                                _isLocked[layerIndex] = false;
+                                _config._isLocked[layerIndex] = false;
                                 _adjustDisp[layerIndex] = false;
-                                _padlockIdentifier[layerIndex].ClearPasswords();
-                                _padlockIdentifier[layerIndex].UpdateConfigPadlockPasswordInfo(layerIndex, !_isLocked[layerIndex]);
+                                _config._padlockIdentifier[layerIndex].ClearPasswords();
+                                _config._padlockIdentifier[layerIndex].UpdateConfigPadlockPasswordInfo(layerIndex, !_config._isLocked[layerIndex], _config);
                             });
                         }
                         config.Save();
@@ -211,17 +204,17 @@ public class GagListingsDrawer : IDisposable
                 }
             }
             // Display the password fields based on the selected padlock type
-            if(_padlockIdentifier[layerIndex].DisplayPasswordField(_padlockIdentifier[layerIndex]._padlockType)) {
+            if(_config._padlockIdentifier[layerIndex].DisplayPasswordField(_config._padlockIdentifier[layerIndex]._padlockType)) {
                 _adjustDisp[layerIndex] = true;
             } else {
                 _adjustDisp[layerIndex] = false;
             }
             // display the remaining time if we have a timer for this and we are locked
-            if(_isLocked[layerIndex] && 
-            (_padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
-            _padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock ||
-            _padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock)) {
-                displaytext[layerIndex] = $"{_timerService.remainingTimes.GetValueOrDefault($"{_padlockIdentifier[layerIndex]._padlockType.ToString()}_Identifier{layerIndex}", "N/A")}]";
+            if(_config._isLocked[layerIndex] && 
+            (_config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
+            _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock ||
+            _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock)) {
+                _config.displaytext[layerIndex] = $"{_timerService.remainingTimes.GetValueOrDefault($"{_config._padlockIdentifier[layerIndex]._padlockType.ToString()}_Identifier{layerIndex}", "N/A")}]";
             }
         }
         ImGui.NextColumn();
@@ -245,21 +238,21 @@ public class GagListingsDrawer : IDisposable
         textureWrap5 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagPadlocks[1].ToString()}.png"));
         textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagPadlocks[2].ToString()}.png"));
     }
-
+    //
     // cleanup variables upon safeword
     private void CleanupVariables(object sender, SafewordCommandEventArgs e) {
         _passwordField = "";
-        _isLocked = new bool[] {false, false, false};
+        _config._isLocked = new List<bool> { false, false, false };
         _adjustDisp = new bool[] {false, false, false};
-        _padlockIdentifier = new PadlockIdentifier[] {
-            new PadlockIdentifier(_config, _timerService),
-            new PadlockIdentifier(_config, _timerService),
-            new PadlockIdentifier(_config, _timerService)
+        _config._padlockIdentifier = new List<PadlockIdentifier> {
+            new PadlockIdentifier(),
+            new PadlockIdentifier(),
+            new PadlockIdentifier()
         };
-        // print out all of the padlock identifiers gagtypes, the drawers _islocked, and the drawers _adjustDisp
-        GagSpeak.Log.Debug($"PadlockIdentifier[0] = {_padlockIdentifier[0]._padlockType.ToString()}, _isLocked[0] = {_isLocked[0]}, _adjustDisp[0] = {_adjustDisp[0]}");
-        GagSpeak.Log.Debug($"PadlockIdentifier[1] = {_padlockIdentifier[1]._padlockType.ToString()}, _isLocked[1] = {_isLocked[1]}, _adjustDisp[1] = {_adjustDisp[1]}");
-        GagSpeak.Log.Debug($"PadlockIdentifier[2] = {_padlockIdentifier[2]._padlockType.ToString()}, _isLocked[2] = {_isLocked[2]}, _adjustDisp[2] = {_adjustDisp[2]}");
+        // print out all of the padlock identifiers gagtypes, the drawers _config._isLocked, and the drawers _adjustDisp
+        GagSpeak.Log.Debug($"PadlockIdentifier[0] = {_config._padlockIdentifier[0]._padlockType.ToString()}, _config._isLocked[0] = {_config._isLocked[0]}, _adjustDisp[0] = {_adjustDisp[0]}");
+        GagSpeak.Log.Debug($"PadlockIdentifier[1] = {_config._padlockIdentifier[1]._padlockType.ToString()}, _config._isLocked[1] = {_config._isLocked[1]}, _adjustDisp[1] = {_adjustDisp[1]}");
+        GagSpeak.Log.Debug($"PadlockIdentifier[2] = {_config._padlockIdentifier[2]._padlockType.ToString()}, _config._isLocked[2] = {_config._isLocked[2]}, _adjustDisp[2] = {_adjustDisp[2]}");
         // some dummy code to manually invoke the index change handler because im stupid.
         _config.selectedGagTypes[0] = _config.selectedGagTypes[0];
     }

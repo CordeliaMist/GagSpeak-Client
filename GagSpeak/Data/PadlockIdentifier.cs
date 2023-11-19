@@ -1,17 +1,12 @@
 using System;
-using GagSpeak.Services;
 using ImGuiNET;
 using System.Text.RegularExpressions;
-using System.Timers;
 
 
 #pragma warning disable IDE1006 
 namespace GagSpeak.Data;
 // a struct to hold information on whitelisted players.
-public class PadlockIdentifier : IDisposable
-{
-    private readonly GagSpeakConfig _config;
-    private TimerService _timerService;
+public class PadlockIdentifier {
     public string _inputPassword { get; set; } // This will hold the input password
     public string _inputCombination { get; set; } // This will hold the input combination
     public string _inputTimer { get; set; } // This will hold the input timer
@@ -20,23 +15,20 @@ public class PadlockIdentifier : IDisposable
     public string _storedTimer { get; set; } // This will be a string in the format of 00h00m00s.
     public GagPadlocks _padlockType { get; set; } = GagPadlocks.None;
 
-    public PadlockIdentifier(GagSpeakConfig config, TimerService timerService)
+    public PadlockIdentifier()
     {
-        _config = config;
-        _timerService = timerService;
-        _inputCombination = "";
-        _inputPassword = "";
-        _inputTimer = "";
-        _storedCombination = "";
-        _storedPassword = "";
-        _storedTimer = "";
-
+        if(_inputPassword == null) { _inputPassword = "";}
+        if(_inputCombination == null) { _inputCombination = "";}
+        if(_inputTimer == null) { _inputTimer = "";}
+        if(_storedPassword == null) { _storedPassword = "";}
+        if(_storedCombination == null) { _storedCombination = "";}
+        if(_storedTimer == null) { _storedTimer = "";}
     }
 
     /// <summary>
     /// This function is used typically by the command manager, for when we have no field to insert
     /// a password to, and do it directly instead.
-    /// <param name="locktype"></param>
+    /// <param name="locktype"></param> 
     /// <param name="password"></param>
     /// </summary>
     public bool SetAndValidate(string locktype, string password = null,
@@ -121,8 +113,7 @@ public class PadlockIdentifier : IDisposable
                 return true;
             case GagPadlocks.CombinationPadlock:
                 ret = ValidateCombination();
-                if(ret && !isUnlocking) {
-                    _storedCombination = _inputCombination; _inputCombination = "";}
+                if(ret && !isUnlocking) {_storedCombination = _inputCombination; _inputCombination = "";}
                 return ret;
             case GagPadlocks.PasswordPadlock:
                 ret = ValidatePassword();
@@ -213,7 +204,7 @@ public class PadlockIdentifier : IDisposable
     }
     
     // a way to update our password information in the config file. (For User Padlocks Only)
-    public void UpdateConfigPadlockPasswordInfo(int layerIndex, bool isUnlocking) {
+    public void UpdateConfigPadlockPasswordInfo(int layerIndex, bool isUnlocking, GagSpeakConfig _config) {
         GagPadlocks padlockType = _padlockType;
         if (isUnlocking) { _padlockType = GagPadlocks.None; GagSpeak.Log.Debug("Unlocking Padlock");}
         // timers are handled by the timer service so we dont need to worry about it.
@@ -253,11 +244,6 @@ public class PadlockIdentifier : IDisposable
                 // No password field should be displayed
                 break;
         }
-    }
-
-    // create a dispose function
-    public void Dispose() {
-        _timerService?.Dispose();
     }
 }
 #pragma warning restore IDE1006  

@@ -18,35 +18,6 @@ public class TimerService : IDisposable
    // creating a dictionary to store a list of times from the timer serivce to display to UI
    public readonly Dictionary<string, string> remainingTimes = new Dictionary<string, string>();
 
-
-   public static class Actions {
-      public static readonly Dictionary<string,Action> All = new Dictionary<string,Action> {
-         {"Gag", () => GagSpeak.GagSpeakPlugin.GagSpeakService.GagSpeak()},
-         {"Ungag", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UngagSpeak()},
-         {"Mute", () => GagSpeak.GagSpeakPlugin.GagSpeakService.MuteSpeak()},
-         {"Unmute", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UnmuteSpeak()},
-         {"Lock", () => GagSpeak.GagSpeakPlugin.GagSpeakService.LockSpeak()},
-         {"Unlock", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UnlockSpeak()},
-         {"Lock Live Chat", () => GagSpeak.GagSpeakPlugin.GagSpeakService.LockLiveChat()},
-         {"Unlock Live Chat", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UnlockLiveChat()},
-         {"Lock Chat", () => GagSpeak.GagSpeakPlugin.GagSpeakService.LockChat()},
-         {"Unlock Chat", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UnlockChat()},
-         {"Lock Emotes", () => GagSpeak.GagSpeakPlugin.GagSpeakService.LockEmotes()},
-         {"Unlock Emotes", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UnlockEmotes()},
-         {"Lock Actions", () => GagSpeak.GagSpeakPlugin.GagSpeakService.LockActions()},
-         {"Unlock Actions", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UnlockActions()},
-         {"Lock Mounts", () => GagSpeak.GagSpeakPlugin.GagSpeakService.LockMounts()},
-         {"Unlock Mounts", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UnlockMounts()},
-         {"Lock Minions", () => GagSpeak.GagSpeakPlugin.GagSpeakService.LockMinions()},
-         {"Unlock Minions", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UnlockMinions()},
-         {"Lock Duty Finder", () => GagSpeak.GagSpeakPlugin.GagSpeakService.LockDutyFinder()},
-         {"Unlock Duty Finder", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UnlockDutyFinder()},
-         {"Lock Inventory", () => GagSpeak.GagSpeakPlugin.GagSpeakService.LockInventory()},
-         {"Unlock Inventory", () => GagSpeak.GagSpeakPlugin.GagSpeakService.UnlockInventory()},
-         {"Lock Gear", () =>
-      };
-   }
-
    // Method to start a new timer
    public void StartTimer(string timerName, string input, int elapsedMilliSecPeriod, Action onElapsed) {
       StartTimer(timerName, input, elapsedMilliSecPeriod, onElapsed, null, -1);}
@@ -123,14 +94,14 @@ public class TimerService : IDisposable
       return TimeSpan.Zero;
    }
 
-   // save the timer data to config
-   public void SaveTimerData(GagSpeakConfig config) {
+   // save our data
+   public void SaveTimerData(GagSpeakConfig config)
+   {
       // Clear the existing timer data in the config
       config.TimerData.Clear();
 
       // Add the current timer data to the config
-      foreach (var pair in timers)
-      {
+      foreach (var pair in timers) {
          config.TimerData[pair.Key] = pair.Value.EndTime;
       }
 
@@ -148,10 +119,9 @@ public class TimerService : IDisposable
       {
          // Create a new timer with the same name and end time
          // Note: You need to provide the elapsedMilliSecPeriod and onElapsed parameters
-         StartTimer(pair.Key, (pair.Value - DateTimeOffset.Now).ToString(), elapsedMilliSecPeriod, onElapsed);
+         StartTimer(pair.Key, (pair.Value - DateTimeOffset.Now).ToString(), 1000, );
       }
    }
-
 
    // method to get the current state of all timers
    private class TimerData

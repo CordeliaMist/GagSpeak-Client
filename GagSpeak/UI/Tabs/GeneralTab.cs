@@ -125,7 +125,7 @@ public class GeneralTab : ITab, IDisposable
                     _inDomMode = false; // Switch to Sub mode
                     _config.InDomMode = false;
                     modeButtonsDisabled = true;
-                    _timerService.StartTimer("RoleSwitchCooldown", "10m", 1000, () => modeButtonsDisabled = false);
+                    _timerService.StartTimer("RoleSwitchCooldown", "10m", 1000, () => DisableModeButtons());
                     _config.Save();
                 }
             } else {
@@ -134,7 +134,7 @@ public class GeneralTab : ITab, IDisposable
                     _inDomMode = true; // Switch to Dom mode
                     _config.InDomMode = true;
                     modeButtonsDisabled = true;
-                    _timerService.StartTimer("RoleSwitchCooldown", "10m", 1000, () => modeButtonsDisabled = false);
+                    _timerService.StartTimer("RoleSwitchCooldown", "10m", 1000, () => DisableModeButtons());
                     _config.Save();
                 }
                 if(!modeButtonsDisabled) {ImGui.BeginDisabled();}
@@ -167,10 +167,10 @@ public class GeneralTab : ITab, IDisposable
             _gagListingsDrawer.DrawGagAndLockListing(slot, _config, _gagTypeFilterCombo[slot], _gagLockFilterCombo[slot],
                 slot, $"Gag Slot {slot + 1}", width2);
             // disaplay timer here.
-            if((_gagListingsDrawer._padlockIdentifier[slot]._padlockType == GagPadlocks.FiveMinutesPadlock && _gagListingsDrawer._isLocked[slot] == true) || 
-            (_gagListingsDrawer._padlockIdentifier[slot]._padlockType == GagPadlocks.TimerPasswordPadlock && _gagListingsDrawer._isLocked[slot] == true) ||
-            (_gagListingsDrawer._padlockIdentifier[slot]._padlockType == GagPadlocks.MistressTimerPadlock && _gagListingsDrawer._isLocked[slot] == true)) {
-                ImGui.TextColored(new Vector4(1,1,0,0.5f),$"{_timerService.remainingTimes.GetValueOrDefault($"{_gagListingsDrawer._padlockIdentifier[slot]._padlockType}_Identifier{slot}", "Time Remaining:")}");
+            if((_config._padlockIdentifier[slot]._padlockType == GagPadlocks.FiveMinutesPadlock && _config._isLocked[slot] == true) || 
+            (_config._padlockIdentifier[slot]._padlockType == GagPadlocks.TimerPasswordPadlock && _config._isLocked[slot] == true) ||
+            (_config._padlockIdentifier[slot]._padlockType == GagPadlocks.MistressTimerPadlock && _config._isLocked[slot] == true)) {
+                ImGui.TextColored(new Vector4(1,1,0,0.5f),$"{_timerService.remainingTimes.GetValueOrDefault($"{_config._padlockIdentifier[slot]._padlockType}_Identifier{slot}", "Time Remaining:")}");
             }
             ImGui.NewLine();
         }
@@ -178,6 +178,9 @@ public class GeneralTab : ITab, IDisposable
         ImGui.TextColored(new Vector4(1,0,0,1), $"Precaution: This update is one of the last few updates before release.I strongly advise you\n to wait to use plugin if not with Cordy until this text is gone.");
     }
 
+    private void DisableModeButtons() {
+        modeButtonsDisabled = false;
+    }
     private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime)
     {
         // update display of remaining time
