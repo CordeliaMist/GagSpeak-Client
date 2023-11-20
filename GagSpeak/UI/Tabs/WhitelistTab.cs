@@ -313,8 +313,8 @@ public class WhitelistTab : ITab, IDisposable
         // create button widths 
         var buttonWidth2 = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X / 2, 25.0f * ImGuiHelpers.GlobalScale );
         if (whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Mistress" || 
-            whitelist[_currentWhitelistItem].relationshipStatus == "Pet" ||
-            whitelist[_currentWhitelistItem].relationshipStatus == "Slave") {
+            whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Pet" ||
+            whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Slave") {
             // Display buttons only if there is an incoming request
             var relationText = whitelist[_currentWhitelistItem].PendingRelationshipRequest?.Split(' ')[0];
             if (ImGui.Button($"Accept {whitelist[_currentWhitelistItem].name.Split(' ')[0]} as your {relationText}", new Vector2(ImGui.GetContentRegionAvail().X/2, 25)))

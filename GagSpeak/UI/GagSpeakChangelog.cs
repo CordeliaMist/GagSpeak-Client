@@ -19,6 +19,10 @@ public class GagSpeakChangelog
     private (int, ChangeLogDisplayType) ConfigData()
         => (_config.Version, _config.ChangeLogDisplayType);
 
+    public void ToggleChangelog() {
+        _changelog.Toggle();
+    }
+
     private void Save(int version, ChangeLogDisplayType type)
     {
         if (_config.Version != version)

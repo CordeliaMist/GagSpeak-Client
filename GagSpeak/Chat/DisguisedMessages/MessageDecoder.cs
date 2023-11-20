@@ -168,7 +168,7 @@ public class MessageDecoder {
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            GagSpeak.Log.Debug($"[Message Decoder]: request mistress: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
         }
 
@@ -181,7 +181,7 @@ public class MessageDecoder {
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            GagSpeak.Log.Debug($"[Message Decoder]: request pet: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
         }
         // decoder for requesting a slave relationship
@@ -193,7 +193,7 @@ public class MessageDecoder {
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            GagSpeak.Log.Debug($"[Message Decoder]: request slave: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
         }
         // decoder for requesting a removal of relationship
@@ -205,7 +205,7 @@ public class MessageDecoder {
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            GagSpeak.Log.Debug($"[Message Decoder]: remove relationship: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
         }
         // decoder for forcing a garbler locker
@@ -217,7 +217,7 @@ public class MessageDecoder {
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            GagSpeak.Log.Debug($"[Message Decoder]: force garbler locker: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
         }
         // decoder for requesting information from whitelisted player.
@@ -229,7 +229,7 @@ public class MessageDecoder {
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
                           " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            GagSpeak.Log.Debug($"[Message Decoder]: request info (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
         }
         // decoder for accepting mistress relation
@@ -241,7 +241,7 @@ public class MessageDecoder {
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() +
                           " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            GagSpeak.Log.Debug($"[Message Decoder]: accept mistress relation (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
         }
         // decoder for accepting pet relation
@@ -253,7 +253,7 @@ public class MessageDecoder {
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() +
                           " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            GagSpeak.Log.Debug($"[Message Decoder]: accept pet relation (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
         }
         // decoder for accepting slave relation
@@ -265,7 +265,7 @@ public class MessageDecoder {
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() +
                           " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            GagSpeak.Log.Debug($"[Message Decoder]: accept slave relation (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
         }
         

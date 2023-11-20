@@ -112,6 +112,7 @@ public class HistoryWindow : Window //, IDisposable
                 ImGui.Text($"Relationship to this Player: {whitelistPlayerData.relationshipStatus}");
                 ImGui.Text($"Commitment Duration: {whitelistPlayerData.GetCommitmentDuration()}");
                 ImGui.Text($"Locked Live Chat Garbler: {whitelistPlayerData.lockedLiveChatGarbler}");
+                ImGui.Text($"Pending Relationship Request: {whitelistPlayerData.PendingRelationshipRequest}");
                 ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in whitelistPlayerData.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
                 ImGui.Text($"Selected GagPadlocks: || "); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in whitelistPlayerData.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
                 ImGui.Text($"Selected GagPadlocks Passwords: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in whitelistPlayerData.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };

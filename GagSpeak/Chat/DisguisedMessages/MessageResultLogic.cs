@@ -325,7 +325,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 playerInWhitelist.PendingRelationshipRequest = "Pet"; // this means, they want to become YOUR pet.
                 // Notify the user that someone wishes to establish a relationship
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Pet relation request recieved from {playerName}. Accept or Decline via whitelist profile.").AddItalicsOff().BuiltString);
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for a pet relation request from {playerName}");
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse pet relation request from {playerName}: {playerInWhitelist.PendingRelationshipRequest}");
             }
         } catch {
             LogError($"ERROR, Invalid request pet message parse.");
@@ -543,7 +543,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to non
                 playerInWhitelist.lockedLiveChatGarbler = decodedMessage[2] == "True" ? true : false;
-                playerInWhitelist.relationshipStatus = decodedMessage[5];
+                //playerInWhitelist.relationshipStatus = decodedMessage[5];
                 playerInWhitelist.selectedGagTypes[2] = decodedMessage[8];
                 playerInWhitelist.selectedGagPadlocks[2] = (GagPadlocks)Enum.Parse(typeof(GagPadlocks), decodedMessage[11]);
                 playerInWhitelist.selectedGagPadlocksAssigner[2] = decodedMessage[14];

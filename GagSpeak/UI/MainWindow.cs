@@ -89,11 +89,11 @@ public class MainWindow : Window
         }
 
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 10f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 9f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
         // Can use basic stuff for now, but if you want to look into locking buttons, reference glamourer's button / checkbox code.
         if (ImGui.Button("Changelog")) {
             // force open the changelog here
-            _changelog._changelog.Toggle();
+            _changelog.ToggleChangelog();
         }
 
         // In that same line...
