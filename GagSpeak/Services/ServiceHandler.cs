@@ -21,6 +21,8 @@ using GagSpeak.Chat.MsgEncoder;
 using GagSpeak.Chat.MsgResultLogic;
 using GagSpeak.Events;
 using GagSpeak.Data;
+using Glamourer.Gui;
+using GagSpeak.UI.UserProfile;
 
 
 // practicing modular design
@@ -36,7 +38,6 @@ public static class ServiceHandler
         // Create a service collection (see Dalamud.cs)
         var services = new ServiceCollection()
             .AddSingleton(log) // Many services DEPEND on the logger, so we need to add it!!!!
-            // Add the rest of our needed services. Each service below is a CATAGORY. Scroll down to see sub-sections.
             .AddDalamud(pi)
             .AddMeta()
             .AddChat()
@@ -83,7 +84,7 @@ public static class ServiceHandler
 
     //SERVICES FOR EVENTS: INCLUDE IF EVER NEEDED.
     private static IServiceCollection AddEvent(this IServiceCollection services)
-        => services.AddSingleton<SafewordUsedEvent>(); // idk how to get it to work with generic type but whatever.
+        => services.AddSingleton<SafewordUsedEvent>();
 
     // SERVICES FOR UI, INCLUDE IF EVER NEEDED.
     private static IServiceCollection AddUi(this IServiceCollection services)
@@ -92,9 +93,11 @@ public static class ServiceHandler
             .AddSingleton<WhitelistTab>()
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HistoryWindow>()
+            .AddSingleton<UserProfileWindow>()
             .AddSingleton<MainWindow>()
             .AddSingleton<HelpPageTab>()
-            .AddSingleton<GagListingsDrawer>();
+            .AddSingleton<GagListingsDrawer>()
+            .AddSingleton<GagSpeakChangelog>();
 
     // SERVICES FOR API, INCLUDE IF EVER NEEDED. (Commands, Config?)
     private static IServiceCollection AddApi(this IServiceCollection services)

@@ -4,6 +4,9 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using Dalamud.Game.Text.SeStringHandling;
 using OtterGui.Classes;
+using OtterGui.Widgets;
+using GagSpeak.UI.UserProfile;
+using Glamourer.Gui;
 
 namespace GagSpeak.UI;
 
@@ -14,19 +17,23 @@ public class GagSpeakWindowManager : IDisposable
     private readonly UiBuilder                  _uiBuilder;
     private readonly MainWindow                 _ui;
     private readonly HistoryWindow              _uiHistory;
+    private readonly UserProfileWindow          _userProfile;
     private readonly IChatGui                   _chatGui;
 
-    public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config, IChatGui chatGui, HistoryWindow uiHistory)
+    public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config,
+    IChatGui chatGui, HistoryWindow uiHistory, GagSpeakChangelog changelog, UserProfileWindow userProfile)
     {
         // set the main ui window
         _uiBuilder       = uiBuilder;
         _ui              = ui;
         _uiHistory       = uiHistory;
+        _userProfile     = userProfile;
         _chatGui         = chatGui;
         _windowSystem.AddWindow(ui);
         _windowSystem.AddWindow(uiHistory);
-        //        _windowSystem.AddWindow(Changelog.Changelog);             // May add this in later lol. Idk, maybe if I feel fancy and shit
-        // Draw the ui and the toggles
+        _windowSystem.AddWindow(userProfile);
+        _windowSystem.AddWindow(changelog._changelog);
+
         _uiBuilder.Draw                  += _windowSystem.Draw;     // for drawing the UI stuff
         _uiBuilder.OpenConfigUi          += _ui.Toggle;             // for toggling the UI stuff
 

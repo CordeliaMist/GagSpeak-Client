@@ -1,6 +1,5 @@
 using System;
 using Dalamud.Configuration;
-using Dalamud.Game.Text; // Interacting with game chat, XIVChatType, ext.
 using System.Collections.Generic;
 using System.Linq; // For enabling lists
 using System.IO;
@@ -8,12 +7,13 @@ using Newtonsoft.Json;
 using Dalamud.Interface.Internal.Notifications;
 using GagSpeak.Data;
 using OtterGui.Classes;
-
 using GagSpeak.UI;
 using GagSpeak.Services;
 using GagSpeak.Events;
-
+using Glamourer.Gui;
+using OtterGui.Widgets;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
+
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 // Sets up the configuration controls for the GagSpeak Plugin
@@ -32,6 +32,10 @@ public enum GagPadlocks {
 
 public class GagSpeakConfig : IPluginConfiguration, ISavable
 {   // Plugin info
+
+    public ChangeLogDisplayType ChangeLogDisplayType             { get; set; } = ChangeLogDisplayType.New;
+
+    public int LastSeenVersion    { get; set; } = GagSpeakChangelog.LastChangelogVersion;
     public int Version { get; set; } = 0; // Version of the plugin
     public bool FreshInstall { get; set; } = true; // Is user on a fresh install?
     public bool Enabled { get; set; } = true; // Is plugin enabled?
@@ -72,6 +76,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public List<string> displaytext { get; set; } 
     private List<PadlockIdentifier> padlockidentifier = new List<PadlockIdentifier>(); // stores the padlock identifier for each gaglisting
     public List<PadlockIdentifier> _padlockIdentifier {get => padlockidentifier; set => padlockidentifier = value;} // stores the padlock identifier for each gaglisting
+    public PadlockIdentifier _whitelistPadlockIdentifier {get; set;} // stores the padlock identifier for the whitelist
 
     // There was stuiff about a colorId dictionary here, if you ever need to include it later, you know where to put it so it fits into the hierarchy
     private readonly SaveService _saveService;
@@ -107,6 +112,10 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         if (this.displaytext == null || !this.displaytext.Any() || this.displaytext.Count > 3) {
             GagSpeak.Log.Debug($"displaytext is null, creating new list");
             this.displaytext = new List<string> { "", "", "" };}
+        // set default values for _padlockIdentifier
+        if (this._whitelistPadlockIdentifier == null) {
+            GagSpeak.Log.Debug($"_whitelistPadlockIdentifier is null, creating new list");
+            this._whitelistPadlockIdentifier = new PadlockIdentifier();}
     }
 
     public void Save() {

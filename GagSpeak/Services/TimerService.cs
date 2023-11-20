@@ -66,7 +66,7 @@ public class TimerService : IDisposable
 
       // save the timer data
       SaveTimerData(_config);
-      DebugPrintRemainingTimers();
+      // DebugPrintRemainingTimers(); For the stats nerds.
 
    }
 
@@ -179,8 +179,7 @@ public class TimerService : IDisposable
    }
 
    // method to get the current state of all timers
-   private class TimerData
-   {
+   private class TimerData {
       public Timer Timer { get; }
       public DateTimeOffset EndTime { get; }
 
@@ -190,9 +189,24 @@ public class TimerService : IDisposable
       }
    }
 
+   public void ClearIdentifierTimers() {
+      // Get a list of keys that contain "_Identifier"
+      var keysToRemove = new List<string>();
+      foreach (var key in timers.Keys) {
+         if (key.Contains("_Identifier")) {
+               keysToRemove.Add(key);
+         }
+      }
+
+      // Remove the timers with the keys in keysToRemove
+      foreach (var key in keysToRemove) {
+         timers[key].Timer.Dispose(); // Dispose the timer before removing it
+         timers.Remove(key);
+      }
+   }
+
    // Method to dispose the service
-   public void Dispose()
-   {
+   public void Dispose() {
       GagSpeak.Log.Debug("------------------------------------"); // save timers upon unloading.
       SaveTimerData(_config);
       DebugPrintRemainingTimers();

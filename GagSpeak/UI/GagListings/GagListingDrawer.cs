@@ -176,7 +176,7 @@ public class GagListingsDrawer : IDisposable
                         // at this point, our password is valid, so we can sucessfully lock the padlock
                         _config._padlockIdentifier[layerIndex].UpdateConfigPadlockPasswordInfo(layerIndex, _config._isLocked[layerIndex], _config);
                         _config._isLocked[layerIndex] = true;
-                        GagSpeak.Log.Debug($"Padlock on slot {layerIndex} has been locked.");
+                        GagSpeak.Log.Debug($"[GagListDrawer]: Padlock on slot {layerIndex} is now locked.");
 
                         if(_config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
                         _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock ||
@@ -235,13 +235,23 @@ public class GagListingsDrawer : IDisposable
     // cleanup variables upon safeword
     private void CleanupVariables(object sender, SafewordCommandEventArgs e) {
         _passwordField = "";
-        _config._isLocked = new List<bool> { false, false, false };
-        _adjustDisp = new bool[] {false, false, false};
-        _config._padlockIdentifier = new List<PadlockIdentifier> {
+        _config._isLocked = new List<bool> { false, false, false }; // reset is locked
+        _adjustDisp = new bool[] {false, false, false}; // reset displays
+        _config.TimerData.Clear(); // reset the timer data
+        _timerService.ClearIdentifierTimers(); // and the associated timers timerdata reflected
+        _config._padlockIdentifier = new List<PadlockIdentifier> { // new blank padlockidentifiers
             new PadlockIdentifier(),
             new PadlockIdentifier(),
             new PadlockIdentifier()
         };
+        // reset the timers to current time
+        _config.selectedGagPadLockTimer = new List<DateTimeOffset> {
+            DateTimeOffset.Now,
+            DateTimeOffset.Now,
+            DateTimeOffset.Now
+        };
+
+
         // print out all of the padlock identifiers gagtypes, the drawers _config._isLocked, and the drawers _adjustDisp
         GagSpeak.Log.Debug($"PadlockIdentifier[0] = {_config._padlockIdentifier[0]._padlockType.ToString()}, _config._isLocked[0] = {_config._isLocked[0]}, _adjustDisp[0] = {_adjustDisp[0]}");
         GagSpeak.Log.Debug($"PadlockIdentifier[1] = {_config._padlockIdentifier[1]._padlockType.ToString()}, _config._isLocked[1] = {_config._isLocked[1]}, _adjustDisp[1] = {_adjustDisp[1]}");

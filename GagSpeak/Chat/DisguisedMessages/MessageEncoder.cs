@@ -19,15 +19,16 @@ public class MessageEncoder // change to message encoder later
 
     // summarize later, for now, just know it encodes /gag lock messages
     public string GagEncodedLockMessage(PlayerPayload playerPayload, string targetPlayer, string lockType, string layer) { 
-        return GagEncodedLockMessage(playerPayload, targetPlayer, lockType, layer, "");
-    }
-    
-    // summarize later, for now, just know it encodes /gag lock password messages
+        return GagEncodedLockMessage(playerPayload, targetPlayer, lockType, layer, "");}
     public string GagEncodedLockMessage(PlayerPayload playerPayload, string targetPlayer, string lockType, string layer, string password) {
+        return GagEncodedLockMessage(playerPayload, targetPlayer, lockType, layer, password, "");} // call the other method with one password
+    public string GagEncodedLockMessage(PlayerPayload playerPayload, string targetPlayer, string lockType, string layer, string password, string password2) {
         if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
-        if (password != "") {
-            return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} takes out a {lockType} from her pocket and sets the combination password to {password} before locking your {layer} layer gag*";
-        } else {
+        if (password != "" && password2 != "") { // it is a password timer lock
+            return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} takes out a {lockType} from her pocket and sets the password to {password} with {password2} left, before locking your {layer} layer gag*";
+        } else if (password != "" && password2 == "") { // it is any other password type lock
+            return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} takes out a {lockType} from her pocket and sets the password to {password}, locking your {layer} layer gag*";
+        } else { // no password padlock
             return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} takes out a {lockType} from her pocket and uses it to lock your {layer} gag*";
         }
     }
@@ -108,15 +109,13 @@ public class MessageEncoder // change to message encoder later
         return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} glanced back down at her companion who had just crawled up to their legs with the pleading look and smiled. \"Why I would love to make you my slave dearest.\"";
     }
 
-////// DO THIS LAST ///////
     // for providing a player with your information (InDomMode, DirectChatGarbler, garbleLevel, selectedGagTypes, selectedGagPadlocks, selectedGagPadlocksPassword, selectedGagPadLockTimer, selectedGagPadlocksAssigner)
     public string ProvideInfoEncodedMessage(PlayerPayload playerPayload, string targetPlayer, bool _inDomMode, bool _directChatGarbler, int _garbleLevel, List<string> _selectedGagTypes,
-    List<GagPadlocks> _selectedGagPadlocks, List<string> _selectedGagPadlocksAssigner, List<DateTimeOffset> _selectedGagPadlocksTimer, string relationship)
-    {
+    List<GagPadlocks> _selectedGagPadlocks, List<string> _selectedGagPadlocksAssigner, List<DateTimeOffset> _selectedGagPadlocksTimer, string relationship) {
         // we need to start applying some logic here, first create a base string
         string baseString = $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} ";
         // now we need to append our next part of the message, the relationship to that player.
-        if (relationship == "None") { baseString += "looks at their companion, "; } 
+        if (relationship == "None") { baseString += "eyes their companion, "; } 
                                else { baseString += $"eyes their {relationship}, "; }
         baseString += $"in a {(_inDomMode ? "dominant" : "submissive")} state, silenced over {_garbleLevel} minutes, already drooling. ";
 
@@ -132,7 +131,7 @@ public class MessageEncoder // change to message encoder later
             if (_selectedGagPadlocks[i] != GagPadlocks.None) { // describe the lock, if any
                 baseString += $", a {_selectedGagPadlocks[i]} securing it";
                 //describe timer, if any
-                if(true) {
+                if((_selectedGagPadlocksTimer[i] - DateTimeOffset.Now ) > TimeSpan.Zero) {
                     baseString += $" with {UIHelpers.FormatTimeSpan(_selectedGagPadlocksTimer[i] - DateTimeOffset.Now)} left";
                 }
                 // describe assigner, if any
@@ -170,7 +169,6 @@ public class MessageEncoder // change to message encoder later
         } else {
             baseString += ".*";
         }
-        
         return baseString; 
     }
 }

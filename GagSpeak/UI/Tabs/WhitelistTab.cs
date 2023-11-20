@@ -17,13 +17,15 @@ using GagSpeak.Chat;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using GagSpeak.Chat.MsgEncoder;
 using GagSpeak.Services;
+using GagSpeak.UI.UserProfile;
+using Dalamud.Interface.Utility.Table;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 public class WhitelistTab : ITab, IDisposable
 {
-    // When going back through this, be sure to try and reference anything possible to include from the glamourer convention, since it is more modular.
+    private UserProfileWindow _userProfileWindow;
     private readonly MessageEncoder _gagMessages; // snag the whitelistchardata from the main plugin for obvious reasons
     private readonly ChatManager _chatManager; // snag the chatmanager from the main plugin for obvious reasons
     private readonly GagSpeakConfig _config; // snag the conmfig from the main plugin for obvious reasons
@@ -52,9 +54,10 @@ public class WhitelistTab : ITab, IDisposable
 
     // Constructor for the whitelist tab
     public WhitelistTab(GagSpeakConfig config, IClientState clientState, GagListingsDrawer gagListingsDrawer, ChatManager chatManager,
-    IDataManager dataManager, TimerService timerService) {
+    IDataManager dataManager, TimerService timerService, UserProfileWindow userProfileWindow) {
         // Set the readonlys
         _config = config;
+        _userProfileWindow = userProfileWindow;
         _timerService = timerService;
         _clientState = clientState;
         _dataManager = dataManager;
@@ -225,19 +228,29 @@ public class WhitelistTab : ITab, IDisposable
                 }
             
             } // end our relations manager table
-
-            // here put if they want to request relation removal
-            var width = new Vector2(-1, 25.0f * ImGuiHelpers.GlobalScale);
+            var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
+            ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
+            var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X/2, 25.0f * ImGuiHelpers.GlobalScale );
+            // create a button for popping out the current players profile
+            if (ImGui.Button("Show Profile", buttonWidth)) {
+                // Get the currently selected user
+                var selectedUser = _config.Whitelist[_currentWhitelistItem];
+                // Check if the UserProfileWindow is already open
+                _userProfileWindow.Toggle();
+            }
+            
+            // draw the relationship removal
+            ImGui.SameLine();
             if(whitelist[_currentWhitelistItem].relationshipStatus == "None") {
                 ImGui.BeginDisabled();
-                if (ImGui.Button("Remove Relation To Player", width)) {
+                if (ImGui.Button("Remove Relation", buttonWidth)) {
                     GagSpeak.Log.Debug("Sending Request to remove relation to player");
                     RequestRelationRemovealToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
                 }
                 ImGui.EndDisabled();
             } else {
-                if (ImGui.Button("Remove Relation To Player", width)) {
+                if (ImGui.Button("Remove Relation", buttonWidth)) {
                     GagSpeak.Log.Debug("Sending Request to remove relation to player");
                     RequestRelationRemovealToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
@@ -247,7 +260,6 @@ public class WhitelistTab : ITab, IDisposable
             if(!enableInteractions || interactionButtonPressed)
                 ImGui.EndDisabled();
 
-            var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X/2, 25.0f * ImGuiHelpers.GlobalScale );
             // Message to display based on target proximity
             string targetedPlayerText = "Add Targetted Player"; // Displays if no target
             if (!playerTargetted) {
@@ -292,7 +304,7 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.SameLine();
             if (ImGui.Button("Remove Player", buttonWidth)) {
                 if (whitelist.Count == 1) {
-                    whitelist[0] = new WhitelistCharData("Cordelia Mist","Balmung","None");
+                    whitelist[0] = new WhitelistCharData("None","None","None");
                 } else {
                     _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
                 }
@@ -374,55 +386,43 @@ public class WhitelistTab : ITab, IDisposable
             width = (int)(ImGui.GetContentRegionAvail().X / 2.8);
             _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, whitelist[_currentWhitelistItem], ref _lockLabel, layer, false, width, _gagLockFilterCombo[layer]);
             ImGui.SameLine();
-            var password = _tempPassword ?? _storedPassword; // temp storage to hold until we de-select the text input
-            // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == CombinationPadlock, draw a text inputwith hint field for the password with a ref length of 4.
-            Enum.TryParse(_lockLabel, out GagPadlocks parsedLockType);
-            if (parsedLockType == GagPadlocks.CombinationPadlock) {
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 5);
-                if (ImGui.InputText("##CombinationPassword", ref password, 4, ImGuiInputTextFlags.None))
-                    _tempPassword = password;
-                if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
-                    _storedPassword = password;
-                    _tempPassword = null;
-                }
-            }
-
-            // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == TimerPasswordPadlock || MistressTimerPadlock, draw a text input with hint field labeled time set, with ref length of 3.
-            if (parsedLockType  == GagPadlocks.TimerPasswordPadlock || parsedLockType == GagPadlocks.MistressTimerPadlock) {
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 4);
-                if (ImGui.InputText("##TimerPassword", ref password, 3, ImGuiInputTextFlags.None))
-                    _tempPassword = password;
-                if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
-                    _storedPassword = password;
-                    _tempPassword = null;
-                }
-            }
-            // if _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer] == PasswordPadlock, draw a text input with hint field labeled assigner, with ref length of 30.
-            if (parsedLockType == GagPadlocks.PasswordPadlock) {
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 2);
-                if (ImGui.InputText("##Password", ref password, 20, ImGuiInputTextFlags.None))
-                    _tempPassword = password;
-                if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
-                    _storedPassword = password;
-                    _tempPassword = null;
-                }
-            }
-
-            ImGui.SameLine();
             if (ImGui.Button("Lock Gag")) {
-                LockGagOnPlayer(layer, _lockLabel, _config.Whitelist[_currentWhitelistItem], _storedPassword);
+                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(false)) {
+                    // at this point, our password is valid, so we can sucessfully lock the padlock
+                    _config._whitelistPadlockIdentifier.UpdateConfigPadlockPasswordInfo(0, false, _config);
+                    // then we can apply the lock gag logic
+                    LockGagOnPlayer(layer, _lockLabel, _config.Whitelist[_currentWhitelistItem], _storedPassword);
+                }
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
             }
             ImGui.SameLine();
             if (ImGui.Button("Unlock Gag")) {
-                UnlockGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem], _storedPassword);
+                // apply similar format to lock gag
+                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true)) {
+                    // at this point, our password is valid, so we can sucessfully lock the padlock
+                    _config._whitelistPadlockIdentifier.UpdateConfigPadlockPasswordInfo(0, true, _config);
+                    // then we can apply the lock gag logic
+                    UnlockGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem], _storedPassword);
+                }
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
             }
+            ImGui.TableNextRow(); ImGui.TableNextColumn();
+            // display the password field, if any.
+            var tempwidth = ImGui.GetContentRegionAvail().X *.675f;
+            ImGui.Columns(2,"Password Divider", false);
+            ImGui.SetColumnWidth(0, tempwidth);
+            Enum.TryParse(_lockLabel, out GagPadlocks parsedLockType);
+            if(_config._whitelistPadlockIdentifier.DisplayPasswordField(parsedLockType)) {
+                // display the password field
+            } else {
+                ImGui.NewLine();
+            }
 
+            // Gag removal
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             if (ImGui.Button("Remove This Gag")) {
                 RemoveGagFromPlayer(layer, _config.Whitelist[_currentWhitelistItem]);

@@ -17,7 +17,7 @@ public class WhitelistCharData {
     public ObservableList<string> selectedGagTypes { get; set; } // What gag types are selected?
     public ObservableList<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
     public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
-    public List<TimeSpan> selectedGagPadlocksTimer { get; set; } // stores the timespan left until unlock of the player.
+    public List<DateTimeOffset> selectedGagPadlocksTimer { get; set; } // stores the timespan left until unlock of the player.
     public List<string> selectedGagPadlocksAssigner { get; set; } // who assigned the padlocks, if any
     // Constructor for the struct
     public WhitelistCharData(string _name, string _homeworld, string _relationshipStatus)
@@ -41,7 +41,7 @@ public class WhitelistCharData {
             this.selectedGagPadlocksAssigner = new List<string> { "", "", "" };}
         // set default values for selectedGagPadLockTimer
         if (this.selectedGagPadlocksTimer == null || !this.selectedGagPadlocksTimer.Any() || this.selectedGagPadlocksTimer.Count > 3) {
-            this.selectedGagPadlocksTimer = new List<TimeSpan> { TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero };}
+            this.selectedGagPadlocksTimer = new List<DateTimeOffset> { DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now };}
     }
 
     public void SetTimeOfCommitment() {
@@ -56,6 +56,15 @@ public class WhitelistCharData {
         int days = duration.Days % 30;
         // Display the duration in the desired format
         return $"{days}d, {duration.Hours}h, {duration.Minutes}m, {duration.Seconds}s";
+    }
+
+    public string GetPadlockTimerDurationLeft(int index) {
+        TimeSpan duration = this.selectedGagPadlocksTimer[index] - DateTimeOffset.Now; // Get the duration
+        if (duration < TimeSpan.Zero) {
+            return "";
+        }
+        // Display the duration in the desired format
+        return $"{duration.Hours}h, {duration.Minutes}m, {duration.Seconds}s";
     }
 }
 

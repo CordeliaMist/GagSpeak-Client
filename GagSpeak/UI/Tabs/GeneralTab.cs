@@ -181,6 +181,7 @@ public class GeneralTab : ITab, IDisposable
     private void DisableModeButtons() {
         modeButtonsDisabled = false;
     }
+    
     private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime)
     {
         // update display of remaining time

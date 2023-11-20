@@ -31,19 +31,23 @@ public class PadlockIdentifier {
     /// <param name="locktype"></param> 
     /// <param name="password"></param>
     /// </summary>
-    public bool SetAndValidate(string locktype, string password = null,
-    string secondPassword = null)
-    {
-        if (!Enum.TryParse(locktype, true, out GagPadlocks padlockType))
-            return false; // or throw an exception
+    public bool SetAndValidate(string locktype, string password = "", string secondPassword = "") {
+        if (!Enum.TryParse(locktype, true, out GagPadlocks padlockType)) {
+            return false;}// or throw an exception
         
-        switch (_padlockType)
-        {
+        switch (_padlockType) {
+            case GagPadlocks.None:
+                return false;
+            case GagPadlocks.MetalPadlock:
+                // handle MetalPadlock case
+                break;
             case GagPadlocks.CombinationPadlock:
                 this._storedCombination = password;
                 break;
             case GagPadlocks.PasswordPadlock:
                 this._storedPassword = password;
+                break;
+            case GagPadlocks.FiveMinutesPadlock:
                 break;
             case GagPadlocks.TimerPasswordPadlock:
                 this._storedTimer = password;
@@ -53,7 +57,7 @@ public class PadlockIdentifier {
                 // handle MistressPadlock case
                 break;
             case GagPadlocks.MistressTimerPadlock:
-                // handle MistressTimerPadlock case
+                this._storedTimer = password;
                 break;
         }
 
@@ -63,11 +67,9 @@ public class PadlockIdentifier {
     /// This function will serve as the primary function called by anyone who is wanting to create a password field for their padlock dropdown.
     /// <param name="padlock">The padlock type we have selected.</param>
     /// </summary>
-    public bool DisplayPasswordField(GagPadlocks padlockType) 
-    {
+    public bool DisplayPasswordField(GagPadlocks padlockType) {
         _padlockType = padlockType;
-        switch (padlockType) 
-        {
+        switch (padlockType) {
             case GagPadlocks.CombinationPadlock:
                 _inputCombination = DisplayInputField("##Combination_Input", "Enter 4 digit combination...", _inputCombination, 4);
                 return true;
@@ -77,10 +79,10 @@ public class PadlockIdentifier {
             case GagPadlocks.TimerPasswordPadlock:
                 _inputPassword = DisplayInputField("##Password_Input", "Enter password", _inputPassword, 20, 2 / 3f);
                 ImGui.SameLine();
-                _inputTimer = DisplayInputField("##Timer_Input", "Ex: 0h2m7s", _inputTimer, 10);
+                _inputTimer = DisplayInputField("##Timer_Input", "Ex: 0h2m7s", _inputTimer, 12);
                 return true;
             case GagPadlocks.MistressTimerPadlock:
-                _inputTimer = DisplayInputField("##Timer_Input", "Enter timer", _inputTimer, 10);
+                _inputTimer = DisplayInputField("##Timer_Input", "Ex: 0h2m7s", _inputTimer, 12);
                 return true;
             default:
                 return false;
@@ -119,6 +121,9 @@ public class PadlockIdentifier {
                 ret = ValidatePassword();
                 if(ret && !isUnlocking) {_storedPassword = _inputPassword; _inputPassword = "";}
                 return ret;
+            case GagPadlocks.FiveMinutesPadlock:
+                _storedTimer = "0h5m0s";
+                return true;
             case GagPadlocks.TimerPasswordPadlock:
                 ret = (ValidatePassword() && ValidateTimer());
                 if(ret && !isUnlocking) {
@@ -222,7 +227,6 @@ public class PadlockIdentifier {
                 break;
             case GagPadlocks.FiveMinutesPadlock:
                 _config.selectedGagPadlocks[layerIndex] = _padlockType;
-                _storedTimer = "0h5m0s";
                 break;
             case GagPadlocks.TimerPasswordPadlock:
                 _config.selectedGagPadlocks[layerIndex] = _padlockType;
