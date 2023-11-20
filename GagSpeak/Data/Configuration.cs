@@ -74,9 +74,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     // stuff for the gaglistingDrawer
     public List<bool> _isLocked { get; set; } // determines if it is locked
     public List<string> displaytext { get; set; } 
-    private List<PadlockIdentifier> padlockidentifier = new List<PadlockIdentifier>(); // stores the padlock identifier for each gaglisting
-    public List<PadlockIdentifier> _padlockIdentifier {get => padlockidentifier; set => padlockidentifier = value;} // stores the padlock identifier for each gaglisting
-    public PadlockIdentifier _whitelistPadlockIdentifier {get; set;} // stores the padlock identifier for the whitelist
+    public List<PadlockIdentifier> _padlockIdentifier { get; set; } // stores the padlock identifier for each gaglisting
+    public PadlockIdentifier _whitelistPadlockIdentifier {get; set; } // stores the padlock identifier for the whitelist
 
     // There was stuiff about a colorId dictionary here, if you ever need to include it later, you know where to put it so it fits into the hierarchy
     private readonly SaveService _saveService;
@@ -116,6 +115,10 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         if (this._whitelistPadlockIdentifier == null) {
             GagSpeak.Log.Debug($"[Config]: _whitelistPadlockIdentifier is null, creating new list");
             this._whitelistPadlockIdentifier = new PadlockIdentifier();}
+        // set default for the padlock identifier listings
+        if (this._padlockIdentifier == null || !this._padlockIdentifier.Any() || this._padlockIdentifier.Count > 3) {
+            GagSpeak.Log.Debug($"[Config]: _padlockIdentifier is null, creating new list");
+            this._padlockIdentifier = new List<PadlockIdentifier> { new PadlockIdentifier(), new PadlockIdentifier(), new PadlockIdentifier() };}
     }
 
     public void Save() {
