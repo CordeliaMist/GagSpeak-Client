@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Timers;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
@@ -32,6 +33,20 @@ public class TimerService : IDisposable
    // the augmented constructor for the timer service to handle padlock timers
    public void StartTimer(string timerName, string input,  int elapsedMilliSecPeriod, Action onElapsed,
    List<DateTimeOffset> padlockTimerList, int index) {
+      // If the new timer's name contains "_Identifier{index}"
+      if (timerName.Contains($"_Identifier{index}")) {
+         // Find any existing timer with "_Identifier{index}" in its name
+         var existingTimerKey = timers.Keys.FirstOrDefault(key => key.Contains($"_Identifier{index}"));
+         // If an existing timer is found, remove it
+         if (existingTimerKey != null) {
+               timers.Remove(existingTimerKey);
+         }
+      }
+      // Also Check if a timer with the same name already exists
+      if (timers.ContainsKey(timerName)) {
+         GagSpeak.Log.Debug($"[Timer Service]: Timer with name '{timerName}' already exists. Use different name.");
+         return;
+      }
       // Check if a timer with the same name already exists
       if (timers.ContainsKey(timerName)) {
          GagSpeak.Log.Debug($"[Timer Service]: Timer with name '{timerName}' already exists. Use different name.");
@@ -107,6 +122,13 @@ public class TimerService : IDisposable
       // If the input string is not in the correct format, return TimeSpan.Zero
       return TimeSpan.Zero;
    }
+
+   // get remaining time for one of the padlock identifier slots
+   public string GetRemainingTimeForPadlock(int slot) {
+      var padlockType = _config._padlockIdentifier[slot]._padlockType;
+      return $"{remainingTimes.GetValueOrDefault($"{padlockType}_Identifier{slot}", "Time Remaining:")}";
+   }
+
 
    // save our data
    public void SaveTimerData(GagSpeakConfig config)

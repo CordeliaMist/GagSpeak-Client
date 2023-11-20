@@ -7,25 +7,7 @@ using OtterGui.Classes;
 using GagSpeak.UI.GagListings;
 using System.Text.RegularExpressions;
 
-
-using System;
-using ImGuiNET;
-using OtterGui.Widgets;
-using Dalamud.Game.ClientState.Objects.Enums;
-using System.Numerics;
-using Dalamud.Plugin.Services;
-using OtterGui;
-using System.Collections.Generic;
-using System.Linq;
-using Dalamud.Interface.Utility;
-using GagSpeak.Data;
-using GagSpeak.UI.Helpers;
-using GagSpeak.UI.GagListings;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using GagSpeak.Chat;
-using Dalamud.Game.ClientState.Objects.SubKinds;
-using GagSpeak.Chat.MsgEncoder;
 using GagSpeak.Services;
 namespace GagSpeak.Chat.MsgResultLogic;
 
@@ -43,18 +25,6 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         _clientState = clientState;
     }
     
-    /// <summary>
-    /// Will take in a message, and determine what to do with it based on the contents of the message.
-    /// <list>
-    /// <item><c>apply GAGTYPE | PLAYER</c> - Equip Gagtype to defined layer</item>
-    /// <item><c>lock LAYER LOCKTYPE | PLAYER</c> - Lock Gagtype to defined layer</item>
-    /// <item><c>lock LAYER LOCKTYPE | PASSWORD | PLAYER</c> - Lock Gagtype to defined layer with password</item>
-    /// <item><c>unlock LAYER | PLAYER</c> - Unlock Gagtype from defined layer</item>
-    /// <item><c>unlock LAYER | PASSWORD | PLAYER</c> - Unlock Gagtype from defined layer with password</item>
-    /// <item><c>removeall | PLAYER</c> - Remove all gags from player only when parameters are met</item>
-    /// <item><c>remove LAYER | PLAYER</c> - Remove gag from defined layer</item></list>
-    /// <para><c>recievedMessage</c><param name="receivedMessage"> - The message that was recieved from the player</param></para>
-    /// </summary>
     public bool CommandMsgResLogic(string receivedMessage, List<string> decodedMessage, bool isHandled,
             IChatGui clientChat, GagSpeakConfig config)
     {
@@ -178,19 +148,13 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             isHandled = true; LogError("[MsgResultLogic]: Invalid /gag lock parameters sent in!");
         }
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag lock");
-        _config._isLocked[layer-1] = true;
+        _config._isLocked[layer-1] = false;
         _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, false, _config);
         // at this point timer should be stored if it is.
         GagSpeak.Log.Debug($"[MsgResultLogic]: Stored timer for layer {layer} is {_config._padlockIdentifier[layer-1]._storedTimer}");
         _config.selectedGagPadLockTimer[layer-1] = GetEndTime(_config._padlockIdentifier[layer-1]._storedTimer);
         
         // replace the current timer containining _identifier[layer-1] with a new timer that will unlock the layer after the timer is up.
-        
-
-        
-        
-        
-        
         var timer = new TimerService(_config);
         timer.StartTimer($"{_config._padlockIdentifier[layer-1]._padlockType}_Identifier{layer-1}", _config._padlockIdentifier[layer-1]._storedTimer, 1000, () => {
             _config._isLocked[layer-1] = false;
@@ -229,6 +193,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
             _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
             _config.selectedGagPadlocksAssigner[layer-1] = "";
+            _config._isLocked[layer-1] = true; // unlock the layer
             _config._padlockIdentifier[layer-1].ClearPasswords(); // update padlockIdentifier to reflect changes
             _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, true, _config);
         } 
@@ -249,7 +214,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
             _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
             _config.selectedGagPadlocksAssigner[layer-1] = "";
-            _config._isLocked[layer-1] = false; // unlock the layer
+            _config._isLocked[layer-1] = true; // unlock the layer
             _config._padlockIdentifier[layer-1].ClearPasswords(); // update padlockIdentifier to reflect changes
             _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, true, _config);
         }

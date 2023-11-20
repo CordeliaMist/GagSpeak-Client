@@ -19,6 +19,7 @@ public class GeneralTab : ITab, IDisposable
     private readonly GagSpeakConfig _config;
     private readonly TimerService _timerService;
     private readonly GagListingsDrawer _gagListingsDrawer;
+    private readonly LockManager _lockManager;
     private GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
     private GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
     private bool? _inDomMode;
@@ -28,11 +29,12 @@ public class GeneralTab : ITab, IDisposable
     // testing with datetimeoffset
     private bool modeButtonsDisabled = false;
     
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService)
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService, LockManager lockManager)
     {
         _config = config;
         _timerService = timerService;
         _gagListingsDrawer = gagListingsDrawer;
+        _lockManager = lockManager;
 
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
             new GagTypeFilterCombo(_config.GagTypes, _config),
@@ -164,17 +166,14 @@ public class GeneralTab : ITab, IDisposable
         int width2 = (int)(ImGui.GetContentRegionAvail().X / 2);
         // draw our 3 gag listings
         foreach(var slot in Enumerable.Range(0, 3)) {
-            _gagListingsDrawer.DrawGagAndLockListing(slot, _config, _gagTypeFilterCombo[slot], _gagLockFilterCombo[slot],
-                slot, $"Gag Slot {slot + 1}", width2);
-            // disaplay timer here.
-            if((_config._padlockIdentifier[slot]._padlockType == GagPadlocks.FiveMinutesPadlock && _config._isLocked[slot] == true) || 
-            (_config._padlockIdentifier[slot]._padlockType == GagPadlocks.TimerPasswordPadlock && _config._isLocked[slot] == true) ||
-            (_config._padlockIdentifier[slot]._padlockType == GagPadlocks.MistressTimerPadlock && _config._isLocked[slot] == true)) {
-                ImGui.TextColored(new Vector4(1,1,0,0.5f),$"{_timerService.remainingTimes.GetValueOrDefault($"{_config._padlockIdentifier[slot]._padlockType}_Identifier{slot}", "Time Remaining:")}");
+            _gagListingsDrawer.DrawGagAndLockListing(slot, _config, _gagTypeFilterCombo[slot], _gagLockFilterCombo[slot], slot, $"Gag Slot {slot + 1}", width2);
+            // display timer here.
+            if(_lockManager.IsLockedWithTimer(slot)) {
+                ImGui.TextColored(new Vector4(1,1,0,0.5f), _timerService.GetRemainingTimeForPadlock(slot));
             }
             ImGui.NewLine();
-        }
-    }
+                }
+            }
 
     private void DisableModeButtons() {
         modeButtonsDisabled = false;

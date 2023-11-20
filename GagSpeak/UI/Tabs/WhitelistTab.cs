@@ -45,7 +45,6 @@ public class WhitelistTab : ITab, IDisposable
     private string _lockLabel; // current selection on gag lock DD
     private readonly GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
     private readonly GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
-    private WhitelistCharData _ListItemSelected;
 
     // store time information & control locks
     private bool enableInteractions = false; // determines if we can interact with with whitelist buttons or not (for safety to prevent accidental tells)
@@ -166,10 +165,6 @@ public class WhitelistTab : ITab, IDisposable
                 ImGui.TableSetupColumn("Statistic", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Become Their Mistress").X);
                 ImGui.TableSetupColumn("Information", ImGuiTableColumnFlags.WidthStretch);
                 
-
-                //////////////////////////////////////////////////////////////////////////////////////////////////////
-                //// Here is the start of our relations manager. So calculate our timers and interaction toggles. ////
-                // create handlers for interactions & permissions
                 ImGui.TableNextRow(); ImGui.TableNextColumn();
                 Checkbox("Interactions", "WARNING: Make sure other people on your whitelist have this plugin too! (sends tells to players)\n" +
                 "Allows for direct communication. Encoded to look natural, but still look wierd out of context!", enableInteractions, v => enableInteractions = v);

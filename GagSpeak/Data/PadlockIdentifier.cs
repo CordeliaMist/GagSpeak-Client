@@ -25,6 +25,10 @@ public class PadlockIdentifier {
         if(_storedTimer == null) { _storedTimer = "";}
     }
 
+    public void SetValues(GagPadlocks padlockType) {
+        _padlockType = padlockType;
+    }
+    
     /// <summary>
     /// This function is used typically by the command manager, for when we have no field to insert
     /// a password to, and do it directly instead.
