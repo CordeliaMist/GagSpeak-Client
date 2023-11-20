@@ -7,21 +7,17 @@ public class GagSpeakChangelog
 {
     public const     int           LastChangelogVersion = 0;
     private readonly GagSpeakConfig _config;
-    public readonly  Changelog     _changelog;
+    public readonly  Changelog     Changelog;
 
     public GagSpeakChangelog(GagSpeakConfig config) {
         _config   = config;
-        _changelog = new Changelog("GagSpeak Changelog", ConfigData, Save);
+        Changelog = new Changelog("GagSpeak Changelog", ConfigData, Save);
 
-        Add0_9_7_0(_changelog);
+        Add0_9_7_0(Changelog);
     }
 
     private (int, ChangeLogDisplayType) ConfigData()
         => (_config.Version, _config.ChangeLogDisplayType);
-
-    public void ToggleChangelog() {
-        _changelog.Toggle();
-    }
 
     private void Save(int version, ChangeLogDisplayType type)
     {

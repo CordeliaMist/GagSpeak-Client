@@ -185,7 +185,7 @@ public class WhitelistTab : ITab, IDisposable
                 if(!enableInteractions || interactionButtonPressed)
                     ImGui.BeginDisabled();
                 
-                ImGuiUtil.DrawFrameColumn("Relation towards You:"); ImGui.TableNextColumn();
+                ImGuiUtil.DrawFrameColumn($"{whitelist[_currentWhitelistItem].name.Split(' ')[0]} is your: "); ImGui.TableNextColumn();
                 var width2 = new Vector2(ImGui.GetContentRegionAvail().X, 0);
                 ImGui.Text($"{whitelist[_currentWhitelistItem].relationshipStatus}");
 
@@ -312,33 +312,34 @@ public class WhitelistTab : ITab, IDisposable
 
         // create button widths 
         var buttonWidth2 = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X / 2, 25.0f * ImGuiHelpers.GlobalScale );
-        if (whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Mistress" || 
-            whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Pet" ||
-            whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Slave") {
+        // 
+        if (whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer == "Mistress" || 
+            whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer == "Pet" ||
+            whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer == "Slave") {
             // Display buttons only if there is an incoming request
-            var relationText = whitelist[_currentWhitelistItem].PendingRelationshipRequest?.Split(' ')[0];
+            var relationText = whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer?.Split(' ')[0];
             if (ImGui.Button($"Accept {whitelist[_currentWhitelistItem].name.Split(' ')[0]} as your {relationText}", new Vector2(ImGui.GetContentRegionAvail().X/2, 25)))
             {
                 // Handle accept button action here
                 // if relationship status is mistress, trigger the accept mistress function. If pet, trigger accept pet function. If slave, trigger accept slave function.
-                if (whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Mistress") {
+                if (whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer == "Mistress") {
                     AcceptMistressRequestFromPlayer(_config.Whitelist[_currentWhitelistItem]);
-                } else if (whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Pet") {
+                } else if (whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer == "Pet") {
                     AcceptPetRequestFromPlayer(_config.Whitelist[_currentWhitelistItem]);
-                } else if (whitelist[_currentWhitelistItem].PendingRelationshipRequest == "Slave") {
+                } else if (whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer == "Slave") {
                     AcceptSlaveRequestFromPlayer(_config.Whitelist[_currentWhitelistItem]);
                 }
 
 
                 // set the relation request to established
-                whitelist[_currentWhitelistItem].PendingRelationshipRequest = "Established";
+                whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer = "Established";
                 GagSpeak.Log.Debug($"[Whitelist]: Accepting incoming relation request from {whitelist[_currentWhitelistItem].name}");
             }
             ImGui.SameLine();
             if (ImGui.Button($"Decline {whitelist[_currentWhitelistItem].name.Split(' ')[0]}'s Request", new Vector2(ImGui.GetContentRegionAvail().X, 25)))
             {
                 // set the relation request to established
-                whitelist[_currentWhitelistItem].PendingRelationshipRequest = "None";
+                whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer = "None";
                 GagSpeak.Log.Debug($"[Whitelist]: Declining incoming relation request from {whitelist[_currentWhitelistItem].name}");
             }
         }
@@ -613,7 +614,8 @@ public class WhitelistTab : ITab, IDisposable
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
-        // send the message
+        // set your requested status and send the message!
+        selectedPlayer.PendingRelationRequestFromYou = "Mistress";
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         _chatManager.SendRealMessage(_gagMessages.RequestMistressEncodedMessage(playerPayload, targetPlayer));
     }
@@ -624,7 +626,8 @@ public class WhitelistTab : ITab, IDisposable
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
-        // send the message
+        // set your requested status and send the message!
+        selectedPlayer.PendingRelationRequestFromYou = "Pet";
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         _chatManager.SendRealMessage(_gagMessages.RequestPetEncodedMessage(playerPayload, targetPlayer));
     }
@@ -634,7 +637,8 @@ public class WhitelistTab : ITab, IDisposable
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
-        // send the message
+        // set your requested status and send the message!
+        selectedPlayer.PendingRelationRequestFromYou = "Slave";
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         _chatManager.SendRealMessage(_gagMessages.RequestSlaveEncodedMessage(playerPayload, targetPlayer));
     }
@@ -646,7 +650,8 @@ public class WhitelistTab : ITab, IDisposable
             return;
         // send the message
         selectedPlayer.relationshipStatus = "None"; // set the relationship status
-        selectedPlayer.PendingRelationshipRequest = ""; // set the pending relationship request
+        selectedPlayer.PendingRelationRequestFromPlayer = ""; // set any pending relations to none
+        selectedPlayer.PendingRelationRequestFromYou = ""; // set any pending relations to none
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         _chatManager.SendRealMessage(_gagMessages.RequestRemovalEncodedMessage(playerPayload, targetPlayer));
     }
@@ -691,8 +696,6 @@ public class WhitelistTab : ITab, IDisposable
             _chatManager.SendRealMessage(_gagMessages.ProvideInfoEncodedMessage(playerPayload, targetPlayer, _config.InDomMode,
                 _config.DirectChatGarbler, _config.GarbleLevel, _config.selectedGagTypes, _config.selectedGagPadlocks,
                 _config.selectedGagPadlocksAssigner, _config.selectedGagPadLockTimer, relationshipVar));
-            // set a timer for spacing
-            _timerService.StartTimer("InfoMessagePart2Cooldown", "8s", 1000, () => { sendNext = true; });
         }
     }
 
@@ -728,9 +731,12 @@ public class WhitelistTab : ITab, IDisposable
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         
-        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationshipRequest; // set the relationship status
+        // you have accepted the request, meaning by the time you get this, the PendingRelationFromPlayer is the relation they want
+        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
         selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
+        // let them know you accept the request
         _chatManager.SendRealMessage(_gagMessages.AcceptMistressEncodedMessage(playerPayload, targetPlayer));
+        
     }
 
     private void AcceptPetRequestFromPlayer(WhitelistCharData selectedPlayer) {
@@ -740,7 +746,7 @@ public class WhitelistTab : ITab, IDisposable
             return;
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
-        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationshipRequest; // set the relationship status
+        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
         selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
         _chatManager.SendRealMessage(_gagMessages.AcceptPetEncodedMessage(playerPayload, targetPlayer));
     }
@@ -752,7 +758,7 @@ public class WhitelistTab : ITab, IDisposable
             return;
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
-        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationshipRequest; // set the relationship status
+        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
         selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
         _chatManager.SendRealMessage(_gagMessages.AcceptSlaveEncodedMessage(playerPayload, targetPlayer));
     }

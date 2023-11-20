@@ -298,7 +298,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
             // see if they exist
             if(playerInWhitelist != null) {
-                playerInWhitelist.PendingRelationshipRequest = "Mistress"; // this means, they want to become YOUR mistress.
+                playerInWhitelist.PendingRelationRequestFromPlayer = "Mistress"; // this means, they want to become YOUR mistress.
                 // Notify the user that someone wishes to establish a relationship
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Mistress relation request recieved from {playerName}. Accept or Decline via whitelist profile.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for a mistress relation request from {playerName}");
@@ -320,10 +320,10 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
             // see if they exist
             if(playerInWhitelist != null) {
-                playerInWhitelist.PendingRelationshipRequest = "Pet"; // this means, they want to become YOUR pet.
+                playerInWhitelist.PendingRelationRequestFromPlayer = "Pet"; // this means, they want to become YOUR pet.
                 // Notify the user that someone wishes to establish a relationship
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Pet relation request recieved from {playerName}. Accept or Decline via whitelist profile.").AddItalicsOff().BuiltString);
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse pet relation request from {playerName}: {playerInWhitelist.PendingRelationshipRequest}");
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse pet relation request from {playerName}: {playerInWhitelist.PendingRelationRequestFromPlayer}");
             }
         } catch {
             LogError($"ERROR, Invalid request pet message parse.");
@@ -342,7 +342,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
             // see if they exist
             if(playerInWhitelist != null) {
-                playerInWhitelist.PendingRelationshipRequest = "Slave"; // this means, they want to become YOUR slave.
+                playerInWhitelist.PendingRelationRequestFromPlayer = "Slave"; // this means, they want to become YOUR slave.
                 // Notify the user that someone wishes to establish a relationship
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Slave relation request recieved from {playerName}. Accept or Decline via whitelist profile.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for a slave relation request from {playerName}");
@@ -366,7 +366,8 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
                 playerInWhitelist.relationshipStatus = "None";
-                playerInWhitelist.PendingRelationshipRequest = "None"; // this means, they want to become YOUR slave.
+                playerInWhitelist.PendingRelationRequestFromPlayer = "None"; // remove any recieved relation establishments or requests.
+                playerInWhitelist.PendingRelationRequestFromYou = "None"; // remove any relations you have sent out
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Relation Status with {playerName} sucessfully removed.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for relation removal");
             }

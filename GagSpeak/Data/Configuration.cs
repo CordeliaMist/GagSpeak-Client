@@ -33,9 +33,9 @@ public enum GagPadlocks {
 public class GagSpeakConfig : IPluginConfiguration, ISavable
 {   // Plugin info
 
-    public ChangeLogDisplayType ChangeLogDisplayType             { get; set; } = ChangeLogDisplayType.New;
+    public ChangeLogDisplayType ChangeLogDisplayType { get; set; } = ChangeLogDisplayType.New;
 
-    public int LastSeenVersion    { get; set; } = GagSpeakChangelog.LastChangelogVersion;
+    public int LastSeenVersion { get; set; } = GagSpeakChangelog.LastChangelogVersion;
     public int Version { get; set; } = 0; // Version of the plugin
     public bool FreshInstall { get; set; } = true; // Is user on a fresh install?
     public bool Enabled { get; set; } = true; // Is plugin enabled?

@@ -11,7 +11,8 @@ public class WhitelistCharData {
     public string relationshipStatus; // who you are to them
     public bool isDomMode; // is the character in dom mode?
     public int garbleLevel; // get the garble level of the character
-    public string PendingRelationshipRequest; // get the pending relationship request, if any
+    public string PendingRelationRequestFromPlayer; // Ex. If recieve a request from someone wanting to be your pet, that is stored here
+    public string PendingRelationRequestFromYou; // Ex. If you press the button for "Become Their Pet", it will store "Pet" here
     public DateTimeOffset timeOfCommitment; // how long has your commitment with this player lasted? (data stores time of commitment start)
     public bool lockedLiveChatGarbler { get; set; } // is the live chat garbler locked?
     public ObservableList<string> selectedGagTypes { get; set; } // What gag types are selected?
@@ -26,7 +27,8 @@ public class WhitelistCharData {
         this.homeworld = _homeworld;
         this.relationshipStatus = _relationshipStatus;
         this.lockedLiveChatGarbler = false;
-        this.PendingRelationshipRequest = "None";
+        this.PendingRelationRequestFromPlayer = "None"; // remember, this keeps track of people wanting to declare relations with you
+        this.PendingRelationRequestFromYou = "None"; // and this keeps track of the relation requests you issue out to others for message feedback
         // Make sure we aren't getting any duplicates
         if (this.selectedGagTypes == null || !this.selectedGagTypes.Any() || this.selectedGagTypes.Count > 3) {
             this.selectedGagTypes = new ObservableList<string> { "None", "None", "None" };}
@@ -51,7 +53,7 @@ public class WhitelistCharData {
     // function to get the commitment duration
     public string GetCommitmentDuration() {
         if (this.timeOfCommitment == default(DateTimeOffset))
-            return "ERROR"; // Display nothing if commitment time is not set
+            return ""; // Display nothing if commitment time is not set
         TimeSpan duration = DateTimeOffset.Now - this.timeOfCommitment; // Get the duration
         int days = duration.Days % 30;
         // Display the duration in the desired format
