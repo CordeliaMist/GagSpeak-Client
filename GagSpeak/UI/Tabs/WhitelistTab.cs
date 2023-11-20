@@ -196,7 +196,7 @@ public class WhitelistTab : ITab, IDisposable
                 
                 // send a encoded request to the player to request beooming their mistress
                 ImGuiUtil.DrawFrameColumn("Become Their Mistress: "); ImGui.TableNextColumn(); // Next Row (Request To Become Players Mistress)
-                if (ImGui.Button("Request Relation", width2)) {
+                if (ImGui.Button("Request Relation##ReqMistress", width2)) {
                     GagSpeak.Log.Debug("[Whitelist]: Sending Request to become their mistress");
                     RequestMistressToPlayer(_config.Whitelist[_currentWhitelistItem]);
 
@@ -208,7 +208,7 @@ public class WhitelistTab : ITab, IDisposable
 
                 // send a encoded request to the player to request beooming their pet
                 ImGuiUtil.DrawFrameColumn("Become Their Pet: "); ImGui.TableNextColumn();
-                if (ImGui.Button("Request Relation", width2)) {
+                if (ImGui.Button("Request Relation##ReqPet", width2)) {
                     GagSpeak.Log.Debug("[Whitelist]: Sending Request to become their pet");
                     RequestPetToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // Start a 5-second cooldown timer
@@ -218,7 +218,7 @@ public class WhitelistTab : ITab, IDisposable
             
                 // send a encoded request to the player to request beooming their slave
                 ImGuiUtil.DrawFrameColumn("Become Their Slave: "); ImGui.TableNextColumn(); 
-                if (ImGui.Button("Request Relation", width2)) {
+                if (ImGui.Button("Request Relation##ReqSlave", width2)) {
                     GagSpeak.Log.Debug("[Whitelist]: Sending Request to become their slave");
                     RequestSlaveToPlayer(_config.Whitelist[_currentWhitelistItem]);
 
@@ -243,14 +243,14 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.SameLine();
             if(whitelist[_currentWhitelistItem].relationshipStatus == "None") {
                 ImGui.BeginDisabled();
-                if (ImGui.Button("Remove Relation", buttonWidth)) {
+                if (ImGui.Button("Remove Relation##RemoveOne", buttonWidth)) {
                     GagSpeak.Log.Debug("[Whitelist]: Sending Request to remove relation to player");
                     RequestRelationRemovealToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
                 }
                 ImGui.EndDisabled();
             } else {
-                if (ImGui.Button("Remove Relation", buttonWidth)) {
+                if (ImGui.Button("Remove Relation##RemoveTwo", buttonWidth)) {
                     GagSpeak.Log.Debug("[Whitelist]: Sending Request to remove relation to player");
                     RequestRelationRemovealToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
@@ -645,6 +645,8 @@ public class WhitelistTab : ITab, IDisposable
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the message
+        selectedPlayer.relationshipStatus = "None"; // set the relationship status
+        selectedPlayer.PendingRelationshipRequest = ""; // set the pending relationship request
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         _chatManager.SendRealMessage(_gagMessages.RequestRemovalEncodedMessage(playerPayload, targetPlayer));
     }
@@ -725,6 +727,8 @@ public class WhitelistTab : ITab, IDisposable
             return;
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        
+        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationshipRequest; // set the relationship status
         selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
         _chatManager.SendRealMessage(_gagMessages.AcceptMistressEncodedMessage(playerPayload, targetPlayer));
     }
@@ -736,6 +740,7 @@ public class WhitelistTab : ITab, IDisposable
             return;
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationshipRequest; // set the relationship status
         selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
         _chatManager.SendRealMessage(_gagMessages.AcceptPetEncodedMessage(playerPayload, targetPlayer));
     }
@@ -747,6 +752,7 @@ public class WhitelistTab : ITab, IDisposable
             return;
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationshipRequest; // set the relationship status
         selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
         _chatManager.SendRealMessage(_gagMessages.AcceptSlaveEncodedMessage(playerPayload, targetPlayer));
     }

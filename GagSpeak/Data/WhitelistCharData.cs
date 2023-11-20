@@ -8,7 +8,7 @@ namespace GagSpeak.Data;
 public class WhitelistCharData {
     public string name; // get the character name
     public string homeworld; // get the characters world (dont know how to get this for now)
-    public string relationshipStatus; // get the relationship status of the character to you
+    public string relationshipStatus; // who you are to them
     public bool isDomMode; // is the character in dom mode?
     public int garbleLevel; // get the garble level of the character
     public string PendingRelationshipRequest; // get the pending relationship request, if any

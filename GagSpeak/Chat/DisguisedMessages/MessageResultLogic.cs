@@ -430,8 +430,6 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
-                playerInWhitelist.relationshipStatus = "Mistress"; // no long pending, now official
-                playerInWhitelist.PendingRelationshipRequest = "None"; // no long pending, now official
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is now your Mistress, enjoy~.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Mistress relation");
             }
@@ -453,8 +451,6 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
-                playerInWhitelist.relationshipStatus = "Pet"; // no long pending, now official
-                playerInWhitelist.PendingRelationshipRequest = "None"; // no long pending, now official
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is now your Pet, enjoy~.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Pet relation");
             }
@@ -476,8 +472,6 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
-                playerInWhitelist.relationshipStatus = "Slave"; // no long pending, now official
-                playerInWhitelist.PendingRelationshipRequest = "None"; // no long pending, now official
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is now your Slave, enjoy~.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Slave relation");
             }
