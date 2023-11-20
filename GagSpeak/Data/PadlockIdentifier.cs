@@ -48,6 +48,7 @@ public class PadlockIdentifier {
                 this._storedPassword = password;
                 break;
             case GagPadlocks.FiveMinutesPadlock:
+                this._storedTimer = "5m0s";
                 break;
             case GagPadlocks.TimerPasswordPadlock:
                 this._storedTimer = password;

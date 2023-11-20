@@ -111,7 +111,28 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         if (_config.Whitelist.Any(w => playerName.Contains(w.name) && w.relationshipStatus == "Mistress")) {
             return true;}
         // otherwise return false
+        GagSpeak.Log.Debug($"[MsgResultLogic]: {playerName} is not a mistress.");
         return false;
+    }
+
+    public static DateTimeOffset GetEndTime(string input) {
+        // Match days, hours, minutes, and seconds in the input string
+        var match = Regex.Match(input, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+
+        if (match.Success) { 
+            // Parse days, hours, minutes, and seconds
+            int.TryParse(match.Groups[1].Value, out int days);
+            int.TryParse(match.Groups[2].Value, out int hours);
+            int.TryParse(match.Groups[3].Value, out int minutes);
+            int.TryParse(match.Groups[4].Value, out int seconds);
+            // Create a TimeSpan from the parsed values
+            TimeSpan duration = new TimeSpan(days, hours, minutes, seconds);
+            // Add the duration to the current DateTime to get a DateTimeOffset
+            return DateTimeOffset.Now.Add(duration);
+        }
+
+        // If the input string is not in the correct format, throw an exception
+        throw new FormatException($"[MsgResultLogic]: Invalid duration format: {input}");
     }
 
     // handle the lock message (realistically these should be falses, but they work in both cases and i am lazy)
@@ -149,13 +170,34 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 } else { // update padlockIdentifier with password
                     _config._padlockIdentifier[layer-1].SetAndValidate(decodedMessage[2], decodedMessage[3]);
                 }
+            } else { // otherwise, just set the padlockidentifier to the appropriate padlockidentifier type
+                _config._padlockIdentifier[layer-1].SetAndValidate(decodedMessage[2]);
             }
+
         } else {
             isHandled = true; LogError("[MsgResultLogic]: Invalid /gag lock parameters sent in!");
         }
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag lock");
         _config._isLocked[layer-1] = true;
         _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, false, _config);
+        // at this point timer should be stored if it is.
+        GagSpeak.Log.Debug($"[MsgResultLogic]: Stored timer for layer {layer} is {_config._padlockIdentifier[layer-1]._storedTimer}");
+        _config.selectedGagPadLockTimer[layer-1] = GetEndTime(_config._padlockIdentifier[layer-1]._storedTimer);
+        
+        // replace the current timer containining _identifier[layer-1] with a new timer that will unlock the layer after the timer is up.
+        
+
+        
+        
+        
+        
+        var timer = new TimerService(_config);
+        timer.StartTimer($"{_config._padlockIdentifier[layer-1]._padlockType}_Identifier{layer-1}", _config._padlockIdentifier[layer-1]._storedTimer, 1000, () => {
+            _config._isLocked[layer-1] = false;
+            _config._padlockIdentifier[layer-1].ClearPasswords();
+            _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, !_config._isLocked[layer-1], _config);
+        });
+
         // send sucessful message to chat
         string playerNameWorld = decodedMessage[4];
         string[] parts = playerNameWorld.Split(' ');
@@ -207,6 +249,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
             _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
             _config.selectedGagPadlocksAssigner[layer-1] = "";
+            _config._isLocked[layer-1] = false; // unlock the layer
             _config._padlockIdentifier[layer-1].ClearPasswords(); // update padlockIdentifier to reflect changes
             _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, true, _config);
         }
@@ -522,26 +565,6 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             LogError($"[MsgResultLogic]: Invalid provideInfo [1/2] message parse.");
         }        
         return true;
-    }
-
-    public static DateTimeOffset GetEndTime(string input) {
-        // Match days, hours, minutes, and seconds in the input string
-        var match = Regex.Match(input, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
-
-        if (match.Success) { 
-            // Parse days, hours, minutes, and seconds
-            int.TryParse(match.Groups[1].Value, out int days);
-            int.TryParse(match.Groups[2].Value, out int hours);
-            int.TryParse(match.Groups[3].Value, out int minutes);
-            int.TryParse(match.Groups[4].Value, out int seconds);
-            // Create a TimeSpan from the parsed values
-            TimeSpan duration = new TimeSpan(days, hours, minutes, seconds);
-            // Add the duration to the current DateTime to get a DateTimeOffset
-            return DateTimeOffset.Now.Add(duration);
-        }
-
-        // If the input string is not in the correct format, throw an exception
-        throw new FormatException($"[MsgResultLogic]: Invalid duration format: {input}");
     }
 
     private bool HandleProvideInfo2Message(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {

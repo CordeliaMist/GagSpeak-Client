@@ -495,8 +495,9 @@ public class WhitelistTab : ITab, IDisposable
                 sendNext = false; // now it will scan the first half
                 _config.acceptingInfoRequests = false;
                 _config.SendInfoName = "";
+                interactionButtonPressed = true;
                 // add another timer named "RequestInfoCooldown" that expires in 20seconds, and when it does, it will set acceptingInfoRequests to true
-                _timerService.StartTimer("RequestInfoCooldown", "20s", 1000, () => { _config.acceptingInfoRequests = true; });
+                _timerService.StartTimer("InteractionCooldown", "4s", 1000, () => { interactionButtonPressed = false; });
             }
         }
     } // end our draw whitelist function
