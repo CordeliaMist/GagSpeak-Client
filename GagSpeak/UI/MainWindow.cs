@@ -48,7 +48,7 @@ public class MainWindow : Window
         // Next let's set the size of the window
         SizeConstraints = new WindowSizeConstraints() {
             MinimumSize = new Vector2(500, 520),     // Minimum size of the window
-            MaximumSize = new Vector2(500, 520)      // Maximum size of the window
+            MaximumSize = new Vector2(550, 550)      // Maximum size of the window
         };
 
         // set the private readonly's to the passed in data of the respective names
@@ -75,7 +75,7 @@ public class MainWindow : Window
     public override void PreDraw() {
         // Before we draw, lets lock the window in place, just so until its finished being drawn, we dont have anyone dragging shit everywhere.
         // It also helps to make sure the very modular precent based widths we will configure function properly.
-        Flags |= ImGuiWindowFlags.NoResize;   //<--- UNCOMMMENT THIS ONCE READY FOR RELEASE 
+        //Flags |= ImGuiWindowFlags.NoResize;   //<--- UNCOMMMENT THIS ONCE READY FOR RELEASE 
     }
 
     public override void Draw() {

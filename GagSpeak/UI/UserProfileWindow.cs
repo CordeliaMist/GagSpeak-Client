@@ -37,11 +37,10 @@ public class UserProfileWindow : Window, IDisposable
     }
         SizeConstraints = new WindowSizeConstraints() {
             MinimumSize = new Vector2(250, 350),     // Minimum size of the window
-            MaximumSize = new Vector2(250, 350) // Maximum size of the window
+            MaximumSize = new Vector2(300, 400) // Maximum size of the window
         };
         // add flags that allow you to move, but not resize the window, also disable collapsible
         Flags = ImGuiWindowFlags.NoCollapse;
-        Flags |= ImGuiWindowFlags.NoResize;
         _config = config;
     }
 
@@ -63,7 +62,7 @@ public class UserProfileWindow : Window, IDisposable
                 ImGui.Text($"Player Relation: "); ImGui.SameLine();
                 ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1.0f), $"{whitelistPlayerData.relationshipStatus}");
             } else {
-                ImGui.Text($"Player Is Your "); ImGui.SameLine();
+                ImGui.Text($"{whitelistPlayerData.name.Split(' ')[0]} Is Your "); ImGui.SameLine();
                 ImGui.TextColored(new Vector4(0.9f, 0.2f, 0.4f, 1.0f), $"{whitelistPlayerData.relationshipStatus}");
                 ImGui.Text($"Commited for: "); ImGui.SameLine();
                 ImGui.TextColored(new Vector4(0.9f, 0.9f, 0.2f, 1.0f), $"{whitelistPlayerData.GetCommitmentDuration()}");

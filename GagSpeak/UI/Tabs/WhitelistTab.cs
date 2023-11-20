@@ -45,6 +45,7 @@ public class WhitelistTab : ITab, IDisposable
     private string _lockLabel; // current selection on gag lock DD
     private readonly GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
     private readonly GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
+    private WhitelistCharData _ListItemSelected;
 
     // store time information & control locks
     private bool enableInteractions = false; // determines if we can interact with with whitelist buttons or not (for safety to prevent accidental tells)
@@ -232,6 +233,10 @@ public class WhitelistTab : ITab, IDisposable
             ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
             var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X/2, 25.0f * ImGuiHelpers.GlobalScale );
             // create a button for popping out the current players profile
+            // update the currently selected person for the profile list
+
+            _userProfileWindow._profileIndexOfUserSelected = _currentWhitelistItem;
+            // add a button to display it
             if (ImGui.Button("Show Profile", buttonWidth)) {
                 // Get the currently selected user
                 var selectedUser = _config.Whitelist[_currentWhitelistItem];
@@ -442,11 +447,14 @@ public class WhitelistTab : ITab, IDisposable
             // Create the button for the sixth row, first column
             if (ImGui.Button("Tooggle Lock Live Chat Garbler")) {
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
-                selectedWhitelistItem.lockedLiveChatGarbler = true; // modify property.
-                _config.Whitelist[_currentWhitelistItem] = selectedWhitelistItem; // update the whitelist
-                // send the message
-                OrderLiveGarbleLockToPlayer(_config.Whitelist[_currentWhitelistItem]);
-
+                // the player you are doing this on must be a relationstatus of slave
+                if(selectedWhitelistItem.relationshipStatus == "Slave") {
+                    selectedWhitelistItem.lockedLiveChatGarbler = true; // modify property.
+                    _config.Whitelist[_currentWhitelistItem] = selectedWhitelistItem; // update the whitelist
+                    OrderLiveGarbleLockToPlayer(_config.Whitelist[_currentWhitelistItem]);
+                } else {
+                    GagSpeak.Log.Debug("[Whitelist]: Player must be a slave relation to toggle this!");
+                }
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });

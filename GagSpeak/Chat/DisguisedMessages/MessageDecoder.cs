@@ -274,6 +274,7 @@ public class MessageDecoder {
             decodedMessage[0] = "provideInfo";      // we found commandtype
             try
             {
+                GagSpeak.Log.Debug($"[Message Decoder]: provideinfo recieved: {recievedMessage}");
                 // Use regex to match the required information
                 var match = Regex.Match(recievedMessage,
                     @"\*(.*?) from (.*?) eyes their (.*?), in a (.*?) state, silenced over (.*?) minutes, already drooling.");
@@ -284,8 +285,8 @@ public class MessageDecoder {
                 decodedMessage[4] = match.Groups[1].Value + " " + match.Groups[2].Value;
                 decodedMessage[5] = match.Groups[3].Value;
                 // Use separate regex for each gag layer
-                int droolingStartIndex = recievedMessage.IndexOf("drooling");
-                if (droolingStartIndex != -1) { recievedMessage = recievedMessage.Substring(droolingStartIndex + "drooling".Length); }
+                int droolingStartIndex = recievedMessage.IndexOf("drooling.");
+                if (droolingStartIndex != -1) { recievedMessage = recievedMessage.Substring(droolingStartIndex + "drooling.".Length); }
                 // for the gags
                 int surfaceLayerStartIndex = recievedMessage.IndexOf("Their surfacelayer");
                 string firstSubstring, secondSubstring;
@@ -296,7 +297,6 @@ public class MessageDecoder {
                     firstSubstring = recievedMessage;
                     secondSubstring = "";
                 }
-
                 for (int i = 0; i < 2; i++) {
                     string currentMessage = i == 0 ? firstSubstring : secondSubstring;
                     // if our message contains "had nothing on it", then we know that the gag is none, so skip over and set all to defaults
@@ -309,6 +309,8 @@ public class MessageDecoder {
                     }
                     int gagTypeStartIndex = currentMessage.IndexOf("sealed off by a") + 16;
                     int gagTypeEndIndex = currentMessage.IndexOf(", a");
+                    if(gagTypeEndIndex == -1) { 
+                        gagTypeEndIndex = currentMessage.IndexOf("."); } // throw this is no padlock is equipped instead
                     string gagTypeSubstring = currentMessage.Substring(gagTypeStartIndex, gagTypeEndIndex - gagTypeStartIndex).Trim();
                     decodedMessage[6+i] = gagTypeSubstring;
                     if (currentMessage.Contains("securing it")) {
@@ -316,7 +318,6 @@ public class MessageDecoder {
                         int padlockEndIndex = currentMessage.IndexOf(" securing it");
                         string padlockSubstring = currentMessage.Substring(padlockStartIndex, padlockEndIndex - padlockStartIndex).Trim();
                         decodedMessage[9+i] = padlockSubstring;
-
                         if (currentMessage.Contains("with")) {
                             int timerStartIndex = currentMessage.IndexOf("with") + 5;
                             int timerEndIndex = currentMessage.IndexOf(" left");
@@ -366,23 +367,27 @@ public class MessageDecoder {
                 [14] = selectedGagPadlockAssigner3
                 [17] = selectedGagPadlockTimer3 */
             try {
+                decodedMessage[8] = "None";   // gagtype
+                decodedMessage[11] = "None";  // padlock
+                decodedMessage[14] = "";  // assigner
+                decodedMessage[17] = "0s";  // timer
                 // start by removing the || from the front
                 recievedMessage = recievedMessage.Replace("||", "");
                 if (recievedMessage.Contains("had nothing on it")) {
                     // Set layer gag info to all none
-                    decodedMessage[8] = "None";   // gagtype
-                    decodedMessage[11] = "None";  // padlock
-                    decodedMessage[14] = "";  // assigner
-                    decodedMessage[17] = "0s";  // timer
                 }
                 else {
                     // Extract the gag type
-                    int gagTypeStartIndex = recievedMessage.IndexOf("sealed off by a") + 16;
-                    int gagTypeEndIndex = recievedMessage.IndexOf(".*");
+                    GagSpeak.Log.Debug($"[Message Decoder]: provideinfo recieved: {recievedMessage}");
+                    int gagTypeStartIndex = recievedMessage.IndexOf("was covered with a") + 18;
+                    int gagTypeEndIndex = recievedMessage.IndexOf(", a");
+                    if(gagTypeEndIndex == -1) { // this this if no padlock is equipped instead
+                        gagTypeEndIndex = recievedMessage.IndexOf(".*"); }
+                    // parse out and store the gag type
                     decodedMessage[8] = recievedMessage.Substring(gagTypeStartIndex, gagTypeEndIndex - gagTypeStartIndex).Trim();  // gagtype
                     // Extract padlock information
                     if (recievedMessage.Contains("securing it")) {
-                        int padlockStartIndex = recievedMessage.IndexOf("securing it") + 12;
+                        int padlockStartIndex = recievedMessage.IndexOf("sealing it") + 11;
                         int padlockEndIndex = recievedMessage.Contains("with") ? recievedMessage.IndexOf("with") : recievedMessage.IndexOf(".");
                         decodedMessage[11] = recievedMessage.Substring(padlockStartIndex, padlockEndIndex - padlockStartIndex).Trim();  // padlock
                         // Extract timer information (if present)

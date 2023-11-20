@@ -379,16 +379,27 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
 
     // handle the live chat garbler lock message
     private bool HandleLiveChatGarblerLockMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
-        // just set the lockedLiveChatGarbler to true and print message. This will act like a toggle and do the inverse of whatever is currently set
-        if(_config.LockDirectChatGarbler == false) {
-            _config.DirectChatGarbler = true; _config.LockDirectChatGarbler = true;
-            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Your Mistress has decided you no longer have permission to speak clearly...").AddItalicsOff().BuiltString);
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse toggling livegarblerlock to ON for the slave.");
+        // locate the player in the whitelist matching the playername in the list
+        string playerNameWorld = decodedMessage[4];
+        string[] parts = playerNameWorld.Split(' ');
+        string world = parts.Length > 1 ? parts.Last() : "";
+        string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+        var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+        // see if they exist AND sure they have a mistress relation on your end
+        if(playerInWhitelist != null && playerInWhitelist.relationshipStatus == "Mistress") {
+            if(_config.LockDirectChatGarbler == false) {
+                _config.DirectChatGarbler = true; _config.LockDirectChatGarbler = true;
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Your Mistress has decided you no longer have permission to speak clearly...").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse toggling livegarblerlock to ON for the slave.");
+            }
+            else {
+                _config.DirectChatGarbler = false; _config.LockDirectChatGarbler = false;
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Your Mistress returns your permission to speak once more. How Generous...").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse toggling livegarblerlock to OFF for the slave.");
+            }
         }
         else {
-            _config.DirectChatGarbler = false; _config.LockDirectChatGarbler = false;
-            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Your Mistress returns your permission to speak once more. How Generous...").AddItalicsOff().BuiltString);
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse toggling livegarblerlock to OFF for the slave.");
+            LogError($"ERROR, Invalid live chat garbler lock message parse.");
         }
         return true;
     }
