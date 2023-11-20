@@ -174,8 +174,6 @@ public class GeneralTab : ITab, IDisposable
             }
             ImGui.NewLine();
         }
-        // we started at the bottom now we here... wait, i mean the reverse of that. Actually you know what, nevermind
-        ImGui.TextColored(new Vector4(1,0,0,1), $"Precaution: This update is one of the last few updates before release.I strongly advise you\n to wait to use plugin if not with Cordy until this text is gone.");
     }
 
     private void DisableModeButtons() {

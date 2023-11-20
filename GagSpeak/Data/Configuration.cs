@@ -106,15 +106,15 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
             this.selectedGagPadLockTimer = new List<DateTimeOffset> { DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now };}
         // set default values for _isLocked
         if (this._isLocked == null || !this._isLocked.Any() || this._isLocked.Count > 3) {
-            GagSpeak.Log.Debug($"_isLocked is null, creating new list");
+            GagSpeak.Log.Debug($"[Config]: _isLocked is null, creating new list");
             this._isLocked = new List<bool> { false, false, false };} //
         // set default values for displaytext
         if (this.displaytext == null || !this.displaytext.Any() || this.displaytext.Count > 3) {
-            GagSpeak.Log.Debug($"displaytext is null, creating new list");
+            GagSpeak.Log.Debug($"[Config]: displaytext is null, creating new list");
             this.displaytext = new List<string> { "", "", "" };}
         // set default values for _padlockIdentifier
         if (this._whitelistPadlockIdentifier == null) {
-            GagSpeak.Log.Debug($"_whitelistPadlockIdentifier is null, creating new list");
+            GagSpeak.Log.Debug($"[Config]: _whitelistPadlockIdentifier is null, creating new list");
             this._whitelistPadlockIdentifier = new PadlockIdentifier();}
     }
 
@@ -128,7 +128,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
 
     public void Load(ConfigMigrationService migrator) {
         static void HandleDeserializationError(object? sender, ErrorEventArgs errorArgs) {
-            GagSpeak.Log.Error( $"Error parsing Configuration at {errorArgs.ErrorContext.Path}, using default or migrating:\n{errorArgs.ErrorContext.Error}");
+            GagSpeak.Log.Error( $"[Config]: Error parsing Configuration at {errorArgs.ErrorContext.Path}, using default or migrating:\n{errorArgs.ErrorContext.Error}");
             errorArgs.ErrorContext.Handled = true;
         }
         if (!File.Exists(_saveService.FileNames.ConfigFile))

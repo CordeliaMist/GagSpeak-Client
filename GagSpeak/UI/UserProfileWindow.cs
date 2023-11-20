@@ -29,9 +29,9 @@ public class UserProfileWindow : Window, IDisposable
         _config = config;
         _uiBuilder = uiBuilder;
         var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "ReallyHeavyGag.png");
-        GagSpeak.Log.Debug($"Loading image from {imagePath}");
+        GagSpeak.Log.Debug($"[Profile Popout]: Loading image from {imagePath}");
         var IconImage = _uiBuilder.LoadImage(imagePath);
-        GagSpeak.Log.Debug($"Loaded image from {imagePath}");
+        GagSpeak.Log.Debug($"[Profile Popout]: Loaded image from {imagePath}");
 
         _dalamudTextureWrap = IconImage;
     }

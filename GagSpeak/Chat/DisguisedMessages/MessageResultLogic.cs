@@ -105,7 +105,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
     private bool IsMistress(string playerName) {
         PlayerPayload playerPayload; // get the current player info
         try { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); } catch { LogError("[MsgResultLogic]: Failed to get player payload."); return false; }
-        GagSpeak.Log.Debug($"PlayerName: {playerPayload.PlayerName}");
+        // GagSpeak.Log.Debug($"PlayerName: {playerPayload.PlayerName}");
         // see if decodedMessage[4] == playerPayload.name
         if (playerName == playerPayload.PlayerName) {
             return true;}
@@ -511,11 +511,11 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 playerInWhitelist.selectedGagPadlocksTimer[0] = GetEndTime(decodedMessage[15]);
                 playerInWhitelist.selectedGagPadlocksTimer[1] = GetEndTime(decodedMessage[16]);
 
-                GagSpeak.Log.Debug($"Received information response from {playerName} [Part 1/2]");
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Received information response from {playerName} [Part 1/2]");
                 playerNameTemp = playerName; // transfer over to the 2nd function
             }            
         } catch {
-            LogError($"ERROR, Invalid provideInfo [1/2] message parse.");
+            LogError($"[MsgResultLogic]: Invalid provideInfo [1/2] message parse.");
         }        
         return true;
     }
@@ -537,7 +537,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         }
 
         // If the input string is not in the correct format, throw an exception
-        throw new FormatException($"Invalid duration format: {input}");
+        throw new FormatException($"[MsgResultLogic]: Invalid duration format: {input}");
     }
 
     private bool HandleProvideInfo2Message(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
@@ -556,10 +556,10 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 playerInWhitelist.selectedGagPadlocksTimer[2] = GetEndTime(decodedMessage[17]);
                 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Finished Recieving Information from {playerName}.").AddItalicsOff().BuiltString);
-                GagSpeak.Log.Debug($"Received information response from {playerName} [Part 2/2]");
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Received information response from {playerName} [Part 2/2]");
             }            
         } catch {
-            LogError($"ERROR, Invalid provideInfo [2/2] message parse.");
+            LogError($"[MsgResultLogic]: Invalid provideInfo [2/2] message parse.");
         }     
         return true;
     }

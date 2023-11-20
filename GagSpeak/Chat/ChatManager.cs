@@ -146,14 +146,14 @@ public class ChatManager
             }
             
             ////// Once we have reached this point, we know we have recieved a tell, and that it is from one of our filtered players. //////
-            GagSpeak.Log.Debug($"Recieved tell from PNAME: {pName} | SNAME: {sName} | SenderName: {senderName} | Message: {fmessage}");
+            GagSpeak.Log.Debug($"[Chat Manager]: Recieved tell from: {senderName}");
 
             // if the incoming tell is an encoded message, lets check if we are in dom mode before accepting changes
             int encodedMsgIndex = 0; // get a index to know which encoded msg it is, if any
             if (MessageDictionary.EncodedMsgDictionary(chatmessage.TextValue, ref encodedMsgIndex)) {
                 // if in dom mode, back out, none of this will have any significance
                 if (_config.InDomMode && encodedMsgIndex > 0 && encodedMsgIndex <= 7) {
-                    GagSpeak.Log.Debug("Player attempted to gag you, but you are in Dominant mode, so ignoring");
+                    GagSpeak.Log.Debug("[Chat Manager]: Encoded Command Ineffective Due to Dominant Status");
                     isHandled = true;
                     return;
                 }
@@ -168,7 +168,6 @@ public class ChatManager
                 
                 // for now at least, anything beyond 7 is a whitelist exchange message
                 } else if (encodedMsgIndex > 7) {
-                    GagSpeak.Log.Debug("This is a whitelist exchange message!");
                     List<string> decodedWhitelistMsg = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
                     // function that will determine what happens to the player as a result of the tell.
                     if(_msgResultLogic.WhitelistMsgResLogic(fmessage.ToString(), decodedWhitelistMsg, isHandled, _clientChat, _config) ) {
@@ -229,10 +228,7 @@ public class ChatManager
             if (!(t is PlayerCharacter pc)) continue;
             if (pc.Name.TextValue == nameInput) {
                 foreach (var whitelistChar in _config.Whitelist) {
-                    // name in the whitelist is a part of the name string
-                    GagSpeak.Log.Debug($"Whitelist name: {whitelistChar.name} | NameInput: {nameInput}");
                     if (whitelistChar.name.Contains(nameInput)) {
-                        GagSpeak.Log.Debug($"Match Found!");
                         return true;
                     }
                 }
@@ -249,9 +245,8 @@ public class ChatManager
     public void SendRealMessage(string message) {
         try {
             _realChatInteraction.SendMessage(message);
-        } catch (Exception e) {
-            GagSpeak.Log.Warning($"{e},{e.Message}");
-            GagSpeak.Log.Debug($"{e},{e.Message}");
+        } catch {
+            GagSpeak.Log.Error($"[Chat Manager]: Failed to send message: {message}");
         }
     }
 
@@ -273,8 +268,8 @@ public class ChatManager
                         }
                     }
                 }
-            } catch (Exception e) {
-                GagSpeak.Log.Warning($"{e},{e.Message}");
+            } catch {
+                GagSpeak.Log.Error($"[Chat Manager]: Failed to process Framework Update!");
             }
         }
     } 

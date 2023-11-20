@@ -28,7 +28,6 @@ public static class UIHelpers // A class for all of the UI helpers, including ba
 
     // Helper function to clean senders name off the list of clientstate objects
     public static string CleanSenderName(string senderName) {
-        GagSpeak.Log.Debug($"Sender Name: {senderName}");
         string[] senderStrings = SplitCamelCase(RemoveSpecialSymbols(senderName)).Split(" ");
         string playerSender = senderStrings.Length == 1 ? senderStrings[0] : senderStrings.Length == 2 ?
             (senderStrings[0] + " " + senderStrings[1]) :

@@ -197,7 +197,7 @@ public class WhitelistTab : ITab, IDisposable
                 // send a encoded request to the player to request beooming their mistress
                 ImGuiUtil.DrawFrameColumn("Become Their Mistress: "); ImGui.TableNextColumn(); // Next Row (Request To Become Players Mistress)
                 if (ImGui.Button("Request Relation", width2)) {
-                    GagSpeak.Log.Debug("Sending Request to become their mistress");
+                    GagSpeak.Log.Debug("[Whitelist]: Sending Request to become their mistress");
                     RequestMistressToPlayer(_config.Whitelist[_currentWhitelistItem]);
 
                     // Start a 5-second cooldown timer
@@ -209,7 +209,7 @@ public class WhitelistTab : ITab, IDisposable
                 // send a encoded request to the player to request beooming their pet
                 ImGuiUtil.DrawFrameColumn("Become Their Pet: "); ImGui.TableNextColumn();
                 if (ImGui.Button("Request Relation", width2)) {
-                    GagSpeak.Log.Debug("Sending Request to become their pet");
+                    GagSpeak.Log.Debug("[Whitelist]: Sending Request to become their pet");
                     RequestPetToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // Start a 5-second cooldown timer
                     interactionButtonPressed = true;
@@ -219,7 +219,7 @@ public class WhitelistTab : ITab, IDisposable
                 // send a encoded request to the player to request beooming their slave
                 ImGuiUtil.DrawFrameColumn("Become Their Slave: "); ImGui.TableNextColumn(); 
                 if (ImGui.Button("Request Relation", width2)) {
-                    GagSpeak.Log.Debug("Sending Request to become their slave");
+                    GagSpeak.Log.Debug("[Whitelist]: Sending Request to become their slave");
                     RequestSlaveToPlayer(_config.Whitelist[_currentWhitelistItem]);
 
                     // Start a 5-second cooldown timer
@@ -244,14 +244,14 @@ public class WhitelistTab : ITab, IDisposable
             if(whitelist[_currentWhitelistItem].relationshipStatus == "None") {
                 ImGui.BeginDisabled();
                 if (ImGui.Button("Remove Relation", buttonWidth)) {
-                    GagSpeak.Log.Debug("Sending Request to remove relation to player");
+                    GagSpeak.Log.Debug("[Whitelist]: Sending Request to remove relation to player");
                     RequestRelationRemovealToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
                 }
                 ImGui.EndDisabled();
             } else {
                 if (ImGui.Button("Remove Relation", buttonWidth)) {
-                    GagSpeak.Log.Debug("Sending Request to remove relation to player");
+                    GagSpeak.Log.Debug("[Whitelist]: Sending Request to remove relation to player");
                     RequestRelationRemovealToPlayer(_config.Whitelist[_currentWhitelistItem]);
                     // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
                 }
@@ -279,13 +279,11 @@ public class WhitelistTab : ITab, IDisposable
                     // now we can get the name and world from them
                     var world = targetCharacter.HomeWorld.Id;
                     var worldName = _dataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.World>()?.GetRow((uint)world)?.Name?.ToString();
-                    
-                    
-                    GagSpeak.Log.Debug($"Targetted Player: {targetName} from {world}, {worldName}");
+                    GagSpeak.Log.Debug($"[Whitelist]: Targetted Player: {targetName} from {world}, {worldName}");
 
                     // And now, if the player is not already in our whitelist, we will add them. Otherwise just do nothing.
                     if (!_config.Whitelist.Any(item => item.name == targetName)) {
-                        GagSpeak.Log.Debug($"Adding targetted player to whitelist {_clientState.LocalPlayer.TargetObject})");
+                        GagSpeak.Log.Debug($"[Whitelist]: Adding targetted player to whitelist {_clientState.LocalPlayer.TargetObject})");
                         if(whitelist.Count == 1 && whitelist[0].name == "None") { // If our whitelist just shows none, replace it with first addition.
                             whitelist[0] = new WhitelistCharData(targetName, worldName, "None");
                             _config.Save();
@@ -334,14 +332,14 @@ public class WhitelistTab : ITab, IDisposable
 
                 // set the relation request to established
                 whitelist[_currentWhitelistItem].PendingRelationshipRequest = "Established";
-                GagSpeak.Log.Debug($"Accepting incoming relation request from {whitelist[_currentWhitelistItem].name}");
+                GagSpeak.Log.Debug($"[Whitelist]: Accepting incoming relation request from {whitelist[_currentWhitelistItem].name}");
             }
             ImGui.SameLine();
             if (ImGui.Button($"Decline {whitelist[_currentWhitelistItem].name.Split(' ')[0]}'s Request", new Vector2(ImGui.GetContentRegionAvail().X, 25)))
             {
                 // set the relation request to established
                 whitelist[_currentWhitelistItem].PendingRelationshipRequest = "None";
-                GagSpeak.Log.Debug($"Declining incoming relation request from {whitelist[_currentWhitelistItem].name}");
+                GagSpeak.Log.Debug($"[Whitelist]: Declining incoming relation request from {whitelist[_currentWhitelistItem].name}");
             }
         }
         
@@ -455,7 +453,7 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.SameLine();
             if (ImGui.Button("Request Player Info")) {
                 // send a message to the player requesting their current info
-                GagSpeak.Log.Debug("Sending Request for Player Info");
+                GagSpeak.Log.Debug("[Whitelist]: Sending Request for Player Info");
                 RequestInfoFromPlayer(_config.Whitelist[_currentWhitelistItem]);
 
                 // Start a 5-second cooldown timer
@@ -475,7 +473,7 @@ public class WhitelistTab : ITab, IDisposable
         // add a section here that scans to see if we are recieving any incoming information requests, and if we are, to respond, if off cooldown.
         if(interactionButtonPressed == false && _config.SendInfoName != "") {
             // if we are accepting info requests, and we have a name to send info to, then we will send the info, switch acceptinfo requests to false, and the name back to nothing, also start a timer that expires in 10seconds
-            GagSpeak.Log.Debug("Accepting Player Info");
+            GagSpeak.Log.Debug("[Whitelist]: Accepting Player Info");
             if(sendNext == false) {
                 // send the first half
                 SendInfoToPlayer();
@@ -519,7 +517,7 @@ public class WhitelistTab : ITab, IDisposable
     // we need a function for if the password is not given
     private void LockGagOnPlayer(int layer, string lockType, WhitelistCharData selectedPlayer) { LockGagOnPlayer(layer, lockType, selectedPlayer, ""); }
     private void LockGagOnPlayer(int layer, string lockType, WhitelistCharData selectedPlayer, string password) {
-        GagSpeak.Log.Debug($"Locking {lockType} on {selectedPlayer.name} with password {password}");
+        GagSpeak.Log.Debug($"[Whitelist]: Locking {lockType} on {selectedPlayer.name} with password {password}");
         PlayerPayload playerPayload;
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)

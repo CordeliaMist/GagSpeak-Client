@@ -38,39 +38,38 @@ public unsafe class ChatInputProcessor : IDisposable {
             // try to get the chatinput address
             processChatInputAddress = scanner.ScanText("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86 ?? ?? ?? ?? ?? ?? ?? ??");
             Ready = true;
-            GagSpeak.Log.Debug($"ChatInputProcessor: Found chat input address at {processChatInputAddress:X}");
-        } catch (Exception e) {
-            // log it if we fail
-            GagSpeak.Log.Debug($"{e} : Failed to find chat input address");
+            GagSpeak.Log.Debug($"[Chat Processor]: Input Address Found Sucessfully: {processChatInputAddress:X}");
+        } catch {
+            GagSpeak.Log.Error($"[Chat Processor]: Failed to find input address!");
         }
 
         // if we get here, it means we can enable our scanner, because we found the address
         // but just as a failsafe, if we aren't ready, abort and return.
         if (!Ready) {
-             GagSpeak.Log.Debug("Why are we here?");
+            GagSpeak.Log.Error($"[Chat Processor]: You really REALLY shouldnt be seeing this!!!!");
             return;
         }
         //set up our hooks
         // first setup a temp storage to yoink from
         try {
-            GagSpeak.Log.Debug("ChatInputProcessor: Setting up hooks");
+            GagSpeak.Log.Debug("[Chat Processor]: Setting up hooks");
             var h = interop.HookFromAddress(processChatInputAddress, new ProcessChatInputDelegate(ProcessChatInputDetour));
-            GagSpeak.Log.Debug("ChatInputProcessor: Setting up hook wrapper");
+            GagSpeak.Log.Debug("[Chat Processor]: Setting up hook wrapper");
             var wh = new HookWrapper<ProcessChatInputDelegate>(h); // make it a hook wrapper
             HookList.Add(wh); // add it to the hook list
             processChatInputHook = wh; // set the hook to the hook wrapper
             processChatInputHook?.Enable(); // enable the hook
-            GagSpeak.Log.Debug("ChatInputProcessor: Hook setup complete");
+            GagSpeak.Log.Debug("[Chat Processor]: Hook setup complete");
             Enabled = true; // set enabled to true
         }
-        catch (Exception e) {
-            GagSpeak.Log.Error($"{e} : Failed to setup hooks");
+        catch {
+            GagSpeak.Log.Error("[Chat Processor]: Failed to setup hooks");
         }
     }
 
     //next up processing the input
     private unsafe byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3) {
-        GagSpeak.Log.Debug("ChatInputProcessor: Processing chat input detour");
+        GagSpeak.Log.Debug("[Chat Processor]: Detouring Chat Input Message");
         // try the following
         try {
             var bc = 0; // bc = ??? (possibly bit count)
@@ -85,31 +84,31 @@ public unsafe class ChatInputProcessor : IDisposable {
             }
             
             var inputString = Encoding.UTF8.GetString(*message, bc);
-            GagSpeak.Log.Debug($"Message: {inputString}"); // see our message
+            GagSpeak.Log.Debug($"[Chat Processor]: Detouring Message: {inputString}"); // see our message
             // first let's make sure its not a command
             if (inputString.StartsWith("/")) {
                 // if it is isn't a command, we can just return the original message
-                GagSpeak.Log.Debug("ChatInputProcessor: Message is a command, returning original message");
+                GagSpeak.Log.Debug("[Chat Processor]: Ignoring Message as it is a command");
                 return processChatInputHook.Original(uiModule, message, a3);
             }
 
             // if our current channel is in our list of enabled channels AND we have enabled direct chat translation...
             if ( _config.Channels.Contains(Data.ChatChannel.GetChatChannel()) && (_config.DirectChatGarbler == true) ) {
                 // if we satisfy this condition, it means we can try to attempt modifying the message.
-                GagSpeak.Log.Debug($"ChatInputDetour: Attempting to modify message!");
+                GagSpeak.Log.Debug($"[Chat Processor]: Modifying Message");
                 // we can try to attempt modifying the message.
                 try {
-                    GagSpeak.Log.Debug($"ChatInputDetour: input Message -> {inputString}");
+                    GagSpeak.Log.Debug($"[Chat Processor]: Input -> {inputString}");
                     // create the output translated text
                     var output = _messageGarbler.GarbleMessage(inputString, _config.GarbleLevel);
-                    GagSpeak.Log.Debug($"ChatInputDetour: translated Message -> {output}");
+                    GagSpeak.Log.Debug($"[Chat Processor]: Output -> {output}");
                     _historyService.AddTranslation(new Translation(inputString, output));
                     // create the new string
                     var newStr = output;
                     // if our new string is less than or equal to 500 characters, we can alias it
                     if (newStr.Length <= 500) {
                         // log the sucessful alias
-                        GagSpeak.Log.Debug($"Aliasing Message: {inputString} -> {newStr}");
+                        GagSpeak.Log.Debug($"[Chat Processor]: New Packet Message: {newStr}");
                         // encode the new string
                         var bytes = Encoding.UTF8.GetBytes(newStr);
                         // allocate the memory
@@ -131,16 +130,16 @@ public unsafe class ChatInputProcessor : IDisposable {
                         return r;
                     }
                     // if we reached this point, it means our message was longer than 500 character, inform the user!
-                    GagSpeak.Log.Error("Message after translation was just too long!");
+                    GagSpeak.Log.Error("[Chat Processor]: Message after was applied is too long!");
                     return 0; // fucking ABORT!
                 }
                 catch (Exception e) { // if at any point we fail here, throw an exception.
-                    GagSpeak.Log.Error($"Error sending message to chatbox: {e.Message}");
+                    GagSpeak.Log.Error($"[Chat Processor]: Error sending message to chatbox: {e.Message}");
                 }
             }
         } 
         catch (Exception e) { // cant ever have enough safety!
-            GagSpeak.Log.Error($"Error sending message to chatbox (secondary): {e.Message}");
+            GagSpeak.Log.Error($"[Chat Processor]: Error sending message to chatbox (secondary): {e.Message}");
         }
         // return the original message untranslated
         return processChatInputHook.Original(uiModule, message, a3);

@@ -10,6 +10,7 @@ using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.UI.Tabs.WhitelistTab;
 using GagSpeak.UI.Tabs.ConfigSettingsTab;
 using GagSpeak.UI.Tabs.HelpPageTab;
+using Glamourer.Gui;
 
 namespace GagSpeak.UI;
 
@@ -27,6 +28,7 @@ public class MainWindow : Window
 
     // Private readonly variables here, fill in rest later. (or rather take out)
     private readonly GagSpeakConfig  _config; // Might just be used for debug stuff, may be able to remove.
+    private readonly GagSpeakChangelog _changelog;
     // private readonly TabSelected    _event;
     private readonly ITab[]         _tabs;
 
@@ -36,8 +38,8 @@ public class MainWindow : Window
     public readonly ConfigSettingsTab   ConfigSettings;
     public readonly HelpPageTab         HelpPage;
     public TabType SelectTab = TabType.None; // What tab is selected?
-    public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general,
-        WhitelistTab whitelist, ConfigSettingsTab configsettings, HelpPageTab helpPageTab): base(GetLabel())
+    public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general, GagSpeakChangelog changelog,
+    WhitelistTab whitelist, ConfigSettingsTab configsettings, HelpPageTab helpPageTab): base(GetLabel())
     {
         // let the user know if their direct chat garlber is still enabled upon launch
         // Let's first make sure that we disable the plugin while inside of gpose.
@@ -58,6 +60,7 @@ public class MainWindow : Window
         // Below are the stuff besides the tabs that are passed through
         //_event     = @event;
         _config    = config;
+        _changelog = changelog;
         // the tabs to be displayed
         _tabs = new ITab[]
         {
@@ -88,9 +91,9 @@ public class MainWindow : Window
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
         ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 10f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
         // Can use basic stuff for now, but if you want to look into locking buttons, reference glamourer's button / checkbox code.
-        if (ImGui.Button("Save & Close")) {
-            Toggle();
-            _config.Save();
+        if (ImGui.Button("Changelog")) {
+            // force open the changelog here
+            _changelog._changelog.Toggle();
         }
 
         // In that same line...

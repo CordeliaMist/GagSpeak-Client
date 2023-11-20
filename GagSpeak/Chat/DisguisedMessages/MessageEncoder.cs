@@ -141,7 +141,6 @@ public class MessageEncoder // change to message encoder later
             baseString += $". ";
         }
         baseString += " ->";
-        GagSpeak.Log.Debug($"Compiled Info Message of length {baseString.Length}: {baseString}");
         return baseString;
     }
 

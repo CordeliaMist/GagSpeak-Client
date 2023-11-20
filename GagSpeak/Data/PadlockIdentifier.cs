@@ -211,7 +211,7 @@ public class PadlockIdentifier {
     // a way to update our password information in the config file. (For User Padlocks Only)
     public void UpdateConfigPadlockPasswordInfo(int layerIndex, bool isUnlocking, GagSpeakConfig _config) {
         GagPadlocks padlockType = _padlockType;
-        if (isUnlocking) { _padlockType = GagPadlocks.None; GagSpeak.Log.Debug("Unlocking Padlock");}
+        if (isUnlocking) { _padlockType = GagPadlocks.None; GagSpeak.Log.Debug("[Padlock] Unlocking Padlock");}
         // timers are handled by the timer service so we dont need to worry about it.
         switch (padlockType) {
             case GagPadlocks.MetalPadlock:
@@ -231,18 +231,15 @@ public class PadlockIdentifier {
             case GagPadlocks.TimerPasswordPadlock:
                 _config.selectedGagPadlocks[layerIndex] = _padlockType;
                 _config.selectedGagPadlocksPassword[layerIndex] = _storedPassword;
-                // print the config stuff
-                GagSpeak.Log.Debug($"Padlock: {_config.selectedGagPadlocks[layerIndex]}");
-                GagSpeak.Log.Debug($"Password: {_config.selectedGagPadlocksPassword[layerIndex]}");
                 break;
             case GagPadlocks.MistressPadlock:
                 // handle MistressPadlock case
                 _config.selectedGagPadlocks[layerIndex] = _padlockType;
-                _config.selectedGagPadlocksAssigner[layerIndex] = "mmmmmmmmmm mmmmmmmmmm";
+                //_config.selectedGagPadlocksAssigner[layerIndex] = "mmmmmmmmmm mmmmmmmmmm";
                 break;
             case GagPadlocks.MistressTimerPadlock:
                 _config.selectedGagPadlocks[layerIndex] = _padlockType;
-                _config.selectedGagPadlocksAssigner[layerIndex] = "mmmmmmmmmm mmmmmmmmmm";
+                //_config.selectedGagPadlocksAssigner[layerIndex] = "mmmmmmmmmm mmmmmmmmmm";  <--- dont think we even need these lines
                 break;
             default:
                 // No password field should be displayed

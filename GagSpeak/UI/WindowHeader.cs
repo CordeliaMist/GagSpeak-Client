@@ -34,7 +34,6 @@ public static class WindowHeader
         // If our text has a color, draw it with the color, otherwise, draw it without.
         if (textColor != 0) {
             ImGuiUtil.DrawTextButton(text, new Vector2(midSize, ImGui.GetFrameHeight()), frameColor, textColor);
-            GagSpeak.Log.Debug("Drawing Header");
         } else
             ImGuiUtil.DrawTextButton(text, new Vector2(midSize, ImGui.GetFrameHeight()), frameColor);
         

@@ -157,17 +157,17 @@ public class GagListingsDrawer : IDisposable
                             // at this point, our password is valid, so we can successfully unlock the padlock
                             _config._isLocked[layerIndex] = false;
                             _adjustDisp[layerIndex] = false;
-                            GagSpeak.Log.Debug($"Padlock on slot {layerIndex} has been unlocked.");
+                            GagSpeak.Log.Debug($"[GagList Drawer]: Padlock[{layerIndex}] unlocked.");
                             _config._padlockIdentifier[layerIndex].ClearPasswords();
                             _config._padlockIdentifier[layerIndex].UpdateConfigPadlockPasswordInfo(layerIndex, !_config._isLocked[layerIndex], _config);
                             config.Save();
                         } 
                         else {     
-                            GagSpeak.Log.Debug($"Password for Padlock is incorrect, try again.");
+                            GagSpeak.Log.Debug($"[GagList Drawer]: Password for Padlock is incorrect.");
                         }
                     } 
                     else        
-                        GagSpeak.Log.Debug($"Password for Padlock is incorrect, try again.");
+                        GagSpeak.Log.Debug($"[GagList Drawer]: Password for Padlock is incorrect.");
                 } 
                 // our button has been clicked while we were unlocked, so attempt to lock
                 else {
@@ -176,7 +176,7 @@ public class GagListingsDrawer : IDisposable
                         // at this point, our password is valid, so we can sucessfully lock the padlock
                         _config._padlockIdentifier[layerIndex].UpdateConfigPadlockPasswordInfo(layerIndex, _config._isLocked[layerIndex], _config);
                         _config._isLocked[layerIndex] = true;
-                        GagSpeak.Log.Debug($"[GagListDrawer]: Padlock on slot {layerIndex} is now locked.");
+                        GagSpeak.Log.Debug($"[GagList Drawer]: Padlock on slot {layerIndex} is now locked.");
 
                         if(_config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
                         _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock ||
@@ -193,7 +193,7 @@ public class GagListingsDrawer : IDisposable
                         config.Save();
                     }
                     else        
-                        GagSpeak.Log.Debug($"Password for Padlock is incorrect, try again.");
+                        GagSpeak.Log.Debug($"[GagList Drawer]: Password for Padlock is incorrect.");
                 }
             }
             // Display the password fields based on the selected padlock type
@@ -222,7 +222,6 @@ public class GagListingsDrawer : IDisposable
     }
 
     private void OnSelectedTypesChanged(object sender, ItemChangedEventArgs e) {
-        GagSpeak.Log.Debug($"Item at index {e.Index} changed from '{e.OldValue}' to '{e.NewValue}'");
         // update the texture wraps
         textureWrap1 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagTypes[0]}.png"));
         textureWrap2 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagTypes[1]}.png"));
@@ -250,12 +249,6 @@ public class GagListingsDrawer : IDisposable
             DateTimeOffset.Now,
             DateTimeOffset.Now
         };
-
-
-        // print out all of the padlock identifiers gagtypes, the drawers _config._isLocked, and the drawers _adjustDisp
-        GagSpeak.Log.Debug($"PadlockIdentifier[0] = {_config._padlockIdentifier[0]._padlockType.ToString()}, _config._isLocked[0] = {_config._isLocked[0]}, _adjustDisp[0] = {_adjustDisp[0]}");
-        GagSpeak.Log.Debug($"PadlockIdentifier[1] = {_config._padlockIdentifier[1]._padlockType.ToString()}, _config._isLocked[1] = {_config._isLocked[1]}, _adjustDisp[1] = {_adjustDisp[1]}");
-        GagSpeak.Log.Debug($"PadlockIdentifier[2] = {_config._padlockIdentifier[2]._padlockType.ToString()}, _config._isLocked[2] = {_config._isLocked[2]}, _adjustDisp[2] = {_adjustDisp[2]}");
         // some dummy code to manually invoke the index change handler because im stupid.
         _config.selectedGagTypes[0] = _config.selectedGagTypes[0];
     }

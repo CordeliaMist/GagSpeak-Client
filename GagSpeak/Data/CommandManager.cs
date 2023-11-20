@@ -7,16 +7,12 @@ using GagSpeak.UI;
 using OtterGui.Classes;
 using GagSpeak.Chat;
 using GagSpeak.Chat.MsgEncoder;
-using GagSpeak.Chat.MsgDecoder;
-using GagSpeak.Chat.MsgResultLogic;
-using GagSpeak.Chat.MsgDictionary;
-using GagSpeak.Data;
+using System.Text.RegularExpressions;
 using GagSpeak.Events;
 using GagSpeak.Chat.Garbler;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using XivCommon.Functions;
 using ChatChannel = GagSpeak.Data.ChatChannel;
-using OtterGui;
 // practicing modular design
 namespace GagSpeak.Services;
 
@@ -148,7 +144,7 @@ public class CommandManager : IDisposable // Our main command list manager
 
             // fire the safewordUsed bool to true so that we set the cooldown
             _config.SafewordUsed = true;
-            _timerService.StartTimer("SafewordUsed", "5s", 1000, () => _config.SafewordUsed = false);
+            _timerService.StartTimer("SafewordUsed", "15m", 1000, () => _config.SafewordUsed = false);
         }
 
         return true;
@@ -238,7 +234,7 @@ public class CommandManager : IDisposable // Our main command list manager
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
             playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"{playerPayload.PlayerName} is Gagging {targetPlayer} with {gagType} on layer {layer}."); // log the action
+            GagSpeak.Log.Debug($"[Command Manager]: /gag apply command sucessful, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             // unique string for /gag apply == "over your mouth as the"
@@ -254,6 +250,8 @@ public class CommandManager : IDisposable // Our main command list manager
 
     // Handles: /gag lock [layer] [locktype] | [player target] && /gag lock [layer] [locktype] | [password] | [player target]
     private bool GagLock(string argument) { // arguement at this point = layer locktype | player target
+        PlayerPayload playerPayload; // get player payload
+        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         // step 1, split by " | " to get the components into the parts we need.
         string[] parts = argument.Split(" | ");
         // if our parts == 2, then we have no password, if our parts == 3, then we have a password. Set our vars now so we dont set them in both statements
@@ -262,7 +260,6 @@ public class CommandManager : IDisposable // Our main command list manager
         string password = string.Empty;
         string layer = string.Empty;
         if (parts.Length == 2) { // Condition, no password.
-            GagSpeak.Log.Debug($"parts.Length == 2, parts[0] = {parts[0]}, parts[1] = {parts[1]}");
             targetplayer = parts[1].Trim(); // Get the target player name
             // take parts[0], which is [layer] [locktype], and split it so that layer == first word of parts[0] and locktype == the rest of[0]
             string[] layerAndLocktype = parts[0].Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -272,7 +269,6 @@ public class CommandManager : IDisposable // Our main command list manager
             locktype = string.Join(" ", layerAndLocktype.Skip(1));
         } 
         else if (parts.Length == 3) { // oh my, we have a password
-            GagSpeak.Log.Debug($"parts.Length == 3, parts[0] = {parts[0]}, parts[1] = {parts[1]}, parts[2] = {parts[2]}");
             targetplayer = parts[2].Trim(); // Get the target player name
             password = parts[1].Trim(); // Get the password
             // take parts[0], which is [layer] [locktype], and split it so that layer == first word of parts[0] and locktype == the rest of[0]
@@ -282,7 +278,7 @@ public class CommandManager : IDisposable // Our main command list manager
             // get the locktype
             locktype = string.Join(" ", layerAndLocktype.Skip(1));
             // verify password.
-            if (IsInvalidPassword(locktype, password)) { return false; } // returns false if it is not a valid password
+            if (IsInvalidPassword(locktype, password, playerPayload.PlayerName)) { return false; } // returns false if it is not a valid password
         }
 
         // if our arguments are not valid, display help information
@@ -313,12 +309,9 @@ public class CommandManager : IDisposable // Our main command list manager
         }
 
         // we have passed in the correct arguments, so begin applying the logic.
-        PlayerPayload playerPayload; // get player payload
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
-            playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"{playerPayload.PlayerName} is putting a {locktype} padlock on {targetplayer}'s layer {layer} gag with password {password}."); // log the action
-            // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
+            GagSpeak.Log.Debug($"[Command Manager]: /gag lock command sucessful, sending off to Message Encoder.");  
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             if (parts.Length == 2) {
                 // unique string for /gag lock == "from her pocket and uses it to lock your"
@@ -327,12 +320,12 @@ public class CommandManager : IDisposable // Our main command list manager
                 // unique string for /gag lock password == "from her pocket and sets the combination password to"
                 _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetplayer, locktype, layer, password));
             } else {
-                _chat.PrintError("Something unexpected occured!");
-                throw new Exception("Something unexpected occured!");
+                _chat.PrintError("[GagSpeak] Something unexpected occured!");
+                throw new Exception("[Command Manager]: Something unexpected occured!");
             }
         } catch (Exception e) {
-            GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
-            _chat.PrintError($"Error sending chat message to player: {e.Message}");
+            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
+            _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
             return false;
         }
         return true; // sucessful!
@@ -388,7 +381,7 @@ public class CommandManager : IDisposable // Our main command list manager
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
             playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"{playerPayload.PlayerName} is attempting to unlock {targetplayer}'s layer {layer} gag with password {password}."); // log the action
+            GagSpeak.Log.Debug($"[Command Manager]: /gag unlock command sucessful, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             if (parts.Length == 2) {
@@ -398,12 +391,12 @@ public class CommandManager : IDisposable // Our main command list manager
                 // unique string for /gag unlock password == "reaches behind your neck and sets the password to"
                 _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetplayer, layer, password));
             } else {
-                _chat.PrintError("Something unexpected occured!");
-                throw new Exception("Something unexpected occured!");
+                _chat.PrintError("[GagSpeak] Something unexpected occured!");
+                throw new Exception("[Command Manager]: Something unexpected occured!");
             }
         } catch (Exception e) {
-            GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
-            _chat.PrintError($"Error sending chat message to player: {e.Message}");
+            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
+            _chat.PrintError($"[GagSpeak]: Error sending chat message to player: {e.Message}");
             return false;
         }
         return true; // sucessful!
@@ -416,14 +409,10 @@ public class CommandManager : IDisposable // Our main command list manager
         // if our parts == 2, then we have no password, if our parts == 3, then we have a password. Set our vars now so we dont set them in both statements
         string targetplayer = string.Empty;
         string layer = string.Empty;
-
         if (parts.Length == 2) { // we just need to make sure that we actually have valid arguements.
             targetplayer = parts[1].Trim(); // Get the password
             layer = parts[0].Trim(); // get the layer
         }
-        // log all our variables how they are now
-        GagSpeak.Log.Debug($"parts.Length == {parts.Length}, parts[0] = {parts[0]}");
-
         // if our arguments are not valid, display help information
         if (! ((layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
@@ -440,14 +429,14 @@ public class CommandManager : IDisposable // Our main command list manager
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
             playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"{playerPayload.PlayerName} is attempting to unlock {targetplayer}'s layer {layer} gag."); // log the action
+            GagSpeak.Log.Debug($"[Command Manager]: /gag remove command extracted sucessfully, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             // unique string for /gag remove == "reaches behind your neck and unfastens the buckle of your"
             _chatManager.SendRealMessage(_gagMessages.GagEncodedRemoveMessage(playerPayload, targetplayer, layer));
         } catch (Exception e) {
-            _chat.PrintError($"Error sending chat message to player: {e.Message}");
-            GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
+            _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
+            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
             return false;
         }
         return true; // sucessful!
@@ -473,13 +462,13 @@ public class CommandManager : IDisposable // Our main command list manager
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
             playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"{playerPayload.PlayerName} is attempting removeall of {targetplayer}'s gags."); // log the action
+            GagSpeak.Log.Debug($"[Command Manager]: /gag removeall command extracted sucessfully, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             // unique string for /gag remove == "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more."
             _chatManager.SendRealMessage(_gagMessages.GagEncodedRemoveAllMessage(playerPayload, targetplayer));
         } catch (Exception e) {
-            _chat.PrintError($"Error sending chat message to player: {e.Message}");
-            GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
+            _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
+            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
             return false;
         }
         return true; // sucessful!
@@ -491,41 +480,63 @@ public class CommandManager : IDisposable // Our main command list manager
     /// <param name="_locktype"></param>
     /// <param name="_password"></param>
     /// <returns></returns>
-    private bool IsInvalidPassword(string _locktype, string _password) { // will return false if it password does not pass all condition checks
-        if (Enum.TryParse(typeof(GagPadlocks), _locktype, out object parsedEnum)) // find the index of our locktype in enum
-        {
-            GagSpeak.Log.Debug($"Lock Type: {_locktype} | Password: {_password}");
-            // make sure it is a padlock that allows a password
-            int index = 0;
-            index = (int)parsedEnum;
-            GagSpeak.Log.Debug($"{index}");
-            // if index == 0,1,4,6,7
-            if (index == 0 || index == 1 || index == 4 || index == 6 || index == 7) { // it's a padlock that isnt meant to take any password
-                _chat.Print(new SeStringBuilder().AddRed("Invalid Locktype").BuiltString);
-                _chat.Print(new SeStringBuilder().AddText("The locktype you have provided does not allow a password. Please use a locktype that allows a password.").BuiltString);
-                return true;
-            } else if (index == 2) {
-                if(!(_password.Length == 4 && _password.All(char.IsDigit))) { // its a combination padlock
-                    _chat.Print(new SeStringBuilder().AddRed("Invalid Combination Lock").BuiltString);
-                    _chat.Print(new SeStringBuilder().AddText("The password must be a 4 digit combination. EX: 0529 , 6921, ext..").BuiltString);
+    private bool IsInvalidPassword(string _locktype, string _password, string playername) { // will return false if it password does not pass all condition checks
+        if (Enum.TryParse(typeof(GagPadlocks), _locktype, out object parsedEnum)) {
+            switch (parsedEnum) {
+                case GagPadlocks.None:
+                    return false;
+                case GagPadlocks.MetalPadlock:
                     return true;
-                }
-            } else if ( index == 3 || index == 5) {
-                GagSpeak.Log.Debug($"Doing a Password Check for {_locktype}");
-                if (_password.Length > 30 || _password.Length == 0) { // if the password is longer than 30 characters, it is invalid.
-                    _chat.Print(new SeStringBuilder().AddRed("Invalid Password").BuiltString);
-                    _chat.Print(new SeStringBuilder().AddText("The password you have provided is too long. Passwords must be 30 characters or less.").BuiltString);
+                case GagPadlocks.CombinationPadlock:
+                    return ValidateCombination(_password);
+                case GagPadlocks.PasswordPadlock:
+                    return ValidatePassword(_password);
+                case GagPadlocks.FiveMinutesPadlock:
+                    return ValidateTimer(_password);
+                case GagPadlocks.TimerPasswordPadlock:
+                    return (ValidatePassword(_password) && ValidateTimer(_password)); // will never work in current implementation
+                case GagPadlocks.MistressPadlock:
+                    return ValidateMistress(playername);
+                case GagPadlocks.MistressTimerPadlock:
+                    return (ValidateMistress(playername) && ValidateTimer(_password));
+                default:
                     return true;
-                }
-            } else { // something unexpected occured.
-                _chat.Print(new SeStringBuilder().AddRed("Something unexpected occured!").BuiltString);
-                _chat.Print(new SeStringBuilder().AddText("You shouldnt be here!").BuiltString);
-                return true;
             }
         }
         return false;
     }
 
+    private bool ValidatePassword(string _inputPassword) { // Passwords must be less than 20 characters and cannot contain spaces
+        if(!string.IsNullOrWhiteSpace(_inputPassword) && _inputPassword.Length <= 20 && !_inputPassword.Contains(" ")) {
+            return true;
+        } else {
+            _chat.Print(new SeStringBuilder().AddRed("[GagSpeak] Invalid Password").BuiltString);
+            _chat.Print(new SeStringBuilder().AddText("[GagSpeak] The password you have provided is too long. Passwords must be 30 characters or less.").BuiltString);
+            return false;
+        }
+    }
+    private bool ValidateCombination(string _inputCombination) { // Combinations must be 4 digits
+        if(int.TryParse(_inputCombination, out _) && _inputCombination.Length == 4) {
+            return true;
+        } else {
+            _chat.Print(new SeStringBuilder().AddRed("[GagSpeak] Invalid Combination Lock").BuiltString);
+            _chat.Print(new SeStringBuilder().AddText("[GagSpeak] The password must be a 4 digit combination. EX: 0529 , 6921, ext..").BuiltString);
+            return false;
+        }
+    }
+    private bool ValidateTimer(string _inputTimer) {
+        // Timers must be in the format of 00h00m00s
+        var match = Regex.Match(_inputTimer, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+        return match.Success;
+    }
+    private bool ValidateMistress(string playerName) {
+        PlayerPayload playerPayload; // get the current player info
+        try { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        } catch { GagSpeak.Log.Error($"[Command Manager]: Error getting player payload."); return false;}
+        if (playerName == playerPayload.PlayerName) { return true;}
+        if (_config.Whitelist.Any(w => playerName.Contains(w.name) && w.relationshipStatus == "Mistress")) { return true;}
+        return false;
+    }
 
     // On the gsm command
     private void OnGSM(string command, string arguments) {
@@ -538,16 +549,14 @@ public class CommandManager : IDisposable // Our main command list manager
         if (_config.Channels.Contains(ChatChannel.GetChatChannel())) {
             try {
                 // Otherwise, what we have after should be a message to translate into GagSpeak
-                GagSpeak.Log.Debug($"Translating message: {arguments}");
                 var input = arguments; // get the text input
                 var output = this._messageGarbler.GarbleMessage(arguments, _config.GarbleLevel);
-                GagSpeak.Log.Debug($"Translated message in gagspeak: {output}");
                 _realChatInteraction.SendMessage(output);
                 _historyService.AddTranslation(new Translation(input, output));
             }
             catch (Exception e) {
-                _chat.PrintError($"Error sending message to chatbox: {e.Message}");
-                GagSpeak.Log.Error($"Error sending message to chatbox: {e.Message}");
+                _chat.PrintError($"[GagSpeak] Error sending message to chatbox: {e.Message}");
+                GagSpeak.Log.Error($"[Command Manager]: Error sending message to chatbox: {e.Message}");
             }
         } else {
             _chat.Print(new SeStringBuilder().AddRed("Invalid Channel").BuiltString);

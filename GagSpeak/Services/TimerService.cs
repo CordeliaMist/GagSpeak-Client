@@ -34,17 +34,17 @@ public class TimerService : IDisposable
    List<DateTimeOffset> padlockTimerList, int index) {
       // Check if a timer with the same name already exists
       if (timers.ContainsKey(timerName)) {
-         GagSpeak.Log.Debug($"Timer with name '{timerName}' already exists. Use a different name.");
+         GagSpeak.Log.Debug($"[Timer Service]: Timer with name '{timerName}' already exists. Use different name.");
          return;
       }
 
       // Parse the input string to get the duration
       TimeSpan duration = ParseTimeInput(input);
 
-      GagSpeak.Log.Debug($"Timer '{timerName}' started with duration {duration}.");
+      GagSpeak.Log.Debug($"[Timer Service]: '{timerName}' started with duration {duration}.");
       // Check if the duration is valid
       if (duration == TimeSpan.Zero){
-         GagSpeak.Log.Debug($"Invalid time format for timer '{timerName}'.");
+         GagSpeak.Log.Debug($"[Timer Service]: Invalid time format for timer '{timerName}'.");
          return;
       }
 
@@ -77,7 +77,7 @@ public class TimerService : IDisposable
          TimeSpan remainingTime = timerData.EndTime - DateTimeOffset.Now;
          if (remainingTime <= TimeSpan.Zero) {
                // Timer expired
-               GagSpeak.Log.Debug($"Timer '{timerName}' expired.");
+               GagSpeak.Log.Debug($"[Timer Service]: '{timerName}'has reached zero, dumpting timer.");
                timer.Stop();
                onElapsed?.Invoke();
                timers.Remove(timerName);
@@ -142,21 +142,21 @@ public class TimerService : IDisposable
       foreach (var (timerName, remainingTime) in timersToRestore) {
          // Create a new timer with the same name and remaining time
          if(timerName.Contains("_Identifier0")) {
-            GagSpeak.Log.Debug($"Restoring timer {timerName} with end time {remainingTime}");
+            GagSpeak.Log.Debug($"[Timer Service]: Restoring {timerName} with end time {remainingTime}");
             StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                _config._isLocked[0] = false;
                _config._padlockIdentifier[0].ClearPasswords();
                _config._padlockIdentifier[0].UpdateConfigPadlockPasswordInfo(0, !_config._isLocked[0], _config);
             });
          } else if(timerName.Contains("_Identifier1")) {
-            GagSpeak.Log.Debug($"Restoring timer {timerName} with end time {remainingTime}");
+            GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
             StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                _config._isLocked[1] = false;
                _config._padlockIdentifier[1].ClearPasswords();
                _config._padlockIdentifier[1].UpdateConfigPadlockPasswordInfo(1, !_config._isLocked[1], _config);
             });
          } else if(timerName.Contains("_Identifier2")) {
-            GagSpeak.Log.Debug($"Restoring timer {timerName} with end time {remainingTime}");
+            GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
             StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                _config._isLocked[2] = false;
                _config._padlockIdentifier[2].ClearPasswords();
@@ -174,7 +174,7 @@ public class TimerService : IDisposable
          var remainingTime = UIHelpers.FormatTimeSpan(pair.Value - DateTimeOffset.Now);
 
          // Print the timer name and remaining time
-         GagSpeak.Log.Debug($"TimerData Timer: {pair.Key}, Remaining Time: {remainingTime}");
+         GagSpeak.Log.Debug($"[Timer Service] Timer: {pair.Key}, Remaining Time: {remainingTime}");
       }
    }
 
@@ -207,10 +207,10 @@ public class TimerService : IDisposable
 
    // Method to dispose the service
    public void Dispose() {
-      GagSpeak.Log.Debug("------------------------------------"); // save timers upon unloading.
+      GagSpeak.Log.Debug("--------Saving & Unloading Timers-------"); // save timers upon unloading.
       SaveTimerData(_config);
       DebugPrintRemainingTimers();
-      GagSpeak.Log.Debug("------------------------------------");
+      GagSpeak.Log.Debug("--------Timers Saved Sucessfully--------");
       // Dispose all timers
       foreach (var timerData in timers.Values) {
          timerData.Timer.Dispose();
