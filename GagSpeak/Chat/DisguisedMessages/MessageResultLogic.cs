@@ -105,8 +105,6 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
     private bool IsMistress(string playerName) {
         PlayerPayload playerPayload; // get the current player info
         try { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); } catch { LogError("[MsgResultLogic]: Failed to get player payload."); return false; }
-        // GagSpeak.Log.Debug($"PlayerName: {playerPayload.PlayerName}");
-        // see if decodedMessage[4] == playerPayload.name
         if (playerName == playerPayload.PlayerName) {
             return true;}
         // see if any names in our whitelist are in decodedMessage[4] AND have their relation set to mistress
@@ -430,7 +428,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is now your Mistress, enjoy~.").AddItalicsOff().BuiltString);
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s mistress. Enjoy~.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Mistress relation");
             }
         } catch {
@@ -451,7 +449,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is now your Pet, enjoy~.").AddItalicsOff().BuiltString);
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s pet. Enjoy yourself~.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Pet relation");
             }
         } catch {
@@ -472,7 +470,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is now your Slave, enjoy~.").AddItalicsOff().BuiltString);
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s slave, Be sure to Behave~.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Slave relation");
             }
         } catch {
@@ -494,7 +492,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to non
-                playerInWhitelist.isDomMode = decodedMessage[1] == "True" ? true : false;
+                playerInWhitelist.isDomMode = decodedMessage[1] == "true" ? true : false;
                 playerInWhitelist.garbleLevel = int.Parse(decodedMessage[3]);
                 playerInWhitelist.selectedGagTypes[0] = decodedMessage[6];
                 playerInWhitelist.selectedGagTypes[1] = decodedMessage[7];
