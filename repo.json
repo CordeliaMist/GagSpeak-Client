@@ -18,18 +18,18 @@
             "RP"
         ],
         "InternalName": "GagSpeak",
-        "AssemblyVersion": "0.9.5.0",
-        "TestingAssemblyVersion": "0.9.5.0",
+        "AssemblyVersion": "0.9.7.0",
+        "TestingAssemblyVersion": "0.9.7.0",
         "RepoUrl": "https://github.com/CordeliaMist/Dalamud-GagSpeak",
         "ApplicableVersion": "any",
         "DalamudApiLevel": 9,
         "IsHide": "False",
         "IsTestingExclusive": "False",
-        "DownloadCount": 1,
+        "DownloadCount": 420,
         "LastUpdate": 1618608322,
-        "DownloadLinkInstall": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.9.5-PreRelease/latest.zip",
-        "DownloadLinkUpdate": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.9.5-PreRelease/latest.zip",
-        "DownloadLinkTesting": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.9.5-PreRelease/latest.zip",
+        "DownloadLinkInstall": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.9.7-PreRelease/latest.zip",
+        "DownloadLinkUpdate": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.9.7-PreRelease/latest.zip",
+        "DownloadLinkTesting": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v0.9.7-PreRelease/latest.zip",
         "IconUrl": "https://github.com/CordeliaMist/Dalamud-GagSpeak/raw/master/images/icon.png"
     }
 ]
