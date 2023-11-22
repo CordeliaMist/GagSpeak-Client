@@ -233,6 +233,8 @@ public class TimerService : IDisposable
          if (key.Contains($"_Identifier{layerIndex}")) {
             timers[key].Timer.Dispose(); // Dispose the timer before removing it
             timers.Remove(key);
+            SaveTimerData(_config);
+            _config.selectedGagPadLockTimer[layerIndex] = DateTimeOffset.Now;
          }
       }
    }

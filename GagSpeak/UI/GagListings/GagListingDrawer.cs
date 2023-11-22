@@ -10,12 +10,8 @@ using GagSpeak.Data;
 using Dalamud.Plugin;
 using System.IO;
 using Dalamud.Interface.Internal;
-using System.Collections.Generic;
-
 using GagSpeak.Events;
 using GagSpeak.Services;
-using Microsoft.VisualBasic.FileIO;
-using Dalamud.Game.Config;
 
 
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention

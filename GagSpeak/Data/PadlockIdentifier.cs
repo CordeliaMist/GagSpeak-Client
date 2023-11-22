@@ -216,7 +216,7 @@ public class PadlockIdentifier {
             case GagPadlocks.MetalPadlock:
                 return true;
             case GagPadlocks.CombinationPadlock:
-                if(password != "") {
+                if(password != "" && password != null) {
                     // we've passed in a password
                     isValid = _storedCombination == password;
                 } else {
@@ -224,8 +224,11 @@ public class PadlockIdentifier {
                     isValid = _storedCombination == _inputCombination;
                 }
                 break;
+            case GagPadlocks.FiveMinutesPadlock:
+                isValid = true;
+                break;
             case GagPadlocks.PasswordPadlock:
-                if(password != "") {
+                if(password != "" && password != null) {
                     // we've passed in a password
                     isValid = _storedPassword == password;
                 } else {
@@ -234,7 +237,7 @@ public class PadlockIdentifier {
                 }
                 break;
             case GagPadlocks.TimerPasswordPadlock:
-                if(password != "") {
+                if(password != "" && password != null) {
                     // we've passed in a password
                     isValid = _storedPassword == password;
                 } else {
