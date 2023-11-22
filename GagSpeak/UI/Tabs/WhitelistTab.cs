@@ -390,11 +390,17 @@ public class WhitelistTab : ITab, IDisposable
             _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, whitelist[_currentWhitelistItem], ref _lockLabel, layer, false, width, _gagLockFilterCombo[layer]);
             ImGui.SameLine();
             if (ImGui.Button("Lock Gag")) {
-                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(false, _config)) {
+                // get your data
+                PlayerPayload playerPayload;
+                playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+                // get whitelist data of selected
+                var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
+
+                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(false, _config, playerPayload.PlayerName, selectedWhitelistItem.name)) {
                     // at this point, our password is valid, so we can sucessfully lock the padlock
                     _config._whitelistPadlockIdentifier.UpdateConfigPadlockInfo(0, false, _config);
                     // then we can apply the lock gag logic
-                    LockGagOnPlayer(layer, _lockLabel, _config.Whitelist[_currentWhitelistItem], _storedPassword);
+                    LockGagOnPlayer(playerPayload, layer, _lockLabel, selectedWhitelistItem, _storedPassword);
                 }
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
@@ -402,12 +408,17 @@ public class WhitelistTab : ITab, IDisposable
             }
             ImGui.SameLine();
             if (ImGui.Button("Unlock Gag")) {
+                // get your data
+                PlayerPayload playerPayload;
+                playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+                // get whitelist data of selected
+                var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
                 // apply similar format to lock gag
-                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, _config)) {
+                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, _config, playerPayload.PlayerName, selectedWhitelistItem.name)) {
                     // at this point, our password is valid, so we can sucessfully lock the padlock
                     _config._whitelistPadlockIdentifier.UpdateConfigPadlockInfo(0, true, _config);
                     // then we can apply the lock gag logic
-                    UnlockGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem], _storedPassword);
+                    UnlockGagOnPlayer(playerPayload, layer, selectedWhitelistItem, _storedPassword);
                 }
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
@@ -524,11 +535,9 @@ public class WhitelistTab : ITab, IDisposable
     }
 
     // we need a function for if the password is not given
-    private void LockGagOnPlayer(int layer, string lockType, WhitelistCharData selectedPlayer) { LockGagOnPlayer(layer, lockType, selectedPlayer, ""); }
-    private void LockGagOnPlayer(int layer, string lockType, WhitelistCharData selectedPlayer, string password) {
+    private void LockGagOnPlayer(PlayerPayload playerPayload, int layer, string lockType, WhitelistCharData selectedPlayer, string yourPlayerName) { LockGagOnPlayer(playerPayload, layer, lockType, selectedPlayer, yourPlayerName, ""); }
+    private void LockGagOnPlayer(PlayerPayload playerPayload, int layer, string lockType, WhitelistCharData selectedPlayer, string yourPlayerName, string password) {
         GagSpeak.Log.Debug($"[Whitelist]: Locking {lockType} on {selectedPlayer.name} with password {password}");
-        PlayerPayload playerPayload;
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the chat message
@@ -549,10 +558,8 @@ public class WhitelistTab : ITab, IDisposable
     }
 
     // this logic button is by far the most inaccurate, because there is no way to tell if the unlock is sucessful.
-    private void UnlockGagOnPlayer(int layer, WhitelistCharData selectedPlayer) { UnlockGagOnPlayer(layer, selectedPlayer, "");} 
-    private void UnlockGagOnPlayer(int layer, WhitelistCharData selectedPlayer, string password) {
-        PlayerPayload playerPayload;
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+    private void UnlockGagOnPlayer(PlayerPayload playerPayload, int layer, WhitelistCharData selectedPlayer) { UnlockGagOnPlayer(playerPayload, layer, selectedPlayer, "");} 
+    private void UnlockGagOnPlayer(PlayerPayload playerPayload, int layer, WhitelistCharData selectedPlayer, string password) {
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the chat message

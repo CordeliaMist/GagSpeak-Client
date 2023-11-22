@@ -35,14 +35,6 @@ public class GagSpeakChangelog
         }
     }
 
-    private static void Add0_9_7_0(Changelog log)
-        => log.NextVersion("Version 0.9.7.0 Pre-Release")
-            .RegisterHighlight("Majority of the code has been rewritten.")
-            .RegisterHighlight("Lots of overhaul to feedback, players will now recieve messages about the results of commands in chat.")
-            .RegisterEntry("Majority of UI Button interactions should now be working")
-            .RegisterEntry("New Popout window for profile viewing should now be something that exists.")
-            .RegisterEntry("Added this sick changelog thing.");
-
     private static void Add0_9_9_0(Changelog log)
         => log.NextVersion("Version 0.9.9.0 Pre-Release")
             .RegisterHighlight("GagAndLockManager to syncronize config and padlockidentifier locks has been implemented.")
@@ -51,5 +43,14 @@ public class GagSpeakChangelog
             .RegisterEntry("Adjusted safeword cooldown for final tests")
             .RegisterEntry("new popout window for user profiles added.")
             .RegisterEntry("Additional feedback messages in chat after using commands and buttons have been improved.");
+
+    private static void Add0_9_7_0(Changelog log)
+        => log.NextVersion("Version 0.9.7.0 Pre-Release")
+            .RegisterHighlight("Majority of the code has been rewritten.")
+            .RegisterHighlight("Lots of overhaul to feedback, players will now recieve messages about the results of commands in chat.")
+            .RegisterEntry("Majority of UI Button interactions should now be working")
+            .RegisterEntry("New Popout window for profile viewing should now be something that exists.")
+            .RegisterEntry("Added this sick changelog thing.");
+
     // add more below here whenever we have an update.
 }

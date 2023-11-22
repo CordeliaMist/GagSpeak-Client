@@ -210,8 +210,7 @@ public class PadlockIdentifier {
             case GagPadlocks.None:
                 return false;
             case GagPadlocks.MetalPadlock:
-                // handle MetalPadlock password check
-                break;
+                return true;
             case GagPadlocks.CombinationPadlock:
                 isValid = _storedCombination == _inputCombination;
                 break;
