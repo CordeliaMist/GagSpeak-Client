@@ -328,8 +328,8 @@ public class MessageDecoder {
                             decodedMessage[15+i] = "0s";
                         }
 
-                        if (currentMessage.Contains("locked shut by")) {
-                            int assignerStartIndex = currentMessage.IndexOf("locked shut by") + 14;
+                        if (currentMessage.Contains("from")) {
+                            int assignerStartIndex = currentMessage.IndexOf("from") + 4;
                             int assignerEndIndex = currentMessage.IndexOf(".", assignerStartIndex);
                             string assignerSubstring = currentMessage.Substring(assignerStartIndex, assignerEndIndex - assignerStartIndex).Trim();
                             decodedMessage[12+i] = assignerSubstring;
@@ -386,20 +386,20 @@ public class MessageDecoder {
                     // parse out and store the gag type
                     decodedMessage[8] = recievedMessage.Substring(gagTypeStartIndex, gagTypeEndIndex - gagTypeStartIndex).Trim();  // gagtype
                     // Extract padlock information
-                    if (recievedMessage.Contains("securing it")) {
-                        int padlockStartIndex = recievedMessage.IndexOf("sealing it") + 11;
-                        int padlockEndIndex = recievedMessage.Contains("with") ? recievedMessage.IndexOf("with") : recievedMessage.IndexOf(".");
+                    if (recievedMessage.Contains("sealing it")) {
+                        int padlockStartIndex = gagTypeEndIndex + 4;
+                        int padlockEndIndex = recievedMessage.Contains("sealing it") ? recievedMessage.IndexOf("sealing it") : recievedMessage.IndexOf(".");
                         decodedMessage[11] = recievedMessage.Substring(padlockStartIndex, padlockEndIndex - padlockStartIndex).Trim();  // padlock
                         // Extract timer information (if present)
-                        if (recievedMessage.Contains("with")) {
-                            int timerStartIndex = recievedMessage.IndexOf("with") + 5;
+                        if (recievedMessage.Contains("sealing it with")) {
+                            int timerStartIndex = recievedMessage.IndexOf("sealing it with") + 15;
                             int timerEndIndex = recievedMessage.Contains("left") ? recievedMessage.IndexOf("left") : recievedMessage.IndexOf(".");
                             decodedMessage[17] = recievedMessage.Substring(timerStartIndex, timerEndIndex - timerStartIndex).Trim();  // timer
                         }
                         // Extract assigner information (if present)
-                        if (recievedMessage.Contains("locked shut by")) {
-                            int assignerStartIndex = recievedMessage.IndexOf("locked shut by") + 14;
-                            int assignerEndIndex = recievedMessage.IndexOf(".", assignerStartIndex);
+                        if (recievedMessage.Contains("from")) {
+                            int assignerStartIndex = recievedMessage.IndexOf("from") + 4;
+                            int assignerEndIndex = recievedMessage.Contains(".") ? recievedMessage.IndexOf(".") : recievedMessage.IndexOf(",");
                             decodedMessage[14] = recievedMessage.Substring(assignerStartIndex, assignerEndIndex - assignerStartIndex).Trim();  // assigner
                         }
                     }

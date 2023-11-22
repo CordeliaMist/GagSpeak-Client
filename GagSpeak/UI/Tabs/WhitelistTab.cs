@@ -432,8 +432,22 @@ public class WhitelistTab : ITab, IDisposable
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
                 // apply similar format to lock gag
                 string targetPlayer = selectedWhitelistItem.name + "@" + selectedWhitelistItem.homeworld;
-                _chatManager.SendRealMessage(_gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer,
-                (layer+1).ToString(), _config._whitelistPadlockIdentifier._inputPassword));
+
+                if(_config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MetalPadlock ||
+                _config._whitelistPadlockIdentifier._padlockType == GagPadlocks.FiveMinutesPadlock ||
+                _config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MistressPadlock ||
+                _config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MistressTimerPadlock) {
+                    _chatManager.SendRealMessage(_gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString()));
+                }
+                else if (_config._whitelistPadlockIdentifier._padlockType == GagPadlocks.CombinationPadlock) {
+                    _chatManager.SendRealMessage(_gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(),
+                    _config._whitelistPadlockIdentifier._inputCombination));
+                }
+                else if (_config._whitelistPadlockIdentifier._padlockType == GagPadlocks.PasswordPadlock || 
+                _config._whitelistPadlockIdentifier._padlockType == GagPadlocks.TimerPasswordPadlock) {
+                    _chatManager.SendRealMessage(_gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(),
+                    _config._whitelistPadlockIdentifier._inputPassword));
+                }
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
