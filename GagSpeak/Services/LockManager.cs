@@ -80,8 +80,7 @@ public class GagAndLockManager : IDisposable
     // we only need to overload with 1 password, as the timerpassword doesnt need the time to unlock
     public void Unlock(int layerIndex, string assignerName, string password = null, string targetName = null) { // for the buttons
         GagSpeak.Log.Debug($"[Padlock Manager Service]: We are unlocking our padlock.");
-        if(_config._padlockIdentifier[layerIndex].ValidatePadlockPasswords(_config._isLocked[layerIndex], _config, assignerName, targetName) 
-        && _config._padlockIdentifier[layerIndex].CheckPassword(_config, assignerName, targetName))
+        if(_config._padlockIdentifier[layerIndex].CheckPassword(_config, assignerName, targetName))
         {
             _config._isLocked[layerIndex] = false;
             _config._padlockIdentifier[layerIndex].ClearPasswords();

@@ -41,8 +41,6 @@ public class WhitelistTab : ITab, IDisposable
 
     // temp variables for the whitelist tab
     private int _currentWhitelistItem; // store a value so we know which item is selected in whitelist
-    private string _tempPassword; // password temp stored during typing
-    private string _storedPassword; // password stored to buffer
     private int _layer; // layer of the gag
     private string _gagLabel; // current selection on gag type DD
     private string _lockLabel; // current selection on gag lock DD
@@ -68,8 +66,6 @@ public class WhitelistTab : ITab, IDisposable
         _gagListingsDrawer = gagListingsDrawer;
         _gagMessages = new MessageEncoder();
         _chatManager = chatManager;
-        _tempPassword = "";
-        _storedPassword = "";
         _gagLabel = "None";
         _lockLabel = "None";
         _layer = 0;
@@ -394,14 +390,27 @@ public class WhitelistTab : ITab, IDisposable
                 PlayerPayload playerPayload;
                 playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
                 // get whitelist data of selected
-                var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
-
-                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(false, _config, playerPayload.PlayerName, selectedWhitelistItem.name)) {
-                    // at this point, our password is valid, so we can sucessfully lock the padlock
-                    _config._whitelistPadlockIdentifier.UpdateConfigPadlockInfo(0, false, _config);
+                var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem];
                     // then we can apply the lock gag logic
-                    LockGagOnPlayer(playerPayload, layer, _lockLabel, selectedWhitelistItem, _storedPassword);
-                }
+                Enum.TryParse(_lockLabel, true, out GagPadlocks padlockType);
+                _config._whitelistPadlockIdentifier.SetType(padlockType);
+                _config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, _config, playerPayload.PlayerName, selectedWhitelistItem.name);
+                string targetPlayer = selectedWhitelistItem.name + "@" + selectedWhitelistItem.homeworld;
+                _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, _lockLabel, 
+                (layer+1).ToString(), _config._whitelistPadlockIdentifier._inputPassword));
+
+
+        //             // Update the selected player's data
+        //             if(Enum.TryParse(lockType, out GagPadlocks parsedLockType)) // update padlock
+        //                 selectedPlayer.selectedGagPadlocks[layer] = parsedLockType;
+                    
+        //             if(password != "") // logic for applying password
+        //                 selectedPlayer.selectedGagPadlocksPassword[layer] = password;
+
+        //             if ( (lockType == "MistressPadlock" || lockType == "MistressTimerPadlock") // logic for applying a mistress padlock
+        //                 && selectedPlayer.relationshipStatus == "Pet" || selectedPlayer.relationshipStatus == "Slave") {
+        //                 selectedPlayer.selectedGagPadlocksAssigner[layer] = playerPayload.PlayerName;
+        // }
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
@@ -414,12 +423,9 @@ public class WhitelistTab : ITab, IDisposable
                 // get whitelist data of selected
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
                 // apply similar format to lock gag
-                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, _config, playerPayload.PlayerName, selectedWhitelistItem.name)) {
-                    // at this point, our password is valid, so we can sucessfully lock the padlock
-                    _config._whitelistPadlockIdentifier.UpdateConfigPadlockInfo(0, true, _config);
-                    // then we can apply the lock gag logic
-                    UnlockGagOnPlayer(playerPayload, layer, selectedWhitelistItem, _storedPassword);
-                }
+                string targetPlayer = selectedWhitelistItem.name + "@" + selectedWhitelistItem.homeworld;
+                _chatManager.SendRealMessage(_gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer,
+                (layer+1).ToString(), _config._whitelistPadlockIdentifier._inputPassword));
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
@@ -534,29 +540,6 @@ public class WhitelistTab : ITab, IDisposable
         selectedPlayer.selectedGagTypes[layer] = gagType; // note that this wont always be accurate, and is why request info exists.
     }
 
-    // we need a function for if the password is not given
-    private void LockGagOnPlayer(PlayerPayload playerPayload, int layer, string lockType, WhitelistCharData selectedPlayer, string yourPlayerName) { LockGagOnPlayer(playerPayload, layer, lockType, selectedPlayer, yourPlayerName, ""); }
-    private void LockGagOnPlayer(PlayerPayload playerPayload, int layer, string lockType, WhitelistCharData selectedPlayer, string yourPlayerName, string password) {
-        GagSpeak.Log.Debug($"[Whitelist]: Locking {lockType} on {selectedPlayer.name} with password {password}");
-        if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
-            return;
-        // send the chat message
-        string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
-        _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockType, (layer+1).ToString(), password));
-
-        // Update the selected player's data
-        if(Enum.TryParse(lockType, out GagPadlocks parsedLockType)) // update padlock
-            selectedPlayer.selectedGagPadlocks[layer] = parsedLockType;
-        
-        if(password != "") // logic for applying password
-            selectedPlayer.selectedGagPadlocksPassword[layer] = password;
-
-        if ( (lockType == "MistressPadlock" || lockType == "MistressTimerPadlock") // logic for applying a mistress padlock
-            && selectedPlayer.relationshipStatus == "Pet" || selectedPlayer.relationshipStatus == "Slave") {
-            selectedPlayer.selectedGagPadlocksAssigner[layer] = playerPayload.PlayerName;
-        }
-    }
-
     // this logic button is by far the most inaccurate, because there is no way to tell if the unlock is sucessful.
     private void UnlockGagOnPlayer(PlayerPayload playerPayload, int layer, WhitelistCharData selectedPlayer) { UnlockGagOnPlayer(playerPayload, layer, selectedPlayer, "");} 
     private void UnlockGagOnPlayer(PlayerPayload playerPayload, int layer, WhitelistCharData selectedPlayer, string password) {
@@ -565,30 +548,6 @@ public class WhitelistTab : ITab, IDisposable
         // send the chat message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         _chatManager.SendRealMessage(_gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(), password));
-
-        // first handle logic for mistress padlocks
-        if ( (selectedPlayer.selectedGagPadlocks[layer] == GagPadlocks.MistressPadlock || selectedPlayer.selectedGagPadlocks[layer] == GagPadlocks.MistressTimerPadlock) // logic for applying a mistress padlock
-           && selectedPlayer.relationshipStatus == "Pet" || selectedPlayer.relationshipStatus == "Slave") {
-            // remove it if the player is a pet or slave and your name matches the assigner
-            if (selectedPlayer.selectedGagPadlocksAssigner[layer] == playerPayload.PlayerName) {
-                selectedPlayer.selectedGagPadlocksAssigner[layer] = "";
-                selectedPlayer.selectedGagPadlocksPassword[layer] = "";
-                selectedPlayer.selectedGagTypes[layer] = "None";
-                return;
-            }
-        }
-        // next handle logic for other padlocks.
-        else if (password != "" && selectedPlayer.selectedGagPadlocksPassword[layer] == password) {
-            selectedPlayer.selectedGagPadlocksPassword[layer] = "";
-            selectedPlayer.selectedGagTypes[layer] = "None";
-            return;
-        } 
-        // its not a password lock, so just remove it
-        else {
-            selectedPlayer.selectedGagPadlocksPassword[layer] = "";
-            selectedPlayer.selectedGagTypes[layer] = "None";
-            return;
-        }
     }
 
     private void RemoveGagFromPlayer(int layer, WhitelistCharData selectedPlayer) {

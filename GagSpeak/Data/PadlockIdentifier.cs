@@ -288,5 +288,42 @@ public class PadlockIdentifier {
                 break;
         }
     }
+    public void UpdateWhitelistPadlockInfo(WhitelistCharData character, int layer, bool isUnlocking, GagSpeakConfig _config) {
+        GagPadlocks padlockType = _padlockType;
+        if (isUnlocking) { _padlockType = GagPadlocks.None; GagSpeak.Log.Debug("[Whitelist Padlock] Unlocking Padlock");}
+        // timers are handled by the timer service so we dont need to worry about it.
+        switch (padlockType) {
+            case GagPadlocks.MetalPadlock:
+                character.selectedGagPadlocks[layer] = _padlockType;
+                break;
+            case GagPadlocks.CombinationPadlock:
+                character.selectedGagPadlocks[layer] = _padlockType;
+                character.selectedGagPadlocksPassword[layer] = _storedCombination;
+                break;
+            case GagPadlocks.PasswordPadlock:
+                character.selectedGagPadlocks[layer] = _padlockType;
+                character.selectedGagPadlocksPassword[layer] = _storedPassword;
+                break;
+            case GagPadlocks.FiveMinutesPadlock:
+                character.selectedGagPadlocks[layer] = _padlockType;
+                break;
+            case GagPadlocks.TimerPasswordPadlock:
+                character.selectedGagPadlocks[layer] = _padlockType;
+                character.selectedGagPadlocksPassword[layer] = _storedPassword;
+                break;
+            case GagPadlocks.MistressPadlock:
+                // handle MistressPadlock case
+                character.selectedGagPadlocks[layer] = _padlockType;
+                character.selectedGagPadlocksAssigner[layer] = _mistressAssignerName;
+                break;
+            case GagPadlocks.MistressTimerPadlock:
+                character.selectedGagPadlocks[layer] = _padlockType;
+                character.selectedGagPadlocksAssigner[layer] = _mistressAssignerName;
+                break;
+            default:
+                // No password field should be displayed
+                break;
+        }
+    }
 }
 #pragma warning restore IDE1006  
