@@ -144,7 +144,7 @@ public class CommandManager : IDisposable // Our main command list manager
 
             // fire the safewordUsed bool to true so that we set the cooldown
             _config.SafewordUsed = true;
-            _timerService.StartTimer("SafewordUsed", "5s", 1000, () => _config.SafewordUsed = false);
+            _timerService.StartTimer("SafewordUsed", "15s", 1000, () => _config.SafewordUsed = false);
         }
 
         return true;

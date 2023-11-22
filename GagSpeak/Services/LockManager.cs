@@ -71,7 +71,7 @@ public class GagAndLockManager : IDisposable
     public void Unlock(int layerIndex) {
         PlayerPayload playerPayload = GetPlayerPayload();
         if(playerPayload != null) { // if the payload returned not null, we can use it
-            Unlock(layerIndex, playerPayload.PlayerName, playerPayload.PlayerName);
+            Unlock(layerIndex, playerPayload.PlayerName, null, playerPayload.PlayerName);
         } else {
             GagSpeak.Log.Debug($"[Padlock Manager Service]: Player payload is null, so we are using the default name.");
             Unlock(layerIndex, null);
@@ -85,6 +85,7 @@ public class GagAndLockManager : IDisposable
             _config._isLocked[layerIndex] = false;
             _config._padlockIdentifier[layerIndex].ClearPasswords();
             _config._padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, true, _config);
+            _timerService.ClearIdentifierTimer(layerIndex);
             _config.Save();
         } else {
             GagSpeak.Log.Debug($"[Padlock Manager Service]: Unlock was unsucessful.");

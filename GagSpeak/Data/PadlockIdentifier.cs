@@ -132,7 +132,7 @@ public class PadlockIdentifier {
                 if(ret && !isUnlocking && _inputPassword != "") {_storedPassword = _inputPassword; _inputPassword = "";}
                 return ret;
             case GagPadlocks.FiveMinutesPadlock:
-                _storedTimer = "0h0m5s";
+                _storedTimer = "0h5m0s";
                 return true;
             case GagPadlocks.TimerPasswordPadlock:
                 ret = (ValidatePassword() && ValidateTimer());
@@ -196,10 +196,13 @@ public class PadlockIdentifier {
         if(assignerPlayerName == null) {
             GagSpeak.Log.Debug($"[PadlockIdentifer]: Assigner name is null!"); return false;}
         // if we are trying to assign it to ourselves, then we can just return true.
-        if (assignerPlayerName == targetPlayerName || // if we are trying to assign it to ourselves, or are a mistress to whitelisted player
-        _config.Whitelist.Any(w => assignerPlayerName.Contains(w.name) && w.relationshipStatus == "Mistress")) {
+        if (assignerPlayerName == targetPlayerName && _config.InDomMode == true) {
             return true;
         }
+        if (_config.Whitelist.Any(w => assignerPlayerName.Contains(w.name) && w.relationshipStatus == "Mistress")) {
+            return true;
+        }
+        
         GagSpeak.Log.Debug($"[PadlockIdentifer]: {assignerPlayerName} is not your mistress!");
         return false;
     }
