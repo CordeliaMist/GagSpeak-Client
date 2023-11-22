@@ -9,6 +9,9 @@ using Dalamud.Plugin;
 using System.IO;
 using Dalamud.Interface.Utility.Raii;
 
+using OtterGui;
+using System.Collections.Generic;
+
 
 namespace GagSpeak.UI.UserProfile;
 
@@ -36,8 +39,8 @@ public class UserProfileWindow : Window, IDisposable
         _dalamudTextureWrap = IconImage;
     }
         SizeConstraints = new WindowSizeConstraints() {
-            MinimumSize = new Vector2(250, 350),     // Minimum size of the window
-            MaximumSize = new Vector2(300, 400) // Maximum size of the window
+            MinimumSize = new Vector2(250, 325),     // Minimum size of the window
+            MaximumSize = new Vector2(300, 375) // Maximum size of the window
         };
         // add flags that allow you to move, but not resize the window, also disable collapsible
         Flags = ImGuiWindowFlags.NoCollapse;
@@ -71,45 +74,98 @@ public class UserProfileWindow : Window, IDisposable
             ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1.0f), $"{whitelistPlayerData.garbleLevel}");
             ImGui.Separator();
             using var style = ImRaii.PushStyle(ImGuiStyleVar.ButtonTextAlign, new Vector2(0, 0.5f)); 
-            // Set the window background color
-            // append style to show headers for table
-            using (var table = ImRaii.Table("GagInfoTable", 3, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders)) {
-                if (!table) { return; } // make sure our table was made
-
-                var width = ImGui.GetContentRegionAvail().X/3;
-                ImGui.TableSetupColumn("LayerOne", ImGuiTableColumnFlags.WidthFixed, width);
-                ImGui.TableSetupColumn("LayerTwo", ImGuiTableColumnFlags.WidthFixed, width);
-                ImGui.TableSetupColumn("LayerThree", ImGuiTableColumnFlags.WidthFixed, width);
-
-                // Create the rows for the table
-                ImGui.TableNextRow(); ImGui.TableNextColumn();
-                ImGui.Text("Layer1"); ImGui.TableNextColumn(); ImGui.Text("Layer2"); ImGui.TableNextColumn(); ImGui.Text("Layer3");
-                ImGui.TableNextRow(); ImGui.TableNextColumn();
-
-                // display gag information
-                ImGui.Text($"{whitelistPlayerData.selectedGagTypes[0]}"); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.selectedGagTypes[1]}"); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.selectedGagTypes[2]}"); ImGui.TableNextColumn();
-                ImGui.TableNextRow(); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.selectedGagPadlocks[0]}"); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.selectedGagPadlocks[1]}"); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.selectedGagPadlocks[2]}"); ImGui.TableNextColumn();
-                ImGui.TableNextRow(); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.GetPadlockTimerDurationLeft(0)}"); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.GetPadlockTimerDurationLeft(1)}"); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.GetPadlockTimerDurationLeft(2)}"); ImGui.TableNextColumn();
-                ImGui.TableNextRow(); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.selectedGagPadlocksAssigner[0]}"); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.selectedGagPadlocksAssigner[1]}"); ImGui.TableNextColumn();
-                ImGui.Text($"{whitelistPlayerData.selectedGagPadlocksAssigner[2]}"); ImGui.TableNextColumn();
-                // Restore the original style
-            }
-            ImGui.Columns(1);
+            // create a table with 3 columns
+            DrawGagTabs();
         }
         catch {
             ImGui.NewLine();
             ImGui.Text($"Error while fetching profile information");
             ImGui.NewLine();
+        }
+    }
+
+    public void DrawGagTabs() {
+        using var _ = ImRaii.PushId( "ProfileGagListingInfo" );
+        using var tabBar = ImRaii.TabBar( "Tabs");
+        if( !tabBar ) return;
+
+        if( ImGui.BeginTabItem( "Layer One" ) ) {
+            DrawLayerOneInfo();
+            ImGui.EndTabItem();
+        }
+        if( ImGui.BeginTabItem( "Layer Two" ) ) {
+            DrawLayerTwoInfo();
+            ImGui.EndTabItem();
+        }
+        if( ImGui.BeginTabItem( "Layer Three" ) ) {
+            DrawLayerThreeInfo();
+            ImGui.EndTabItem();
+        }
+    }
+
+    public void DrawLayerOneInfo() {
+        using var child2 = ImRaii.Child( "LayerOneInfo" );
+        using (var table2 = ImRaii.Table("RelationsManagerTable", 2, ImGuiTableFlags.RowBg)) {
+            if (!table2)
+                return;
+            ImGui.TableSetupColumn("Info Piece", ImGuiTableColumnFlags.WidthFixed, ImGui.GetContentRegionAvail().X/3);
+            ImGui.TableSetupColumn("Information", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Gag Type: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].selectedGagTypes[0]}");
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Padlock: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].selectedGagPadlocks[0]}");
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Time Left: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].GetPadlockTimerDurationLeft(0)}");
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Gag Assigner: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].selectedGagPadlocksAssigner[0]}");
+        }
+    }
+
+    public void DrawLayerTwoInfo() {
+        using var child3 = ImRaii.Child( "LayerTwoInfo" );
+        using (var table3 = ImRaii.Table("RelationsManagerTable", 2, ImGuiTableFlags.RowBg)) {
+            if (!table3)
+                return;
+            ImGui.TableSetupColumn("Info Piece", ImGuiTableColumnFlags.WidthFixed, ImGui.GetContentRegionAvail().X/3);
+            ImGui.TableSetupColumn("Information", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Gag Type: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].selectedGagTypes[1]}");
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Padlock: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].selectedGagPadlocks[1]}");
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Time Left: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].GetPadlockTimerDurationLeft(1)}");
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Gag Assigner: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].selectedGagPadlocksAssigner[1]}");
+        }
+    }
+
+    public void DrawLayerThreeInfo() {
+        using var child4 = ImRaii.Child( "LayerThreeInfo" );
+        using (var table4 = ImRaii.Table("RelationsManagerTable", 2, ImGuiTableFlags.RowBg)) {
+            if (!table4)
+                return;
+            ImGui.TableSetupColumn("Info Piece", ImGuiTableColumnFlags.WidthFixed, ImGui.GetContentRegionAvail().X/3);
+            ImGui.TableSetupColumn("Information", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Gag Type: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].selectedGagTypes[2]}");
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Padlock: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].selectedGagPadlocks[2]}");
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Time Left: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].GetPadlockTimerDurationLeft(2)}");
+            ImGui.TableNextRow();
+            ImGuiUtil.DrawFrameColumn("Gag Assigner: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
+            ImGui.Text($"{_config.Whitelist[_profileIndexOfUserSelected].selectedGagPadlocksAssigner[2]}");
         }
     }
 

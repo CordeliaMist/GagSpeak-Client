@@ -306,7 +306,7 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.SameLine();
             if (ImGui.Button("Remove Player", buttonWidth)) {
                 if (whitelist.Count == 1) {
-                    whitelist[0] = new WhitelistCharData("Cordelia Mist","Balmung","None");
+                    whitelist[0] = new WhitelistCharData("None","None","None");
                 } else {
                     _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
                 }
