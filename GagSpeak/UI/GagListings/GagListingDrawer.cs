@@ -25,7 +25,7 @@ public class GagListingsDrawer : IDisposable
     IDalamudTextureWrap textureWrap1; IDalamudTextureWrap textureWrap2; IDalamudTextureWrap textureWrap3; // for image display
     IDalamudTextureWrap textureWrap4; IDalamudTextureWrap textureWrap5; IDalamudTextureWrap textureWrap6; // for image display
     private DalamudPluginInterface _pluginInterface;
-    private LockManager _lockManager;
+    private GagAndLockManager _lockManager;
     private TimerService _timerService;
     private readonly GagSpeakConfig _config;    
     private float _requiredComboWidthUnscaled;
@@ -34,7 +34,7 @@ public class GagListingsDrawer : IDisposable
     public bool[] _adjustDisp; // used to adjust the display of the password field
     
     public GagListingsDrawer(GagSpeakConfig config, DalamudPluginInterface dalamudPluginInterface, 
-    TimerService timerService, LockManager lockManager) // Constructor
+    TimerService timerService, GagAndLockManager lockManager) // Constructor
     {
         _config = config;
         //update interface
@@ -118,22 +118,13 @@ public class GagListingsDrawer : IDisposable
             if(!_adjustDisp[layerIndex]){ // inch our way down half the distance of a newline
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + ImGui.GetFrameHeight() / 1.4f);
             }
-            
-            // draw the combo boxes
-            if (DrawGagTypeItemCombo(ID, config, layerIndex, _config._isLocked[layerIndex], width, _gagTypeFilterCombo)) {
-                // do stuff
-            }
-            
+            // Draw the combos
+            if (DrawGagTypeItemCombo(ID, config, layerIndex, _config._isLocked[layerIndex], width, _gagTypeFilterCombo)) {}
             // Adjust the width of the padlock dropdown to 3/4 of the original width
             int newWidth = (int)(width * 0.75f);
-            // draw the padlock dropdown
-            if (DrawGagLockItemCombo(ID, config, layerIndex, _config._isLocked[layerIndex], newWidth, _gagLockFilterCombo)) {
-                // do stuff
-            }
+            if (DrawGagLockItemCombo(ID, config, layerIndex, _config._isLocked[layerIndex], newWidth, _gagLockFilterCombo)) {}
             // end our disabled fields, if any, here
-            if(_config._isLocked[layerIndex]) {
-                ImGui.EndDisabled();
-            }
+            if(_config._isLocked[layerIndex]) { ImGui.EndDisabled(); } // end the disabled part here, if it was disabled
             
             // get the type of button label that will display
             _buttonLabel = _config._isLocked[layerIndex] ? "Unlock" : "Lock"; // we want to display unlock button if we are currently locked
@@ -152,7 +143,7 @@ public class GagListingsDrawer : IDisposable
             (_config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
             _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock ||
             _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock)) {
-                _config.displaytext[layerIndex] = $"{_timerService.remainingTimes.GetValueOrDefault($"{_config._padlockIdentifier[layerIndex]._padlockType.ToString()}_Identifier{layerIndex}", "N/A")}]";
+                _config.displaytext[layerIndex] = _timerService.GetRemainingTimeForPadlock(layerIndex);
             }
         }
         ImGui.NextColumn();

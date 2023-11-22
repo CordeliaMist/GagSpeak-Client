@@ -18,7 +18,9 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using GagSpeak.Chat.MsgEncoder;
 using GagSpeak.Services;
 using GagSpeak.UI.UserProfile;
-using Dalamud.Interface.Utility.Table;
+using Dalamud.Game.Text.SeStringHandling;
+using OtterGui.Classes;
+
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 
@@ -28,6 +30,7 @@ public class WhitelistTab : ITab, IDisposable
     private UserProfileWindow _userProfileWindow;
     private readonly MessageEncoder _gagMessages; // snag the whitelistchardata from the main plugin for obvious reasons
     private readonly ChatManager _chatManager; // snag the chatmanager from the main plugin for obvious reasons
+    private readonly IChatGui _chatGui; // snag the chatgui from the main plugin for obvious reasons
     private readonly GagSpeakConfig _config; // snag the conmfig from the main plugin for obvious reasons
     private readonly IClientState _clientState; // snag the clientstate from the main plugin for obvious reasons
     private readonly IDataManager _dataManager; // for parsing objects
@@ -54,9 +57,10 @@ public class WhitelistTab : ITab, IDisposable
 
     // Constructor for the whitelist tab
     public WhitelistTab(GagSpeakConfig config, IClientState clientState, GagListingsDrawer gagListingsDrawer, ChatManager chatManager,
-    IDataManager dataManager, TimerService timerService, UserProfileWindow userProfileWindow) {
+    IDataManager dataManager, TimerService timerService, UserProfileWindow userProfileWindow, IChatGui chatGui) {
         // Set the readonlys
         _config = config;
+        _chatGui = chatGui;
         _userProfileWindow = userProfileWindow;
         _timerService = timerService;
         _clientState = clientState;
@@ -302,7 +306,7 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.SameLine();
             if (ImGui.Button("Remove Player", buttonWidth)) {
                 if (whitelist.Count == 1) {
-                    whitelist[0] = new WhitelistCharData("None","None","None");
+                    whitelist[0] = new WhitelistCharData("Cordelia Mist","Balmung","None");
                 } else {
                     _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
                 }
@@ -386,9 +390,9 @@ public class WhitelistTab : ITab, IDisposable
             _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, whitelist[_currentWhitelistItem], ref _lockLabel, layer, false, width, _gagLockFilterCombo[layer]);
             ImGui.SameLine();
             if (ImGui.Button("Lock Gag")) {
-                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(false)) {
+                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(false, _config)) {
                     // at this point, our password is valid, so we can sucessfully lock the padlock
-                    _config._whitelistPadlockIdentifier.UpdateConfigPadlockPasswordInfo(0, false, _config);
+                    _config._whitelistPadlockIdentifier.UpdateConfigPadlockInfo(0, false, _config);
                     // then we can apply the lock gag logic
                     LockGagOnPlayer(layer, _lockLabel, _config.Whitelist[_currentWhitelistItem], _storedPassword);
                 }
@@ -399,9 +403,9 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.SameLine();
             if (ImGui.Button("Unlock Gag")) {
                 // apply similar format to lock gag
-                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true)) {
+                if(_config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, _config)) {
                     // at this point, our password is valid, so we can sucessfully lock the padlock
-                    _config._whitelistPadlockIdentifier.UpdateConfigPadlockPasswordInfo(0, true, _config);
+                    _config._whitelistPadlockIdentifier.UpdateConfigPadlockInfo(0, true, _config);
                     // then we can apply the lock gag logic
                     UnlockGagOnPlayer(layer, _config.Whitelist[_currentWhitelistItem], _storedPassword);
                 }
@@ -618,6 +622,9 @@ public class WhitelistTab : ITab, IDisposable
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
+        // print to chat that you sent the request
+        _chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request for "+
+        $"{selectedPlayer.name} to become your Mistress.").AddItalicsOff().BuiltString);
         // set your requested status and send the message!
         selectedPlayer.PendingRelationRequestFromYou = "Mistress";
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
@@ -630,6 +637,9 @@ public class WhitelistTab : ITab, IDisposable
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
+        // print to chat that you sent the request
+        _chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request for "+
+        $"{selectedPlayer.name} to become your Pet.").AddItalicsOff().BuiltString);
         // set your requested status and send the message!
         selectedPlayer.PendingRelationRequestFromYou = "Pet";
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
@@ -641,6 +651,9 @@ public class WhitelistTab : ITab, IDisposable
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
+        // print to chat that you sent the request
+        _chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request for "+
+        $"{selectedPlayer.name} to become your Mistress.").AddItalicsOff().BuiltString);
         // set your requested status and send the message!
         selectedPlayer.PendingRelationRequestFromYou = "Slave";
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
@@ -652,6 +665,9 @@ public class WhitelistTab : ITab, IDisposable
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
+        // print to chat that you sent the request
+        _chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Removing Relation Status "+
+        $"with {selectedPlayer.name}.").AddItalicsOff().BuiltString);
         // send the message
         selectedPlayer.relationshipStatus = "None"; // set the relationship status
         selectedPlayer.PendingRelationRequestFromPlayer = ""; // set any pending relations to none
@@ -665,6 +681,9 @@ public class WhitelistTab : ITab, IDisposable
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
+        // print to chat that you sent the request
+        _chatGui.Print(new SeStringBuilder().AddItalicsOn().AddRed($"[GagSpeak]").AddText($"Forcing silence upon your slave, " +
+        $"hopefully {selectedPlayer.name} will behave herself~").AddItalicsOff().BuiltString);
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         _chatManager.SendRealMessage(_gagMessages.OrderGarblerLockEncodedMessage(playerPayload, targetPlayer));
@@ -676,6 +695,9 @@ public class WhitelistTab : ITab, IDisposable
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
+        // print to chat that you sent the request
+        _chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending information request to " +
+        $"{selectedPlayer.name}, please wait...").AddItalicsOff().BuiltString);
         // send the message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         _chatManager.SendRealMessage(_gagMessages.RequestInfoEncodedMessage(playerPayload, targetPlayer));
@@ -740,7 +762,6 @@ public class WhitelistTab : ITab, IDisposable
         selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
         // let them know you accept the request
         _chatManager.SendRealMessage(_gagMessages.AcceptMistressEncodedMessage(playerPayload, targetPlayer));
-        
     }
 
     private void AcceptPetRequestFromPlayer(WhitelistCharData selectedPlayer) {

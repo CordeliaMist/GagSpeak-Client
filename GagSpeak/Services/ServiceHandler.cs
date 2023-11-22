@@ -64,7 +64,7 @@ public static class ServiceHandler
              .AddSingleton<BackupService>()
              .AddSingleton<ConfigMigrationService>()
              .AddSingleton<MessageService>()
-             .AddSingleton<LockManager>()
+             .AddSingleton<GagAndLockManager>()
              .AddSingleton<TimerService>();
 
 

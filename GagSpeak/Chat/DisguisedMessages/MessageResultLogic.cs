@@ -9,20 +9,25 @@ using System.Text.RegularExpressions;
 
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using GagSpeak.Services;
+using GagSpeak.UI.Helpers;
 namespace GagSpeak.Chat.MsgResultLogic;
 
+#pragma warning disable IDE1006
 public class MessageResultLogic { // Purpose of class : To perform logic on client based on the type of the sucessfully decoded message.
     
     private GagListingsDrawer _gagListingsDrawer;
     private readonly IChatGui _clientChat;
     private readonly GagSpeakConfig _config;
     private readonly IClientState _clientState;
+    private readonly GagAndLockManager _lockManager;
 
-    public MessageResultLogic(GagListingsDrawer gagListingsDrawer, IChatGui clientChat, GagSpeakConfig config, IClientState clientState) {
+    public MessageResultLogic(GagListingsDrawer gagListingsDrawer, IChatGui clientChat, GagSpeakConfig config,
+    IClientState clientState, GagAndLockManager lockManager) {
         _gagListingsDrawer = gagListingsDrawer;
         _clientChat = clientChat;
         _config = config;
         _clientState = clientState;
+        _lockManager = lockManager;
     }
     
     public bool CommandMsgResLogic(string receivedMessage, List<string> decodedMessage, bool isHandled,
@@ -31,13 +36,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         var commandType = decodedMessage[0].ToLowerInvariant();
         var _ = commandType switch
         {
-            "lock"           => HandleLockMessage(ref decodedMessage, ref isHandled, config),
-            "lockpassword"   => HandleLockMessage(ref decodedMessage, ref isHandled, config),
-            "unlock"         => HandleUnlockMessage(ref decodedMessage, ref isHandled, config),
-            "unlockpassword" => HandleUnlockMessage(ref decodedMessage, ref isHandled, config),
-            "removeall"      => HandleRemoveAllMessage(ref decodedMessage, ref isHandled, config),
-            "remove"         => HandleRemoveMessage(ref decodedMessage, ref isHandled, config),
-            "apply"          => HandleApplyMessage(ref decodedMessage, ref isHandled, config),
+            "lock"              => HandleLockMessage(ref decodedMessage, ref isHandled, config),
+            "lockpassword"      => HandleLockMessage(ref decodedMessage, ref isHandled, config),
+            "locktimerpassword" => HandleLockMessage(ref decodedMessage, ref isHandled, config),
+            "unlock"            => HandleUnlockMessage(ref decodedMessage, ref isHandled, config),
+            "unlockpassword"    => HandleUnlockMessage(ref decodedMessage, ref isHandled, config),
+            "removeall"         => HandleRemoveAllMessage(ref decodedMessage, ref isHandled, config),
+            "remove"            => HandleRemoveMessage(ref decodedMessage, ref isHandled, config),
+            "apply"             => HandleApplyMessage(ref decodedMessage, ref isHandled, config),
             _                => LogError("Invalid message parse, If you see this report it to cordy ASAP.")
         };
         return true;
@@ -72,102 +78,35 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return false;
     }
 
-    private bool IsMistress(string playerName) {
-        PlayerPayload playerPayload; // get the current player info
-        try { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); } catch { LogError("[MsgResultLogic]: Failed to get player payload."); return false; }
-        if (playerName == playerPayload.PlayerName) {
-            return true;}
-        // see if any names in our whitelist are in decodedMessage[4] AND have their relation set to mistress
-        if (_config.Whitelist.Any(w => playerName.Contains(w.name) && w.relationshipStatus == "Mistress")) {
-            return true;}
-        // otherwise return false
-        GagSpeak.Log.Debug($"[MsgResultLogic]: {playerName} is not a mistress.");
-        return false;
-    }
-
-    public static DateTimeOffset GetEndTime(string input) {
-        // Match days, hours, minutes, and seconds in the input string
-        var match = Regex.Match(input, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
-
-        if (match.Success) { 
-            // Parse days, hours, minutes, and seconds
-            int.TryParse(match.Groups[1].Value, out int days);
-            int.TryParse(match.Groups[2].Value, out int hours);
-            int.TryParse(match.Groups[3].Value, out int minutes);
-            int.TryParse(match.Groups[4].Value, out int seconds);
-            // Create a TimeSpan from the parsed values
-            TimeSpan duration = new TimeSpan(days, hours, minutes, seconds);
-            // Add the duration to the current DateTime to get a DateTimeOffset
-            return DateTimeOffset.Now.Add(duration);
-        }
-
-        // If the input string is not in the correct format, throw an exception
-        throw new FormatException($"[MsgResultLogic]: Invalid duration format: {input}");
-    }
-
-    // handle the lock message (realistically these should be falses, but they work in both cases and i am lazy)
+    // handle the lock message [commandtype, layer, gagtype/locktype, password, player, password2]
     private bool HandleLockMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         // first, check if we have valid layer
         if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
         if (!int.TryParse(decodedMessage[1], out int layer)) { 
-            isHandled = true; LogError("[MsgResultLogic]: Invalid layer value.");}
-        
+            isHandled = true; return LogError("[MsgResultLogic]: Invalid layer value.");}
         // second, make sure already have a gag on
         if (_config.selectedGagTypes[layer-1] == "None") {
-            isHandled = true; LogError($"[MsgResultLogic]: No gag applied for layer {layer}, cannot apply lock!");}
-        
+            isHandled = true; return LogError($"[MsgResultLogic]: No gag applied for layer {layer}, cannot apply lock!");}
         // third, make sure we dont already have a lock here
         if (_config.selectedGagPadlocks[layer-1] != GagPadlocks.None) {
-            isHandled = true; LogError($"[MsgResultLogic]: Already a lock applied to gag layer {layer}!");}
-        
-        // forth, now that everything is valid, perform remaining operations
+            isHandled = true; return LogError($"[MsgResultLogic]: Already a lock applied to gag layer {layer}!");}
+        // all preconditions met, so now we can try to lock it.
         if (Enum.TryParse(decodedMessage[2], out GagPadlocks parsedLockType)) {
-            // if the lock type is a mistress padlock
-            if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressPadlock || _config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressTimerPadlock) {
-                // make sure we have someone who is a valid mistress doing this.
-                if(IsMistress(decodedMessage[4])) {
-                    _config.selectedGagPadlocksAssigner[layer-1] = decodedMessage[4];}
-                else {
-                    isHandled = true; LogError("[MsgResultLogic]: You must be a mistress to apply a mistress padlock!");}
-            }
-            // otherwise, handle the rest of the cases.
-            _config.selectedGagPadlocks[layer-1] = parsedLockType; // update config list with new locktype
-            _config._padlockIdentifier[layer-1]._padlockType = parsedLockType; // update the padlockidentifier with the new locktype
-            if (decodedMessage[3] != "") { // If padlock contains password, make sure we set it to the appropriate padlockidentifier type
-                _config.selectedGagPadlocksPassword[layer-1] = decodedMessage[3]; // set password in config
-                if (decodedMessage[5] != "") { // set password in padlockIdentifier
-                    _config._padlockIdentifier[layer-1].SetAndValidate(decodedMessage[2], decodedMessage[3], decodedMessage[5]);
-                } else { // update padlockIdentifier with password
-                    _config._padlockIdentifier[layer-1].SetAndValidate(decodedMessage[2], decodedMessage[3]);
-                }
-            } else { // otherwise, just set the padlockidentifier to the appropriate padlockidentifier type
-                _config._padlockIdentifier[layer-1].SetAndValidate(decodedMessage[2]);
-            }
-
+            // get our payload
+            PlayerPayload playerPayload = _lockManager.GetPlayerPayload();
+            string[] nameParts = decodedMessage[4].Split(' ');
+            decodedMessage[4] = nameParts[0] + " " + nameParts[1];
+            // if the lock type is a mistress padlock, make sure the assigner is a mistress
+            _config._padlockIdentifier[layer-1].SetType(parsedLockType); // set the type of the padlock
+            _lockManager.Lock((layer-1), decodedMessage[4], decodedMessage[3], decodedMessage[5], playerPayload.PlayerName);
+            // if we reached this point, it means we sucessfully locked the layer
+            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerPayload.PlayerName} locked your " +
+            $"{_config.selectedGagTypes[layer-1]} with a {_config.selectedGagPadlocks[layer-1]}.").AddItalicsOff().BuiltString);
+            GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag lock");
+            return true; // sucessful parse
         } else {
-            isHandled = true; LogError("[MsgResultLogic]: Invalid /gag lock parameters sent in!");
+            isHandled = true; return LogError("[MsgResultLogic]: Invalid /gag lock parameters sent in!");
         }
-        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag lock");
-        _config._isLocked[layer-1] = false;
-        _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, false, _config);
-        // at this point timer should be stored if it is.
-        GagSpeak.Log.Debug($"[MsgResultLogic]: Stored timer for layer {layer} is {_config._padlockIdentifier[layer-1]._storedTimer}");
-        _config.selectedGagPadLockTimer[layer-1] = GetEndTime(_config._padlockIdentifier[layer-1]._storedTimer);
-        
-        // replace the current timer containining _identifier[layer-1] with a new timer that will unlock the layer after the timer is up.
-        var timer = new TimerService(_config);
-        timer.StartTimer($"{_config._padlockIdentifier[layer-1]._padlockType}_Identifier{layer-1}", _config._padlockIdentifier[layer-1]._storedTimer, 1000, () => {
-            _config._isLocked[layer-1] = false;
-            _config._padlockIdentifier[layer-1].ClearPasswords();
-            _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, !_config._isLocked[layer-1], _config);
-        });
-
-        // send sucessful message to chat
-        string playerNameWorld = decodedMessage[4];
-        string[] parts = playerNameWorld.Split(' ');
-        string playerName = string.Join(" ", parts.Take(parts.Length - 1));
-        _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} locked your {_config.selectedGagPadlocks} with a {_config.selectedGagPadlocks[layer-1]}.").AddItalicsOff().BuiltString);
-        return true; // sucessful parse
     }
 
     // handle the unlock message
@@ -175,49 +114,18 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         // see if our layer is a valid layer
         if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
         if (!int.TryParse(decodedMessage[1], out int layer)) { 
-            isHandled = true; LogError("[MsgResultLogic]: Invalid layer value.");}
+            isHandled = true; return LogError("[MsgResultLogic]: Invalid layer value.");}
         // second, make sure we have a lock on
         if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.None) {
-            isHandled = true; LogError($"[MsgResultLogic]: No lock applied for layer {layer}, cannot remove lock!");}
-    
-        // third, see if we are unlocking without any password field
-        if (decodedMessage[3] == "") {
-            // if our padlock contains a password field, then throw error
-            if (_config.selectedGagPadlocksPassword[layer-1] != string.Empty) {
-                isHandled = true; LogError("[MsgResultLogic]: Cannot remove a password lock without a password!");}
-            // If our padlock is a mistress related padlock, unlocker must match assigner.
-            if ((_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressPadlock || _config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressTimerPadlock)
-            && !decodedMessage[4].Contains(_config.selectedGagPadlocksAssigner[layer-1])) {
-                isHandled = true; LogError("[MsgResultLogic]: Cannot remove a mistress padlock's unless you are the one who assigned it.");}
-            // if we made it here, we can just remove the lock
-            _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
-            _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
-            _config.selectedGagPadlocksAssigner[layer-1] = "";
-            _config._isLocked[layer-1] = true; // unlock the layer
-            _config._padlockIdentifier[layer-1].ClearPasswords(); // update padlockIdentifier to reflect changes
-            _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, true, _config);
-        } 
-        // finally, see if we are unlocking with a password
-        else {
-            // if our passwords to not match, throw error
-            if (_config.selectedGagPadlocksPassword[layer-1] != decodedMessage[3]) {
-                isHandled = true; LogError("[MsgResultLogic]: Invalid password for this lock!");}
-            // Assuming they do match (if we reached this point), check if it is a mistress padlock
-            if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressTimerPadlock && _config.selectedGagPadlocksAssigner[layer-1] != decodedMessage[4]) {
-                isHandled = true; LogError("[MsgResultLogic]: Cannot remove a mistress padlock's unless you are the one who assigned it.");}
-            // send sucessful message to chat
-            string playerNameWorld = decodedMessage[4];
-            string[] parts = playerNameWorld.Split(' ');
-            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
-            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} sucessfully unlocked the {_config.selectedGagPadlocks[layer-1]} from your {_config.selectedGagPadlocks}.").AddItalicsOff().BuiltString);
-            // Remove the lock
-            _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
-            _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
-            _config.selectedGagPadlocksAssigner[layer-1] = "";
-            _config._isLocked[layer-1] = true; // unlock the layer
-            _config._padlockIdentifier[layer-1].ClearPasswords(); // update padlockIdentifier to reflect changes
-            _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, true, _config);
-        }
+            isHandled = true; return LogError($"[MsgResultLogic]: No lock applied for layer {layer}, cannot remove lock!");}
+        // if we made it here, we can try to unlock it.
+        PlayerPayload playerPayload = _lockManager.GetPlayerPayload();
+        string[] nameParts = decodedMessage[4].Split(' ');
+        decodedMessage[4] = nameParts[0] + " " + nameParts[1];
+        // try to unlock it
+        _lockManager.Unlock((layer-1), decodedMessage[4], decodedMessage[3], playerPayload.PlayerName); // attempt to unlock
+        _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{decodedMessage[4]} " +
+        $"sucessfully unlocked the {_config.selectedGagPadlocks[layer-1]} from your {_config.selectedGagPadlocks}.").AddItalicsOff().BuiltString);        
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag unlock");
         return true; // sucessful parse
     }
@@ -227,26 +135,19 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         // first, see if our layer is a valid layer
         if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
         if (!int.TryParse(decodedMessage[1], out int layer)) { 
-            isHandled = true; LogError("[MsgResultLogic]: Invalid layer value.");}
+            isHandled = true; return LogError("[MsgResultLogic]: Invalid layer value.");}
         // second, make sure that this layer has a gag on it
         if (_config.selectedGagTypes[layer-1] == "None") {
-            isHandled = true; LogError($"[MsgResultLogic]: There is no gag applied for gag layer {layer}, so no gag can be removed.");}
+            isHandled = true; return LogError($"[MsgResultLogic]: There is no gag applied for gag layer {layer}, so no gag can be removed.");}
         // third, make sure there is no lock on that gags layer
         if (_config.selectedGagPadlocks[layer-1] != GagPadlocks.None) {
-            isHandled = true; LogError($"[MsgResultLogic]: There is a lock applied for gag layer {layer}, cannot remove gag!");}
+            isHandled = true; return LogError($"[MsgResultLogic]: There is a lock applied for gag layer {layer}, cannot remove gag!");}
         // finally, if we made it here, we can remove the gag
-        // but first, send sucessful message to chat
-        // send sucessful message to chat
         string playerNameWorld = decodedMessage[4];
         string[] parts = playerNameWorld.Split(' ');
         string playerName = string.Join(" ", parts.Take(parts.Length - 1));
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} removed your {_config.selectedGagTypes[layer-1]}, how sweet.").AddItalicsOff().BuiltString);
-        _config.selectedGagTypes[layer-1] = "None";
-        _config.selectedGagPadlocks[layer-1] = GagPadlocks.None;
-        _config.selectedGagPadlocksPassword[layer-1] = string.Empty;
-        _config.selectedGagPadlocksAssigner[layer-1] = "";
-        _config._padlockIdentifier[layer-1].ClearPasswords();
-        _config._padlockIdentifier[layer-1].UpdateConfigPadlockPasswordInfo(layer-1, true, _config);
+        _lockManager.RemoveGag(layer-1); // remove the gag
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag remove");
         return true; // sucessful parse
     }
@@ -255,22 +156,13 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
     private bool HandleRemoveAllMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         // make sure all of our gagpadlocks are none, if they are not, throw exception
         if (_config.selectedGagPadlocks.Any(padlock => padlock != GagPadlocks.None)) {
-            isHandled = true; LogError("[MsgResultLogic]: Cannot remove all gags while locks are on any of them.");}
+            isHandled = true; return LogError("[MsgResultLogic]: Cannot remove all gags while locks are on any of them.");}
         // if we made it here, we can remove them all
-        // but first, send sucessful message to chat
-        string playerNameWorld = decodedMessage[4];
+        string playerNameWorld = decodedMessage[4]; 
         string[] parts = playerNameWorld.Split(' ');
         string playerName = string.Join(" ", parts.Take(parts.Length - 1));
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has removed all of your gags.").AddItalicsOff().BuiltString);
-        
-        for (int i = 0; i < _config.selectedGagPadlocks.Count; i++) {
-            _config.selectedGagTypes[i] = "None";
-            _config.selectedGagPadlocks[i] = GagPadlocks.None;
-            _config.selectedGagPadlocksPassword[i] = string.Empty;
-            _config.selectedGagPadlocksAssigner[i] = "";
-            _config._padlockIdentifier[i].ClearPasswords();
-            _config._padlockIdentifier[i].UpdateConfigPadlockPasswordInfo(i, true, _config);
-        }
+        _lockManager.RemoveAllGags(); // remove all gags
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag removeall");
         return true; // sucessful parse
     }
@@ -280,12 +172,12 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         // first, see if our layer is a valid layer
         if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
         if (!int.TryParse(decodedMessage[1], out int layer)) { 
-            isHandled = true; LogError("[MsgResultLogic]: Invalid layer value.");}
+            isHandled = true; return LogError("[MsgResultLogic]: Invalid layer value.");}
         // secondly, see if our gagtype is in our list of gagtypes
         if (!_config.GagTypes.ContainsKey(decodedMessage[2]) && _config.selectedGagTypes[layer-1] != "None") {
-            isHandled = true; LogError("[MsgResultLogic]: Invalid gag type.");}
+            isHandled = true; return LogError("[MsgResultLogic]: Invalid gag type.");}
         // if we make it here, apply the gag
-        _config.selectedGagTypes[layer-1] = decodedMessage[2];
+        _lockManager.ApplyGag(layer-1, decodedMessage[2]);
         // send sucessful message to chat
         string playerNameWorld = decodedMessage[4];
         string[] parts = playerNameWorld.Split(' ');
@@ -312,7 +204,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for a mistress relation request from {playerName}");
             }
         } catch {
-            LogError($"ERROR, Invalid requestMistress message parse.");
+            return LogError($"ERROR, Invalid requestMistress message parse.");
         }
         return true;
     }
@@ -334,7 +226,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse pet relation request from {playerName}: {playerInWhitelist.PendingRelationRequestFromPlayer}");
             }
         } catch {
-            LogError($"ERROR, Invalid request pet message parse.");
+            return LogError($"ERROR, Invalid request pet message parse.");
         }
         return true;
     }
@@ -356,7 +248,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for a slave relation request from {playerName}");
             }
         } catch {
-            LogError($"ERROR, Invalid request pet message parse.");
+            return LogError($"ERROR, Invalid request pet message parse.");
         }
         return true;
     }
@@ -380,7 +272,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for relation removal");
             }
         } catch {
-            LogError($"ERROR, Invalid relation removal message parse.");
+            return LogError($"ERROR, Invalid relation removal message parse.");
         }
         return true;
     }
@@ -407,7 +299,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
             }
         }
         else {
-            LogError($"ERROR, Invalid live chat garbler lock message parse.");
+            return LogError($"ERROR, Invalid live chat garbler lock message parse.");
         }
         return true;
     }
@@ -431,7 +323,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");
             }
         } catch {
-            LogError($"ERROR, Invalid information request message parse.");
+            return LogError($"ERROR, Invalid information request message parse.");
         }
         return true;
     }
@@ -452,7 +344,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Mistress relation");
             }
         } catch {
-            LogError($"ERROR, Invalid accept mistress message parse.");
+            return LogError($"ERROR, Invalid accept mistress message parse.");
         }
         return true;
     }
@@ -473,7 +365,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Pet relation");
             }
         } catch {
-            LogError($"ERROR, Invalid accept pet message parse.");
+            return LogError($"ERROR, Invalid accept pet message parse.");
         }
         return true;
     }
@@ -494,7 +386,7 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Slave relation");
             }
         } catch {
-            LogError($"ERROR, Invalid accept Slave message parse.");
+            return LogError($"ERROR, Invalid accept Slave message parse.");
         }
         return true;
     }
@@ -520,14 +412,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 playerInWhitelist.selectedGagPadlocks[1] = (GagPadlocks)Enum.Parse(typeof(GagPadlocks), decodedMessage[10]);
                 playerInWhitelist.selectedGagPadlocksAssigner[0] = decodedMessage[12];
                 playerInWhitelist.selectedGagPadlocksAssigner[1] = decodedMessage[13];
-                playerInWhitelist.selectedGagPadlocksTimer[0] = GetEndTime(decodedMessage[15]);
-                playerInWhitelist.selectedGagPadlocksTimer[1] = GetEndTime(decodedMessage[16]);
+                playerInWhitelist.selectedGagPadlocksTimer[0] = UIHelpers.GetEndTime(decodedMessage[15]);
+                playerInWhitelist.selectedGagPadlocksTimer[1] = UIHelpers.GetEndTime(decodedMessage[16]);
 
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Received information response from {playerName} [Part 1/2]");
                 playerNameTemp = playerName; // transfer over to the 2nd function
             }            
         } catch {
-            LogError($"[MsgResultLogic]: Invalid provideInfo [1/2] message parse.");
+            return LogError($"[MsgResultLogic]: Invalid provideInfo [1/2] message parse.");
         }        
         return true;
     }
@@ -545,14 +437,15 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
                 playerInWhitelist.selectedGagTypes[2] = decodedMessage[8];
                 playerInWhitelist.selectedGagPadlocks[2] = (GagPadlocks)Enum.Parse(typeof(GagPadlocks), decodedMessage[11]);
                 playerInWhitelist.selectedGagPadlocksAssigner[2] = decodedMessage[14];
-                playerInWhitelist.selectedGagPadlocksTimer[2] = GetEndTime(decodedMessage[17]);
+                playerInWhitelist.selectedGagPadlocksTimer[2] = UIHelpers.GetEndTime(decodedMessage[17]);
                 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Finished Recieving Information from {playerName}.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Received information response from {playerName} [Part 2/2]");
             }            
         } catch {
-            LogError($"[MsgResultLogic]: Invalid provideInfo [2/2] message parse.");
+            return LogError($"[MsgResultLogic]: Invalid provideInfo [2/2] message parse.");
         }     
         return true;
     }
 }
+#pragma warning restore IDE1006

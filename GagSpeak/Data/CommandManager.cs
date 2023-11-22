@@ -248,7 +248,9 @@ public class CommandManager : IDisposable // Our main command list manager
         return true; // sucessful!
     }
 
-    // Handles: /gag lock [layer] [locktype] | [player target] && /gag lock [layer] [locktype] | [password] | [player target]
+    // Handles: /gag lock [layer] [locktype] | [player target] 
+    //       && /gag lock [layer] [locktype] | [password] | [player target]
+    //       && /gag lock [layer] [locktype] | [password] | [timer] | [player target]
     private bool GagLock(string argument) { // arguement at this point = layer locktype | player target
         PlayerPayload playerPayload; // get player payload
         playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
@@ -258,6 +260,7 @@ public class CommandManager : IDisposable // Our main command list manager
         string targetplayer = string.Empty;
         string locktype = string.Empty;
         string password = string.Empty;
+        string timer = string.Empty;
         string layer = string.Empty;
         if (parts.Length == 2) { // Condition, no password.
             targetplayer = parts[1].Trim(); // Get the target player name
@@ -278,33 +281,34 @@ public class CommandManager : IDisposable // Our main command list manager
             // get the locktype
             locktype = string.Join(" ", layerAndLocktype.Skip(1));
             // verify password.
-            if (IsInvalidPassword(locktype, password, playerPayload.PlayerName)) { return false; } // returns false if it is not a valid password
+        }
+        else if (parts.Length == 4) {
+            targetplayer = parts[3].Trim(); // Get the target player name
+            timer = parts[2].Trim(); // Get the password
+            password = parts[1].Trim(); // Get the password
+            // take parts[0], which is [layer] [locktype], and split it so that layer == first word of parts[0] and locktype == the rest of[0]
+            string[] layerAndLocktype = parts[0].Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            // get the layer
+            layer = layerAndLocktype[0];
+            // get the locktype
+            locktype = string.Join(" ", layerAndLocktype.Skip(1));
+            // verify password.
         }
 
         // if our arguments are not valid, display help information
-        if (! (Enum.IsDefined(typeof(GagPadlocks), locktype) && (layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
+        if (IsInvalidPassword(locktype, password, playerPayload.PlayerName, timer) ||
+        !(Enum.IsDefined(typeof(GagPadlocks), locktype) && (layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
-            _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments. Layer or Locktype or player name is incorrect").BuiltString);
-            // display correct information
-            if(parts.Length == 2) {
-                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag lock ").AddYellow("layer ").AddGreen("locktype").AddText(" | ")
-                .AddBlue("player name@homeworld").BuiltString);
-            } else if(parts.Length == 3) {
-                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag lock ").AddYellow("layer ").AddGreen("locktype").AddText(" | ")
-                .AddPurple("password").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
-            } else {
-                // default case.
-                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag lock ").AddYellow("layer ").AddGreen("locktype").AddText(" | ")
-                .AddPurple("password").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
-            }
+            _chat.Print(new SeStringBuilder().AddRed("Invalid format/arguements. Format can be any of the following:").BuiltString);
+            _chat.Print(new SeStringBuilder().AddText("  /gag lock ").AddYellow("layer ").AddGreen("locktype").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
+            _chat.Print(new SeStringBuilder().AddText("  /gag lock ").AddYellow("layer ").AddGreen("locktype").AddText(" | ").AddPurple("password").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
+            _chat.Print(new SeStringBuilder().AddText("  /gag lock ").AddYellow("layer ").AddGreen("locktype").AddText(" | ").AddPurple("password").AddText(" | ").AddPurple("password2").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Layer field must be either 1, 2, or 3, indicating the slot the lock is used on.").BuiltString);
+                "Layer must be either 1, 2, or 3.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Locktype field must be a valid locktype. Use ").AddYellow("/gagspeak showlist padlocks ").AddText("to see all valid locktypes.").BuiltString);
+                "Locktype must be locktype from ").AddYellow("/gagspeak showlist padlocks ").AddText(".").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Password field must be a valid password for the associated locktype. To see spesifics, use ").AddYellow("/gagspeak showlist padlocks ").BuiltString);
-            _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Player field must be a valid player name and homeworld. Example: ").AddYellow("FirstName LastName@Bahamut.").BuiltString);
+                "Player must have format: ").AddYellow("FirstName LastName@World.").BuiltString);
             return false;
         }
 
@@ -314,11 +318,11 @@ public class CommandManager : IDisposable // Our main command list manager
             GagSpeak.Log.Debug($"[Command Manager]: /gag lock command sucessful, sending off to Message Encoder.");  
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             if (parts.Length == 2) {
-                // unique string for /gag lock == "from her pocket and uses it to lock your"
                 _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetplayer, locktype, layer));
             } else if (parts.Length == 3) {
-                // unique string for /gag lock password == "from her pocket and sets the combination password to"
                 _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetplayer, locktype, layer, password));
+            } else if (parts.Length == 4) {
+                _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetplayer, locktype, layer, password, timer));
             } else {
                 _chat.PrintError("[GagSpeak] Something unexpected occured!");
                 throw new Exception("[Command Manager]: Something unexpected occured!");
@@ -355,25 +359,15 @@ public class CommandManager : IDisposable // Our main command list manager
         // if our arguments are not valid, display help information
         if (! ((layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
-            _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments").BuiltString);
-            // do the same if else stuff we did in gaglock
-            if(parts.Length == 2){
-                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag unlock ").AddYellow("layer").AddText(" | ").AddPurple("password")
-                .AddText(" | ").AddBlue("player name@homeworld").BuiltString);
-            } else if (parts.Length == 3) {
-                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag unlock ").AddYellow("layer").AddText(" | ")
-                .AddBlue("player name@homeworld").BuiltString);
-            } else {
-                // default case.
-                _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag unlock ").AddYellow("layer").AddText(" | ").AddPurple("password")
-                .AddText(" | ").AddBlue("player name@homeworld").BuiltString);
-            }
+            _chat.Print(new SeStringBuilder().AddRed("Invalid format/arguements. Format can be any of the following:").BuiltString);
+            _chat.Print(new SeStringBuilder().AddText("  /gag unlock ").AddYellow("layer ").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
+            _chat.Print(new SeStringBuilder().AddText("  /gag unlock ").AddYellow("layer ").AddText(" | ").AddPurple("password").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Layer field must be either 1, 2, or 3, indicating the slot the lock is used on.").BuiltString);
+                "Layer must be either 1, 2, or 3.").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Password, if used must be a valid password for the associated locktype on the recieving end, otherwise this will do nothing.").BuiltString);
+                "Password must satisfy password conditions of lock types from ").AddYellow("/gagspeak showlist padlocks ").AddText(".").BuiltString);
             _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
-                "The Player field must be a valid player name and homeworld. Example: ").AddYellow("FirstName LastName@Bahamut.").BuiltString);
+                "Player must have format: ").AddYellow("FirstName LastName@World.").BuiltString);
             return false;
         }
         // we have passed in the correct arguments, so begin applying the logic.
@@ -389,7 +383,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 _chatManager.SendRealMessage(_gagMessages.GagEncodedUnlockMessage(playerPayload, targetplayer, layer));
             } else if (parts.Length == 3) {
                 // unique string for /gag unlock password == "reaches behind your neck and sets the password to"
-                _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetplayer, layer, password));
+                _chatManager.SendRealMessage(_gagMessages.GagEncodedUnlockMessage(playerPayload, targetplayer, layer, password));
             } else {
                 _chat.PrintError("[GagSpeak] Something unexpected occured!");
                 throw new Exception("[Command Manager]: Something unexpected occured!");
@@ -480,25 +474,33 @@ public class CommandManager : IDisposable // Our main command list manager
     /// <param name="_locktype"></param>
     /// <param name="_password"></param>
     /// <returns></returns>
-    private bool IsInvalidPassword(string _locktype, string _password, string playername) { // will return false if it password does not pass all condition checks
+    private bool IsInvalidPassword(string _locktype, string _password, string playername, string _password2) { // will return false if it password does not pass all condition checks
+        bool ret = false;
         if (Enum.TryParse(typeof(GagPadlocks), _locktype, out object parsedEnum)) {
             switch (parsedEnum) {
                 case GagPadlocks.None:
                     return false;
                 case GagPadlocks.MetalPadlock:
-                    return true;
+                    ret = !(_password == string.Empty && _password2 == string.Empty);
+                    return ret;
                 case GagPadlocks.CombinationPadlock:
-                    return ValidateCombination(_password);
+                    ret = !(ValidateCombination(_password) && _password2 == string.Empty && _password != string.Empty);
+                    return ret;
                 case GagPadlocks.PasswordPadlock:
-                    return ValidatePassword(_password);
+                    ret = !(ValidatePassword(_password) && _password2 == string.Empty && _password != string.Empty);
+                    return ret;
                 case GagPadlocks.FiveMinutesPadlock:
-                    return ValidateTimer(_password);
+                    ret = !(_password2 == string.Empty && _password == string.Empty);
+                    return ret;
                 case GagPadlocks.TimerPasswordPadlock:
-                    return (ValidatePassword(_password) && ValidateTimer(_password)); // will never work in current implementation
+                    ret = !(ValidatePassword(_password) && ValidateTimer(_password2));
+                    return ret;
                 case GagPadlocks.MistressPadlock:
-                    return ValidateMistress(playername);
+                    ret = !(ValidateMistress(playername) && _password == string.Empty && _password2 == string.Empty);
+                    return ret;
                 case GagPadlocks.MistressTimerPadlock:
-                    return (ValidateMistress(playername) && ValidateTimer(_password));
+                    ret = !(ValidateMistress(playername) && ValidateTimer(_password) && _password2 == string.Empty);
+                    return ret;
                 default:
                     return true;
             }
@@ -525,6 +527,8 @@ public class CommandManager : IDisposable // Our main command list manager
         }
     }
     private bool ValidateTimer(string _inputTimer) {
+        GagSpeak.Log.Debug($"[Command Manager]: Validating timer: {_inputTimer}");
+        if(_inputTimer == string.Empty) { return false; } // if we have no timer, return false
         // Timers must be in the format of 00h00m00s
         var match = Regex.Match(_inputTimer, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
         return match.Success;

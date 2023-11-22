@@ -81,7 +81,7 @@ public class TimerService : IDisposable
 
       // save the timer data
       SaveTimerData(_config);
-      // DebugPrintRemainingTimers(); For the stats nerds.
+      DebugPrintRemainingTimers(); //For the stats nerds.
 
    }
 
@@ -92,15 +92,34 @@ public class TimerService : IDisposable
          TimeSpan remainingTime = timerData.EndTime - DateTimeOffset.Now;
          if (remainingTime <= TimeSpan.Zero) {
                // Timer expired
-               GagSpeak.Log.Debug($"[Timer Service]: '{timerName}'has reached zero, dumpting timer.");
-               timer.Stop();
-               onElapsed?.Invoke();
-               timers.Remove(timerName);
+               GagSpeak.Log.Debug($"[Timer Service]: '{timerName}'has reached zero, dumping timer.");
+               timer.Stop(); // stop the timer in the timer service's TIMERS dictionary
+               onElapsed?.Invoke(); // invoke the action that you put in the _timerService.StartTimer() method
+               timers.Remove(timerName); // remove the timer from the timer service's TIMERS dictionary
+               SaveTimerData(_config); // save the timerdata so that we properly update the config's timerdata with the correct
          }
          else {
                // Notify subscribers about remaining time change
                RemainingTimeChanged?.Invoke(timerName, remainingTime);
          }
+      }
+   }
+
+   public void DebugPrintRemainingTimers() {
+      // Print the remaining time for each timer in the timers dictionary
+      foreach (var pair in timers) {
+         // Calculate the remaining time in milliseconds
+         var remainingTime = UIHelpers.FormatTimeSpan(pair.Value.EndTime - DateTimeOffset.Now);
+         // Print the timer name and remaining time
+         GagSpeak.Log.Debug($"[Timer Service] Timer            : {pair.Key}, Remaining Time: {remainingTime}");
+      }
+
+      // print the remaining time for each timer in the config.timerdata dictionary
+      foreach (var pair in _config.TimerData) {
+         // Calculate the remaining time in milliseconds
+         var remainingTime = UIHelpers.FormatTimeSpan(pair.Value - DateTimeOffset.Now);
+         // Print the timer name and remaining time
+         GagSpeak.Log.Debug($"[Timer Service] Config Timer Data: {pair.Key}, Remaining Time: {remainingTime}");
       }
    }
 
@@ -123,6 +142,7 @@ public class TimerService : IDisposable
       return TimeSpan.Zero;
    }
 
+
    // get remaining time for one of the padlock identifier slots
    public string GetRemainingTimeForPadlock(int slot) {
       var padlockType = _config._padlockIdentifier[slot]._padlockType;
@@ -130,17 +150,13 @@ public class TimerService : IDisposable
    }
 
 
-   // save our data
-   public void SaveTimerData(GagSpeakConfig config)
-   {
+   public void SaveTimerData(GagSpeakConfig config) {
       // Clear the existing timer data in the config
       config.TimerData.Clear();
-
       // Add the current timer data to the config
       foreach (var pair in timers) {
          config.TimerData[pair.Key] = pair.Value.EndTime;
       }
-
       // Save the config
       config.Save();
    }
@@ -148,10 +164,8 @@ public class TimerService : IDisposable
    public void RestoreTimerData(GagSpeakConfig _config) {
       // Clear the existing timers
       timers.Clear();
-
       // Create a temporary list of timers to restore
       var timersToRestore = new List<(string, TimeSpan)>();
-
       // Populate the list from the config
       foreach (var pair in _config.TimerData) {
          // Calculate the remaining time
@@ -168,35 +182,23 @@ public class TimerService : IDisposable
             StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                _config._isLocked[0] = false;
                _config._padlockIdentifier[0].ClearPasswords();
-               _config._padlockIdentifier[0].UpdateConfigPadlockPasswordInfo(0, !_config._isLocked[0], _config);
+               _config._padlockIdentifier[0].UpdateConfigPadlockInfo(0, !_config._isLocked[0], _config);
             });
          } else if(timerName.Contains("_Identifier1")) {
             GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
             StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                _config._isLocked[1] = false;
                _config._padlockIdentifier[1].ClearPasswords();
-               _config._padlockIdentifier[1].UpdateConfigPadlockPasswordInfo(1, !_config._isLocked[1], _config);
+               _config._padlockIdentifier[1].UpdateConfigPadlockInfo(1, !_config._isLocked[1], _config);
             });
          } else if(timerName.Contains("_Identifier2")) {
             GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
             StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                _config._isLocked[2] = false;
                _config._padlockIdentifier[2].ClearPasswords();
-               _config._padlockIdentifier[2].UpdateConfigPadlockPasswordInfo(2, !_config._isLocked[2], _config);
+               _config._padlockIdentifier[2].UpdateConfigPadlockInfo(2, !_config._isLocked[2], _config);
             });
          }
-      }
-   }
-
-   public void DebugPrintRemainingTimers()
-   {
-      foreach (var pair in _config.TimerData)
-      {
-         // Calculate the remaining time in milliseconds
-         var remainingTime = UIHelpers.FormatTimeSpan(pair.Value - DateTimeOffset.Now);
-
-         // Print the timer name and remaining time
-         GagSpeak.Log.Debug($"[Timer Service] Timer: {pair.Key}, Remaining Time: {remainingTime}");
       }
    }
 
@@ -219,11 +221,19 @@ public class TimerService : IDisposable
                keysToRemove.Add(key);
          }
       }
-
       // Remove the timers with the keys in keysToRemove
       foreach (var key in keysToRemove) {
          timers[key].Timer.Dispose(); // Dispose the timer before removing it
          timers.Remove(key);
+      }
+   }
+
+   public void ClearIdentifierTimer(int layerIndex) {
+      foreach (var key in timers.Keys) {
+         if (key.Contains($"_Identifier{layerIndex}")) {
+            timers[key].Timer.Dispose(); // Dispose the timer before removing it
+            timers.Remove(key);
+         }
       }
    }
 

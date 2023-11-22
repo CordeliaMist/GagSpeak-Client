@@ -32,8 +32,7 @@ public sealed class GagLockFilterCombo
         {
             ImGui.SetNextItemWidth(width);
             using( var gagLockCombo = ImRaii.Combo($"##{ID}_Enum",  label.ToString(), 
-                                      ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) 
-            {
+            ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) {
                 if( gagLockCombo ) { // Assign it an ID if combo is sucessful.
                     // add the popup state
                     using var id = ImRaii.PushId($"##{ID}_Enum"); // Push an ID for the combo box (based on label / name)
@@ -56,15 +55,13 @@ public sealed class GagLockFilterCombo
         }
     }
 
-
     // for the player gag equips
     public void Draw(int ID, ObservableList<GagPadlocks> listing, int layerIndex, int width) { // for player gag equips
         try
         {
             ImGui.SetNextItemWidth(width);
             using( var gagLockCombo = ImRaii.Combo($"##{ID}_Enum",  _config._padlockIdentifier[layerIndex]._padlockType.ToString(), 
-                                      ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) 
-            {
+            ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) {
                 if( gagLockCombo ) { // Assign it an ID if combo is sucessful.
                     // add the popup state
                     using var id = ImRaii.PushId($"##{ID}_Enum"); // Push an ID for the combo box (based on label / name)
@@ -72,7 +69,7 @@ public sealed class GagLockFilterCombo
 
                     foreach (var item in Enum.GetValues(typeof(GagPadlocks)).Cast<GagPadlocks>()) {
                         if (ImGui.Selectable(item.ToString(), listing[layerIndex] == item)) {
-                            _config._padlockIdentifier[layerIndex]._padlockType = item;
+                            _config._padlockIdentifier[layerIndex]._padlockType = item; // update the padlock identifier label
                             _comboSearchText = string.Empty;
                             ImGui.CloseCurrentPopup();
                             _config.Save();
@@ -82,8 +79,7 @@ public sealed class GagLockFilterCombo
                 }
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             GagSpeak.Log.Debug(e.ToString());
         }
     }

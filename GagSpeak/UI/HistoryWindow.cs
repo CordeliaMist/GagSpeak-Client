@@ -137,6 +137,7 @@ public class HistoryWindow : Window //, IDisposable
                 ImGui.Text($"Stored Combination: {index._storedCombination}");ImGui.NextColumn();
                 ImGui.Text($"Stored Timer: {index._storedTimer}");ImGui.NextColumn();
                 ImGui.Text($"Padlock Type: {index._padlockType}");ImGui.NextColumn();
+                ImGui.Text($"Padlock Assigner: {index._mistressAssignerName}");ImGui.NextColumn();
                 ImGui.Columns(1);
                 ImGui.NewLine();
             }

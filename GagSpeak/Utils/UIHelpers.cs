@@ -52,5 +52,23 @@ public static class UIHelpers // A class for all of the UI helpers, including ba
         return $"{timeSpan.Days % 30}d{timeSpan.Hours}h{timeSpan.Minutes}m{timeSpan.Seconds}s";
     }
 
+    public static DateTimeOffset GetEndTime(string input) {
+        // Match days, hours, minutes, and seconds in the input string
+        var match = Regex.Match(input, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
 
+        if (match.Success) { 
+            // Parse days, hours, minutes, and seconds
+            int.TryParse(match.Groups[1].Value, out int days);
+            int.TryParse(match.Groups[2].Value, out int hours);
+            int.TryParse(match.Groups[3].Value, out int minutes);
+            int.TryParse(match.Groups[4].Value, out int seconds);
+            // Create a TimeSpan from the parsed values
+            TimeSpan duration = new TimeSpan(days, hours, minutes, seconds);
+            // Add the duration to the current DateTime to get a DateTimeOffset
+            return DateTimeOffset.Now.Add(duration);
+        }
+
+        // If the input string is not in the correct format, throw an exception
+        throw new FormatException($"[MsgResultLogic]: Invalid duration format: {input}");
+    }
 }

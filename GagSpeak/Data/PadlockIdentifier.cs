@@ -1,7 +1,9 @@
 using System;
 using ImGuiNET;
 using System.Text.RegularExpressions;
-
+using System.Linq;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Plugin.Services;
 
 #pragma warning disable IDE1006 
 namespace GagSpeak.Data;
@@ -12,20 +14,22 @@ public class PadlockIdentifier {
     public string _inputTimer { get; set; } // This will hold the input timer
     public string _storedPassword { get; set; } // 20 character max string
     public string _storedCombination { get; set; } // This will be a string in the format of 0000
-    public string _storedTimer { get; set; } // This will be a string in the format of 00h00m00s.
+    public string _storedTimer { get; set; } // This will be a string in the format of 00h00m00s
+    public string _mistressAssignerName { get; set; } // This will be the name of the player who assigned the padlock
     public GagPadlocks _padlockType { get; set; } = GagPadlocks.None;
 
-    public PadlockIdentifier()
-    {
+    public PadlockIdentifier() {
+        // set default values for our strings
         if(_inputPassword == null) { _inputPassword = "";}
         if(_inputCombination == null) { _inputCombination = "";}
         if(_inputTimer == null) { _inputTimer = "";}
         if(_storedPassword == null) { _storedPassword = "";}
         if(_storedCombination == null) { _storedCombination = "";}
         if(_storedTimer == null) { _storedTimer = "";}
+        if(_mistressAssignerName == null) { _mistressAssignerName = "";}
     }
 
-    public void SetValues(GagPadlocks padlockType) {
+    public void SetType(GagPadlocks padlockType) {
         _padlockType = padlockType;
     }
     
@@ -35,10 +39,11 @@ public class PadlockIdentifier {
     /// <param name="locktype"></param> 
     /// <param name="password"></param>
     /// </summary>
-    public bool SetAndValidate(string locktype, string password = "", string secondPassword = "") {
+    public bool SetAndValidate(GagSpeakConfig _config, string locktype, string password = "", string secondPassword = "",
+    string assignerPlayerName = null, string targetPlayerName = null) {
         if (!Enum.TryParse(locktype, true, out GagPadlocks padlockType)) {
             return false;}// or throw an exception
-        
+        GagSpeak.Log.Debug($"[PadlockIdentifer]: Setting padlock type to {padlockType}");
         switch (_padlockType) {
             case GagPadlocks.None:
                 return false;
@@ -52,11 +57,10 @@ public class PadlockIdentifier {
                 this._storedPassword = password;
                 break;
             case GagPadlocks.FiveMinutesPadlock:
-                this._storedTimer = "5m0s";
                 break;
             case GagPadlocks.TimerPasswordPadlock:
-                this._storedTimer = password;
-                this._storedPassword = secondPassword;
+                this._storedPassword = password;
+                this._storedTimer = secondPassword;
                 break;
             case GagPadlocks.MistressPadlock:
                 // handle MistressPadlock case
@@ -65,8 +69,7 @@ public class PadlockIdentifier {
                 this._storedTimer = password;
                 break;
         }
-
-        return ValidatePadlockPasswords(false);
+        return ValidatePadlockPasswords(false, _config, assignerPlayerName, targetPlayerName);
     }
     /// <summary>
     /// This function will serve as the primary function called by anyone who is wanting to create a password field for their padlock dropdown.
@@ -111,8 +114,9 @@ public class PadlockIdentifier {
         return value;
     }
 
-    public bool ValidatePadlockPasswords(bool isUnlocking) {
+    public bool ValidatePadlockPasswords(bool isUnlocking, GagSpeakConfig _config, string assignerPlayerName = null, string targetPlayerName = null) {
         bool ret = false;
+        GagSpeak.Log.Debug($"[PadlockIdentifer]: Validating password");
         switch (_padlockType) {
             case GagPadlocks.None:
                 return false;
@@ -120,54 +124,87 @@ public class PadlockIdentifier {
                 return true;
             case GagPadlocks.CombinationPadlock:
                 ret = ValidateCombination();
-                if(ret && !isUnlocking) {_storedCombination = _inputCombination; _inputCombination = "";}
+                if(ret && !isUnlocking && _inputCombination != "") {_storedCombination = _inputCombination; _inputCombination = "";}
                 return ret;
             case GagPadlocks.PasswordPadlock:
                 ret = ValidatePassword();
-                if(ret && !isUnlocking) {_storedPassword = _inputPassword; _inputPassword = "";}
+                if(ret && !isUnlocking && _inputPassword != "") {_storedPassword = _inputPassword; _inputPassword = "";}
                 return ret;
             case GagPadlocks.FiveMinutesPadlock:
-                _storedTimer = "0h5m0s";
+                _storedTimer = "0h0m5s";
                 return true;
             case GagPadlocks.TimerPasswordPadlock:
                 ret = (ValidatePassword() && ValidateTimer());
-                if(ret && !isUnlocking) {
+                if(ret && !isUnlocking && _inputPassword != "" && _inputTimer != "") {
                     _storedPassword = _inputPassword;
                     _storedTimer = _inputTimer;
                     _inputPassword = "";
                     _inputTimer = "";}
                 return ret;
             case GagPadlocks.MistressPadlock:
-                ret = ValidateMistress();
+                ret = ValidateMistress(_config, assignerPlayerName, targetPlayerName);
+                if(ret && !isUnlocking) {
+                    _mistressAssignerName = assignerPlayerName;
+                }
                 return ret;
             case GagPadlocks.MistressTimerPadlock:
-                ret = (ValidateMistress() && ValidateTimer());
-                if(ret && !isUnlocking) {_storedTimer = _inputTimer; _inputTimer = "";}
+                ret = (ValidateMistress(_config, assignerPlayerName, targetPlayerName) && ValidateTimer());
+                if(ret && !isUnlocking) { _mistressAssignerName = assignerPlayerName; }
+                if(ret && !isUnlocking && _inputTimer != "") {
+                    _storedTimer = _inputTimer;
+                    _inputTimer = "";}
                 return ret;
             default:
                 return true;
         }
     }
     private bool ValidatePassword() {
-        // Passwords must be less than 20 characters and cannot contain spaces
-        return !string.IsNullOrWhiteSpace(_inputPassword) && _inputPassword.Length <= 20 && !_inputPassword.Contains(" ");
+        if(_inputPassword == "") {
+            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingPassword from set&Validate [{_storedPassword}]");
+            return !string.IsNullOrWhiteSpace(_storedPassword) && _storedPassword.Length <= 20 && !_storedPassword.Contains(" ");
+        } else {   
+            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingPassword from DisplayPasswordField [{_inputPassword}]");
+            return !string.IsNullOrWhiteSpace(_inputPassword) && _inputPassword.Length <= 20 && !_inputPassword.Contains(" ");
+        }
     }
     private bool ValidateCombination() {
-        // Combinations must be 4 digits
-        return int.TryParse(_inputCombination, out _) && _inputCombination.Length == 4;
+        if(_inputCombination == "") {
+            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingCombination from set&Validate [{_storedCombination}]");
+            return int.TryParse(_storedCombination, out _) && _storedCombination.Length == 4;
+        } else {
+            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingCombination from DisplayPasswordField [{_inputCombination}]");
+            return int.TryParse(_inputCombination, out _) && _inputCombination.Length == 4;
+        }
     }
     private bool ValidateTimer() {
         // Timers must be in the format of 00h00m00s
-        var match = Regex.Match(_inputTimer, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
-        return match.Success;
+        if (_inputTimer == "") {
+            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingTimer from set&Validate [{_storedTimer}]");
+            var match = Regex.Match(_storedTimer, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+            return match.Success;
+        } else {
+            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingTimer from DisplayPasswordField [{_inputTimer}]");
+            var match = Regex.Match(_inputTimer, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+            return match.Success;
+        }
     }
-    private bool ValidateMistress() {
-        // Replace this with the actual logic to validate the mistress
-        return true;
+    private bool ValidateMistress(GagSpeakConfig _config, string assignerPlayerName, string targetPlayerName) {
+        GagSpeak.Log.Debug($"[PadlockIdentifer]: AssignedPlayerName: {assignerPlayerName}");
+        GagSpeak.Log.Debug($"[PadlockIdentifer]: TargetPlayerName {targetPlayerName}");
+        
+        if(assignerPlayerName == null) {
+            GagSpeak.Log.Debug($"[PadlockIdentifer]: Assigner name is null!"); return false;}
+        // if we are trying to assign it to ourselves, then we can just return true.
+        if (assignerPlayerName == targetPlayerName || // if we are trying to assign it to ourselves, or are a mistress to whitelisted player
+        _config.Whitelist.Any(w => assignerPlayerName.Contains(w.name) && w.relationshipStatus == "Mistress")) {
+            return true;
+        }
+        GagSpeak.Log.Debug($"[PadlockIdentifer]: {assignerPlayerName} is not your mistress!");
+        return false;
     }
 
     // check the password when attempting to unlock it.
-    public bool CheckPassword() {
+    public bool CheckPassword(GagSpeakConfig _config, string assignerName = null, string targetName = null) {
         bool isValid = false;
         switch (_padlockType) {
             case GagPadlocks.None:
@@ -185,10 +222,10 @@ public class PadlockIdentifier {
                 isValid = _storedPassword == _inputPassword;
                 break;
             case GagPadlocks.MistressPadlock:
-                // handle MistressPadlock password check
+                isValid = ValidateMistress(_config, assignerName, targetName);
                 break;
             case GagPadlocks.MistressTimerPadlock:
-                isValid = _storedTimer == _inputTimer;
+                isValid = ValidateMistress(_config, assignerName, targetName);
                 break;
             default:
                 return false;
@@ -203,7 +240,7 @@ public class PadlockIdentifier {
         return isValid;
     }
 
-    // clear the passwords.
+    // Doing this we can use this just before updateconfig to use the update for unlock and lock functions
     public void ClearPasswords() {
     _inputPassword = "";
     _inputCombination = "";
@@ -211,10 +248,11 @@ public class PadlockIdentifier {
     _storedPassword = "";
     _storedCombination = "";
     _storedTimer = "";
+    _mistressAssignerName = "";
     }
     
     // a way to update our password information in the config file. (For User Padlocks Only)
-    public void UpdateConfigPadlockPasswordInfo(int layerIndex, bool isUnlocking, GagSpeakConfig _config) {
+    public void UpdateConfigPadlockInfo(int layerIndex, bool isUnlocking, GagSpeakConfig _config) {
         GagPadlocks padlockType = _padlockType;
         if (isUnlocking) { _padlockType = GagPadlocks.None; GagSpeak.Log.Debug("[Padlock] Unlocking Padlock");}
         // timers are handled by the timer service so we dont need to worry about it.
@@ -240,11 +278,11 @@ public class PadlockIdentifier {
             case GagPadlocks.MistressPadlock:
                 // handle MistressPadlock case
                 _config.selectedGagPadlocks[layerIndex] = _padlockType;
-                //_config.selectedGagPadlocksAssigner[layerIndex] = "mmmmmmmmmm mmmmmmmmmm";
+                _config.selectedGagPadlocksAssigner[layerIndex] = _mistressAssignerName;
                 break;
             case GagPadlocks.MistressTimerPadlock:
                 _config.selectedGagPadlocks[layerIndex] = _padlockType;
-                //_config.selectedGagPadlocksAssigner[layerIndex] = "mmmmmmmmmm mmmmmmmmmm";  <--- dont think we even need these lines
+                _config.selectedGagPadlocksAssigner[layerIndex] = _mistressAssignerName;
                 break;
             default:
                 // No password field should be displayed

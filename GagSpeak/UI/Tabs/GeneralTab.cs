@@ -19,7 +19,7 @@ public class GeneralTab : ITab, IDisposable
     private readonly GagSpeakConfig _config;
     private readonly TimerService _timerService;
     private readonly GagListingsDrawer _gagListingsDrawer;
-    private readonly LockManager _lockManager;
+    private readonly GagAndLockManager _lockManager;
     private GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
     private GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
     private bool? _inDomMode;
@@ -29,7 +29,7 @@ public class GeneralTab : ITab, IDisposable
     // testing with datetimeoffset
     private bool modeButtonsDisabled = false;
     
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService, LockManager lockManager)
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService, GagAndLockManager lockManager)
     {
         _config = config;
         _timerService = timerService;
@@ -172,8 +172,13 @@ public class GeneralTab : ITab, IDisposable
                 ImGui.TextColored(new Vector4(1,1,0,0.5f), _timerService.GetRemainingTimeForPadlock(slot));
             }
             ImGui.NewLine();
-                }
-            }
+        }
+
+        // draw a button to display our current timers state
+        if(ImGui.Button("Display Current Timers")) {
+            _timerService.DebugPrintRemainingTimers();
+        }
+    }
 
     private void DisableModeButtons() {
         modeButtonsDisabled = false;
