@@ -123,15 +123,16 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         string[] nameParts = decodedMessage[4].Split(' ');
         decodedMessage[4] = nameParts[0] + " " + nameParts[1];
         // try to unlock it
-        if(decodedMessage[4] == _config.selectedGagPadlocksAssigner[layer-1]) {
-            _lockManager.Unlock((layer-1), decodedMessage[4], decodedMessage[3], playerPayload.PlayerName); // attempt to unlock
-            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{decodedMessage[4]} " +
-            $"sucessfully unlocked the {_config.selectedGagPadlocks[layer-1]} from your {_config.selectedGagPadlocks}.").AddItalicsOff().BuiltString);        
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag unlock");
-            return true; // sucessful parse
-        } else {
-            isHandled = true; return LogError($"[MsgResultLogic]: {decodedMessage[4]} is not the assigner of the lock on layer {layer}!");
+        if(_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressPadlock || _config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressTimerPadlock) {
+            if(decodedMessage[4] != _config.selectedGagPadlocksAssigner[layer-1]) {
+                isHandled = true; return LogError($"[MsgResultLogic]: {decodedMessage[4]} is not the assigner of the lock on layer {layer}!");
+            }
         }
+        _lockManager.Unlock((layer-1), decodedMessage[4], decodedMessage[3], playerPayload.PlayerName); // attempt to unlock
+        _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{decodedMessage[4]} " +
+        $"sucessfully unlocked the {_config.selectedGagPadlocks[layer-1]} from your {_config.selectedGagPadlocks}.").AddItalicsOff().BuiltString);        
+        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag unlock");
+        return true; // sucessful parse
     }
 
     // handle the remove message
