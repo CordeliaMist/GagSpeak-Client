@@ -396,21 +396,29 @@ public class WhitelistTab : ITab, IDisposable
                 _config._whitelistPadlockIdentifier.SetType(padlockType);
                 _config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, _config, playerPayload.PlayerName, selectedWhitelistItem.name);
                 string targetPlayer = selectedWhitelistItem.name + "@" + selectedWhitelistItem.homeworld;
-                _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, _lockLabel, 
-                (layer+1).ToString(), _config._whitelistPadlockIdentifier._inputPassword));
-
-
-        //             // Update the selected player's data
-        //             if(Enum.TryParse(lockType, out GagPadlocks parsedLockType)) // update padlock
-        //                 selectedPlayer.selectedGagPadlocks[layer] = parsedLockType;
-                    
-        //             if(password != "") // logic for applying password
-        //                 selectedPlayer.selectedGagPadlocksPassword[layer] = password;
-
-        //             if ( (lockType == "MistressPadlock" || lockType == "MistressTimerPadlock") // logic for applying a mistress padlock
-        //                 && selectedPlayer.relationshipStatus == "Pet" || selectedPlayer.relationshipStatus == "Slave") {
-        //                 selectedPlayer.selectedGagPadlocksAssigner[layer] = playerPayload.PlayerName;
-        // }
+                
+                if(_config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MetalPadlock ||
+                _config._whitelistPadlockIdentifier._padlockType == GagPadlocks.FiveMinutesPadlock ||
+                _config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MistressPadlock) {
+                    _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, _lockLabel, 
+                    (layer+1).ToString()));
+                }
+                else if (_config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MistressTimerPadlock) {
+                    _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, _lockLabel, 
+                    (layer+1).ToString(), _config._whitelistPadlockIdentifier._inputTimer));
+                }
+                else if (_config._whitelistPadlockIdentifier._padlockType == GagPadlocks.CombinationPadlock) {
+                    _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, _lockLabel, 
+                    (layer+1).ToString(), _config._whitelistPadlockIdentifier._inputCombination));
+                }
+                else if (_config._whitelistPadlockIdentifier._padlockType == GagPadlocks.PasswordPadlock) {
+                    _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, _lockLabel, 
+                    (layer+1).ToString(), _config._whitelistPadlockIdentifier._inputPassword));
+                }
+                else if (_config._whitelistPadlockIdentifier._padlockType == GagPadlocks.TimerPasswordPadlock) {
+                    _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, _lockLabel, 
+                    (layer+1).ToString(), _config._whitelistPadlockIdentifier._inputPassword, _config._whitelistPadlockIdentifier._inputTimer));
+                }
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });

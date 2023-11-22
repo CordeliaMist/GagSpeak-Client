@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Services;
+using Dalamud.Game.ClientState.JobGauge.Enums;
 
 #pragma warning disable IDE1006 
 namespace GagSpeak.Data;
@@ -204,7 +205,7 @@ public class PadlockIdentifier {
     }
 
     // check the password when attempting to unlock it.
-    public bool CheckPassword(GagSpeakConfig _config, string assignerName = null, string targetName = null) {
+    public bool CheckPassword(GagSpeakConfig _config, string assignerName = null, string targetName = null, string password = "") {
         bool isValid = false;
         switch (_padlockType) {
             case GagPadlocks.None:
@@ -212,13 +213,31 @@ public class PadlockIdentifier {
             case GagPadlocks.MetalPadlock:
                 return true;
             case GagPadlocks.CombinationPadlock:
-                isValid = _storedCombination == _inputCombination;
+                if(password != "") {
+                    // we've passed in a password
+                    isValid = _storedCombination == password;
+                } else {
+                    // compare our input field
+                    isValid = _storedCombination == _inputCombination;
+                }
                 break;
             case GagPadlocks.PasswordPadlock:
-                isValid = _storedPassword == _inputPassword;
+                if(password != "") {
+                    // we've passed in a password
+                    isValid = _storedPassword == password;
+                } else {
+                    // compare our input field
+                    isValid = _storedPassword == _inputPassword;
+                }
                 break;
             case GagPadlocks.TimerPasswordPadlock:
-                isValid = _storedPassword == _inputPassword;
+                if(password != "") {
+                    // we've passed in a password
+                    isValid = _storedPassword == password;
+                } else {
+                    // compare our input field
+                    isValid = _storedPassword == _inputPassword;
+                }
                 break;
             case GagPadlocks.MistressPadlock:
                 isValid = ValidateMistress(_config, assignerName, targetName);
