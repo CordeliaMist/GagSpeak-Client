@@ -7,6 +7,7 @@ using OtterGui.Classes;
 using OtterGui.Widgets;
 using GagSpeak.UI.UserProfile;
 using Glamourer.Gui;
+using GagSpeak.UI.Tabs.HelpPageTab;
 
 namespace GagSpeak.UI;
 
@@ -19,7 +20,7 @@ public class GagSpeakWindowManager : IDisposable
     private readonly IChatGui                   _chatGui;
 
     public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config,
-    IChatGui chatGui, HistoryWindow uiHistory, GagSpeakChangelog changelog, UserProfileWindow userProfile)
+    IChatGui chatGui, HistoryWindow uiHistory, HelpPageTab helpPage, GagSpeakChangelog changelog, UserProfileWindow userProfile)
     {
         // set the main ui window
         _uiBuilder       = uiBuilder;
@@ -27,6 +28,7 @@ public class GagSpeakWindowManager : IDisposable
         _chatGui         = chatGui;
         _windowSystem.AddWindow(ui);
         _windowSystem.AddWindow(uiHistory);
+        _windowSystem.AddWindow(helpPage);
         _windowSystem.AddWindow(userProfile);
         _windowSystem.AddWindow(changelog.Changelog);
 

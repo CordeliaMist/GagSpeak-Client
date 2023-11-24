@@ -66,10 +66,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public List<WhitelistCharData> Whitelist { get => whitelist; set => whitelist = value; } // Note sure why, document later
     public string SendInfoName = ""; // Name of the person you are sending info to
     public bool acceptingInfoRequests = true; // Are you accepting info requests? (for cooldowns)//
-
     // store a timer dictionary to backup our timerservice data
     public Dictionary<string, DateTimeOffset> TimerData { get; set; } = new Dictionary<string, DateTimeOffset>();
-    
 
     // stuff for the gaglistingDrawer
     public List<bool> _isLocked { get; set; } // determines if it is locked
@@ -77,7 +75,9 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public List<PadlockIdentifier> _padlockIdentifier { get; set; } // stores the padlock identifier for each gaglisting
     public PadlockIdentifier _whitelistPadlockIdentifier {get; set; } // stores the padlock identifier for the whitelist
 
-    // There was stuiff about a colorId dictionary here, if you ever need to include it later, you know where to put it so it fits into the hierarchy
+    public Dictionary<ColorId, uint> Colors { get; private set; }
+        = Enum.GetValues<ColorId>().ToDictionary(c => c, c => c.Data().DefaultColor);
+    
     private readonly SaveService _saveService;
 
     public GagSpeakConfig(SaveService saveService, ConfigMigrationService migrator)

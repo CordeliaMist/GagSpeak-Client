@@ -4,12 +4,15 @@ using OtterGui.Raii;
 using Lumina.Misc;
 using System.Text.RegularExpressions;
 using System;
-
+using System.Numerics;
 // Practicing Modular Design
 namespace GagSpeak.UI.Helpers;
 
 public static class UIHelpers // A class for all of the UI helpers, including basic functions for drawing repetative yet unique design elements
 {
+    /// <summary> Frame Height for square icon buttons. </summary>
+    public static Vector2 IconButtonSize = new Vector2(ImGui.GetFrameHeight());
+
     public static bool DrawCheckbox(string label, string tooltip, bool value, out bool on, bool locked)
     {
         using var disabled = ImRaii.Disabled(locked);

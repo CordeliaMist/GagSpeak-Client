@@ -2,9 +2,6 @@ using System;
 using ImGuiNET;
 using System.Text.RegularExpressions;
 using System.Linq;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Plugin.Services;
-using Dalamud.Game.ClientState.JobGauge.Enums;
 
 #pragma warning disable IDE1006 
 namespace GagSpeak.Data;
