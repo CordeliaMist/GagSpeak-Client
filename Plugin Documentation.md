@@ -1,54 +1,130 @@
-## Code Structure Documentation
-**The Hierarchy of our code works as follows:**⠀⠀⠀⠀⠀⠀⠀
-Our code is based upon `GagSpeak.cs`, which is our highest level application.
-For `GagSpeak.cs` to run, along with all other applications within it, it needs it's own set of **Services**
+# Documentation for Aspiring Plugin Developers
 
-These Services are compiled into the **Services** Folder, where `ServiceHandler.cs` compiles all the services from `DalamudServices.cs`, along with all other services in our plugin.
+Hello all, im sure for anyone reading this that wants to get an understanding into plugin development, you may find that often the sample plugin provided by dalamud, coupled by the plugin-dev channel in the dalamud discord may be enough for those adapt in c#, but is not helpful enouguh for those looking to get into c# for plugin development.
 
->Think of a **Service** like a compiled class within our namespace. For this reason, when our `ServiceHandler.cs` Makes a service collection, it begins by taking `DalamudServices.cs`, but then adds all our other existing files into the service collection. These classes are compiled into catagories. Namely;
-- Chat
-- Data
-- Events
-- Services
-- UI (Utils included)
+Additionally, you may find that most, if not all plugins are very sparse in comments, so being able to link together why things connect they way they are, why things are set up in a particular manner they are, or how everything works as a whole.
 
-### Chat Services 
->These are the classes that handle our chatGui's chatlog messages, scanning each message that goes through to detect if it meets any of our parameters. We use chat services for the following:
-- We need to have a way to send trigger messages between whitelisted people, and so we will have **Coded messages sent through a disguised tell** These coded tells will be able to:
-  - Allow others to use /gag (target) commands on other whitelisted players
-  - Lock whitelisted players gags with spesified padlocks
-  - provide passwords for things such as mistress padlocks
-- We will need to have a way to **altar players chat messages in allowed chat types to garbled chat messages, (client side only)**
-- We will need to **Print built SeStrings into current chat type as a chat message** based off of /gs
+**Well my friends, i can promise i can answer all of these to the best of my ability, but even if i dont know how everything works, i want to do my best to share what i DO know.**
 
-### Data Services
->These are the classes that handle our plugins configuration data, and command manager systems. We use our Data Services for the following:
-- Dictating the way our commands work, their display, and functionality
-- Allowing the Storing of information about the plugin and for the information to be retained from login to login
-- Saving and interacting with config (configuration) data
+## Main Points
 
-### Events Services
-> (Still fully figuring this stuff out) Events are the classes that trigger upon certain actions being executed. They are performed in their own classes seperate from other classes because they are more general purpose, and can be triggered in more than one catagory of the plugin.
-- TabSelected is the only current event, may look into the view about this more later.
+* How Dalamud Plugins executable processes your code
+  * Recommended code structures to follow
+  * What you must -vs- should include
+  * Linking namespaces properly
+* The Importance of Modularization
+* Project organization
+  * Creating savable configuration files
+  * What to and to not include in config files
+  * Keeping your files clean and not messy
+* Commenting formats
+  
+## How To Use this Plugin's code as a baseline to understand the dalamud plugin structure
 
+### Getting Started
 
-### Services Service
-> The name may sound redundant, but there are still other services outside of the `ServiceHandler.cs` and `DalamudServices.cs` files, such as:
-- Save Service: Which acts as a service to dictate what files we want to save and call upon the framework to execute its handler
-- FilenameService: Which are what we use to dictate what files the SaveService saves
-- HistoryService: Which acts as the service handler for storing the history of our translations from the `HistoryWindow.cs`, while we let the history windows tab simply worry about actually displaying the information.
+Thankfully for you, i have heavily commented ALL of my code, and all you need to do it browse through it on a local copy in your chosen IDE and let me walk you through it.
 
-### UI Services
-> These are the classes which structure anything having to do with user interface. These are all managed by the `WindowManager.cs`, which builds the `MainWindow.cs` and the `HistoryWindow.cs`. Each of these windows are seperate windows that the plugin can display, independant to eachother.
-- MainWindow contains 3 tabs;
-  - GeneralTab, which displays a space for you to input your safeword, along with information about which gags are equipped, their gaglock type, and (potentially) a display of their gag icon.
-  - WhitelistTab, which displays a list of players who you trust. These people will be able to interact with your plugins interface window, and assign gag commands to you, and also see any messages you write as garbled speak, if allowed.
-  - ConfigSettingsTab, which gives you options to select filters for your text output, only allowing them to work under certain conditions you allow. Ontop of this, you can also isolate these commands to only work under certain channel types.
-- HistoryWindow, which displays the history of all your garbled messages, including the original text and the translated text incase you want to copy and paste it somewhere else.
+I personally used VSCode to write the code in, and VS to build my executables, but you can do what you wish! But, without any further to do though, let's begin.
 
-### References & Links:
-Beginning of the code for gagspeak stuff
-https://gitgud.io/BondageProjects/Bondage-College/-/blob/master/BondageClub/Scripts/Speech.js#L296
+### Prerequisites
 
-List of gag levels:
-https://gist.github.com/bananarama92/9c7a11b8263bddd116a7f94973c9272c#file-gag_level-yaml
+This plugin documentation assumes all the following prerequisites are met:
+
+* XIVLauncher, FINAL FANTASY XIV, and Dalamud have all been installed and the game has been run with Dalamud at least once.
+* XIVLauncher is installed to its default directories and configurations.
+* You have some prior coding knowledge of any language (as usually for programmers adapting to another language is only limited by ones resources at their disposal to help adapt them to it)
+
+## Getting Familiar with the GagSpeak Code Structure
+To understand how dalamud plugins execute their code, you will first need to understand the way namespaces in c# work, and what must be included -vs what should be included.
+
+### How Namespaces In C# Work
+Namespaces are basically what you use to define what purpose you have in your overarching code is, along with also helping in assist the compiler to know the hierarchy of your structure.
+
+For example, let's say that i want to make a plugin for counting the number of times i enter a message into anyones message book at a house.
+
+1. Your highest level program should be called something like `MsgBookEntryCounter.cs` and inside of it have the namespace `namespace MsgBookEntryCounter`
+2. The class within this file should then be called `public class MsgBookEntryCounter : IDalamudPlugin`
+   
+   This implement the `interface Dalamud.Plugin.IDalamudPlugin`, This interface represents a basic Dalamud plugin. All plugins have to implement this interface.
+
+3. you can use namespaces to identify sections of your code so that they all interact together. If you want to store the data of each entry, you may have a class storing that data, so you can give it the namespace `namespace MsgBookEntryCounter.Data` and the class name be like `EntryData` or something. Then, back in your highest level .cs file, you make sure at the top to put `using MsgBookEntryCounter.Data` so that you can be sure to include it when you reference it.
+
+### Class types in c#
+You can create classes with the following keywords:
+- `Public Class` - the defauly class case
+- `Protected Class` - Only visible to other classes within it
+- `Private Class` - Not visible to other classes 
+
+Each of these can have these keywords embedded into them
+
+- `Partial` - This class can access variables from other files in the same namespace that also have this class keyword
+- `Unsafe` - This class cna execute unsafe operations, its probably not worth using this unless you know what you're dealing with
+- `Internal` - This class can now operate on internal functions. These happen internally and can not be called upon by anything else (to my knowledge)
+
+I'd honestly just recommend you make all your classes public and not become lazy use modularization over just making everything partial classes. I say this because the bigger your code gets the messier handling variables across partial classes becomes.
+
+### What you MUST include -vs what you SHOULD include.
+
+You must include the following for your plugin to build:
+
+- Pretty much copy paste the code from the following files into your own, and just change out everhwere it says GagSpeak to your plugin name (it should match the name of your primary namespace) and reset the version down to 0.0.0.0
+  - GagSpeak.csproj
+  - Dalamud.Plugin.Bootstrap.targets
+  - GagSpeak.json
+  - Packages.lock.json
+  - GagSpeak.sln
+  - repo.json
+
+From here, what to change should be self explanitory in the respective files. Im sure this much you can figure out.
+
+One thing to note is that in the itemgroups / references part of the csproj, you can modify them to remove what you know your plugin wont need, and add what they will need. This basically tells the compiler when it makes a debug and release build, what to include in it and what not to.
+
+---
+What SHOULD be included:
+
+- MODULARIZATION!!!! - This is huge, so do this PLEASE, you will thank me a million the moment you plugin starts to get complex. It will be 100x easier to debug and align things with eachother! How? Simple:
+  - Ask yourself what your plugin will be about, and make your structure revolving around it. A good example strucutre to rely on is something like this:
+    - **Assets** (used for containing anything like images or files you may want to include)
+    - **Data** (for storing information based classes that you dont need to have saved in your config (usually))
+    - **Events** (for tracking actions and what should happen when they are triggered)
+    - **Interop** (if any, used to help refernece the bridge of execution between different applications)
+    - **Services** (these are the structures behind your classes that helps organize and keep things taped together, quite literally)
+    - **UI** (the files included for your interface elements)
+    - **Utils** (files containing functions used all across your code to help with modularization and clean files, to prevent mass copy pasting across all your files with similar functions. Simply include `using YOUR_NAMESPACE.Utils` at the start of every file you want to call these functions from and they will be included!)
+- Service collections - These are not nessisary, but I would highly recommend you use them, as they keep your plugin instanced. In other words, it has an individual execution for each time the plugin is loaded or unloaded, helping optimize your memory usage and keep everything aligned. (I seriously absolutely highly recommend you use this, it makes your life so much easier)
+
+### The Big Question (and what made it all click for me), How does the Execution of Dalamud Plugins Work?
+
+Dalamud plugins work like so: They are effectively one fat loop, that executes several times.
+
+In other words, the main .cs file you have will execute once, setting up all of your services. Once they are setup, you are going to usually have a startup for your windows / UI, aka your UIBuilder. This UIBuilder is what is used to make your window system, and your interface elements. However, something very vitally important that I never understood until i figured it out myself, is that everything made by the UIBuilder is looped over several times a second to maintain a constant display on your screen.
+
+This means, anything you define within these windows `DrawContent()` function is called several times a second. You should keep this in mind when making your plugin, because if you do something like:
+```csharp
+public void DrawContent() {
+  string newstring = "";
+  // some code...
+  newstring = enteredstring;  
+}
+```
+This is going to take up more resources than if you did
+```csharp
+string newstring = "";
+public void DrawContent() {
+  // some code...
+  newstring = enteredstring;  
+}
+```
+Because now it wont be making a new string several times a second.
+
+In other words, if you are going to be creating any large variables or class arrays, probably dont do them inside of these functions, or add if statements to only change them when they are flagged as a update change or new entry.
+
+Understanding this will save you a shit ton of resources, seriously. My plugin used to be 6000% higher in resource usage because i tried to create a new image to render INSIDE of my drawcontent loop to display, the moment i brought them out of the loop my usage rate went back down 6000%. It is seriously important knowledge to know and will save you an incredible headache down the line.
+
+---
+With all that being said, I believe you know enough now to start browsing through my plugin. I recommend any time you see me make use of a object with a class name label, you go into that class to see what it is doing, and see how everything is interconnected.
+
+I also highly recommend that you take a look over the service collection and how that is set up, along with the config save and load service operations.
+
+I hope this gives you great strides in starting up your plugin development, enjoy ♥

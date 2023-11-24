@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using ImGuiNET;
 
 namespace GagSpeak.UI;
 
+// Enum to represent different color IDs
 public enum ColorId {
     ProfileBG,
     ProfileHeaderBG,
@@ -18,8 +18,9 @@ public enum ColorId {
 
 public static class Colors
 {
+    // Constant for selected red color
     public const uint SelectedRed = 0xFF2020D0;
-
+    // Method to get the default color, name, and description for a given color ID
     public static (uint DefaultColor, string Name, string Description) Data(this ColorId color)
         => color switch
         {
