@@ -13,9 +13,6 @@ Gagspeak is a plugin made to increase the value of your immersion within FFXIV, 
 - View the history of your original and muffled messages
 - Both client side interaction through the UI, and server side interaction with /gag commands.
 
-### THIS IS CURRENTLY IN A PRE-RELEASE!!!!
-**Seriously, if I have not directly instructed you to add this to your game because I will be walking you through testing with me, do not download this. There may be certain commands that throw certain flags, or fuck up your game**
-
 **Repo Link:** `https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json`
 
 # DISCLAIMER
