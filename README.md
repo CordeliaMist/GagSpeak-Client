@@ -1,20 +1,7 @@
 # Dalamud-GagSpeak 
 ![Banner Image](images/GagSpeakBannerAlt.png)
 ## GagSpeak Overview
-Gagspeak is a plugin made to increase the value of your immersion within FFXIV, introducing features such as:
-- Configure messages to only work through friends only, party only, or whitelisted players only, or a combination of any.
-- Whitelisted tab to add selected players within range to a list, where only people from that list can use commands on you
-- Switch between dom or sub modes, to allow for the plugin to be used for the purposes of controlling a submissive one, or being the submissive one.
-- Select 3 different layers of gags
-- Exchange information between players, which are disguised as RP tells to seem normal in context of use.
-- Over 65 gags, wach with their own unique muffle levels.
-- Muffle level depends on how much speak is translated.
-- /gsm will allow anything after it to be submitted into your current chat channel if enabled, as a muffled speach automatically. (finally, no more "MMMMM!", actual immersion!)
-- View the history of your original and muffled messages
-- Both client side interaction through the UI, and server side interaction with /gag commands.
-
-### THIS IS CURRENTLY IN A PRE-RELEASE!!!!
-**Seriously, if I have not directly instructed you to add this to your game because I will be walking you through testing with me, do not download this. There may be certain commands that throw certain flags, or fuck up your game**
+Im Dying inside as I watch my goals and aspirations be followed by nobody, while others simotaniously expect me to continue them alone without aid.
 
 **Repo Link:** `https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json`
 
