@@ -1,78 +1,68 @@
-using Dalamud.Game;
-using Dalamud.Game.ClientState.Objects;
-using Dalamud.Interface.Internal;
-using Dalamud.IoC;
-using Dalamud.Plugin;
-using Dalamud.Plugin.Services;
-using Microsoft.Extensions.DependencyInjection;
+using Dalamud.Game; 							// Provides service classes for interacting with the game
+using Dalamud.Game.ClientState.Objects; 		// Provides service classes for interacting with game objects
+using Dalamud.IoC; 								// Provides service classes for dependency injection
+using Dalamud.Plugin; 							// Provides interfaces and service classes for creating Dalamud plugins
+using Dalamud.Plugin.Services; 					// Provides service classes for plugin services
+using Microsoft.Extensions.DependencyInjection; // Provides classes for dependency injection
 
-// Remember to remove any which have 0 references.
+// Because we need this to be part of our GagSpeak Namespace, but it is part of the services group, we name our namespace this:
 namespace GagSpeak.Services;
 
-public class DalamudServices
-{
-	// Default constructor
-	public DalamudServices(DalamudPluginInterface pluginInt) {
+/// <summary> Provides services for the Dalamud plugin. </summary>
+public class DalamudServices {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="DalamudServices"/> class.
+	/// <list type="bullet">
+	/// <item><c>pluginInt</c><param name="pluginInt"> - The Dalamud plugin interface.</param></item>
+	/// </list> </summary>
+	public DalamudServices(DalamudPluginInterface pluginInt)
+	{
 		// Set the services to the pluginInt
 		pluginInt.Inject(this);
 	}
 
-	// Add services to collection. This stores all our services in one single collection we can use everything from. Organization!
-	public void AddServices(IServiceCollection services) 
+	/// <summary>
+	/// Adds services to the service collection.
+	/// <list type="bullet">
+	/// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
+	/// </list> </summary>
+	public void AddServices(IServiceCollection services)
 	{
 		// Adds a singleton service of the type specified in serviceType with an implementation of the type specified in
 		services.AddSingleton(GameInteropProvider);
 		services.AddSingleton(DalamudPluginInterface);
 		services.AddSingleton(DalamudPluginInterface.UiBuilder);
-		services.AddSingleton(BuddyList);
 		services.AddSingleton(PluginLog);
 		services.AddSingleton(ChatGui);
 		services.AddSingleton(ClientState);
 		services.AddSingleton(CommandManager);
-		services.AddSingleton(Condition);
+		//services.AddSingleton(Condition);
 		services.AddSingleton(DataManager);
-		services.AddSingleton(DutyStage);
-		services.AddSingleton(FateTable);
-		services.AddSingleton(FlyTextGui);
 		services.AddSingleton(Framework);
-		services.AddSingleton(GameGui);
-		services.AddSingleton(GameNetwork);
-		services.AddSingleton(JobGauges);
+		//services.AddSingleton(GameNetwork);
 		services.AddSingleton(KeyState);
-		services.AddSingleton(LibcFunction);
 		services.AddSingleton(ObjectTable);
 		services.AddSingleton(PartyFinderGui);
-		services.AddSingleton(PartyList);
 		services.AddSingleton(SigScanner);
-		services.AddSingleton(TargetManager);
-		services.AddSingleton(ToastGui);
 		services.AddSingleton(this);
 	}
 		
 	#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-	[PluginService] public IGameInteropProvider GameInteropProvider { get; private set; } = null!; // Maybe add a =null!; at end?
+	[PluginService] public IGameInteropProvider GameInteropProvider { get; private set; } = null!; // helps with detouring the chat input for our plugin
 	[PluginService] public DalamudPluginInterface DalamudPluginInterface { get; private set; } = null!; // for interfacing w/ plugin.
-	[PluginService] public IBuddyList BuddyList { get; private set; } = null!; // Have no idea what this does yet.
 	[PluginService] public IChatGui ChatGui { get; private set; } = null!; // For interfacing with the chat
-	[PluginService] public IClientState ClientState { get; private set; } = null!; // For interfacing with the client state
+	[PluginService] public IClientState ClientState { get; private set; } = null!; // For interfacing with the client state, getting player info, etc.
 	[PluginService] public ICommandManager CommandManager { get; private set; } = null!; // For interfacing with commands
-	[PluginService] public ICondition Condition { get; private set; } = null!; // For interfacing with conditions
+	/// <summary>
+	/// [PluginService] public ICondition Condition { get; private set; } = null!; // For interfacing with conditions in dalaud bootstraps
+	/// </summary>
 	[PluginService] public IDataManager DataManager { get; set; } = null!; // for parsing object data
-	[PluginService] public IDutyState DutyStage { get; private set; } = null!; // To know if we are currently in duty (may not be needed)
-	[PluginService] public IFateTable FateTable { get; private set; } = null!; // Very much likely not needed
-	[PluginService] public IFlyTextGui FlyTextGui { get; private set; } = null!; // For fly by text (may not be needed)
 	[PluginService] public IFramework Framework { get; private set; } = null!; // For interfacing with the framework [Dalamud Plugin Service type]
-	[PluginService] public IGameGui GameGui { get; private set; } = null!; // For interfacing with the game GUI
-	[PluginService] public IGameNetwork GameNetwork { get; private set; } = null!; // for interfacing with the gameNetwork status.
-	[PluginService] public IJobGauges JobGauges { get; private set; } = null!; // for interfacing with job guages (unsure why needed)
-	[PluginService] public IKeyState KeyState { get; private set; } = null!; // for getting the keystate (unsure what this mean atm)
-	[PluginService] public ILibcFunction LibcFunction { get; private set; } = null!; // For interfacing with the libc function
+	// [PluginService] public IGameNetwork GameNetwork { get; private set; } = null!; // for interfacing with the gameNetwork status.
+	[PluginService] public IKeyState KeyState { get; private set; } = null!; // for the file system selector to use to get our state
 	[PluginService] public IObjectTable ObjectTable { get; private set; } = null!; // For interfacing with the object table
 	[PluginService] public IPartyFinderGui PartyFinderGui { get; private set; } = null!; // For interfacing with the party finder (may remove)
-	[PluginService] public IPartyList PartyList { get; private set; } = null!; // For interfacing with the party list to know if someone is in party
-	[PluginService] public IPluginLog PluginLog { get; private set; } = null!;
-	[PluginService] public ISigScanner SigScanner { get; private set; } = null!; // Have no idea what this does
-	[PluginService] public ITargetManager TargetManager { get; private set; } = null!; // For interfacing with the target manager (may not need)
-	[PluginService] public IToastGui ToastGui { get; private set; } = null!;
+	[PluginService] public IPluginLog PluginLog { get; private set; } = null!; // For interfacing with the plugin logger
+	[PluginService] public ISigScanner SigScanner { get; private set; } = null!; // For getting our signatures to perform the operations in our danger files.
 	#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }

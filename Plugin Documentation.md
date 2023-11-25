@@ -1,70 +1,69 @@
 # Documentation for Aspiring Plugin Developers
 
-Hello all, im sure for anyone reading this that wants to get an understanding into plugin development, you may find that often the sample plugin provided by dalamud, coupled by the plugin-dev channel in the dalamud discord may be enough for those adapt in c#, but is not helpful enouguh for those looking to get into c# for plugin development.
+Hello all, I'm sure for anyone reading this who wants to gain an understanding of plugin development, you may find that often the sample plugin provided by Dalamud, coupled with the plugin-dev channel in the Dalamud Discord, may be enough for those adept in C#. However, it might not be helpful enough for those looking to get into C# for plugin development.
 
-Additionally, you may find that most, if not all plugins are very sparse in comments, so being able to link together why things connect they way they are, why things are set up in a particular manner they are, or how everything works as a whole.
+Additionally, you may find that most, if not all, plugins are very sparse in comments. So, understanding why things connect the way they do, why things are set up in a particular manner, or how everything works as a whole can be challenging.
 
-**Well my friends, i can promise i can answer all of these to the best of my ability, but even if i dont know how everything works, i want to do my best to share what i DO know.**
+**Well, my friends, I can promise I can answer all of these to the best of my ability. Even if I don't know how everything works, I want to do my best to share what I DO know.**
 
 ## Main Points
 
 * How Dalamud Plugins executable processes your code
   * Recommended code structures to follow
-  * What you must -vs- should include
+  * What you must vs. what you should include
   * Linking namespaces properly
 * The Importance of Modularization
 * Project organization
   * Creating savable configuration files
-  * What to and to not include in config files
+  * What to include and what not to include in config files
   * Keeping your files clean and not messy
 * Commenting formats
   
-## How To Use this Plugin's code as a baseline to understand the dalamud plugin structure
+## How To Use this Plugin's code as a baseline to understand the Dalamud plugin structure
 
 ### Getting Started
 
-Thankfully for you, i have heavily commented ALL of my code, and all you need to do it browse through it on a local copy in your chosen IDE and let me walk you through it.
+Thankfully for you, I have heavily commented ALL of my code, and all you need to do is browse through it on a local copy in your chosen IDE and let me walk you through it.
 
-I personally used VSCode to write the code in, and VS to build my executables, but you can do what you wish! But, without any further to do though, let's begin.
+I personally used VSCode to write the code in, and Visual Studio to build my executables, but you can use whatever you wish! But, without any further ado, let's begin.
 
 ### Prerequisites
-
 This plugin documentation assumes all the following prerequisites are met:
 
 * XIVLauncher, FINAL FANTASY XIV, and Dalamud have all been installed and the game has been run with Dalamud at least once.
 * XIVLauncher is installed to its default directories and configurations.
-* You have some prior coding knowledge of any language (as usually for programmers adapting to another language is only limited by ones resources at their disposal to help adapt them to it)
+* You have some prior coding knowledge of any language (as usually for programmers, adapting to another language is only limited by the resources at their disposal to help them adapt to it)
 
 ## Getting Familiar with the GagSpeak Code Structure
-To understand how dalamud plugins execute their code, you will first need to understand the way namespaces in c# work, and what must be included -vs what should be included.
+To understand how Dalamud plugins execute their code, you will first need to understand the way namespaces in C# work, and what must be included vs what should be included.
 
 ### How Namespaces In C# Work
-Namespaces are basically what you use to define what purpose you have in your overarching code is, along with also helping in assist the compiler to know the hierarchy of your structure.
+Namespaces are essentially used to organize your code and assist the compiler in understanding the hierarchy of your structure.
 
-For example, let's say that i want to make a plugin for counting the number of times i enter a message into anyones message book at a house.
+For example, let's say that I want to make a plugin for counting the number of times I enter a message into anyone's message book at a house.
 
 1. Your highest level program should be called something like `MsgBookEntryCounter.cs` and inside of it have the namespace `namespace MsgBookEntryCounter`
 2. The class within this file should then be called `public class MsgBookEntryCounter : IDalamudPlugin`
    
-   This implement the `interface Dalamud.Plugin.IDalamudPlugin`, This interface represents a basic Dalamud plugin. All plugins have to implement this interface.
+   This implements the `interface Dalamud.Plugin.IDalamudPlugin`. This interface represents a basic Dalamud plugin. All plugins have to implement this interface.
 
-3. you can use namespaces to identify sections of your code so that they all interact together. If you want to store the data of each entry, you may have a class storing that data, so you can give it the namespace `namespace MsgBookEntryCounter.Data` and the class name be like `EntryData` or something. Then, back in your highest level .cs file, you make sure at the top to put `using MsgBookEntryCounter.Data` so that you can be sure to include it when you reference it.
+3. You can use namespaces to identify sections of your code so that they all interact together. If you want to store the data of each entry, you may have a class storing that data, so you can give it the namespace `namespace MsgBookEntryCounter.Data` and the class name be like `EntryData` or something. Then, back in your highest level .cs file, you make sure at the top to put `using MsgBookEntryCounter.Data` so that you can be sure to include it when you reference it.
 
-### Class types in c#
+### Class types in C#
 You can create classes with the following keywords:
-- `Public Class` - the defauly class case
+- `Public Class` - the default class case
 - `Protected Class` - Only visible to other classes within it
 - `Private Class` - Not visible to other classes 
 
 Each of these can have these keywords embedded into them
 
 - `Partial` - This class can access variables from other files in the same namespace that also have this class keyword
-- `Unsafe` - This class cna execute unsafe operations, its probably not worth using this unless you know what you're dealing with
-- `Internal` - This class can now operate on internal functions. These happen internally and can not be called upon by anything else (to my knowledge)
+- `Unsafe` - This class can execute unsafe operations, it's probably not worth using this unless you know what you're dealing with
+- `Internal` - This class can now operate on internal functions. These happen internally and cannot be called upon by anything else (to my knowledge)
 
-I'd honestly just recommend you make all your classes public and not become lazy use modularization over just making everything partial classes. I say this because the bigger your code gets the messier handling variables across partial classes becomes.
+I'd honestly just recommend you make all your classes public and use modularization over just making everything partial classes. I say this because the bigger your code gets the messier handling variables across partial classes becomes.
 
-### What you MUST include -vs what you SHOULD include.
+### What you MUST include -vs- what you SHOULD include.
 
 You must include the following for your plugin to build:
 
@@ -128,3 +127,10 @@ With all that being said, I believe you know enough now to start browsing throug
 I also highly recommend that you take a look over the service collection and how that is set up, along with the config save and load service operations.
 
 I hope this gives you great strides in starting up your plugin development, enjoy ♥
+
+### Recommended Analysis Order:
+1) DalamudServices.cs
+2) ServiceHandler.cs
+3) GagSpeak.Plugin.cs
+4) If at any point you get lost reading through it, jump into the classes that they reference within the files code to see how and why they function the way they do
+5) A high Level dependancy hierarchy diagram of the structure is coming soon.
