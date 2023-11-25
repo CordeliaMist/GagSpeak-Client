@@ -1,30 +1,40 @@
 using System;
 using System.Numerics;
+using System.IO;
 using ImGuiNET;
 using OtterGui;
 using OtterGui.Raii;
 using Dalamud.Plugin;
-using OtterGui.Widgets;
 using Dalamud.Interface;
-using GagSpeak.Data;
-using System.IO;
 using Dalamud.Interface.Internal;
-namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
+using OtterGui.Widgets;
+using GagSpeak.Data;
+using GagSpeak.UI.Helpers;
+using GagSpeak.UI.GagListings;
 
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
+
+namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
+#pragma warning disable IDE1006
+
+/// <summary> This class is used to handle the ConfigSettings Tab. </summary>
 public class ConfigSettingsTab : ITab
 {
-    // Begin by appending the readonlys and privates
-    private readonly IDalamudTextureWrap _dalamudTextureWrap;
-    private readonly GagSpeakConfig _config;
-    private readonly UiBuilder _uiBuilder;
+    private readonly IDalamudTextureWrap    _dalamudTextureWrap;
+    private readonly GagListingsDrawer      _gagListingsDrawer;
+    private readonly GagSpeakConfig         _config;
+    private readonly UiBuilder              _uiBuilder;
 
-    public ConfigSettingsTab(GagSpeakConfig config, UiBuilder uiBuilder,
-        DalamudPluginInterface pluginInterface)
-    {
-        // Set the readonlys
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConfigSettingsTab"/> class.
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>uiBuilder</c><param name="uiBuilder"> - The UiBuilder.</param></item>
+    /// <item><c>pluginInterface</c><param name="pluginInterface"> - The DalamudPluginInterface.</param></item>
+    /// </list> </summary>
+    public ConfigSettingsTab(GagSpeakConfig config, UiBuilder uiBuilder, DalamudPluginInterface pluginInterface, GagListingsDrawer gagListingsDrawer) {
         _config = config;
         _uiBuilder = uiBuilder;
+        _gagListingsDrawer = gagListingsDrawer;
         var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "icon.png");
         GagSpeak.Log.Debug($"[Image Display]: Loading image from {imagePath}");
         var IconImage = _uiBuilder.LoadImage(imagePath);
@@ -35,9 +45,7 @@ public class ConfigSettingsTab : ITab
 
     public ReadOnlySpan<byte> Label => "Settings"u8; // apply the tab label
 
-    /// <summary>
-    /// This Function draws the content for the window of the ConfigSettings Tab
-    /// </summary>
+    /// <summary> This Function draws the content for the window of the ConfigSettings Tab </summary>
     public void DrawContent() {
         // Create a child for the Main Window (not sure if we need this without a left selection panel)
         using var child = ImRaii.Child("MainWindowChild");
@@ -51,10 +59,12 @@ public class ConfigSettingsTab : ITab
         }
     }
 
-    private void DrawHeader() // draw the header for the tab
+    /// <summary> This Function draws the header for the ConfigSettings Tab </summary>
+    private void DrawHeader()
         => WindowHeader.Draw("Configuration & Settings", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
 
-    private void DrawConfigSettings() { // Draw the actual config settings
+    /// <summary> This Function draws the content for the ConfigSettings Tab </summary>
+    private void DrawConfigSettings() {
         // Lets start by drawing the child.
         using var child = ImRaii.Child("##SettingsPanel", -Vector2.One, true);
         // define our spacing
@@ -155,27 +165,62 @@ public class ConfigSettingsTab : ITab
             ImGui.Text($"Garble Level: {_config.GarbleLevel}");
             ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval} || Max Translation History: {_config.TranslationHistoryMax}");
             ImGui.Text($"Total Gag List Count: {_config.GagTypes.Count}");
-            ImGui.Text("Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-            ImGui.Text("Selected GagPadlocks: || "); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
-            ImGui.Text("Selected GagPadlocks Passwords: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };
-            ImGui.Text("Selected GagPadlocks Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
+            ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
+            ImGui.Text("Selected GagPadlocks: ||"); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} ||");};
+            ImGui.Text("Selected GagPadlocks Passwords: ||"); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} ||"); };
+            ImGui.Text("Selected GagPadlock Timers: ||"); ImGui.SameLine(); foreach (var gagPadlockTimer in _config.selectedGagPadLockTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} ||"); };
+            ImGui.Text("Selected GagPadlocks Assigners: ||"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} ||"); };
             ImGui.Text($"Translatable Chat Types:");
             foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };
-            ImGui.Text($"Current ChatBox Channel: {ChatChannel.GetChatChannel()}");
+            ImGui.Text($"Current ChatBox Channel: {ChatChannel.GetChatChannel()} || Requesting Info: {_config.SendInfoName} || Accepting?: {_config.acceptingInfoRequests}");
             ImGui.Text("Whitelist:"); ImGui.Indent();
             foreach (var whitelistPlayerData in _config.Whitelist) {
                 ImGui.Text(whitelistPlayerData.name);
                 ImGui.Indent();
                 ImGui.Text($"Relationship to this Player: {whitelistPlayerData.relationshipStatus}");
-                ImGui.Text($"Commitment Duration: {whitelistPlayerData.timeOfCommitment}");
+                ImGui.Text($"Commitment Duration: {whitelistPlayerData.GetCommitmentDuration()}");
                 ImGui.Text($"Locked Live Chat Garbler: {whitelistPlayerData.lockedLiveChatGarbler}");
+                ImGui.Text($"Pending Relationship Request: {whitelistPlayerData.PendingRelationRequestFromPlayer}");
+                ImGui.Text($"Pending Relationship Request From You: {whitelistPlayerData.PendingRelationRequestFromYou}");
                 ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in whitelistPlayerData.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
                 ImGui.Text($"Selected GagPadlocks: || "); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in whitelistPlayerData.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
-                ImGui.Text($"Selected GagPadlocks Passwords: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in whitelistPlayerData.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };
+                ImGui.Text($"Selected GagPadlocks Timers: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in whitelistPlayerData.selectedGagPadlocksTimer) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };
                 ImGui.Text($"Selected GagPadlocks Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in whitelistPlayerData.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
                 ImGui.Unindent();
             }
             ImGui.Unindent();
+            ImGui.NewLine();
+            ImGui.Text("Padlock Identifiers Variables:");
+            // output debug messages to display the gaglistingdrawers boolean list for _islocked, _adjustDisp. For each padlock identifer, diplay all of its public varaibles
+            ImGui.Text($"Listing Drawer _isLocked: ||"); ImGui.SameLine(); foreach(var index in _config._isLocked) { ImGui.SameLine(); ImGui.Text($"{index} ||"); };
+            ImGui.Text($"Listing Drawer _adjustDisp: ||"); ImGui.SameLine(); foreach(var index in _gagListingsDrawer._adjustDisp) { ImGui.SameLine(); ImGui.Text($"{index} ||"); };
+            var width = ImGui.GetContentRegionAvail().X / 3;
+            foreach(var index in _config._padlockIdentifier) {
+                ImGui.Columns(3,"DebugColumns", true);
+                ImGui.SetColumnWidth(0,width); ImGui.SetColumnWidth(1,width); ImGui.SetColumnWidth(2,width);
+                ImGui.Text($"Input Password: {index._inputPassword}"); ImGui.NextColumn();
+                ImGui.Text($"Input Combination: {index._inputCombination}"); ImGui.NextColumn();
+                ImGui.Text($"Input Timer: {index._inputTimer}");ImGui.NextColumn();
+                ImGui.Text($"Stored Password: {index._storedPassword}");ImGui.NextColumn();
+                ImGui.Text($"Stored Combination: {index._storedCombination}");ImGui.NextColumn();
+                ImGui.Text($"Stored Timer: {index._storedTimer}");ImGui.NextColumn();
+                ImGui.Text($"Padlock Type: {index._padlockType}");ImGui.NextColumn();
+                ImGui.Text($"Padlock Assigner: {index._mistressAssignerName}");ImGui.NextColumn();
+                ImGui.Columns(1);
+                ImGui.NewLine();
+            }
+            ImGui.Columns(3,"DebugColumns", true);
+            ImGui.SetColumnWidth(0,width); ImGui.SetColumnWidth(1,width); ImGui.SetColumnWidth(2,width);
+            ImGui.Text($"Input Password: {_config._whitelistPadlockIdentifier._inputPassword}"); ImGui.NextColumn();
+            ImGui.Text($"Input Combination: {_config._whitelistPadlockIdentifier._inputCombination}"); ImGui.NextColumn();
+            ImGui.Text($"Input Timer: {_config._whitelistPadlockIdentifier._inputTimer}");ImGui.NextColumn();
+            ImGui.Text($"Stored Password: {_config._whitelistPadlockIdentifier._storedPassword}");ImGui.NextColumn();
+            ImGui.Text($"Stored Combination: {_config._whitelistPadlockIdentifier._storedCombination}");ImGui.NextColumn();
+            ImGui.Text($"Stored Timer: {_config._whitelistPadlockIdentifier._storedTimer}");ImGui.NextColumn();
+            ImGui.Text($"Padlock Type: {_config._whitelistPadlockIdentifier._padlockType}");ImGui.NextColumn();
+            ImGui.Text($"Padlock Assigner: {_config._whitelistPadlockIdentifier._mistressAssignerName}");ImGui.NextColumn();
+            ImGui.Columns(1);
+            ImGui.NewLine();   
         }
         catch (Exception e)
         {

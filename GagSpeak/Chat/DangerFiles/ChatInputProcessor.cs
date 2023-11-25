@@ -1,32 +1,34 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 using System.Text;
 using Dalamud.Game;
+using Dalamud.Plugin.Services;
 using GagSpeak.Services;
-using System.Collections.Generic;
 using GagSpeak.Utility;
 using GagSpeak.Chat.Garbler;
-using Dalamud.Plugin.Services;
-
 // I swear to god, if any contributors even attempt to tinker with this file, I will swat you over the head. DO NOT DO IT.
 
 // Signatures located and adopted from sourcecode:
 // https://github.com/Caraxi/SimpleTweaksPlugin/blob/6a9e32489d75b63d1915d90720f45f5d75366a87/Tweaks/CommandAlias.cs
 // Check for any potential sig changes or changes to code each update and altar accordingly
+
 #pragma warning disable IDE1006
 namespace GagSpeak.Chat;
-public unsafe class ChatInputProcessor : IDisposable {
-    private readonly GagSpeakConfig _config; // for config options
-    private readonly HistoryService _historyService; // for history service
-    private readonly MessageGarbler _messageGarbler; // for message garbler
-    public virtual bool Ready { get; protected set; } // see if ready
-    public virtual bool Enabled { get; protected set; } // set if enabled
-    private nint processChatInputAddress;
-    private unsafe delegate byte ProcessChatInputDelegate(nint uiModule, byte** message, nint a3);
-    private HookWrapper<ProcessChatInputDelegate> processChatInputHook = null!; // should be storing the chat message
-    public static List<IHookWrapper> HookList = new();
 
-    // equivalent to its "startup" functionality from simpletweaks.
+/// <summary> This class is used to handle the chat input detouring for the GagSpeak plugin and is very dangerous to tinker with. Do not do it please. </summary>
+public unsafe class ChatInputProcessor : IDisposable {
+    private readonly    GagSpeakConfig                          _config;                            // for config options
+    private readonly    HistoryService                          _historyService;                    // for history service
+    private readonly    MessageGarbler                          _messageGarbler;                    // for message garbler
+    public virtual      bool                                    Ready { get; protected set; }       // see if ready
+    public virtual      bool                                    Enabled { get; protected set; }     // set if enabled
+    private             nint                                    processChatInputAddress;            // address of the chat input
+    private             HookWrapper<ProcessChatInputDelegate>   processChatInputHook = null!;       // should be storing the chat message
+    public static       List<IHookWrapper>                      HookList = new();                   // list of hooks
+    private unsafe delegate byte ProcessChatInputDelegate(nint uiModule, byte** message, nint a3);  // delegate for the chat input
+
+    /// <summary> Initializes a new instance of the <see cref="ChatInputProcessor"/> class. </summary>
     internal ChatInputProcessor(ISigScanner scanner, IGameInteropProvider interop, GagSpeakConfig config, HistoryService historyService) {
         // initialize interopfromattributes
         _config = config;
@@ -67,12 +69,20 @@ public unsafe class ChatInputProcessor : IDisposable {
         }
     }
 
-    //next up processing the input
+    /// <summary>
+    /// Process the chatbox every time a new message is sent.
+    /// <list type="bullet">
+    /// <item><c>uiModule</c><param name="uiModule"> - The ui module.</param></item>
+    /// <item><c>message</c><param name="message"> - The message.</param></item>
+    /// <item><c>a3</c><param name="a3"> - The a3.</param></item>
+    /// </list> </summary>
+    /// <returns> The <see cref="byte"/>. </returns>
+    /// <exception cref="Exception"> Thrown when an exception error condition of any kind occurs. </exception>
     private unsafe byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3) {
         GagSpeak.Log.Debug("[Chat Processor]: Detouring Chat Input Message");
         // try the following
         try {
-            var bc = 0; // bc = ??? (possibly bit count)
+            var bc = 0;
             for (var i=0; i <=500; i++) { // making sure command / message is within 500 characters
                 if (*(*message + i) != 0) continue; // if the message is empty, break
                 bc = i; // increment bc
@@ -144,6 +154,7 @@ public unsafe class ChatInputProcessor : IDisposable {
         // return the original message untranslated
         return processChatInputHook.Original(uiModule, message, a3);
     }
+
     // method to disable the hook
     protected void Disable() {
         processChatInputHook?.Disable();

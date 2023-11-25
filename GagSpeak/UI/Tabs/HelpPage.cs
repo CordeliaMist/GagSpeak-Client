@@ -6,13 +6,10 @@ using OtterGui.Widgets;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using System.Collections.Generic;
-using OtterGui;
 
 namespace GagSpeak.UI.Tabs.HelpPageTab;
-
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
-public enum HelpTabType
-{
+#pragma warning disable IDE1006
+public enum HelpTabType {
     General,
     Whitelist,
     Settings,
@@ -23,6 +20,9 @@ public enum HelpTabType
 }
 
 
+/// <summary>
+/// This class is used to handle the help page tab.
+/// </summary>
 public class HelpPageTab : Window, ITab
 {
     Dictionary<string, Vector4> colorDict = new Dictionary<string, Vector4> {
@@ -40,19 +40,18 @@ public class HelpPageTab : Window, ITab
         { "Purple", new Vector4(1f, 0.0f, 1f, 1.0f) }, // Light green for safety keywords
         { "FullWhite", new Vector4(1.0f, 1.0f, 1.0f, 1.0f) }, // Full white
     };
+
     public HelpTabType SelectedHelpTab { get; set; }
     private readonly GagSpeakConfig _config;
     private readonly UiBuilder _uiBuilder;
     public bool isShown { get; set; }
     public HelpPageTab(GagSpeakConfig config, UiBuilder uiBuilder)
-        : base("HelpPagePopOut")
-    {
+    : base("HelpPagePopOut") {
         // Set the readonlys
         _config = config;
         _uiBuilder = uiBuilder;
         // determine if the pop out window is shown
         IsOpen = false;
-
         // set the window fields
         SizeConstraints = new WindowSizeConstraints() {
             MinimumSize = new Vector2(600, 450),
@@ -63,6 +62,10 @@ public class HelpPageTab : Window, ITab
     // Apply our lable for the tab
     public ReadOnlySpan<byte> Label
         => "Help"u8;
+
+    /// <summary>
+    /// This function is used to draw the content of the tab.
+    /// </summary>
     public void DrawContent() {
         // Create a child for the Main Window (not sure if we need this without a left selection panel)
         using var child = ImRaii.Child("MainWindowChild");
@@ -75,15 +78,21 @@ public class HelpPageTab : Window, ITab
         }
     }
 
-    // implement window.draw to drawcontent
+    /// <summary>
+    /// implement window.draw to drawcontent
+    /// </summary>
     public override void Draw()
         => DrawContent();
 
-    // drawing out the header
+    /// <summary>
+    /// drawing out the header
+    /// </summary>
     private void DrawHeader()
         => WindowHeader.Draw("Plugin Information & Usage", 0, ImGui.GetColorU32(ImGuiCol.FrameBg), OpenPopupButton());
 
-    // Draw the actual help page display. This should be neatly organized and colored
+    /// <summary>
+    /// Draw the actual help page display. This should be neatly organized and colored
+    /// </summary>
     private void DrawHelpPage() {
         // Lets start by drawing the child.
         using var child = ImRaii.Child("##HelpPagePanel", -Vector2.One, true);
@@ -94,6 +103,9 @@ public class HelpPageTab : Window, ITab
         DrawHelpTabs();
     }
 
+    /// <summary>
+    /// Draw the help tabs
+    /// </summary>
     public void DrawHelpTabs() {
         using var _ = ImRaii.PushId( "HelpTabList" );
         using var tabBar = ImRaii.TabBar( "HelpTabs" );
@@ -123,7 +135,7 @@ public class HelpPageTab : Window, ITab
             SelectedHelpTab = HelpTabType.Precautions;
             ImGui.EndTabItem();
         }
-
+        // draw the selected tab
         switch (SelectedHelpTab) {
             case HelpTabType.General:
                 DrawGeneralTab();

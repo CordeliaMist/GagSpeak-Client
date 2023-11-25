@@ -1,28 +1,29 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Timers;
+using System;                       // Basic fundimental class provider for variable types
+using System.Collections.Concurrent;// for the concurrent queue
+using System.Collections.Generic;   // Dictionaries
+using System.Linq;                  // for lists
+using System.Timers;                // Provides server-based timer services
 
 // Pulled from Sillychat, used for logging a history of the translations
-
 namespace GagSpeak.Services;
+#pragma warning disable IDE1006 
 
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
-
-/// <summary>
-/// Manage history of translations.
-/// </summary>
+/// <summary> Manage history of translations. </summary>
 public class HistoryService {
-    // Declare the variables for the history service
-    private readonly GagSpeakConfig _config;
-    private readonly Timer _processTranslationsTimer;
-
-    /// Initializes a new instance of HistoryService class, taking in the plugin information
+    private readonly    GagSpeakConfig                  _config;                                // Configuration for the GagSpeak application
+    private readonly    Timer                           _processTranslationsTimer;              // Timer to process translations
+    public bool                                         IsProcessing { get; private set; }      // Is the history being processed?
+    public              List<Translation>               TranslationsDisplay {get; private set;} // List of translations for display
+    public              ConcurrentQueue<Translation>    Translations { get; }                   // Queue of translations
+    
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HistoryService"/> class.
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
     public HistoryService(GagSpeakConfig config) {
         // Set the readonlys
-        _config = config;
-        
+        _config = config; // Assign the provided config to the local config variable
         // Set the translations to a new concurrent queue
         this.Translations = new ConcurrentQueue<Translation>();
         // Set the translations display to a new list of translations
@@ -32,38 +33,39 @@ public class HistoryService {
             Interval = _config.ProcessTranslationInterval,
             Enabled = true,
         };
+        // subscribe to the elapsed event
         _processTranslationsTimer.Elapsed += this.ProcessTranslationsTimerOnElapsed;
+        // start the timer
         _processTranslationsTimer.Start();
     }
 
-    // Gets a value indicating whether gets indicator if history is being processed.
-    public bool IsProcessing { get; private set; }
-
-    /// Gets list of current historical records for display.
-    public List<Translation> TranslationsDisplay { get; private set; }
-
-    /// Gets queue for historical translations.
-    public ConcurrentQueue<Translation> Translations { get; }
-
+    /// <summary>
     /// Add a translation to queue.
+    /// <list type="bullet">
+    /// <item><c>translation</c><param name="translation"> - The translation to add.</param></item>
+    /// </list> </summary>
     public void AddTranslation(Translation translation) {
-        // I honestly dont fully understand this process, comment on it once you learn more about it!
+        // Enqueue the translation to the Translations queue
         this.Translations.Enqueue(translation);
         if (!this.IsProcessing) {
-            // Add the translation to the translation to the translations display list, used in the history window
+            // If not currently processing, add the translation to the TranslationsDisplay list
             this.TranslationsDisplay.Add(translation);
         }
     }
 
-    /// Dispose of the plugins history service.
+    /// <summary> Dispose of the plugins history service. </summary>
     public void Dispose() {
         // Stop the timer, and the elapsed event
         _processTranslationsTimer.Stop();
         _processTranslationsTimer.Elapsed -= this.ProcessTranslationsTimerOnElapsed;
     }
 
-    // Process translations timer elapsed event.
-    // Use exception handling to log errors because i have no clue what this is doing
+    /// <summary>
+    /// Process translations timer after it has elapsed.
+    /// <list type="bullet">
+    /// <item><c>sender</c><param name="sender"> - The sender of the event.</param></item>
+    /// <item><c>e</c><param name="e"> - The event arguments.</param></item>
+    /// </list> </summary>
     private void ProcessTranslationsTimerOnElapsed(object? sender, ElapsedEventArgs e) {
         try
         {
@@ -72,14 +74,12 @@ public class HistoryService {
             while (this.Translations.Count > _config.TranslationHistoryMax) {
                 this.Translations.TryDequeue(out _);
             }
-
+            // Set the translations display to the translations list
             this.TranslationsDisplay = this.Translations.ToList();
             this.IsProcessing = false;
-        }
-        catch (Exception ex)
-        {
+        } catch {
             // What to do if the exception is caught
-            GagSpeak.Log.Error($"{ex}Failed to process translations.");
+            GagSpeak.Log.Error("Failed to process translations.");
             this.IsProcessing = false;
         }
     }

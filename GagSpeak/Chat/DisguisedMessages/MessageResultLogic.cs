@@ -1,26 +1,35 @@
 using System;
 using System.Linq;
-using Dalamud.Plugin.Services;
 using System.Collections.Generic;
+using Dalamud.Plugin.Services;
 using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using OtterGui.Classes;
 using GagSpeak.UI.GagListings;
-using System.Text.RegularExpressions;
-
-using Dalamud.Game.Text.SeStringHandling.Payloads;
-using GagSpeak.Services;
 using GagSpeak.UI.Helpers;
 namespace GagSpeak.Chat.MsgResultLogic;
-
 #pragma warning disable IDE1006
-public class MessageResultLogic { // Purpose of class : To perform logic on client based on the type of the sucessfully decoded message.
-    
-    private GagListingsDrawer _gagListingsDrawer;
-    private readonly IChatGui _clientChat;
-    private readonly GagSpeakConfig _config;
-    private readonly IClientState _clientState;
-    private readonly GagAndLockManager _lockManager;
 
+/// <summary>
+/// This class is used to handle the message result logic for decoded messages in the GagSpeak plugin.
+/// </summary>
+public class MessageResultLogic
+{    
+    private          GagListingsDrawer _gagListingsDrawer; // used to draw the gag listings
+    private readonly IChatGui           _clientChat;       // used to print messages to the chat
+    private readonly GagSpeakConfig     _config;           // used to get the config
+    private readonly IClientState       _clientState;      // used to get the client state
+    private readonly GagAndLockManager  _lockManager;      // used to get the lock manager
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessageResultLogic"/> class.
+    /// <list type="bullet">
+    /// <item><c>gagListingsDrawer</c><param name="gagListingsDrawer"> - The GagListingsDrawer.</param></item>
+    /// <item><c>clientChat</c><param name="clientChat"> - The IChatGui.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>clientState</c><param name="clientState"> - The IClientState.</param></item>
+    /// <item><c>lockManager</c><param name="lockManager"> - The GagAndLockManager.</param></item>
+    /// </list> </summary>
     public MessageResultLogic(GagListingsDrawer gagListingsDrawer, IChatGui clientChat, GagSpeakConfig config,
     IClientState clientState, GagAndLockManager lockManager) {
         _gagListingsDrawer = gagListingsDrawer;
@@ -30,6 +39,16 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         _lockManager = lockManager;
     }
     
+    /// <summary>
+    /// This function is used to handle the message result logic for decoded messages involing your player in the GagSpeak plugin.
+    /// <list type="bullet">
+    /// <item><c>receivedMessage</c><param name="receivedMessage"> - The message that was received.</param></item>
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>clientChat</c><param name="clientChat"> - The IChatGui.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled.</returns>
     public bool CommandMsgResLogic(string receivedMessage, List<string> decodedMessage, bool isHandled,
             IChatGui clientChat, GagSpeakConfig config)
     {
@@ -49,7 +68,16 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
-    // another function nearly identical to the above, but for handling whitelist messages. These dont take as much processing.
+    /// <summary>
+    /// This function is used to handle the message result logic for decoded messages involving a whitelisted player in the GagSpeak plugin.
+    /// <list type="bullet">
+    /// <item><c>receivedMessage</c><param name="receivedMessage"> - The message that was received.</param></item>
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>clientChat</c><param name="clientChat"> - The IChatGui.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled.</returns>
     public bool WhitelistMsgResLogic(string recieved, List<string> decodedMessage, bool isHandled,
             IChatGui clientChat, GagSpeakConfig config)
     {
@@ -72,13 +100,21 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
-    bool LogError(string errorMessage) { // error log helper function
+    /// <summary> A simple helper function to log errors to both /xllog and your chat. </summary>
+    bool LogError(string errorMessage) {
         GagSpeak.Log.Debug(errorMessage);
         _clientChat.PrintError(errorMessage);
         return false;
     }
 
-    // handle the lock message [commandtype, layer, gagtype/locktype, password, player, password2]
+    /// <summary>
+    /// handle the lock message [commandtype, layer, gagtype/locktype, password, player, password2]
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleLockMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         // first, check if we have valid layer
         if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
@@ -109,7 +145,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         }
     }
 
-    // handle the unlock message
+    /// <summary>
+    /// handle the unlock message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleUnlockMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         // see if our layer is a valid layer
         if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
@@ -135,7 +178,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true; // sucessful parse
     }
 
-    // handle the remove message
+    /// <summary>
+    /// handle the remove message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleRemoveMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         // first, see if our layer is a valid layer
         if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
@@ -157,7 +207,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true; // sucessful parse
     }
 
-    // handle the removeall message
+    /// <summary>
+    /// handle the removeall message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns> Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleRemoveAllMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         // make sure all of our gagpadlocks are none, if they are not, throw exception
         if (_config.selectedGagPadlocks.Any(padlock => padlock != GagPadlocks.None)) {
@@ -172,7 +229,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true; // sucessful parse
     }
 
-    // handle the apply message
+    /// <summary>
+    /// handle the gag apply message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleApplyMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         // first, see if our layer is a valid layer
         if (decodedMessage[1] == "first") { decodedMessage[1] = "1"; } else if (decodedMessage[1] == "second") { decodedMessage[1] = "2"; } else if (decodedMessage[1] == "third") { decodedMessage[1] = "3"; }
@@ -192,7 +256,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true; // sucessful parse
     }
 
-    // handle the request mistress message
+    /// <summary>
+    /// handle the request mistress message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleRequestMistressMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try { // whole goal is just to apply the request update to the players whitelist
             string playerNameWorld = decodedMessage[4];
@@ -214,9 +285,17 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
-    // handle the request pet message, will be exact same as mistress one.
+    /// <summary>
+    /// handle the request pet message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleRequestPetMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
-        try { // whole goal is just to apply the request update to the players whitelist
+        try { 
+            // whole goal is just to apply the request update to the players whitelist
             string playerNameWorld = decodedMessage[4];
             string[] parts = playerNameWorld.Split(' ');
             string world = parts.Length > 1 ? parts.Last() : "";
@@ -236,9 +315,17 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
-    // handle the request slave message
+    /// <summary>
+    /// handle the request slave message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleRequestSlaveMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
-        try { // whole goal is just to apply the request update to the players whitelist
+        try { 
+            // whole goal is just to apply the request update to the players whitelist
             string playerNameWorld = decodedMessage[4];
             string[] parts = playerNameWorld.Split(' ');
             string world = parts.Length > 1 ? parts.Last() : "";
@@ -258,7 +345,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
-    // handle the relation removal message
+    /// <summary>
+    /// handle the relation removal message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleRelationRemovalMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try { // whole goal is just to apply the request update to the players whitelist
             string playerNameWorld = decodedMessage[4];
@@ -282,7 +376,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
-    // handle the live chat garbler lock message
+    /// <summary>
+    /// handle the livechat garbler lock message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleLiveChatGarblerLockMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         // locate the player in the whitelist matching the playername in the list
         string playerNameWorld = decodedMessage[4];
@@ -309,7 +410,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
-    // handle the information request
+    /// <summary>
+    /// handle the information request message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleInformationRequestMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         // because this command spits out our information about ourselves, we need an extra layer of security, making SURE the person 
         // using this on us HAS TO BE inside of our whitelist.
@@ -333,7 +441,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
-    // handle the accept mistress request
+    /// <summary>
+    /// handle the accept mistress message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleAcceptMistressMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try { // whole goal is just to apply the request update to the players whitelist
             string playerNameWorld = decodedMessage[4];
@@ -354,7 +469,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
-    // handle the accept pet request
+    /// <summary>
+    /// handle the accept pet request message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleAcceptPetMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try { // whole goal is just to apply the request update to the players whitelist
             string playerNameWorld = decodedMessage[4];
@@ -375,7 +497,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
-    // handle the accept slave request
+    /// <summary>
+    /// handle the accept slave message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleAcceptSlaveMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try { // whole goal is just to apply the request update to the players whitelist
             string playerNameWorld = decodedMessage[4];
@@ -397,7 +526,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
     }
 
     private string playerNameTemp = "";
-    // handle the provide information message
+    /// <summary>
+    /// handle the provide info message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleProvideInfoMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try {
             string playerNameWorld = decodedMessage[4];
@@ -429,6 +565,14 @@ public class MessageResultLogic { // Purpose of class : To perform logic on clie
         return true;
     }
 
+    /// <summary>
+    /// handle the provide info 2 message
+    /// <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleProvideInfo2Message(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try { 
             string playerName = playerNameTemp;

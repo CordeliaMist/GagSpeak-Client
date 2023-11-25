@@ -9,14 +9,16 @@ using GagSpeak.Chat;
 // practicing modular design
 namespace XivCommon.Functions;
     /// <summary>
-    /// This class, in essence, is modifying a packet BEFORE it gets sent to the server,
-    /// allowing us to send a message to the chat itself, and not just to dalamud chat.
-    /// This is NOT sending chat messages to the client, and as such should be used VERY CAREFULLY
+    /// <para> Creating/Modifying a packet BEFORE it gets sent to the server,
+    /// allowing us to send a message to the server, not just to dalamud chat.</para>
+    /// <para>This is NOT sending chat messages to the client, and as such should be used VERY CAREFULLY and with CAUTION.</para>
     /// <para><b>If you plan on ever using this code anywhere else, make damn sure you know how it is working. </b></para>
     /// </summary>
     public class RealChatInteraction {
-        private static class Signatures { // First we will create the Signatures for sending a message to the chatbox
-            internal const string SendChat = "48 89 5C 24 ?? 57 48 83 EC 20 48 8B FA 48 8B D9 45 84 C9";
+
+        /// <summary> This is the signature for the chatbox, it is used to find the chatbox in memory. </summary>
+        private static class Signatures {
+            internal const string SendChat = "48 89 5C 24 ?? 57 48 83 EC 20 48 8B FA 48 8B D9 45 84 C9"; // The Signatures for sending a message to the server
         }
 
         // Next we need to process the chatbox delgate, meaning we need to get the pointer for the uimodule, message, unused information and byte data
@@ -25,9 +27,7 @@ namespace XivCommon.Functions;
         // Now we need to get the pointer for the uimodule, message, unused information and byte data from above
         private ProcessChatBoxDelegate? ProcessChatBox { get; }
 
-        /// <summary>
-        /// By being an internal constructor, it means that this class can only be accessed by the same assembly.
-        /// </summary>
+        /// <summary> By being an internal constructor, it means that this class can only be accessed by the same assembly. </summary>
         internal RealChatInteraction(ISigScanner scanner) {
             // Now we need to scan for the signature of the chatbox, to see if it is valid
             if (scanner.TryScanText(Signatures.SendChat, out var processChatBoxPtr)) {
@@ -48,8 +48,6 @@ namespace XivCommon.Functions;
         /// <exception cref="ArgumentException">If <paramref name="message"/> is empty or longer than 500 bytes in UTF-8.</exception>
         /// <exception cref="InvalidOperationException">If the signature for this function could not be found</exception>
         public void SendMessage(string message) {
-            // May be safe to sanatize here before we incode the message to UTF8
-
             // Get the number of bytes our message contains.
             var bytes = Encoding.UTF8.GetBytes(message);
 
@@ -67,8 +65,6 @@ namespace XivCommon.Functions;
             if (this.ProcessChatBox == null) {
                 throw new InvalidOperationException("Could not find signature for chat sending");
             }
-
-            // Finally, we will need to make sure that our message is not sending any symbols that should not be sent, so we should sanatize them out.
 
             // Assuming it meets the correct conditions, we can begin to obtain the UI module pointer for the chatbox within the framework instance
             this.SendMessageUnsafe(bytes);

@@ -1,26 +1,34 @@
-using System.Collections.Generic;
-using System.Linq;
-using System;
-using GagSpeak.Events;
+using System.Collections.Generic; // for lists
+using System.Linq;                // for lists
+using System;                     // for basic C# types
+using GagSpeak.Events;           // for the observable list
 
 namespace GagSpeak.Data;
-// a struct to hold information on whitelisted players.
+
+/// <summary> A class to hold the data for the whitelist character </summary>
 public class WhitelistCharData {
-    public string name; // get the character name
-    public string homeworld; // get the characters world (dont know how to get this for now)
-    public string relationshipStatus; // who you are to them
-    public bool isDomMode; // is the character in dom mode?
-    public int garbleLevel; // get the garble level of the character
-    public string PendingRelationRequestFromPlayer; // Ex. If recieve a request from someone wanting to be your pet, that is stored here
-    public string PendingRelationRequestFromYou; // Ex. If you press the button for "Become Their Pet", it will store "Pet" here
-    public DateTimeOffset timeOfCommitment; // how long has your commitment with this player lasted? (data stores time of commitment start)
-    public bool lockedLiveChatGarbler { get; set; } // is the live chat garbler locked?
-    public ObservableList<string> selectedGagTypes { get; set; } // What gag types are selected?
-    public ObservableList<GagPadlocks> selectedGagPadlocks { get; set; } // which padlocks are equipped currently?
-    public List<string> selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
-    public List<DateTimeOffset> selectedGagPadlocksTimer { get; set; } // stores the timespan left until unlock of the player.
-    public List<string> selectedGagPadlocksAssigner { get; set; } // who assigned the padlocks, if any
-    // Constructor for the struct
+    public string                       name;                                     // get the character name
+    public string                       homeworld;                                // get the characters world (dont know how to get this for now)
+    public string                       relationshipStatus;                       // who you are to them
+    public bool                         isDomMode;                                // is the character in dom mode?
+    public int                          garbleLevel;                              // get the garble level of the character
+    public string                       PendingRelationRequestFromPlayer;         // Ex. If recieve a request from someone wanting to be your pet, that is stored here
+    public string                       PendingRelationRequestFromYou;            // Ex. If you press the button for "Become Their Pet", it will store "Pet" here
+    public DateTimeOffset               timeOfCommitment;                         // how long has your commitment lasted?
+    public bool                         lockedLiveChatGarbler { get; set; }       // is the live chat garbler locked?
+    public ObservableList<string>       selectedGagTypes { get; set; }            // What gag types are selected?
+    public ObservableList<GagPadlocks>  selectedGagPadlocks { get; set; }         // which padlocks are equipped currently?
+    public List<string>                 selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
+    public List<DateTimeOffset>         selectedGagPadlocksTimer { get; set; }    // stores the timespan left until unlock of the player.
+    public List<string>                 selectedGagPadlocksAssigner { get; set; } // who assigned the padlocks, if any
+    
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WhitelistCharData"/> class.
+    /// <list type="bullet">
+    /// <item><c>_name</c><param name="_name"> - The name of the character.</param></item>
+    /// <item><c>_homeworld</c><param name="_homeworld"> - The homeworld of the character.</param></item>
+    /// <item><c>_relationshipStatus</c><param name="_relationshipStatus"> - The relationship status of the character.</param></item>
+    /// </list> </summary>
     public WhitelistCharData(string _name, string _homeworld, string _relationshipStatus)
     {
         this.name = _name;
@@ -46,11 +54,15 @@ public class WhitelistCharData {
             this.selectedGagPadlocksTimer = new List<DateTimeOffset> { DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now };}
     }
 
+    /// <summary> Sets the time of commitment </summary>
     public void SetTimeOfCommitment() {
         this.timeOfCommitment = DateTimeOffset.Now;
     }
 
-    // function to get the commitment duration
+    /// <summary> 
+    /// gets the time of commitment 
+    /// </summary>
+    /// <returns>The time of commitment.</returns>
     public string GetCommitmentDuration() {
         if (this.timeOfCommitment == default(DateTimeOffset))
             return ""; // Display nothing if commitment time is not set
@@ -60,6 +72,12 @@ public class WhitelistCharData {
         return $"{days}d, {duration.Hours}h, {duration.Minutes}m, {duration.Seconds}s";
     }
 
+    /// <summary>
+    /// gets the duration left on a timed padlock type
+    /// <list type="bullet">
+    /// <item><c>index</c><param name="index"> - The index of the padlock.</param></item>
+    /// </list> </summary>
+    /// <returns>The duration left on the padlock.</returns>
     public string GetPadlockTimerDurationLeft(int index) {
         TimeSpan duration = this.selectedGagPadlocksTimer[index] - DateTimeOffset.Now; // Get the duration
         if (duration < TimeSpan.Zero) {

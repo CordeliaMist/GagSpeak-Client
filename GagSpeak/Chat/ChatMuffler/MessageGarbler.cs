@@ -1,21 +1,17 @@
 using System;
-using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Plugin;
-using Lumina.Excel.GeneratedSheets;
-using OtterGui.Classes;
-using OtterGui.Log;
-using GagSpeak.Chat;
-using Lumina;
-using GagSpeak.Services;
 
-// practicing modular design
 namespace GagSpeak.Chat.Garbler;
 
-// The component that will handle the translation of the chat message
+/// <summary> The class that will handle the garbling of messages. </summary>
 public class MessageGarbler
 {
-    // The method that will translate our messages
+    /// <summary>
+    /// Garble a chat message sent to be translated.
+    /// <list type="bullet">
+    /// <item><c>beginString</c><param name="beginString"> - The string to be garbled.</param></item>
+    /// <item><c>garbleLevel</c><param name="garbleLevel"> - The level of garbling to be applied.</param></item>
+    /// </list> </summary>
+    /// <returns> The garbled string. </returns>
     public string GarbleMessage(string beginString, int garbleLevel ) {
         // First we need to get the garble level from the config
         int level = garbleLevel;

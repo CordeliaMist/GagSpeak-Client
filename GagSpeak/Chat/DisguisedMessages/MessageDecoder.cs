@@ -1,10 +1,17 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-
 namespace GagSpeak.Chat.MsgDecoder;
-// a struct to hold information on whitelisted players.
+
+/// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
 public class MessageDecoder {
+    /// <summary>
+    /// This function attempts to decode the recieved message if it is identified as a gag speak message, and return it as a list of strings that have its data extracted from it
+    /// <list type="bullet">
+    /// <item><c>recievedMessage</c><param name="recievedMessage"> - The message to be decoded.</param></item>
+    /// <item><c>encodedMsgIndex</c><param name="encodedMsgIndex"> - The index of the encoded message.</param></item>
+    /// </list> </summary>
+    /// <returns> A list of strings that have its data extracted from it. </returns>
     public List<string> DecodeMsgToList(string recievedMessage, int encodedMsgIndex) {
         // decoded messages will always contain the format: [commandtype, layer, gagtype/locktype, password, player]
         List<string> decodedMessage = new List<string>{"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "","", ""};

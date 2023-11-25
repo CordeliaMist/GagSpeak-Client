@@ -8,29 +8,32 @@ using GagSpeak.UI.GagListings;
 using Dalamud.Interface.Utility.Raii;
 using GagSpeak.Services;
 using System.Collections.Generic;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
-using GagSpeak.Data;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
+#pragma warning disable IDE1006 
 
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
+/// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>
 public class GeneralTab : ITab, IDisposable
 {
-    private readonly GagSpeakConfig _config;
-    private readonly TimerService _timerService;
-    private readonly GagListingsDrawer _gagListingsDrawer;
-    private readonly GagAndLockManager _lockManager;
-    private GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
-    private GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
-    private bool? _inDomMode;
-    private string? _tempSafeword; // for initializing a temporary safeword for the text input field
-    // style variables
-
-    // testing with datetimeoffset
-    private bool modeButtonsDisabled = false;
+    private readonly GagSpeakConfig         _config;                    // the config for the plugin
+    private readonly TimerService           _timerService;              // the timer service for the plugin
+    private readonly GagListingsDrawer      _gagListingsDrawer;         // the drawer for the gag listings
+    private readonly GagAndLockManager      _lockManager;               // the lock manager for the plugin
+    private          GagTypeFilterCombo[]   _gagTypeFilterCombo;        // create an array of item combos
+    private          GagLockFilterCombo[]   _gagLockFilterCombo;        // create an array of item combos
+    private          bool?                  _inDomMode;                 // lets us know if we are in dom mode or not
+    private          string?                _tempSafeword;              // for initializing a temporary safeword for the text input field
+    private          bool                   modeButtonsDisabled = false;// lets us know if the mode buttons are disabled or not
     
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService, GagAndLockManager lockManager)
-    {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GeneralTab"/> class.
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>timerService</c><param name="timerService"> - The timer service for the plugin.</param></item>
+    /// <item><c>gagListingsDrawer</c><param name="gagListingsDrawer"> - The drawer for the gag listings.</param></item>
+    /// <item><c>lockManager</c><param name="lockManager"> - The lock manager for the plugin.</param></item>
+    /// </list> </summary>
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService, GagAndLockManager lockManager) {
         _config = config;
         _timerService = timerService;
         _gagListingsDrawer = gagListingsDrawer;
@@ -57,6 +60,9 @@ public class GeneralTab : ITab, IDisposable
     // Apply our lable for the tab
     public ReadOnlySpan<byte> Label => "General"u8;
 
+    /// <summary>
+    /// This function is called when the tab is disposed.
+    /// </summary>
     public void Dispose() { 
         // Unsubscribe from timer events
         _timerService.RemainingTimeChanged -= OnRemainingTimeChanged;
@@ -79,10 +85,16 @@ public class GeneralTab : ITab, IDisposable
         }
     }
 
-    private void DrawHeader() // Draw the header stuff
+    /// <summary>
+    /// This function draws the header for the window of the General Tab
+    /// </summary>
+    private void DrawHeader()
         => WindowHeader.Draw("Gag Selections / Inspector", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
 
-    private void DrawGeneral() { // Draw the actual general tab contents
+    /// <summary>
+    /// This function draws the general tab contents
+    /// </summary>
+    private void DrawGeneral() {
         // let's start by drawing the outline for the container
         using var child = ImRaii.Child("GeneralTabPanel", -Vector2.One, true);
         // Let's create a table in this panel
@@ -180,10 +192,19 @@ public class GeneralTab : ITab, IDisposable
         }
     }
 
+    /// <summary> 
+    /// This function disables the mode buttons after the cooldown is over.
+    /// </summary>
     private void DisableModeButtons() {
         modeButtonsDisabled = false;
     }
     
+    /// <summary>
+    /// outputs the remaining time on timers each time the millisecond elapsed time passes.
+    /// <list type="bullet">
+    /// <item><c>timerName</c><param name="timerName"> - The name of the timer.</param></item>
+    /// <item><c>remainingTime</c><param name="remainingTime"> - The remaining time for the timer.</param></item>
+    /// </list> </summary>
     private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime)
     {
         // update display of remaining time

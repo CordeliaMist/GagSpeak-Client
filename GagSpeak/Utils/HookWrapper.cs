@@ -1,46 +1,55 @@
 using System;
 using Dalamud.Hooking;
 
-// base class for managing hook wrappers
-namespace GagSpeak.Utility; 
-
-public interface IHookWrapper : IDisposable {
-    public void Enable();
-    public void Disable();
-
-    public bool IsEnabled { get; }
-    public bool IsDisposed { get; }
-        
-}
+namespace GagSpeak.Utility
+{ 
+    // Interface for a hook wrapper with basic lifecycle methods
+    public interface IHookWrapper : IDisposable {
+        public void Enable(); // Method to enable the hook
+        public void Disable(); // Method to disable the hook
+        public bool IsEnabled { get; } // Property to check if the hook is enabled
+        public bool IsDisposed { get; } // Property to check if the hook is disposed
+    }
     
-public class HookWrapper<T> : IHookWrapper where T : Delegate {
-
-    private Hook<T> wrappedHook;
-
-    private bool disposed;
+    /// <summary> This class is used to wrap a hook. </summary>
+    public class HookWrapper<T> : IHookWrapper where T : Delegate {
+        private Hook<T> wrappedHook;    // The hook that is being wrapped
+        private bool    disposed;       // Flag to track if the hook has been disposed
         
-    public HookWrapper(Hook<T> hook) {
-        this.wrappedHook = hook;
-    }
+        // Constructor that takes a hook to wrap
+        public HookWrapper(Hook<T> hook) {
+            this.wrappedHook = hook;
+        }
         
-    public void Enable() {
-        if (disposed) return;
-        wrappedHook?.Enable();
-    }
+        /// <summary> This function is used to create a new hook wrapper. </summary>
+        public void Enable() {
+            if (disposed) return;
+            wrappedHook?.Enable();
+        }
 
-    public void Disable() {
-        if (disposed) return;
-        wrappedHook?.Disable();
-    }
+        /// <summary> This function is used to disable the hook. </summary>
+        public void Disable() {
+            if (disposed) return;
+            wrappedHook?.Disable();
+        }
         
-    public void Dispose() {
-        Disable();
-        disposed = true;
-        wrappedHook?.Dispose();
-    }
+        /// <summary> This function is used to dispose of the hook. </summary>
+        public void Dispose() {
+            Disable();
+            disposed = true;
+            wrappedHook?.Dispose();
+        }
 
-    public nint Address => wrappedHook.Address;
-    public T Original => wrappedHook.Original;
-    public bool IsEnabled => wrappedHook.IsEnabled;
-    public bool IsDisposed => wrappedHook.IsDisposed;
+        // Property to get the address of the hook
+        public nint Address => wrappedHook.Address;
+
+        // Property to get the original delegate of the hook
+        public T Original => wrappedHook.Original;
+
+        // Property to check if the hook is enabled
+        public bool IsEnabled => wrappedHook.IsEnabled;
+
+        // Property to check if the hook is disposed
+        public bool IsDisposed => wrappedHook.IsDisposed;
+    }
 }

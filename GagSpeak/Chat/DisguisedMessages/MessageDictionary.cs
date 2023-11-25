@@ -5,13 +5,25 @@
 namespace GagSpeak.Chat.MsgDictionary;
 // to quickly scan a message and see if it is one of our listed encoded messages
 public static class MessageDictionary {
-    // dummy overloaded func for no index passed in
+
+    /// <summary>
+    /// A dictionary of all the encoded messages we can detect, so that we know if the message we recieve if from the plugin, or anything but our plugin.
+    /// <list type="bullet">
+    /// <item><c>textVal</c><param name="textVal"> - The message to check.</param></item>
+    /// </list> </summary>
+    /// <returns>True if the message is encoded, false if not.</returns>
     public static bool EncodedMsgDictionary(string textVal) {
         int encodedMsgIndex = 0;
         return EncodedMsgDictionary(textVal, ref encodedMsgIndex);
     }
 
-    // determine if a message recieved is an encoded message
+    /// <summary>
+    /// A dictionary of all the encoded messages we can detect, so that we know if the message we recieve if from the plugin, or anything but our plugin.
+    /// <list type="bullet">
+    /// <item><c>textVal</c><param name="textVal"> - The message to check.</param></item>
+    /// <item><c>encodedMsgIndex</c><param name="encodedMsgIndex"> - The index of the encoded message.</param></item>
+    /// </list> </summary>
+    /// <returns>True if the message is encoded, false if not.</returns>
     public static bool EncodedMsgDictionary(string textVal, ref int encodedMsgIndex) {
         // the gag apply encoded message (1)
         if (textVal.Contains("from") && textVal.Contains("applies a")

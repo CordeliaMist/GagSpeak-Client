@@ -1,46 +1,51 @@
-using Dalamud.Plugin;
-using ImGuiNET;
-using OtterGui.Widgets;
 using System;
 using System.Diagnostics;
-using Dalamud.Interface.Windowing;
 using System.Numerics;
+using Dalamud.Plugin;
+using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Utility;
+using ImGuiNET;
+using OtterGui.Widgets;
 using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.UI.Tabs.WhitelistTab;
 using GagSpeak.UI.Tabs.ConfigSettingsTab;
 using GagSpeak.UI.Tabs.HelpPageTab;
-using Glamourer.Gui;
 
 namespace GagSpeak.UI;
+#pragma warning disable IDE1006
 
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
+/// <summary> This class is used to handle the main window. </summary>
 public class MainWindow : Window
 {
-    public enum TabType 
-    {
-        None            = -1,
-        General         = 0, // Where you select your gags and safewords and lock types. Put into own tab for future proofing beauty spam
-        Whitelist       = 1, // Where you can append peoples names to a whitelist, which is used to account for permissions on command usage.
-        ConfigSettings  = 2, // Where you can change the plugin settings, such as debug mode, and other things.
-        HelpPage        = 3 // Where you can find information on how to use the plugin, and how to get support.
+    public enum TabType {
+        None            = -1,   // No tab selected
+        General         = 0,    // Where you select your gags and safewords and lock types. Put into own tab for future proofing beauty spam
+        Whitelist       = 1,    // Where you can append peoples names to a whitelist, which is used to account for permissions on command usage.
+        ConfigSettings  = 2,    // Where you can change the plugin settings, such as debug mode, and other things.
+        HelpPage        = 3     // Where you can find information on how to use the plugin, and how to get support.
     }
+    private readonly    GagSpeakConfig      _config;
+    private readonly    GagSpeakChangelog   _changelog;
+    private readonly    ITab[]              _tabs;
+    public readonly     GeneralTab          General;
+    public readonly     WhitelistTab        Whitelist;
+    public readonly     ConfigSettingsTab   ConfigSettings;
+    public readonly     HelpPageTab         HelpPage;
+    public              TabType             SelectTab = TabType.None;
 
-    // Private readonly variables here, fill in rest later. (or rather take out)
-    private readonly GagSpeakConfig  _config; // Might just be used for debug stuff, may be able to remove.
-    private readonly GagSpeakChangelog _changelog;
-    // private readonly TabSelected    _event;
-    private readonly ITab[]         _tabs;
-
-    // Readonly variables for the tabs
-    public readonly GeneralTab          General;
-    public readonly WhitelistTab        Whitelist;
-    public readonly ConfigSettingsTab   ConfigSettings;
-    public readonly HelpPageTab         HelpPage;
-    public TabType SelectTab = TabType.None; // What tab is selected?
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MainWindow"/> class.
+    /// <list type="bullet">
+    /// <item><c>pluginInt</c><param name="pluginInt"> - The DalamudPluginInterface.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>general</c><param name="general"> - The general tab.</param></item>
+    /// <item><c>changelog</c><param name="changelog"> - The changelog.</param></item>
+    /// <item><c>whitelist</c><param name="whitelist"> - The whitelist tab.</param></item>
+    /// <item><c>configsettings</c><param name="configsettings"> - The config settings tab.</param></item>
+    /// <item><c>helpPageTab</c><param name="helpPageTab"> - The help page tab.</param></item>
+    /// </list> </summary>
     public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general, GagSpeakChangelog changelog,
-    WhitelistTab whitelist, ConfigSettingsTab configsettings, HelpPageTab helpPageTab): base(GetLabel())
-    {
+    WhitelistTab whitelist, ConfigSettingsTab configsettings, HelpPageTab helpPageTab): base(GetLabel()) {
         // let the user know if their direct chat garlber is still enabled upon launch
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
@@ -71,55 +76,48 @@ public class MainWindow : Window
         };
     }
 
-    // Prepare to draw the sick window thing
-    public override void PreDraw() {
-        // Before we draw, lets lock the window in place, just so until its finished being drawn, we dont have anyone dragging shit everywhere.
-        // It also helps to make sure the very modular precent based widths we will configure function properly.
-        //Flags |= ImGuiWindowFlags.NoResize;   //<--- UNCOMMMENT THIS ONCE READY FOR RELEASE 
-    }
-
     public override void Draw() {
         // get our cursors Y position and store it into YPOS
         var yPos = ImGui.GetCursorPosY();
-
+        // set the cursor position to the top left of the window
         if (TabBar.Draw("##tabs", ImGuiTabBarFlags.None, ToLabel(SelectTab), out var currentTab, () => { }, _tabs)) {
             SelectTab           = TabType.None; // set the selected tab to none
             _config.SelectedTab = FromLabel(currentTab); // set the config selected tab to the current tab
             _config.Save(); // FIND OUT HOW TO USE SaveConfig(); ACROSS CLASSES LATER.
         }
-
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
         ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 9f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
-        // Can use basic stuff for now, but if you want to look into locking buttons, reference glamourer's button / checkbox code.
-        if (ImGui.Button("Changelog")) {
-            // force open the changelog here
-            _changelog.Changelog.ForceOpen = true;
-        }
-
-        // In that same line...
-        ImGui.SameLine();
-        // Configure the style for our next button
         ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
         ImGui.Text(" ");
         ImGui.SameLine();
-
+        if (ImGui.Button("Changelog")) {
+            // force open the changelog here
+            _changelog.Changelog.ForceOpen = true;
+        }
+        // In that same line...
+        ImGui.SameLine();
         // And now have that button be for the Ko-Fi Link
         if (ImGui.Button("Toss Cordy a thanks!")) {
             ImGui.SetTooltip( "Only if you want to though!");
             Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
         }
-
+        // pop off the colors we pushed
         ImGui.PopStyleColor(3);
     }
 
+    /// <summary> This function is used to draw the changelog window. </summary>
     private void DrawChangeLog(Changelog changelog) {
         // Draw the changelog
         changelog.ForceOpen = true;
     }
 
-    // Function to determine which label we are going to when switching tabs
+    /// <summary> 
+    /// This function is used to draw the changelog window.
+    /// <list type="bullet">
+    /// <item><c>TabType</c><param name="type"> - the type of tab we want to go to.</param></item>
+    /// </list> </summary> 
     private ReadOnlySpan<byte> ToLabel(TabType type)
         => type switch // we do this via a switch statement
         {
@@ -131,13 +129,17 @@ public class MainWindow : Window
         };
 
 
-    // Function to determine which tab we are going from when switching tabs
+    /// <summary>
+    /// The function used to say what tab we are going from.
+    /// <list type="bullet">
+    /// <item><c>label</c><param name="label"> - the label of the tab we are going from.</param></item>
+    /// </list> </summary> 
     private TabType FromLabel(ReadOnlySpan<byte> label) {
         // @formatter:off
-        if (label == General.Label)     return TabType.General;
-        if (label == Whitelist.Label)    return TabType.Whitelist;
-        if (label == ConfigSettings.Label)   return TabType.ConfigSettings;
-        if (label == HelpPage.Label)     return TabType.HelpPage;
+        if (label == General.Label)         return TabType.General;
+        if (label == Whitelist.Label)       return TabType.Whitelist;
+        if (label == ConfigSettings.Label)  return TabType.ConfigSettings;
+        if (label == HelpPage.Label)        return TabType.HelpPage;
         // @formatter:on
         return TabType.None;
     }

@@ -1,51 +1,21 @@
-using System.Collections.Generic;
-using System.IO;
-using Dalamud.Plugin;
+using Dalamud.Plugin; // Used for the DalamudPluginInterface which provides access to various Dalamud features
 
-// practicing modular design
 namespace GagSpeak.Services;
 
-
-// I personally have no idea why the fuck this needs to exist but may remove later once i learn more.
+/// <summary> Service for managing file names. </summary>
 public class FilenameService
 {
-    // define catagories to save.
-    public readonly string ConfigDirectory; // need
-    public readonly string ConfigFile; // need
-    // public readonly string DesignFileSystem; // dont need likely
-    // public readonly string MigrationDesignFile; // dont need likely
-    // public readonly string DesignDirectory; // dont need
-    // public readonly string AutomationFile; // dont need
-    // public readonly string UnlockFileCustomize; // dont need
-    // public readonly string UnlockFileItems; // dont need
-    // public readonly string FavoriteFile; // dont need
+    public readonly string ConfigDirectory; // Directory for the configuration files
+    public readonly string ConfigFile;      // Configuration file
 
-    public FilenameService(DalamudPluginInterface pi)
-    {
-        ConfigDirectory     = pi.ConfigDirectory.FullName;
-        ConfigFile          = pi.ConfigFile.FullName;
-        // AutomationFile      = Path.Combine(ConfigDirectory, "automation.json");
-        // DesignFileSystem    = Path.Combine(ConfigDirectory, "sort_order.json");
-        // MigrationDesignFile = Path.Combine(ConfigDirectory, "Designs.json");
-        // UnlockFileCustomize = Path.Combine(ConfigDirectory, "unlocks_customize.json");
-        // UnlockFileItems     = Path.Combine(ConfigDirectory, "unlocks_items.json");
-        // DesignDirectory     = Path.Combine(ConfigDirectory, "designs");
-        // FavoriteFile        = Path.Combine(ConfigDirectory, "favorites.json");
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FilenameService"/> class.
+    /// <list type="bullet">
+    /// <item><c>pi</c><param name="pi"> - The Dalamud plugin interface.</param></item>
+    /// </list> </summary>
+    public FilenameService(DalamudPluginInterface pi) {
+        // Set the configuration directory and file from the plugin interface
+        ConfigDirectory = pi.ConfigDirectory.FullName;
+        ConfigFile = pi.ConfigFile.FullName;
     }
-
-
-    // public IEnumerable<FileInfo> Designs()
-    // {
-    //     if (!Directory.Exists(DesignDirectory))
-    //         yield break;
-
-    //     foreach (var file in Directory.EnumerateFiles(DesignDirectory, "*.json", SearchOption.TopDirectoryOnly))
-    //         yield return new FileInfo(file);
-    // }
-
-    // public string DesignFile(string identifier)
-    //     => Path.Combine(DesignDirectory, $"{identifier}.json");
-
-    // public string DesignFile(Design design)
-    //     => DesignFile(design.Identifier.ToString());
 }

@@ -4,14 +4,13 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using Dalamud.Game.Text.SeStringHandling;
 using OtterGui.Classes;
-using OtterGui.Widgets;
 using GagSpeak.UI.UserProfile;
-using Glamourer.Gui;
 using GagSpeak.UI.Tabs.HelpPageTab;
 
 namespace GagSpeak.UI;
+#pragma warning disable IDE1006
 
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
+/// <summary> This class is used to handle the window manager. </summary>
 public class GagSpeakWindowManager : IDisposable
 {
     private readonly WindowSystem               _windowSystem = new("GagSpeak");
@@ -19,9 +18,20 @@ public class GagSpeakWindowManager : IDisposable
     private readonly MainWindow                 _ui;
     private readonly IChatGui                   _chatGui;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GagSpeakWindowManager"/> class.
+    /// <list type="bullet">
+    /// <item><c>uiBuilder</c><param name="uiBuilder"> - The UiBuilder.</param></item>
+    /// <item><c>ui</c><param name="ui"> - The main window.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>chatGui</c><param name="chatGui"> - The chat GUI.</param></item>
+    /// <item><c>uiHistory</c><param name="uiHistory"> - The history window.</param></item>
+    /// <item><c>helpPage</c><param name="helpPage"> - The help page tab.</param></item>
+    /// <item><c>changelog</c><param name="changelog"> - The changelog.</param></item>
+    /// <item><c>userProfile</c><param name="userProfile"> - The user profile window.</param></item>
+    /// </list> </summary>
     public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config,
-    IChatGui chatGui, HistoryWindow uiHistory, HelpPageTab helpPage, GagSpeakChangelog changelog, UserProfileWindow userProfile)
-    {
+    IChatGui chatGui, HistoryWindow uiHistory, HelpPageTab helpPage, GagSpeakChangelog changelog, UserProfileWindow userProfile) {
         // set the main ui window
         _uiBuilder       = uiBuilder;
         _ui              = ui;
@@ -48,9 +58,8 @@ public class GagSpeakWindowManager : IDisposable
         }
     }
 
-    // for disposing the UI things
-    public void Dispose()
-    {
+    /// <summary> This function is used to dispose of the window manager. </summary>
+    public void Dispose() {
         _uiBuilder.Draw         -= _windowSystem.Draw;
         _uiBuilder.OpenConfigUi -= _ui.Toggle;
     }

@@ -273,6 +273,7 @@ public class WhitelistTab : ITab, IDisposable
             // Create a button for adding the targetted player to the whitelist, assuming they are within proxy.
             if (ImGui.Button(targetedPlayerText, buttonWidth)) {
                 if (_clientState.LocalPlayer.TargetObject.ObjectKind == ObjectKind.Player) { // if the player is targetting another player
+                    GagSpeak.Log.Debug($"[Whitelist]: Targetted Player: {_clientState.LocalPlayer.TargetObject.Name.TextValue}");
                     string targetName = UIHelpers.CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
                     // if the object kind of the target is a player, then get the character parse of that player
                     var targetCharacter = (PlayerCharacter)_clientState.LocalPlayer.TargetObject;

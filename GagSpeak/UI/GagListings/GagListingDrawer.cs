@@ -13,55 +13,61 @@ using Dalamud.Interface.Internal;
 using GagSpeak.Events;
 using GagSpeak.Services;
 
-
 #pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 namespace GagSpeak.UI.GagListings;
+
+/// <summary> This class is used to draw the gag listings. </summary>
 public class GagListingsDrawer : IDisposable
 {
     IDalamudTextureWrap textureWrap1; IDalamudTextureWrap textureWrap2; IDalamudTextureWrap textureWrap3; // for image display
     IDalamudTextureWrap textureWrap4; IDalamudTextureWrap textureWrap5; IDalamudTextureWrap textureWrap6; // for image display
-    private DalamudPluginInterface _pluginInterface;
-    private GagAndLockManager _lockManager;
-    private TimerService _timerService;
-    private readonly GagSpeakConfig _config;    
-    private float _requiredComboWidthUnscaled;
-    private float _requiredComboWidth;
-    private string _buttonLabel = "";
-    public bool[] _adjustDisp; // used to adjust the display of the password field
+    private             DalamudPluginInterface  _pluginInterface;               // used to get the plugin interface
+    private             GagAndLockManager       _lockManager;                   // used to get the lock manager
+    private             TimerService            _timerService;                  // used to get the timer service
+    private readonly    GagSpeakConfig          _config;                        // used to get the config
+    private             float                   _requiredComboWidthUnscaled;    // used to determine the required width of the combo
+    private             float                   _requiredComboWidth;            // used to determine the width of the combo
+    private             string                  _buttonLabel = "";              // used to display the button label
+    public              bool[]                  _adjustDisp;                    // used to adjust the display of the password field
+    private             Vector2                 _iconSize;                      // size of the icon
+    private             float                   _comboLength;                   // length of the combo
     
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GagListingsDrawer"/> class.
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>dalamudPluginInterface</c><param name="dalamudPluginInterface"> - The Dalamud plugin interface.</param></item>
+    /// <item><c>timerService</c><param name="timerService"> - The timer service.</param></item>
+    /// <item><c>lockManager</c><param name="lockManager"> - The lock manager.</param></item>
+    /// </list> </summary>
     public GagListingsDrawer(GagSpeakConfig config, DalamudPluginInterface dalamudPluginInterface, 
-    TimerService timerService, GagAndLockManager lockManager) // Constructor
+    TimerService timerService, GagAndLockManager lockManager)
     {
         _config = config;
-        //update interface
         _pluginInterface = dalamudPluginInterface;
         _timerService = timerService;
         _lockManager = lockManager;
-
-        // draw textures for the gag list
+        // draw textures for the gag and padlock listings
         textureWrap1 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagTypes[0]}.png"));
         textureWrap2 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagTypes[1]}.png"));
         textureWrap3 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagTypes[2]}.png"));
-        // draw textures for the padlock list
         textureWrap4 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[0].ToString()}.png"));
         textureWrap5 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[1].ToString()}.png"));
         textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{config.selectedGagPadlocks[2].ToString()}.png"));
-
+        // initialize the adjust display
         _adjustDisp = new bool[] {false, false, false};
         // Subscribe to the events
         _config.selectedGagTypes.ItemChanged += OnSelectedTypesChanged;
         _config.selectedGagPadlocks.ItemChanged += OnSelectedTypesChanged;
     }
 
-    private Vector2 _iconSize; // size
-    private float _comboLength;
-
+    /// <summary> Disposes of the <see cref="GagListingsDrawer"/> subscribed events, unsubscribing them. </summary>
     public void Dispose() {
         _config.selectedGagTypes.ItemChanged -= OnSelectedTypesChanged;
         _config.selectedGagPadlocks.ItemChanged -= OnSelectedTypesChanged;
     }
 
-    // This function just prepares our styleformat for the drawing
+    /// <summary> prepare the gag listing drawer by setting its width for the icon and combo. </summary>
     public void PrepareGagListDrawing() {
         // Draw out the content size of our icon
         _iconSize = new Vector2(2 * ImGui.GetFrameHeight() + ImGui.GetStyle().ItemSpacing.Y);
@@ -74,7 +80,16 @@ public class GagListingsDrawer : IDisposable
         _requiredComboWidth = _requiredComboWidthUnscaled * ImGuiHelpers.GlobalScale;
     }
 
-    // Draw the listings
+    /// <summary> 
+    /// Draw the actual gag listing, this is the main function that is called to draw the gag listing.
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>gagTypeFilterCombo</c><param name="gagTypeFilterCombo"> - The gag type filter combo.</param></item>
+    /// <item><c>gagLockFilterCombo</c><param name="gagLockFilterCombo"> - The gag lock filter combo.</param></item>
+    /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
+    /// <item><c>displayLabel</c><param name="displayLabel"> - The display label.</param></item>
+    /// <item><c>width</c><param name="width"> - The width.</param></item>
+    /// </list> </summary>
     public void DrawGagAndLockListing(int ID, GagSpeakConfig config, GagTypeFilterCombo _gagTypeFilterCombo, GagLockFilterCombo _gagLockFilterCombo,
     int layerIndex, string displayLabel, int width) {
         // if we are locked, set the locked to true
@@ -153,6 +168,12 @@ public class GagListingsDrawer : IDisposable
         ImGui.Columns(1);
     }
 
+    /// <summary>
+    /// If at any point we have changed to a new item in the gag or padlock listing, we should update our image display.
+    /// <list type="bullet">
+    /// <item><c>sender</c><param name="sender"> - The sender.</param></item>
+    /// <item><c>e</c><param name="e"> - The event arguments.</param></item>
+    /// </list> </summary>
     private void OnSelectedTypesChanged(object sender, ItemChangedEventArgs e) {
         // update the texture wraps
         textureWrap1 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagTypes[0]}.png"));
@@ -163,7 +184,17 @@ public class GagListingsDrawer : IDisposable
         textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"{_config.selectedGagPadlocks[2].ToString()}.png"));
     }   
 
-    // draw the gag item combo
+    /// <summary>
+    /// Draw the combo listing of the gag types
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>gagTypeFilterCombo</c><param name="gagTypeFilterCombo"> - The gag type filter combo.</param></item>
+    /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
+    /// <item><c>locked</c><param name="locked"> - The locked.</param></item>
+    /// <item><c>width</c><param name="width"> - The width.</param></item>
+    /// <item><c>gagtypecombo</c><param name="gagtypecombo"> - The gag type combo.</param></item>
+    /// </list> </summary>
+    /// <returns> True if it succeeds, false if it fails. </returns>
     public bool DrawGagTypeItemCombo(int ID, GagSpeakConfig config, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
         var combo = gagtypecombo; // get the combo
         if (ImGui.IsItemClicked() && !locked)
@@ -183,6 +214,17 @@ public class GagListingsDrawer : IDisposable
         return true;
     }
 
+    /// <summary>
+    /// Draw the combo listing of the gag locks
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>gagLockFilterCombo</c><param name="gagLockFilterCombo"> - The gag lock filter combo.</param></item>
+    /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
+    /// <item><c>locked</c><param name="locked"> - The locked.</param></item>
+    /// <item><c>width</c><param name="width"> - The width.</param></item>
+    /// <item><c>gaglockcombo</c><param name="gaglockcombo"> - The gag lock combo.</param></item>
+    /// </list> </summary>
+    /// <returns> True if it succeeds, false if it fails. </returns>
     public bool DrawGagLockItemCombo(int ID, GagSpeakConfig config, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
         var combo = gaglockcombo; // get the combo
         // if we left click and it is unlocked, open it
@@ -206,7 +248,17 @@ public class GagListingsDrawer : IDisposable
 
 
 
-    // for the whitelist page
+    /// <summary>
+    /// Draw the combo listing of the gag types for the whitelisted character
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>gagTypeFilterCombo</c><param name="gagTypeFilterCombo"> - The gag type filter combo.</param></item>
+    /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
+    /// <item><c>locked</c><param name="locked"> - The locked.</param></item>
+    /// <item><c>width</c><param name="width"> - The width.</param></item>
+    /// <item><c>gagtypecombo</c><param name="gagtypecombo"> - The gag type combo.</param></item>
+    /// </list> </summary>
+    /// <returns> True if it succeeds, false if it fails. </returns>
     public bool DrawGagTypeItemCombo(int ID,  WhitelistCharData charData, ref string gagLabel, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
         var combo = gagtypecombo; // get the combo
         if (ImGui.IsItemClicked() && !locked)
@@ -222,6 +274,18 @@ public class GagListingsDrawer : IDisposable
         }
         return true;
     }
+
+    /// <summary>
+    /// Draw the combo listing of the gag locks for the whitelisted character
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>gagLockFilterCombo</c><param name="gagLockFilterCombo"> - The gag lock filter combo.</param></item>
+    /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
+    /// <item><c>locked</c><param name="locked"> - The locked.</param></item>
+    /// <item><c>width</c><param name="width"> - The width.</param></item>
+    /// <item><c>gaglockcombo</c><param name="gaglockcombo"> - The gag lock combo.</param></item>
+    /// </list> </summary>
+    /// <returns> True if it succeeds, false if it fails. </returns>
     public bool DrawGagLockItemCombo(int ID, WhitelistCharData charData, ref string lockLabel, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
         // This code is a shadow copy of the function above, used for accepting WhitelistCharData as a type
         var combo = gaglockcombo;

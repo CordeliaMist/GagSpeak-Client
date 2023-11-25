@@ -9,8 +9,7 @@ namespace GagSpeak {
         /// <summary>Initializes a new instance of the <see cref="Translation"/> class.</summary>
         /// <param name="input">Input text to be translated.</param>
         /// <param name="output">Output text from translation.</param>
-        public Translation(string input, string output)
-        {
+        public Translation(string input, string output) {
             this.Input = input;
             this.Output = output;
         }

@@ -5,23 +5,29 @@ using OtterGui.Raii;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface.Utility;
-
 using GagSpeak.Events;
 
 namespace GagSpeak.UI.GagListings;
 
+/// <summary> This class is used to handle the gag type filter combo box. </summary>
 public sealed class GagTypeFilterCombo 
 {
-    private GagSpeakConfig _config;
-    private string _comboSearchText;
-    private Dictionary<string,int> _gagTypes;
-    private bool isDummy = false;
+    private GagSpeakConfig          _config;            // the config for the plugin
+    private string                  _comboSearchText;   // the search text for the combo box
+    private Dictionary<string,int>  _gagTypes;          // the gag types
+    private bool                    isDummy = false;    // used to distinguish between general tab appliers, and whitelist ones
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GagTypeFilterCombo"/> class.
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>gagTypes</c><param name="gagTypes"> - The gag types.</param></item>
+    /// </list> </summary>
     public GagTypeFilterCombo(Dictionary<string,int> gagTypes, GagSpeakConfig config) {
         _comboSearchText = string.Empty;
         _gagTypes = gagTypes;
         _config = config;
-    } 
+    }
 
     /// <summary>
     /// This function draws ImGui's Combo list, but with a search filter. (and for Dictionary<string,int>)

@@ -1,33 +1,39 @@
 ﻿﻿
 using System;
-using ImGuiNET;
-using Dalamud.Interface.Windowing;
 using System.Numerics;
+using System.IO;
+using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface;
 using Dalamud.Plugin;
-using System.IO;
 using Dalamud.Interface.Utility.Raii;
-
+using ImGuiNET;
 using OtterGui;
-using System.Collections.Generic;
-
 
 namespace GagSpeak.UI.UserProfile;
+#pragma warning disable IDE1006 
 
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
+/// <summary> 
+/// <para>This class is used to handle the user profile window.</para>
+/// <para>I wont be commenting this as it is purely just free handing a visual apperance and serves no signifigance to the larger scale of the plugin.</para>
+/// </summary>
 public class UserProfileWindow : Window, IDisposable
 {
     private readonly IDalamudTextureWrap _dalamudTextureWrap;
-    private readonly GagSpeakConfig _config;
-    private readonly UiBuilder _uiBuilder;
+    private readonly GagSpeakConfig     _config;
+    private readonly UiBuilder          _uiBuilder;
+    public           int                _profileIndexOfUserSelected { get; set;}
+    public           Vector2            mainWindowPosition { get; set; }
 
-    public int _profileIndexOfUserSelected { get; set;}
-    public Vector2 mainWindowPosition { get; set; }
-
-    public UserProfileWindow(GagSpeakConfig config, UiBuilder uiBuilder,
-        DalamudPluginInterface pluginInterface): base(GetLabel()) {
-    {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserProfileWindow"/> class.
+    /// <list type="bullet">
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
+    /// <item><c>uiBuilder</c><param name="uiBuilder"> - The UI builder.</param></item>
+    /// <item><c>pluginInterface</c><param name="pluginInterface"> - The DalamudPluginInterface.</param></item>
+    /// </list> </summary>
+    public UserProfileWindow(GagSpeakConfig config, UiBuilder uiBuilder, DalamudPluginInterface pluginInterface)
+    : base(GetLabel()) {
         // Set the readonlys
         _config = config;
         _uiBuilder = uiBuilder;
@@ -37,7 +43,6 @@ public class UserProfileWindow : Window, IDisposable
         GagSpeak.Log.Debug($"[Profile Popout]: Loaded image from {imagePath}");
 
         _dalamudTextureWrap = IconImage;
-    }
         SizeConstraints = new WindowSizeConstraints() {
             MinimumSize = new Vector2(250, 325),     // Minimum size of the window
             MaximumSize = new Vector2(300, 375) // Maximum size of the window
@@ -47,6 +52,7 @@ public class UserProfileWindow : Window, IDisposable
         _config = config;
     }
 
+    /// <summary> This function is used to draw the user profile window. </summary>
     public override void Draw() {
         // otherwise draw the content
         try
@@ -84,6 +90,7 @@ public class UserProfileWindow : Window, IDisposable
         }
     }
 
+    /// <summary> This function is used to draw the gaglisting tabs. </summary>
     public void DrawGagTabs() {
         using var _ = ImRaii.PushId( "ProfileGagListingInfo" );
         using var tabBar = ImRaii.TabBar( "Tabs");
