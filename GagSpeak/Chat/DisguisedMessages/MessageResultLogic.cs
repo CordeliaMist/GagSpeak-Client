@@ -7,8 +7,8 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using OtterGui.Classes;
 using GagSpeak.UI.GagListings;
 using GagSpeak.UI.Helpers;
+
 namespace GagSpeak.Chat.MsgResultLogic;
-#pragma warning disable IDE1006
 
 /// <summary>
 /// This class is used to handle the message result logic for decoded messages in the GagSpeak plugin.
@@ -597,4 +597,3 @@ public class MessageResultLogic
         return true;
     }
 }
-#pragma warning restore IDE1006

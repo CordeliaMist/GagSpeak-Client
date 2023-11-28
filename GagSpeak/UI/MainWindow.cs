@@ -12,8 +12,6 @@ using GagSpeak.UI.Tabs.ConfigSettingsTab;
 using GagSpeak.UI.Tabs.HelpPageTab;
 
 namespace GagSpeak.UI;
-#pragma warning disable IDE1006
-
 /// <summary> This class is used to handle the main window. </summary>
 public class MainWindow : Window
 {
@@ -147,5 +145,3 @@ public class MainWindow : Window
     // basic string function to get the label of title for the window
     private static string GetLabel() => "GagSpeak###GagSpeakMainWindow";
 }
-
-#pragma warning restore IDE1006

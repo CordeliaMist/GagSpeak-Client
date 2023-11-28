@@ -11,8 +11,6 @@ using ImGuiNET;
 using OtterGui;
 
 namespace GagSpeak.UI.UserProfile;
-#pragma warning disable IDE1006 
-
 /// <summary> 
 /// <para>This class is used to handle the user profile window.</para>
 /// <para>I wont be commenting this as it is purely just free handing a visual apperance and serves no signifigance to the larger scale of the plugin.</para>
@@ -183,5 +181,3 @@ public class UserProfileWindow : Window, IDisposable
     // basic string function to get the label of title for the window
     private static string GetLabel() => "GagSpeakProfileViewer###GagSpeakProfileViewer"; 
 }
-
-#pragma warning restore IDE1006

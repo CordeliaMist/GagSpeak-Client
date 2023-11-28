@@ -3,9 +3,7 @@ using ImGuiNET;
 using System.Text.RegularExpressions;
 using System.Linq;
 
-#pragma warning disable IDE1006 
 namespace GagSpeak.Data;
-
 /// <summary>
 /// This class is used to handle the the idenfitication of padlocks before and after they are equipped, seperate from the config padlocks yet linked all the same
 /// </summary>
@@ -437,5 +435,4 @@ public class PadlockIdentifier {
                 break;
         }
     }
-}
-#pragma warning restore IDE1006  
+} 

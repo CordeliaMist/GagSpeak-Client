@@ -3,8 +3,6 @@ using Newtonsoft.Json.Linq; // Provides methods and properties for parsing JSON
 
 namespace GagSpeak.Services;
 
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
-
 /// <summary> Service for managing the configuration migration. </summary>
 public class ConfigMigrationService
 {
@@ -71,4 +69,3 @@ public class ConfigMigrationService
         _config.Version = 4;
     }
 }
-#pragma warning restore IDE1006

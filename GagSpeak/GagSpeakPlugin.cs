@@ -10,8 +10,6 @@ using GagSpeak.Chat;      // REQUIRED for our plugins ChatManager requiredservic
 // The main namespace for the plugin, aka the same name of our plugin, the highest level
 namespace GagSpeak;
 
-// i just use this across all my files because i dont like the yellow errors that occur due to my shitty _variable naming convention
-#pragma warning disable IDE1006
 public class GagSpeak : IDalamudPlugin
 {
   /// <summary> Gets the name of the plugin. </summary>
@@ -60,7 +58,6 @@ public class GagSpeak : IDalamudPlugin
   public void Dispose()
       => _services?.Dispose(); // Dispose of all services. (call all of their dispose functions)
 }
-#pragma warning restore IDE1006
 
 /*
                                  _,..----.._

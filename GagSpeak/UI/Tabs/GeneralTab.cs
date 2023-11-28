@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Numerics;
+using System.Linq;
+using System.Collections.Generic;
+using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 using OtterGui;
-using System.Linq;
 using OtterGui.Widgets;
 using GagSpeak.UI.GagListings;
-using Dalamud.Interface.Utility.Raii;
 using GagSpeak.Services;
-using System.Collections.Generic;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
-#pragma warning disable IDE1006 
-
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>
 public class GeneralTab : ITab, IDisposable
 {
@@ -185,11 +183,6 @@ public class GeneralTab : ITab, IDisposable
             }
             ImGui.NewLine();
         }
-
-        // draw a button to display our current timers state
-        if(ImGui.Button("Display Current Timers")) {
-            _timerService.DebugPrintRemainingTimers();
-        }
     }
 
     /// <summary> 
@@ -228,5 +221,3 @@ public class GeneralTab : ITab, IDisposable
         }
     }
 }
-
-#pragma warning restore IDE1006

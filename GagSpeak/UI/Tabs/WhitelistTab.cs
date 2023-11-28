@@ -1,57 +1,52 @@
 using System;
-using ImGuiNET;
-using OtterGui.Widgets;
-using Dalamud.Game.ClientState.Objects.Enums;
 using System.Numerics;
-using Dalamud.Plugin.Services;
-using OtterGui;
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Game.ClientState.Objects.Enums;
+using Dalamud.Plugin.Services;
 using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.Text.SeStringHandling;
+using ImGuiNET;
+using OtterGui.Widgets;
+using OtterGui;
+using OtterGui.Classes;
 using GagSpeak.Data;
 using GagSpeak.UI.Helpers;
 using GagSpeak.UI.GagListings;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
 using GagSpeak.Chat;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using GagSpeak.Chat.MsgEncoder;
 using GagSpeak.Services;
 using GagSpeak.UI.UserProfile;
-using Dalamud.Game.Text.SeStringHandling;
-using OtterGui.Classes;
-
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
+/// <summary> This class is used to handle the whitelist tab. </summary>
 public class WhitelistTab : ITab, IDisposable
 {
-    private UserProfileWindow _userProfileWindow;
-    private readonly MessageEncoder _gagMessages; // snag the whitelistchardata from the main plugin for obvious reasons
-    private readonly ChatManager _chatManager; // snag the chatmanager from the main plugin for obvious reasons
-    private readonly IChatGui _chatGui; // snag the chatgui from the main plugin for obvious reasons
-    private readonly GagSpeakConfig _config; // snag the conmfig from the main plugin for obvious reasons
-    private readonly IClientState _clientState; // snag the clientstate from the main plugin for obvious reasons
-    private readonly IDataManager _dataManager; // for parsing objects
-    private readonly GagListingsDrawer _gagListingsDrawer; // snag the gaglistingsdrawer from the main plugin for obvious reasons
-    private readonly TimerService _timerService; // snag the timerservice from the main plugin for obvious reasons
-    public ReadOnlySpan<byte> Label => "Whitelist"u8; // set label for the whitelist tab
-    private bool emptyList = false; // if the whitelist is empty, disable lower section
-
-    // temp variables for the whitelist tab
-    private int _currentWhitelistItem; // store a value so we know which item is selected in whitelist
-    private int _layer; // layer of the gag
-    private string _gagLabel; // current selection on gag type DD
-    private string _lockLabel; // current selection on gag lock DD
-    private readonly GagTypeFilterCombo[] _gagTypeFilterCombo; // create an array of item combos
-    private readonly GagLockFilterCombo[] _gagLockFilterCombo; // create an array of item combos
-
-    // store time information & control locks
-    private bool enableInteractions = false; // determines if we can interact with with whitelist buttons or not (for safety to prevent accidental tells)
-    private bool interactionButtonPressed; // determines if we have pressed a button that communicates or not
-    private bool sendNext;
-    private Dictionary<string, string> remainingTimes = new Dictionary<string, string>();
+    private             UserProfileWindow           _userProfileWindow;
+    private readonly    MessageEncoder              _gagMessages; // snag the whitelistchardata from the main plugin for obvious reasons
+    private readonly    ChatManager                 _chatManager; // snag the chatmanager from the main plugin for obvious reasons
+    private readonly    IChatGui                    _chatGui; // snag the chatgui from the main plugin for obvious reasons
+    private readonly    GagSpeakConfig              _config; // snag the conmfig from the main plugin for obvious reasons
+    private readonly    IClientState                _clientState; // snag the clientstate from the main plugin for obvious reasons
+    private readonly    IDataManager                _dataManager; // for parsing objects
+    private readonly    GagListingsDrawer           _gagListingsDrawer; // snag the gaglistingsdrawer from the main plugin for obvious reasons
+    private readonly    TimerService                _timerService; // snag the timerservice from the main plugin for obvious reasons
+    public              ReadOnlySpan<byte>          Label => "Whitelist"u8; // set label for the whitelist tab
+    private             bool                        emptyList = false; // if the whitelist is empty, disable lower section
+    private             int                         _currentWhitelistItem; // store a value so we know which item is selected in whitelist
+    private             int                         _layer; // layer of the gag
+    private             string                      _gagLabel; // current selection on gag type DD
+    private             string                      _lockLabel;                 // current selection on gag lock DD
+    private readonly    GagTypeFilterCombo[]        _gagTypeFilterCombo;        // create an array of item combos
+    private readonly    GagLockFilterCombo[]        _gagLockFilterCombo;        // create an array of item combos
+    private             bool                        enableInteractions = false; // determines if we can interact with with whitelist buttons or not (for safety to prevent accidental tells)
+    private             bool                        interactionButtonPressed;   // determines if we have pressed a button that communicates or not
+    private             bool                        sendNext;
+    private             Dictionary<string, string>  remainingTimes = new Dictionary<string, string>();
 
     // Constructor for the whitelist tab
     public WhitelistTab(GagSpeakConfig config, IClientState clientState, GagListingsDrawer gagListingsDrawer, ChatManager chatManager,
@@ -484,7 +479,7 @@ public class WhitelistTab : ITab, IDisposable
             // add a filler row
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             // Create the button for the sixth row, first column
-            if (ImGui.Button("Tooggle Lock Live Chat Garbler")) {
+            if (ImGui.Button("Toggle Lock Live Chat Garbler")) {
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
                 // the player you are doing this on must be a relationstatus of slave
                 if(selectedWhitelistItem.relationshipStatus == "Slave") {

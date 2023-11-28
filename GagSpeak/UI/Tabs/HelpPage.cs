@@ -1,14 +1,14 @@
 using System;
 using System.Numerics;
+using System.Collections.Generic;
+using Dalamud.Interface;
+using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using OtterGui.Raii;
 using OtterGui.Widgets;
-using Dalamud.Interface;
-using Dalamud.Interface.Windowing;
-using System.Collections.Generic;
 
 namespace GagSpeak.UI.Tabs.HelpPageTab;
-#pragma warning disable IDE1006
+
 public enum HelpTabType {
     General,
     Whitelist,
@@ -18,8 +18,6 @@ public enum HelpTabType {
     Padlocks,
     Gags
 }
-
-
 /// <summary>
 /// This class is used to handle the help page tab.
 /// </summary>
@@ -760,9 +758,3 @@ public class HelpPageTab : Window, ITab
         };
     }
 }
-
-
-
-
-
-#pragma warning restore IDE1006

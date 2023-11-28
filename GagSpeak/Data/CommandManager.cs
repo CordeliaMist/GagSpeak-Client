@@ -16,14 +16,14 @@ using ChatChannel = GagSpeak.Data.ChatChannel;
 // practicing modular design
 namespace GagSpeak.Services;
 
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
+/// <summary>
+/// The command manager for the plugin. Handles all of the commands that are used in the plugin.
+/// </summary>
 public class CommandManager : IDisposable // Our main command list manager
 {
     private const string MainCommandString = "/gagspeak"; // The primary command used for & displays
     private const string ActionsCommandString = "/gag"; // subcommand for more in-depth actions.
     private const string TranslateCommandString = "/gsm"; // convient subcommand for translating messages
-
-    // Include our other classes
     private readonly MessageEncoder _gagMessages;
     private readonly ICommandManager _commands;
     private readonly MainWindow _mainWindow;
@@ -34,7 +34,7 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly ChatManager _chatManager;
     private readonly IClientState _clientState;
     private RealChatInteraction _realChatInteraction;
-    private readonly IFramework _framework; // framework from XIVClientStructs
+    private readonly IFramework _framework; 
     private readonly TimerService _timerService;
     private readonly MessageGarbler _messageGarbler;
     private readonly SafewordUsedEvent _safewordCommandEvent;
@@ -620,5 +620,3 @@ public class CommandManager : IDisposable // Our main command list manager
         return true;
     }
 }
-
-#pragma warning restore IDE1006

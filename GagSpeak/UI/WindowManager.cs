@@ -8,8 +8,6 @@ using GagSpeak.UI.UserProfile;
 using GagSpeak.UI.Tabs.HelpPageTab;
 
 namespace GagSpeak.UI;
-#pragma warning disable IDE1006
-
 /// <summary> This class is used to handle the window manager. </summary>
 public class GagSpeakWindowManager : IDisposable
 {
@@ -64,4 +62,3 @@ public class GagSpeakWindowManager : IDisposable
         _uiBuilder.OpenConfigUi -= _ui.Toggle;
     }
 }
-#pragma warning restore IDE1006

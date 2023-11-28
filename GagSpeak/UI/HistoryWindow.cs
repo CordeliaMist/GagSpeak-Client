@@ -8,8 +8,6 @@ using GagSpeak.Services;
 using GagSpeak.UI.GagListings;
 
 namespace GagSpeak.UI;
-#pragma warning disable IDE1006
-
 /// <summary> This class is used to handle the history window. </summary>
 public class HistoryWindow : Window //, IDisposable
 {
@@ -78,5 +76,3 @@ public class HistoryWindow : Window //, IDisposable
     // basic string function to get the label of title for the window
     private static string GetLabel() => "GagSpeakHistory###GagSpeakHistory";    
 }
-
-#pragma warning restore IDE1006

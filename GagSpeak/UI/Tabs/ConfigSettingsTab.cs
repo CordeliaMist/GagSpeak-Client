@@ -4,18 +4,15 @@ using System.IO;
 using ImGuiNET;
 using OtterGui;
 using OtterGui.Raii;
+using OtterGui.Widgets;
 using Dalamud.Plugin;
 using Dalamud.Interface;
 using Dalamud.Interface.Internal;
-using OtterGui.Widgets;
 using GagSpeak.Data;
 using GagSpeak.UI.Helpers;
 using GagSpeak.UI.GagListings;
 
-
 namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
-#pragma warning disable IDE1006
-
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>
 public class ConfigSettingsTab : ITab
 {
@@ -230,5 +227,3 @@ public class ConfigSettingsTab : ITab
         }
     }
 }
-
-#pragma warning restore IDE1006

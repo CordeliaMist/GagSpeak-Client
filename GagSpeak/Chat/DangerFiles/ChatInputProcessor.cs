@@ -12,8 +12,6 @@ using GagSpeak.Chat.Garbler;
 // Signatures located and adopted from sourcecode:
 // https://github.com/Caraxi/SimpleTweaksPlugin/blob/6a9e32489d75b63d1915d90720f45f5d75366a87/Tweaks/CommandAlias.cs
 // Check for any potential sig changes or changes to code each update and altar accordingly
-
-#pragma warning disable IDE1006
 namespace GagSpeak.Chat;
 
 /// <summary> This class is used to handle the chat input detouring for the GagSpeak plugin and is very dangerous to tinker with. Do not do it please. </summary>

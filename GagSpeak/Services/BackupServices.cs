@@ -3,10 +3,7 @@ using System.IO;                  // Provides classes for working with directori
 using OtterGui.Classes;           // for the backup component
 using OtterGui.Log;               // for the logger
 
-// practice for modular design
 namespace GagSpeak.Services;
-#pragma warning disable IDE1006
-
 /// <summary> Service for handling / managing backups of the config file. </summary>
 public class BackupService
 {
@@ -40,4 +37,3 @@ public class BackupService
         return list;
     }
 }
-#pragma warning restore IDE1006

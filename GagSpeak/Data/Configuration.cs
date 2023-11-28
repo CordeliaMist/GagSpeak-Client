@@ -1,19 +1,17 @@
 using System;
-using Dalamud.Configuration;
 using System.Collections.Generic;
 using System.Linq; // For enabling lists
 using System.IO;
-using Newtonsoft.Json;
 using Dalamud.Interface.Internal.Notifications;
-using GagSpeak.Data;
+using Dalamud.Configuration;
 using OtterGui.Classes;
+using OtterGui.Widgets;
+using GagSpeak.Data;
 using GagSpeak.UI;
 using GagSpeak.Services;
 using GagSpeak.Events;
-using OtterGui.Widgets;
+using Newtonsoft.Json;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
-
-#pragma warning disable IDE1006 
 
 namespace GagSpeak;
 
@@ -258,5 +256,3 @@ TimerPasswordPadlock,   // Timer Password Padlock, must enter password to unlock
 MistressPadlock,        // Mistress Padlock, must ask mistress to unlock
 MistressTimerPadlock,   // Mistress Timer Padlock, must ask mistress to unlock, but only after a certain amount of time
 };
-
-#pragma warning restore IDE1006

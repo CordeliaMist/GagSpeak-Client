@@ -1,21 +1,19 @@
 using System.Numerics;
-using ImGuiNET;
+using System;
+using System.IO;
 using System.Linq;
+using Dalamud.Interface.Utility;
+using Dalamud.Plugin;
+using Dalamud.Interface.Internal;
+using ImGuiNET;
 using OtterGui;
 using OtterGui.Raii;
-using Dalamud.Interface.Utility;
-using System;
-using GagSpeak.UI.Helpers;
-using GagSpeak.Data;
-using Dalamud.Plugin;
-using System.IO;
-using Dalamud.Interface.Internal;
 using GagSpeak.Events;
 using GagSpeak.Services;
+using GagSpeak.UI.Helpers;
+using GagSpeak.Data;
 
-#pragma warning disable IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention
 namespace GagSpeak.UI.GagListings;
-
 /// <summary> This class is used to draw the gag listings. </summary>
 public class GagListingsDrawer : IDisposable
 {
@@ -303,4 +301,3 @@ public class GagListingsDrawer : IDisposable
         return true;
     }
 }
-#pragma warning restore IDE1006 // the warning that goes off whenever you use _ or __ or any other nonstandard naming convention 

@@ -6,7 +6,7 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <Copyright>Copyright © 2023</Copyright>
     <LangVersion>latest</LangVersion>
-    <Version>0.9.9.8</Version>
+    <Version>0.9.9.9</Version>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
@@ -33,6 +33,9 @@
 		<OutputType>Library</OutputType>
 	</PropertyGroup>
 
+  <PropertyGroup>
+      <NoWarn>$(NoWarn);IDE1006</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
       <Reference Include="Dalamud">

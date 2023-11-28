@@ -1,4 +1,3 @@
-using System;                       // Basic fundimental class provider for variable types
 using System.Collections.Concurrent;// for the concurrent queue
 using System.Collections.Generic;   // Dictionaries
 using System.Linq;                  // for lists
@@ -6,8 +5,6 @@ using System.Timers;                // Provides server-based timer services
 
 // Pulled from Sillychat, used for logging a history of the translations
 namespace GagSpeak.Services;
-#pragma warning disable IDE1006 
-
 /// <summary> Manage history of translations. </summary>
 public class HistoryService {
     private readonly    GagSpeakConfig                  _config;                                // Configuration for the GagSpeak application
@@ -84,4 +81,3 @@ public class HistoryService {
         }
     }
 }
-#pragma warning restore IDE1006

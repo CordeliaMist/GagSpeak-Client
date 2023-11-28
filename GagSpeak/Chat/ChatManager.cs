@@ -14,7 +14,6 @@ using GagSpeak.Chat.MsgDecoder;
 using GagSpeak.Chat.MsgResultLogic;
 
 namespace GagSpeak.Chat;
-#pragma warning disable IDE1006
 
 /// <summary> This class is used to handle the incoming chat messages from the game, and decided what to do with them based off what is processed. </summary>
 public class ChatManager
@@ -176,13 +175,13 @@ public class ChatManager
             int encodedMsgIndex = 0; // get a index to know which encoded msg it is, if any
             if (MessageDictionary.EncodedMsgDictionary(chatmessage.TextValue, ref encodedMsgIndex)) {
                 // if in dom mode, back out, none of this will have any significance
-                if (_config.InDomMode && encodedMsgIndex > 0 && encodedMsgIndex <= 7) {
+                if (_config.InDomMode && encodedMsgIndex > 0 && encodedMsgIndex <= 8) {
                     GagSpeak.Log.Debug("[Chat Manager]: Encoded Command Ineffective Due to Dominant Status");
                     isHandled = true;
                     return;
                 }
                 // if our encodedmsgindex is > 1 && < 6, we have a encoded message via command
-                else if (encodedMsgIndex > 0 && encodedMsgIndex <= 7) {
+                else if (encodedMsgIndex > 0 && encodedMsgIndex <= 8) {
                     List<string> decodedCommandMsg = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
                     // function that will determine what happens to the player as a result of the tell.
                     if(_msgResultLogic.CommandMsgResLogic(fmessage.ToString(), decodedCommandMsg, isHandled, _clientChat, _config) ) {
@@ -191,7 +190,7 @@ public class ChatManager
                     _config.Save(); // save our config
                 
                 // for now at least, anything beyond 7 is a whitelist exchange message
-                } else if (encodedMsgIndex > 7) {
+                } else if (encodedMsgIndex > 8) {
                     List<string> decodedWhitelistMsg = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
                     // function that will determine what happens to the player as a result of the tell.
                     if(_msgResultLogic.WhitelistMsgResLogic(fmessage.ToString(), decodedWhitelistMsg, isHandled, _clientChat, _config) ) {
@@ -307,5 +306,3 @@ public class ChatManager
         }
     } 
 }
-
-#pragma warning restore IDE1006 
