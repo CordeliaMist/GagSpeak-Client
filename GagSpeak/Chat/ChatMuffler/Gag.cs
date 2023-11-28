@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic; // Dictionaries & lists
 
 // Enum to represent priority levels
@@ -19,20 +20,81 @@ public interface IGag
     bool AllowsAirConsonants { get; }
     bool AllowsHummedConsonants { get; }
     bool AllowsVowels { get; }
-    
-    string GarbleMessage(string message);
+
+    char randomizeVowelReplacement()
+    {
+        Random rand = new Random();
+        return rand.Next() % 2 == 0 ? 'm' : 'n';
+    }
+    string GarbleMessage(string message)
+    {
+        string temp = message;
+        if (!LeavesGapsOnCorners)
+        {
+            //not sure what would be changed without gaps on the corners
+        }
+        if (!AllowsRearPalletConsonants)
+        {
+            //K, G, J, Y
+            temp.Replace("k", "gh");
+            temp.Replace("g", "gh");
+            temp.Replace("j", "gh");
+            temp.Replace("y", "gh");
+        }
+        if (!AllowsLipFormedConsonants)
+        {
+            //P, B, W
+            temp.Replace('p', 'w');
+            temp.Replace('b', 'w');
+        }
+        if (!AllowsToothConsonants)
+        {
+            //T, D
+            temp.Replace('t', '\'');
+            temp.Replace('d', '\'');
+
+        }
+        if (!AllowsAirConsonants)
+        {
+            // TH, S, SH, F, H
+            temp.Replace("th", "d");
+            temp.Replace('s', '');
+            temp.Replace("sh", "");
+            temp.Replace('f', '');
+            temp.Replace('h', '');
+        }
+        if (!AllowsHummedConsonants)
+        {
+            //M, N, R
+            temp.Replace('m', 'b');
+            temp.Replace('n', 'd');
+            //not sure what to do with an R here, it's not a nasal like the other two
+        }
+        if (!AllowsVowels)
+        {
+            temp.Replace('a', randomizeVowelReplacement());
+            temp.Replace('e', randomizeVowelReplacement());
+            temp.Replace('i', randomizeVowelReplacement());
+            temp.Replace('o', randomizeVowelReplacement());
+            temp.Replace('u', randomizeVowelReplacement());
+        }
+
+        var garbled = temp;
+
+        return garbled;
+    }
 
     // Try to use the same number of letters in your gag speak to the original words
-        // We tend to read words as shapes, this will help readers to understand them
+    // We tend to read words as shapes, this will help readers to understand them
 
     // Use original consonance at the beginning of a word
-        // If you're going to bend the rules for the sake of clarity, use original letters first with substitutions at the middle and end
+    // If you're going to bend the rules for the sake of clarity, use original letters first with substitutions at the middle and end
 
     // Use the ‘real’ original vowel in the first or second position
 
     // Use caps and punctuation exactly as you would in the ungagged dialogue
-        // Any clues we can give the reader to help them see the sentence should be utilized
-        // Following or leading any letter with an “h” can make words seem more ‘gaggy’
+    // Any clues we can give the reader to help them see the sentence should be utilized
+    // Following or leading any letter with an “h” can make words seem more ‘gaggy’
 
     // This mimics the attempts of a lightly gagged mouth to articulate using air formed and shaped by the back of the throat
 
@@ -41,8 +103,8 @@ public interface IGag
     // “w” can be a good filler for un-emphasized vowel syllables and sometimes consonance
 
     // Cheating is fair game
-        // The more important it is that the captive's words are understood, the more you can cheat to make that happen
-        // It just needs to be clear your character is gagged
+    // The more important it is that the captive's words are understood, the more you can cheat to make that happen
+    // It just needs to be clear your character is gagged
 }
 
 // Class for Nancy Drew gags
@@ -94,7 +156,7 @@ public class SweetGwendolineGag : IGag
     }
 
     // All vowels become “m”, “n” 
-    
+
     // “w” as filler for non-emphasized syllables for both vowels or consonances
 
     // All hard consonance become the glottal “gh” with rare exceptions
@@ -123,23 +185,23 @@ public class GimpGag : IGag
     }
 
     // CAPS can determine the volume or level of stress
-        // Use with discretion
-        // Consider using just partial caps
-        // Avoid using more than one exclamation point
+    // Use with discretion
+    // Consider using just partial caps
+    // Avoid using more than one exclamation point
 
     // “M” and “N” are the standard go tos for crying, yelling, moaning and whimpering
-        // Repeating letters indicates a longer cry
-            // Less is more, 3 repeated letters max each
-            // Example of long cry: “MMMmmmnnn”
-        // Hint: “m” is a more passive and submissive sound than “n”
+    // Repeating letters indicates a longer cry
+    // Less is more, 3 repeated letters max each
+    // Example of long cry: “MMMmmmnnn”
+    // Hint: “m” is a more passive and submissive sound than “n”
 
     // Mix in “r”s to denote anger, usually towards the end.
-        // The more “r”s the more angry the captive
-        // Avoid using “r”s by themselves unless your captive happens to be turning into a werewolf
+    // The more “r”s the more angry the captive
+    // Avoid using “r”s by themselves unless your captive happens to be turning into a werewolf
 
     // Use “gh” for grunts and muted gasps
-        // in concert with “m”, “n”, “r”, “ph” “th” and sometimes “p”
-        // Examples: “ghmph”, “grrgh”, “ghnnth”, “ghmp”
+    // in concert with “m”, “n”, “r”, “ph” “th” and sometimes “p”
+    // Examples: “ghmph”, “grrgh”, “ghnnth”, “ghmp”
 
 }
 
@@ -158,22 +220,29 @@ public class GagManager
         activeGags.Add(gag);
     }
 
-    public string ProcessMessage(string message) {
+    public string ProcessMessage(string message)
+    {
         IGag highestPriorityGag = GetHighestPriorityGag();
 
-        if (highestPriorityGag != null) {
+        if (highestPriorityGag != null)
+        {
             return highestPriorityGag.GarbleMessage(message);
-        } else {
+        }
+        else
+        {
             return message;
         }
     }
 
-    private IGag GetHighestPriorityGag() {
+    private IGag GetHighestPriorityGag()
+    {
         IGag highestPriorityGag = null;
         GagPriority highestPriority = GagPriority.Low;
 
-        foreach (var gag in activeGags) {
-            if (gag.Priority > highestPriority) {
+        foreach (var gag in activeGags)
+        {
+            if (gag.Priority > highestPriority)
+            {
                 highestPriority = gag.Priority;
                 highestPriorityGag = gag;
             }
