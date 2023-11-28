@@ -36,47 +36,47 @@ public interface IGag
         if (!AllowsRearPalletConsonants)
         {
             //K, G, J, Y
-            temp.Replace("k", "gh");
-            temp.Replace("g", "gh");
-            temp.Replace("j", "gh");
-            temp.Replace("y", "gh");
+            temp = temp.Replace("k", "gh");
+            temp = temp.Replace("g", "gh");
+            temp = temp.Replace("j", "gh");
+            temp = temp.Replace("y", "gh");
         }
         if (!AllowsLipFormedConsonants)
         {
             //P, B, W
-            temp.Replace('p', 'w');
-            temp.Replace('b', 'w');
+            temp = temp.Replace('p', 'w');
+            temp = temp.Replace('b', 'w');
         }
         if (!AllowsToothConsonants)
         {
             //T, D
-            temp.Replace('t', '\'');
-            temp.Replace('d', '\'');
+            temp = temp.Replace('t', '\'');
+            temp = temp.Replace('d', '\'');
 
         }
         if (!AllowsAirConsonants)
         {
             // TH, S, SH, F, H
-            temp.Replace("th", "d");
-            temp.Replace('s', '');
-            temp.Replace("sh", "");
-            temp.Replace('f', '');
-            temp.Replace('h', '');
+            temp = temp.Replace("th", "d");
+            temp = temp.Replace('s', '');
+            temp = temp.Replace("sh", "");
+            temp = temp.Replace('f', '');
+            temp = temp.Replace('h', '');
         }
         if (!AllowsHummedConsonants)
         {
             //M, N, R
-            temp.Replace('m', 'b');
-            temp.Replace('n', 'd');
+            temp = temp.Replace('m', 'b');
+            temp = temp.Replace('n', 'd');
             //not sure what to do with an R here, it's not a nasal like the other two
         }
         if (!AllowsVowels)
         {
-            temp.Replace('a', randomizeVowelReplacement());
-            temp.Replace('e', randomizeVowelReplacement());
-            temp.Replace('i', randomizeVowelReplacement());
-            temp.Replace('o', randomizeVowelReplacement());
-            temp.Replace('u', randomizeVowelReplacement());
+            temp = temp.Replace('a', randomizeVowelReplacement());
+            temp = temp.Replace('e', randomizeVowelReplacement());
+            temp = temp.Replace('i', randomizeVowelReplacement());
+            temp = temp.Replace('o', randomizeVowelReplacement());
+            temp = temp.Replace('u', randomizeVowelReplacement());
         }
 
         var garbled = temp;
