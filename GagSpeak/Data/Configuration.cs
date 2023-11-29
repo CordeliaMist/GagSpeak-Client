@@ -193,7 +193,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         { "Cloth Stuffing", 2 },
         { "Crop", 1 },
         { "Cup Holder Gag", 3 },
-        { "Custom Latex Hood", 4 },
+        { "Latex Hood", 4 },
         { "Deepthroat Penis Gag", 6 },
         { "Dental Gag", 2 },
         { "Dildo Gag", 5 },

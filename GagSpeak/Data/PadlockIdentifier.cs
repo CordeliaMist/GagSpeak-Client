@@ -232,11 +232,11 @@ public class PadlockIdentifier {
         // see if it meets the timer requirements
         if (_inputTimer == "") {
             GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingTimer from set&Validate [{_storedTimer}]");
-            var match = Regex.Match(_storedTimer, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+            var match = Regex.Match(_storedTimer, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
             return match.Success;
         } else {
             GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingTimer from DisplayPasswordField [{_inputTimer}]");
-            var match = Regex.Match(_inputTimer, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+            var match = Regex.Match(_inputTimer, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
             return match.Success;
         }
     }

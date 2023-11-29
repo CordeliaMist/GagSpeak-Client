@@ -530,7 +530,7 @@ public class CommandManager : IDisposable // Our main command list manager
         GagSpeak.Log.Debug($"[Command Manager]: Validating timer: {_inputTimer}");
         if(_inputTimer == string.Empty) { return false; } // if we have no timer, return false
         // Timers must be in the format of 00h00m00s
-        var match = Regex.Match(_inputTimer, @"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+        var match = Regex.Match(_inputTimer, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
         return match.Success;
     }
     private bool ValidateMistress(string playerName) {
