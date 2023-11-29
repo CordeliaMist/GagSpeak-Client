@@ -6,6 +6,7 @@ using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Configuration;
 using OtterGui.Classes;
 using OtterGui.Widgets;
+using GagSpeak.Chat;
 using GagSpeak.Data;
 using GagSpeak.UI;
 using GagSpeak.Services;
@@ -35,7 +36,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                whitelistOnly { get; set; } = false;                    // Is whitelist only enabled?
     public          bool                                DebugMode { get; set; } = false;                        // Is debug mode enabled?
     public          int                                 GarbleLevel { get; set; } = 0;                          // Current Garble Level (0-20)
-    public          ObservableList<string>              selectedGagTypes { get; set; }                          // What gag types are selected?
+    public          ObservableList<IGag>                selectedGagTypes { get; set; }                          // What gag types are selected?
     public          ObservableList<GagPadlocks>         selectedGagPadlocks { get; set; }                       // which padlocks are equipped currently?
     public          List<string>                        selectedGagPadlocksPassword { get; set; }               // password lock on padlocks, if any
     public          List<DateTimeOffset>                selectedGagPadLockTimer { get; set; }                   // stores time when the padlock will be unlocked.
@@ -75,7 +76,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
 
         // Make sure we aren't getting any duplicates
         if (this.selectedGagTypes == null || !this.selectedGagTypes.Any() || this.selectedGagTypes.Count > 3) {
-            this.selectedGagTypes = new ObservableList<string> { "None", "None", "None" };}
+            this.selectedGagTypes = new ObservableList<IGag> { GagTypes["None"], GagTypes["None"], GagTypes["None"] };}
         // Set default values for selectedGagPadlocks
         if (this.selectedGagPadlocks == null || !this.selectedGagPadlocks.Any() || this.selectedGagPadlocks.Count > 3) {
             this.selectedGagPadlocks = new ObservableList<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
@@ -115,8 +116,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
 
     /// <summary> Saves the config to our save service and updates the garble level to its new value. </summary>
     public void Save() {
-        // update garble scrore
-        this.GarbleLevel = this.selectedGagTypes.Sum(gagType => this.GagTypes[gagType]);
+        // update garble scrore (DEPRICATED DUE TO GAG METHOD UPDATE)
+        // this.GarbleLevel = this.selectedGagTypes.Sum(gagType => this.GagTypes[gagType]);
         // initialize save service
         _saveService.DelaySave(this);
     }
@@ -179,69 +180,69 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         public const int CurrentVersion = 4;
     }
     // embedded dictionary of gag types, not put into a seperate data file because i dont want to deal with doing that honestly.
-    public Dictionary<string, int> GagTypes {get; set; } = new() {
-        { "None", 0},
-        { "Ball Gag", 3 },
-        { "Ball Gag Mask", 4 },
-        { "Bamboo Gag", 4 },
-        { "Bit Gag", 3 },
-        { "Bone Gag", 2 },
-        { "Cage Muzzle", 0},
-        { "Chloroform Cloth", 1 },
-        { "Chopstick Gag", 2 },
-        { "Cloth Gag", 1 },
-        { "Cloth Stuffing", 2 },
-        { "Crop", 1 },
-        { "Cup Holder Gag", 3 },
-        { "Latex Hood", 4 },
-        { "Deepthroat Penis Gag", 6 },
-        { "Dental Gag", 2 },
-        { "Dildo Gag", 5 },
-        { "Duct Tape", 4 },
-        { "Duster Gag", 3 },
-        { "Exposed Dog Muzzle", 4 },
-        { "Funnel Gag", 5 },
-        { "Futuristic Ball Gag", 5 },
-        { "Futuristic Harness Panel Gag", 6 },
-        { "Futuristic Panel Gag", 4 },
-        { "Gas Mask", 3 },
-        { "Harness Ball Gag", 5 },
-        { "Harness Ball Gag XL", 6 },
-        { "Harness Panel Gag", 3 },
-        { "Hook Gag Mask", 3 },
-        { "Inflatable Hood", 5 },
-        { "Large Dildo", 4 },
-        { "Latex Ball Muzzle Gag", 5 },
-        { "Latex Posture Collar Gag", 4 },
-        { "Leather Corset Collar Gag", 4 },
-        { "Leather Hood", 4 },
-        { "Lip Gag", 2 },
-        { "Medical Mask", 1},
-        { "Muzzle Gag", 4 },
-        { "Panty Stuffing", 2 },
-        { "Plastic Wrap", 2 },
-        { "Plug Gag", 5 },
-        { "Pony Hood", 4 },
-        { "Prison Lockdown Gag", 4 },
-        { "Pump Gag lv.1", 2 },
-        { "Pump Gag lv.2", 3 },
-        { "Pump Gag lv.3", 5 },
-        { "Pump Gag lv.4", 7 },
-        { "Ribbons", 2 },
-        { "Ring Gag", 3 },
-        { "Rope Gag", 2 },
-        { "Rubber Carrot Gag", 5 },
-        { "Scarf", 1 },
-        { "Sensory Deprivation Hood", 6 },
-        { "Slime", 4 },
-        { "Sock Stuffing", 2 },
-        { "Spider Gag", 3 },
-        { "Steel Muzzle Gag", 4 },
-        { "Stitched Muzzle Gag", 3 },
-        { "Tentacle", 5 },
-        { "Web Gag", 2 },
-        { "Wiffle Gag", 2 },
-        { "XL Bone Gag", 4 },
+    public Dictionary<string, IGag> GagTypes { get; set; } = new() {
+        { "None", new FashionableGag() },
+        { "Ball Gag", new NancyDrewGag() },
+        { "Ball Gag Mask", new SweetGwendolineGag() },
+        { "Bamboo Gag", new SweetGwendolineGag() },
+        { "Bit Gag", new NancyDrewGag() },
+        { "Bone Gag", new NancyDrewGag() },
+        { "Cage Muzzle", new FashionableGag() },
+        { "Chloroform Cloth", new NancyDrewGag() },
+        { "Chopstick Gag", new NancyDrewGag() },
+        { "Cloth Gag", new NancyDrewGag() },
+        { "Cloth Stuffing", new NancyDrewGag() },
+        { "Crop", new NancyDrewGag() },
+        { "Cup Holder Gag", new NancyDrewGag() },
+        { "Deepthroat Penis Gag", new GimpGag() },
+        { "Dental Gag", new NancyDrewGag() },
+        { "Dildo Gag", new GimpGag() },
+        { "Duct Tape", new SweetGwendolineGag() },
+        { "Duster Gag", new SweetGwendolineGag() },
+        { "Exposed Dog Muzzle", new NancyDrewGag() },
+        { "Funnel Gag", new SweetGwendolineGag() },
+        { "Futuristic Ball Gag", new SweetGwendolineGag() },
+        { "Futuristic Harness Panel Gag", new GimpGag() },
+        { "Futuristic Panel Gag", new SweetGwendolineGag() },
+        { "Gas Mask", new NancyDrewGag() },
+        { "Harness Ball Gag", new SweetGwendolineGag() },
+        { "Harness Ball Gag XL", new GimpGag() },
+        { "Harness Panel Gag", new NancyDrewGag() },
+        { "Hook Gag Mask", new NancyDrewGag() },
+        { "Inflatable Hood", new SweetGwendolineGag() },
+        { "Large Dildo", new SweetGwendolineGag() },
+        { "Latex Hood", new SweetGwendolineGag() },
+        { "Latex Ball Muzzle Gag", new SweetGwendolineGag() },
+        { "Latex Posture Collar Gag", new SweetGwendolineGag() },
+        { "Leather Corset Collar Gag", new SweetGwendolineGag() },
+        { "Leather Hood", new SweetGwendolineGag() },
+        { "Lip Gag", new NancyDrewGag() },
+        { "Medical Mask", new NancyDrewGag() },
+        { "Muzzle Gag", new SweetGwendolineGag() },
+        { "Panty Stuffing", new NancyDrewGag() },
+        { "Plastic Wrap", new NancyDrewGag() },
+        { "Plug Gag", new SweetGwendolineGag() },
+        { "Pony Hood", new SweetGwendolineGag() },
+        { "Prison Lockdown Gag", new SweetGwendolineGag() },
+        { "Pump Gag lv.1", new NancyDrewGag() },
+        { "Pump Gag lv.2", new NancyDrewGag() },
+        { "Pump Gag lv.3", new SweetGwendolineGag() },
+        { "Pump Gag lv.4", new GimpGag() },
+        { "Ribbons", new NancyDrewGag() },
+        { "Ring Gag", new NancyDrewGag() },
+        { "Rope Gag", new NancyDrewGag() },
+        { "Rubber Carrot Gag", new SweetGwendolineGag() },
+        { "Scarf", new NancyDrewGag() },
+        { "Sensory Deprivation Hood", new GimpGag() },
+        { "Slime", new SweetGwendolineGag() },
+        { "Sock Stuffing", new NancyDrewGag() },
+        { "Spider Gag", new NancyDrewGag() },
+        { "Steel Muzzle Gag", new SweetGwendolineGag() },
+        { "Stitched Muzzle Gag", new NancyDrewGag() },
+        { "Tentacle", new SweetGwendolineGag() },
+        { "Web Gag", new NancyDrewGag() },
+        { "Wiffle Gag", new NancyDrewGag() },
+        { "XL Bone Gag", new SweetGwendolineGag() },
     };
 }
 

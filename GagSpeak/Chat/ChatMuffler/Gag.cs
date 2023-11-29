@@ -152,6 +152,23 @@ public interface IGag
     #endregion IGagFunctions
 }
 
+
+
+public class FashionableGag : IGag
+{
+    public GagCatagory Catagory => GagCatagory.Fashionable;
+    public bool LeavesGapsOnCorners => true;
+    public bool AllowsRearPalletConsonants => true;
+    public bool AllowsLipFormedConsonants => true;
+    public bool AllowsToothConsonants => true;
+    public bool AllowsAirConsonants => true;
+    public bool AllowsHummedConsonants => true;
+    public bool AllowsVowels => true;
+    public string GarbleMessage(string message) { // this is just fashionable, so we dont need to translate it at all
+        return message;
+    }
+}
+
 /// <summary> The Nancy Drew Gag Class.
 /// <para>Realistically, most gagged speech intended to be 'understood' is going to be from a Nancy Drew class Gag</para>
 /// <list type="bullet">
@@ -417,37 +434,45 @@ public class GimpGag : IGag
 
 
 // WIP ATM
-public class GagManager
+public class GagManager : IDisposable
 {
     private readonly GagSpeakConfig _config;
     private List<IGag> activeGags;
 
     public GagManager(GagSpeakConfig config) {
         _config = config;
-        activeGags = new ObservableList<IGag>(_config.selectedGagTypes);
+        activeGags = _config.selectedGagTypes;
+
+        // subscribe to our events
         _config.selectedGagTypes.ItemChanged += OnSelectedTypesChanged;
     }
 
+    public void Dispose() {
+        // unsubscribe from our events
+        _config.selectedGagTypes.ItemChanged -= OnSelectedTypesChanged;
+    }
+
     private void OnSelectedTypesChanged(object sender, ItemChangedEventArgs e) {
-        activeGags = new List<IGag>(_config.Gags);
+        activeGags = new List<IGag>(_config.selectedGagTypes);
     }
 
-    public void ChangeGagType(int index, GagType type) {
-        if (index < 0 || index >= activeGags.Count) {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
+    /// Genuinely not sure why i made this lmao
+    // public void ChangeGagType(int index, IGag type) {
+    //     if (index < 0 || index >= activeGags.Count) {
+    //         throw new ArgumentOutOfRangeException(nameof(index));
+    //     }
 
-        switch (type) {
-            case GagType.NancyDrew:
-                activeGags[index] = new NancyDrewGag();
-                break;
-            case GagType.SweetGwendoline:
-                activeGags[index] = new SweetGwendolineGag();
-                break;
-            default:
-                throw new ArgumentException("Invalid gag type", nameof(type));
-        }
-    }
+    //     switch (type) {
+    //         case GagType.NancyDrew:
+    //             activeGags[index] = new NancyDrewGag();
+    //             break;
+    //         case GagType.SweetGwendoline:
+    //             activeGags[index] = new SweetGwendolineGag();
+    //             break;
+    //         default:
+    //             throw new ArgumentException("Invalid gag type", nameof(type));
+    //     }
+    // }
 
     public string ProcessMessage(string message) {
         IGag highestPriorityGag = GetHighestPriorityGag();
