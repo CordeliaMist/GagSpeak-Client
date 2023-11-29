@@ -119,6 +119,45 @@ public static class ChatChannel
                 .OrderBy(e => GetOrder(e));
     }
 
+    public static string[] GetChannelAlias(this ChatChannels channel) => channel switch
+    {
+        ChatChannels.Tell_Out => new[] { "/t", "/tell" },
+        ChatChannels.Say => new[] { "/s", "/say" },
+        ChatChannels.Party => new[] { "/p", "/party" },
+        ChatChannels.Alliance => new[] { "/a", "/alliance" },
+        ChatChannels.Yell => new[] { "/y", "/yell" },
+        ChatChannels.Shout => new[] { "/sh", "/shout" },
+        ChatChannels.FreeCompany => new[] { "/fc", "/freecompany" },
+        ChatChannels.NoviceNetwork => new[] { "/n", "/novice" },
+        ChatChannels.CWL1 => new[] { "/cwl1", "/cwlinkshell1" },
+        ChatChannels.CWL2 => new[] { "/cwl2", "/cwlinkshell2" },
+        ChatChannels.CWL3 => new[] { "/cwl3", "/cwlinkshell3" },
+        ChatChannels.CWL4 => new[] { "/cwl4", "/cwlinkshell4" },
+        ChatChannels.CWL5 => new[] { "/cwl5", "/cwlinkshell5" },
+        ChatChannels.CWL6 => new[] { "/cwl6", "/cwlinkshell6" },
+        ChatChannels.CWL7 => new[] { "/cwl7", "/cwlinkshell7" },
+        ChatChannels.CWL8 => new[] { "/cwl8", "/cwlinkshell8" },
+        ChatChannels.LS1 => new[] { "/l1", "/linkshell1" },
+        ChatChannels.LS2 => new[] { "/l2", "/linkshell2" },
+        ChatChannels.LS3 => new[] { "/l3", "/linkshell3" },
+        ChatChannels.LS4 => new[] { "/l4", "/linkshell4" },
+        ChatChannels.LS5 => new[] { "/l5", "/linkshell5" },
+        ChatChannels.LS6 => new[] { "/l6", "/linkshell6" },
+        ChatChannels.LS7 => new[] { "/l7", "/linkshell7" },
+        ChatChannels.LS8 => new[] { "/l8", "/linkshell8" },
+        _ => Array.Empty<string>(),
+    };
+
+    public static List<string> GetChatChannelsListAliases(this IEnumerable<ChatChannels> chatChannelsList)
+    {
+        var result = new List<string>();
+        foreach (ChatChannels chatChannel in chatChannelsList)
+        {
+            result.AddRange(chatChannel.GetChannelAlias().Select(str => str + " "));
+        }
+        return result;
+    }
+
     /// <summary> This method is used to get the order of the enum, which is then given to getOrderedChannels. </summary>
     private static int GetOrder(ChatChannels channel) {
         // get the attribute of the channel
