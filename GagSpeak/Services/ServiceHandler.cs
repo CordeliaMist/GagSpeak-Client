@@ -97,7 +97,8 @@ public static class ServiceHandler
                 return new ChatInputProcessor(sigService, interop, config, historyService);})
              .AddSingleton<MessageEncoder>()
              .AddSingleton<MessageDecoder>()
-             .AddSingleton<MessageResultLogic>(); //
+             .AddSingleton<MessageResultLogic>()
+             .AddSingleton<GagManager>();
 
     /// <summary>
     /// Adds the event services to the Event service collection.

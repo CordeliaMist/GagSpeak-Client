@@ -4,8 +4,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game;
 using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
-using GagSpeak.Services;
-using GagSpeak.Chat;
 // practicing modular design
 namespace XivCommon.Functions;
     /// <summary>

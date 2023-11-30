@@ -1,6 +1,7 @@
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using System.Collections.Generic;
 using System;
+using GagSpeak.Data;
 
 using GagSpeak.UI.Helpers;
 

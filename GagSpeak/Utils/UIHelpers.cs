@@ -106,7 +106,7 @@ public static class UIHelpers
         var match = Regex.Match(input, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
 
         if (match.Success) { 
-            // Parse days, hours, minutes, and seconds
+            // Parse days, hours, minutes, and seconds 
             int.TryParse(match.Groups[1].Value, out int days);
             int.TryParse(match.Groups[2].Value, out int hours);
             int.TryParse(match.Groups[3].Value, out int minutes);

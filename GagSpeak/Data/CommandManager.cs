@@ -1,19 +1,20 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Dalamud.Game.Command;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
-using GagSpeak.UI;
-using OtterGui.Classes;
-using GagSpeak.Chat;
-using GagSpeak.Chat.MsgEncoder;
-using System.Text.RegularExpressions;
-using GagSpeak.Events;
-using GagSpeak.Chat.Garbler;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using OtterGui.Classes;
 using XivCommon.Functions;
 using ChatChannel = GagSpeak.Data.ChatChannel;
-// practicing modular design
+using GagSpeak.Chat;
+using GagSpeak.Chat.MsgEncoder;
+using GagSpeak.Data;
+using GagSpeak.Events;
+using GagSpeak.Chat.Garbler;
+using GagSpeak.UI;
+
 namespace GagSpeak.Services;
 
 /// <summary>
@@ -216,7 +217,7 @@ public class CommandManager : IDisposable // Our main command list manager
         string layer = argumentsBeforePipeList[0]; // get the layer
 
         // if our arguments are not valid, display help information
-        if (! (_config.GagTypes.ContainsKey(gagType) && (layer == "1" || layer == "2" || layer == "3") && targetPlayer.Contains("@")) )
+        if (! (GagAndLockTypes.GagTypes.ContainsKey(gagType) && (layer == "1" || layer == "2" || layer == "3") && targetPlayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
             _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments").BuiltString);
             _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag ").AddYellow("layer ").AddGreen("gagtype").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
@@ -232,7 +233,8 @@ public class CommandManager : IDisposable // Our main command list manager
         // we have passed in the correct arguments, so begin applying the logic.
         PlayerPayload playerPayload; // get player payload
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
-            playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+            if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+            else { throw new Exception("Player is null!");}
             // If sucessful, print our debug messages so we make sure we are sending the correct information
             GagSpeak.Log.Debug($"[Command Manager]: /gag apply command sucessful, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
@@ -253,7 +255,8 @@ public class CommandManager : IDisposable // Our main command list manager
     //       && /gag lock [layer] [locktype] | [password] | [timer] | [player target]
     private bool GagLock(string argument) { // arguement at this point = layer locktype | player target
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         // step 1, split by " | " to get the components into the parts we need.
         string[] parts = argument.Split(" | ");
         // if our parts == 2, then we have no password, if our parts == 3, then we have a password. Set our vars now so we dont set them in both statements
@@ -373,7 +376,8 @@ public class CommandManager : IDisposable // Our main command list manager
         // we have passed in the correct arguments, so begin applying the logic.
         PlayerPayload playerPayload; // get player payload
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
-            playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+            if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+            else { throw new Exception("Player is null!");}
             // If sucessful, print our debug messages so we make sure we are sending the correct information
             GagSpeak.Log.Debug($"[Command Manager]: /gag unlock command sucessful, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
@@ -421,7 +425,8 @@ public class CommandManager : IDisposable // Our main command list manager
         // we have passed in the correct arguments, so begin applying the logic.
         PlayerPayload playerPayload; // get player payload
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
-            playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+            if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+            else { throw new Exception("Player is null!");}
             // If sucessful, print our debug messages so we make sure we are sending the correct information
             GagSpeak.Log.Debug($"[Command Manager]: /gag remove command extracted sucessfully, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
@@ -454,7 +459,8 @@ public class CommandManager : IDisposable // Our main command list manager
         // we have passed in the correct arguments, so begin applying the logic.
         PlayerPayload playerPayload; // get player payload
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
-            playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+            if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+            else { throw new Exception("Player is null!");}
             // If sucessful, print our debug messages so we make sure we are sending the correct information
             GagSpeak.Log.Debug($"[Command Manager]: /gag removeall command extracted sucessfully, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
