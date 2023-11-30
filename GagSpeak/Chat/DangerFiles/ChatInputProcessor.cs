@@ -114,8 +114,9 @@ public unsafe class ChatInputProcessor : IDisposable {
                 // if tell command is matched, need extra step to protect target name
                 else if (matchedCommand.StartsWith("/tell") || matchedCommand.StartsWith("/t"))
                 {
-                    // Using /gag command on yourself sends /tell which should be caught by this
+                    /// Using /gag command on yourself sends /tell which should be caught by this
                     /// Depends on <seealso cref="MsgEncoder.MessageEncoder"/> message to start like :"/tell {targetPlayer} *{playerPayload.PlayerName}"
+                    /// Since only outgoing tells are affected, {targetPlayer} and {playerPayload.PlayerName} will be the same
                     var selfTellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}(?<name>\S+\s{1}\S+)@\S+\s{1}\*\k<name>(?=\s|$)";
                     if (!Regex.Match(inputString, selfTellRegex).Value.IsNullOrEmpty())
                     {
