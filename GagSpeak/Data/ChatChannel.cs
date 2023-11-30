@@ -119,6 +119,7 @@ public static class ChatChannel
                 .OrderBy(e => GetOrder(e));
     }
 
+    // Match Channel types with command aliases for them
     public static string[] GetChannelAlias(this ChatChannels channel) => channel switch
     {
         ChatChannels.Tell_Out => new[] { "/t", "/tell" },
@@ -148,6 +149,7 @@ public static class ChatChannel
         _ => Array.Empty<string>(),
     };
 
+    // Get a commands list for given channelList(config) and add extra space for matching to avoid matching emotes.
     public static List<string> GetChatChannelsListAliases(this IEnumerable<ChatChannels> chatChannelsList)
     {
         var result = new List<string>();

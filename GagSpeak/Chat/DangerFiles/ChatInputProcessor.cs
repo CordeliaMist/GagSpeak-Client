@@ -118,8 +118,9 @@ public unsafe class ChatInputProcessor : IDisposable {
                 // we can try to attempt modifying the message.
                 try {
                     GagSpeak.Log.Debug($"[Chat Processor]: Input -> {inputString}, MatchedCommand -> {matchedCommand}");
-                    // create the output translated text
+                    // create the output translated text, cutting the command matched before to prevent it getting gargled
                     var output = _messageGarbler.GarbleMessage(inputString.Substring(matchedCommand.Length), _config.GarbleLevel);
+                    // adding command back to front
                     output = matchedCommand + output;
                     GagSpeak.Log.Debug($"[Chat Processor]: Output -> {output}");
                     _historyService.AddTranslation(new Translation(inputString, output));
