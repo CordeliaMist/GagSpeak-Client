@@ -68,9 +68,9 @@ public class WhitelistTab : ITab, IDisposable
 
         // draw out our gagtype filter combo listings
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
-            new GagTypeFilterCombo(_config.GagTypes, _config),
-            new GagTypeFilterCombo(_config.GagTypes, _config),
-            new GagTypeFilterCombo(_config.GagTypes, _config)
+            new GagTypeFilterCombo(GagAndLockTypes.GagTypes, _config),
+            new GagTypeFilterCombo(GagAndLockTypes.GagTypes, _config),
+            new GagTypeFilterCombo(GagAndLockTypes.GagTypes, _config)
         };
         // draw out our gagpadlock filter combo listings
         _gagLockFilterCombo = new GagLockFilterCombo[] {
@@ -547,7 +547,8 @@ public class WhitelistTab : ITab, IDisposable
     // Additional methods for applying, locking, unlocking, removing gags
     private void ApplyGagOnPlayer(int layer, string gagType, WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // your player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); //  name and homeworld
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         // Ensure a player is selected as a valid whitelist index
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
@@ -570,7 +571,9 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RemoveGagFromPlayer(int layer, WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload;
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
+
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the message
@@ -585,7 +588,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RemoveAllGagsFromPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload;
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
 
@@ -603,7 +607,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RequestMistressToPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -618,7 +623,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RequestPetToPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -632,7 +638,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RequestSlaveToPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -646,7 +653,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RequestRelationRemovealToPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -662,7 +670,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void OrderLiveGarbleLockToPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -676,7 +685,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RequestInfoFromPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -689,7 +699,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void SendInfoToPlayer() {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         // format the player name from "firstname lastname homeworld" to "firstname lastname@homeworld"
         int lastSpaceIndex = _config.SendInfoName.LastIndexOf(' ');
         if (lastSpaceIndex >= 0) { // if we can do this, then do it.
@@ -711,7 +722,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void SendInfoToPlayer2() {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         // format the player name from "firstname lastname homeworld" to "firstname lastname@homeworld"
         int lastSpaceIndex = _config.SendInfoName.LastIndexOf(' ');
         if (lastSpaceIndex >= 0) { // if we can do this, then do it.
@@ -735,7 +747,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void AcceptMistressRequestFromPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the message
@@ -750,7 +763,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void AcceptPetRequestFromPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the message
@@ -762,7 +776,8 @@ public class WhitelistTab : ITab, IDisposable
 
     private void AcceptSlaveRequestFromPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the message

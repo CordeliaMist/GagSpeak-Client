@@ -5,6 +5,7 @@ using Dalamud.Plugin.Services;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using OtterGui.Classes;
+using GagSpeak.Data;
 using GagSpeak.UI.GagListings;
 using GagSpeak.UI.Helpers;
 
@@ -243,7 +244,7 @@ public class MessageResultLogic
         if (!int.TryParse(decodedMessage[1], out int layer)) { 
             isHandled = true; return LogError("[MsgResultLogic]: Invalid layer value.");}
         // secondly, see if our gagtype is in our list of gagtypes
-        if (!_config.GagTypes.ContainsKey(decodedMessage[2]) && _config.selectedGagTypes[layer-1] != "None") {
+        if (!GagAndLockTypes.GagTypes.ContainsKey(decodedMessage[2]) && _config.selectedGagTypes[layer-1] != "None") {
             isHandled = true; return LogError("[MsgResultLogic]: Invalid gag type.");}
         // if we make it here, apply the gag
         _lockManager.ApplyGag(layer-1, decodedMessage[2]);

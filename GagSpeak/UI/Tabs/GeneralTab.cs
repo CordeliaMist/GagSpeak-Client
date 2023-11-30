@@ -8,6 +8,8 @@ using OtterGui;
 using OtterGui.Widgets;
 using GagSpeak.UI.GagListings;
 using GagSpeak.Services;
+using GagSpeak.Chat;
+using GagSpeak.Data;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>
@@ -17,11 +19,14 @@ public class GeneralTab : ITab, IDisposable
     private readonly TimerService           _timerService;              // the timer service for the plugin
     private readonly GagListingsDrawer      _gagListingsDrawer;         // the drawer for the gag listings
     private readonly GagAndLockManager      _lockManager;               // the lock manager for the plugin
+    private readonly GagManager             _gagManager;                // the gag manager for the plugin
     private          GagTypeFilterCombo[]   _gagTypeFilterCombo;        // create an array of item combos
     private          GagLockFilterCombo[]   _gagLockFilterCombo;        // create an array of item combos
     private          bool?                  _inDomMode;                 // lets us know if we are in dom mode or not
     private          string?                _tempSafeword;              // for initializing a temporary safeword for the text input field
     private          bool                   modeButtonsDisabled = false;// lets us know if the mode buttons are disabled or not
+    private          string?                _tempTestMessage;           // stores the input password for the test translation system
+    private          string?                translatedMessage = "";     // stores the translated message for the test translation system
     
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneralTab"/> class.
@@ -31,16 +36,17 @@ public class GeneralTab : ITab, IDisposable
     /// <item><c>gagListingsDrawer</c><param name="gagListingsDrawer"> - The drawer for the gag listings.</param></item>
     /// <item><c>lockManager</c><param name="lockManager"> - The lock manager for the plugin.</param></item>
     /// </list> </summary>
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService, GagAndLockManager lockManager) {
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService, GagAndLockManager lockManager, GagManager gagManager) {
         _config = config;
         _timerService = timerService;
         _gagListingsDrawer = gagListingsDrawer;
         _lockManager = lockManager;
+        _gagManager = gagManager;
 
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
-            new GagTypeFilterCombo(_config.GagTypes, _config),
-            new GagTypeFilterCombo(_config.GagTypes, _config),
-            new GagTypeFilterCombo(_config.GagTypes, _config)
+            new GagTypeFilterCombo(GagAndLockTypes.GagTypes, _config),
+            new GagTypeFilterCombo(GagAndLockTypes.GagTypes, _config),
+            new GagTypeFilterCombo(GagAndLockTypes.GagTypes, _config)
         };
         // draw out our gagpadlock filter combo listings
         _gagLockFilterCombo = new GagLockFilterCombo[] {
@@ -183,6 +189,34 @@ public class GeneralTab : ITab, IDisposable
             }
             ImGui.NewLine();
         }
+
+        // print out each of the gag managers active gag and its key from gagtypes, and the catagory it falls under in a tostring
+        ImGui.Text("Active Gags:");
+        for(int i = 0; i<3; i++) {
+            ImGui.Text($"Config Gag slot name: {_config.selectedGagTypes[i]} || Which is in gagclass ");
+            ImGui.SameLine();
+            // print out the catagory of the Igag stored in the value of the Gagtypes dictionary by matching the selectedgags string with the gagtypes key
+            if(GagAndLockTypes.GagTypes.TryGetValue(_config.selectedGagTypes[i], out var gag)) {
+                ImGui.Text(gag.Catagory.ToString()); ImGui.SameLine();
+            }
+            if(_gagManager.activeGags[i] != null) {
+                ImGui.Text($"|| {_gagManager.activeGags[i].Catagory.ToString()}");
+            }
+        }
+        // create a input text field here, that stores the result into a string. On the same line, have a button that says garble message. It should display the garbled message in text on the next l
+        var testMessage  = _tempTestMessage ?? ""; // temp storage to hold until we de-select the text input
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
+        if (ImGui.InputText("##GarblerTesterField", ref testMessage, 128, ImGuiInputTextFlags.None))
+            _tempTestMessage = testMessage;
+
+        ImGui.SameLine();
+        if (ImGui.Button("Garble Message")) {
+            translatedMessage = _gagManager.ProcessMessage(testMessage);
+        }
+        // new line, should display the testmessage, new line below that should display the garbled one
+        ImGui.Text($"Original Message: {testMessage}");
+        ImGui.Text($"Translated Message: {translatedMessage}");
+            
     }
 
     /// <summary> 

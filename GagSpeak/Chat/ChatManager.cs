@@ -119,7 +119,7 @@ public class ChatManager
             } 
             else {
                 playerPayload = sender.Payloads.SingleOrDefault(x => x is PlayerPayload) as PlayerPayload; 
-                if (type == XivChatType.CustomEmote) {
+                if (type == XivChatType.CustomEmote && playerPayload != null) {
                     fmessage.Append(playerPayload.PlayerName);
                 }
             }
@@ -138,6 +138,8 @@ public class ChatManager
         // if the message is an incoming tell
         if (type == XivChatType.TellIncoming) 
         {
+            if (senderName == null) { GagSpeak.Log.Error("senderName is null"); return; } // removes the possibly null reference warning
+
             switch (true) {
                 // Logic commented on first case, left out on rest. All cases are the same, just with different conditions.
                 case var _ when _config.friendsOnly && _config.partyOnly && _config.whitelistOnly: //  all 3 options are checked

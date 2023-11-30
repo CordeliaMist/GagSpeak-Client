@@ -2,6 +2,7 @@ using System;
 using ImGuiNET;
 using OtterGui.Raii;
 using System.Linq;
+using GagSpeak.Data;
 using GagSpeak.Events;
 
 namespace GagSpeak.UI.GagListings;

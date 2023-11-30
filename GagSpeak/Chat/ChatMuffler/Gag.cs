@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic; // Dictionaries & lists
 using System.Linq; // For .Contains()
 using GagSpeak.Events; // For ItemChangedEventArgs
+using GagSpeak.Data; // For GagAndLockTypes
 
 
 namespace GagSpeak.Chat;
@@ -11,10 +12,10 @@ namespace GagSpeak.Chat;
 /// </summary>
 public enum GagCatagory
 {
+    Fashionable,        // For gag types such as the cage muzzle or loose ribbon wraps. Where sound can clearly be heard, and is for decoration.
     NancyDrew,          // For gags that 
     SweetGwendoline,    // For gags that 
     Gimp,               // For gags that completely seal the mouth, such as mouth sealed latex hoods, pump gags, Dildo's.
-    Fashionable,        // For gag types such as the cage muzzle or loose ribbon wraps. Where sound can clearly be heard, and is for decoration.
 }
 
 /// <summary>
@@ -23,7 +24,7 @@ public enum GagCatagory
 public interface IGag
 {
     #region IGagProperties
-    GagCatagory Catagory{ get; }
+    GagCatagory Catagory{ get; set; }
     
     // The first thing all gags should consider is how vowel's can exist in speech based off the gag type. This depends a lot on the gag.
     //
@@ -37,8 +38,8 @@ public interface IGag
     // * Long Vowels are always removed when wearing a gag of any type.
     // * Allowing gaps on corners determines if short vowels are still heard.
     // * Hummed constanants are set to true if LeaveGapOnCorners is false, and false if it is true.
-    bool        LeavesGapsOnCorners { get; }        // Are short vowels heard?  Is the mouth packed? 
-    bool        AllowsHummedConsonants { get; }     // Possibly not needed. Determines if we use them, but they are only used when the above is false.     
+    bool        LeavesGapsOnCorners { get; set; }           // Are short vowels heard?  Is the mouth packed? 
+    bool        AllowsHummedConsonants { get; set; }        // Possibly not needed. Determines if we use them, but they are only used when the above is false.     
     
     // The second thing to consider that are affected by gags is consonants.
     //
@@ -54,10 +55,10 @@ public interface IGag
     // * Tooth Consonants are sounds formed by tongue against the teeth.
     // * Lip-Formed Consonants are sounds formed by lips similar to Tooth consonants, but done in backward order.
     // * Rear Pallet Consonants are formed from tongue touching roof of mouth. K & G use tongue further back and thus can be used for gagged speech.
-    bool        AllowsAirConsonants { get; }        // TH, S, SH, F, H          Can air pass through mouth?
-    bool        AllowsToothConsonants { get; }      // T, D                     Can tongue touch teeth?
-    bool        AllowsLipFormedConsonants { get; }  // P, B, W                  Can lips touch?
-    bool        AllowsRearPalletConsonants { get; } // K, G, J, Y               Can tongue touch roof of mouth?
+    bool        AllowsAirConsonants { get; set; }           // TH, S, SH, F, H          Can air pass through mouth?
+    bool        AllowsToothConsonants { get; set; }         // T, D                     Can tongue touch teeth?
+    bool        AllowsLipFormedConsonants { get; set; }     // P, B, W                  Can lips touch?
+    bool        AllowsRearPalletConsonants { get; set; }    // K, G, J, Y               Can tongue touch roof of mouth?
     
     #endregion IGagProperties
     #region IGagFunctions
@@ -69,6 +70,7 @@ public interface IGag
 
     string GarbleMessage(string message)
     {
+        GagSpeak.Log.Debug($"IGag GarbleMessage, Garbling message with gag {Catagory}");
         string temp = message;
         if (!LeavesGapsOnCorners)
         {
@@ -156,15 +158,27 @@ public interface IGag
 
 public class FashionableGag : IGag
 {
-    public GagCatagory Catagory => GagCatagory.Fashionable;
-    public bool LeavesGapsOnCorners => true;
-    public bool AllowsRearPalletConsonants => true;
-    public bool AllowsLipFormedConsonants => true;
-    public bool AllowsToothConsonants => true;
-    public bool AllowsAirConsonants => true;
-    public bool AllowsHummedConsonants => true;
-    public bool AllowsVowels => true;
+    public GagCatagory Catagory { get; set; }
+    public bool LeavesGapsOnCorners { get; set; }
+    public bool AllowsHummedConsonants { get; set; }
+    public bool AllowsAirConsonants { get; set; }
+    public bool AllowsToothConsonants { get; set; }
+    public bool AllowsLipFormedConsonants { get; set; }
+    public bool AllowsRearPalletConsonants { get; set; }
+
+    // default constructor that calls the augmented with all booleans set to true
+    public FashionableGag() : this(true, true, true, true, true, true) { }
+    public FashionableGag(bool _cornerGaps, bool _allowHummed, bool _allowAir, bool _allowLipFormed, bool _allowTooth, bool _allowRearPallet) {
+        Catagory = GagCatagory.Fashionable;
+        LeavesGapsOnCorners = _cornerGaps;
+        AllowsRearPalletConsonants = _allowRearPallet;
+        AllowsLipFormedConsonants = _allowLipFormed;
+        AllowsToothConsonants = _allowTooth;
+        AllowsAirConsonants = _allowAir;
+        AllowsHummedConsonants = _allowHummed;
+    }
     public string GarbleMessage(string message) { // this is just fashionable, so we dont need to translate it at all
+        GagSpeak.Log.Debug($"FashionableGag GarbleMessage, Garbling message with gag {Catagory}");
         return message;
     }
 }
@@ -183,19 +197,31 @@ public class FashionableGag : IGag
 public class NancyDrewGag : IGag
 {
     #region NancyGagProperties
-    public GagCatagory Catagory => GagCatagory.NancyDrew;
-    public bool LeavesGapsOnCorners => true;
-    public bool AllowsRearPalletConsonants => true;
-    public bool AllowsLipFormedConsonants => true;
-    public bool AllowsToothConsonants => true;
-    public bool AllowsAirConsonants => true;
-    public bool AllowsHummedConsonants => true;
-    public bool AllowsVowels => true;
+    public GagCatagory Catagory { get; set; }
+    public bool LeavesGapsOnCorners { get; set; }
+    public bool AllowsHummedConsonants { get; set; }
+    public bool AllowsAirConsonants { get; set; }
+    public bool AllowsToothConsonants { get; set; }
+    public bool AllowsLipFormedConsonants { get; set; }
+    public bool AllowsRearPalletConsonants { get; set; }
+
+    // default constructor that calls the augmented with all booleans set to true
+    public NancyDrewGag() : this(true, true, true, true, true, true) { }
+    public NancyDrewGag(bool _cornerGaps, bool _allowHummed, bool _allowAir, bool _allowLipFormed, bool _allowTooth, bool _allowRearPallet) {
+        Catagory = GagCatagory.NancyDrew;
+        LeavesGapsOnCorners = _cornerGaps;
+        AllowsRearPalletConsonants = _allowRearPallet;
+        AllowsLipFormedConsonants = _allowLipFormed;
+        AllowsToothConsonants = _allowTooth;
+        AllowsAirConsonants = _allowAir;
+        AllowsHummedConsonants = _allowHummed;
+    }
 
     #endregion NancyGagProperties
     #region NancyGagFunctions
 
     public string GarbleMessage(string message) {
+        GagSpeak.Log.Debug($"NancyGag GarbleMessage, Garbling message with gag {Catagory}");
         // Split the message into words
         var words = message.Split(' ');
         // Process each word
@@ -295,19 +321,31 @@ public class NancyDrewGag : IGag
 public class SweetGwendolineGag : IGag
 {
     #region GwendolineGagProperties
-    public GagCatagory Catagory => GagCatagory.SweetGwendoline;
-    public bool LeavesGapsOnCorners => true;
-    public bool AllowsRearPalletConsonants => true;
-    public bool AllowsLipFormedConsonants => true;
-    public bool AllowsToothConsonants => true;
-    public bool AllowsAirConsonants => true;
-    public bool AllowsHummedConsonants => true;
-    public bool AllowsVowels => true;
+    public GagCatagory Catagory { get; set; }
+    public bool LeavesGapsOnCorners { get; set; }
+    public bool AllowsHummedConsonants { get; set; }
+    public bool AllowsAirConsonants { get; set; }
+    public bool AllowsToothConsonants { get; set; }
+    public bool AllowsLipFormedConsonants { get; set; }
+    public bool AllowsRearPalletConsonants { get; set; }
+
+    // default constructor that calls the augmented with all booleans set to true
+    public SweetGwendolineGag() : this(true, true, true, true, true, true) { }
+    public SweetGwendolineGag(bool _cornerGaps, bool _allowHummed, bool _allowAir, bool _allowLipFormed, bool _allowTooth, bool _allowRearPallet) {
+        Catagory = GagCatagory.SweetGwendoline;
+        LeavesGapsOnCorners = _cornerGaps;
+        AllowsRearPalletConsonants = _allowRearPallet;
+        AllowsLipFormedConsonants = _allowLipFormed;
+        AllowsToothConsonants = _allowTooth;
+        AllowsAirConsonants = _allowAir;
+        AllowsHummedConsonants = _allowHummed;
+    }
 
     #endregion GwendolineGagProperties
     #region GwendolineGagFunctions
 
     public string GarbleMessage(string message) {
+        GagSpeak.Log.Debug($"SweetGwendolineGag GarbleMessage, Garbling message with gag {Catagory}");
         // Split the message into words
         var words = message.Split(' ');
         // Process each word
@@ -351,7 +389,7 @@ public class SweetGwendolineGag : IGag
     #endregion GwendolineGagFunctions
 }
 
-/// <summary> The Gimp Gag Class.
+/// <summary> The Gimp Gag Class. 
 /// <para>This gag class reduces sound to animal-like grunts and failed attempts at intelligable words.
 /// Intend to only give rythm of speech, should not be understandable </para>
 /// <list type="bullet">
@@ -363,19 +401,31 @@ public class SweetGwendolineGag : IGag
 public class GimpGag : IGag
 {
     #region GimpGagProperties
-    public GagCatagory Catagory => GagCatagory.Gimp;
-    public bool LeavesGapsOnCorners => true;
-    public bool AllowsRearPalletConsonants => true;
-    public bool AllowsLipFormedConsonants => true;
-    public bool AllowsToothConsonants => true;
-    public bool AllowsAirConsonants => true;
-    public bool AllowsHummedConsonants => true;
-    public bool AllowsVowels => true;
+    public GagCatagory Catagory { get; set; }
+    public bool LeavesGapsOnCorners { get; set; }
+    public bool AllowsHummedConsonants { get; set; }
+    public bool AllowsAirConsonants { get; set; }
+    public bool AllowsToothConsonants { get; set; }
+    public bool AllowsLipFormedConsonants { get; set; }
+    public bool AllowsRearPalletConsonants { get; set; }
+
+    // default constructor that calls the augmented with all booleans set to true
+    public GimpGag() : this(true, true, true, true, true, true) { }
+    public GimpGag(bool _cornerGaps, bool _allowHummed, bool _allowAir, bool _allowLipFormed, bool _allowTooth, bool _allowRearPallet) {
+        Catagory = GagCatagory.Gimp;
+        LeavesGapsOnCorners = _cornerGaps;
+        AllowsRearPalletConsonants = _allowRearPallet;
+        AllowsLipFormedConsonants = _allowLipFormed;
+        AllowsToothConsonants = _allowTooth;
+        AllowsAirConsonants = _allowAir;
+        AllowsHummedConsonants = _allowHummed;
+    }
 
     #endregion GimpGagProperties
     #region GimpGagFunctions
 
     public string GarbleMessage(string message) {
+        GagSpeak.Log.Debug($"GimpGag GarbleMessage, Garbling message with gag {Catagory}");
         var words = message.Split(' ');
 
         for (int i = 0; i < words.Length; i++) {
@@ -437,12 +487,18 @@ public class GimpGag : IGag
 public class GagManager : IDisposable
 {
     private readonly GagSpeakConfig _config;
-    private List<IGag> activeGags;
+    public List<IGag> activeGags;
 
     public GagManager(GagSpeakConfig config) {
         _config = config;
-        activeGags = _config.selectedGagTypes;
+        // get the IGag class type from the value of the Dictionary<string, IGag> GagTypes, where it searched to see if the key defined by selectedGagTypes is in the dictionary
+        activeGags = _config.selectedGagTypes.Select(gagType => GagAndLockTypes.GagTypes[gagType]).ToList();
+        // print our active list:
+        foreach (var gag in activeGags) {
+            GagSpeak.Log.Debug($"Active Gag: {gag.Catagory}");
+        }
 
+        
         // subscribe to our events
         _config.selectedGagTypes.ItemChanged += OnSelectedTypesChanged;
     }
@@ -453,48 +509,34 @@ public class GagManager : IDisposable
     }
 
     private void OnSelectedTypesChanged(object sender, ItemChangedEventArgs e) {
-        activeGags = new List<IGag>(_config.selectedGagTypes);
+        activeGags = _config.selectedGagTypes.Select(gagType => GagAndLockTypes.GagTypes[gagType]).ToList();
     }
-
-    /// Genuinely not sure why i made this lmao
-    // public void ChangeGagType(int index, IGag type) {
-    //     if (index < 0 || index >= activeGags.Count) {
-    //         throw new ArgumentOutOfRangeException(nameof(index));
-    //     }
-
-    //     switch (type) {
-    //         case GagType.NancyDrew:
-    //             activeGags[index] = new NancyDrewGag();
-    //             break;
-    //         case GagType.SweetGwendoline:
-    //             activeGags[index] = new SweetGwendolineGag();
-    //             break;
-    //         default:
-    //             throw new ArgumentException("Invalid gag type", nameof(type));
-    //     }
-    // }
 
     public string ProcessMessage(string message) {
-        IGag highestPriorityGag = GetHighestPriorityGag();
-
-        if (highestPriorityGag != null) {
-            return highestPriorityGag.GarbleMessage(message);
-        } else {
-            return message;
+        int highestPriorityGag = GetHighestPriorityGag();
+        GagSpeak.Log.Debug($"Processing message with gag {activeGags[highestPriorityGag].Catagory}");
+        try {
+            message = activeGags[highestPriorityGag].GarbleMessage(message);
+        } 
+        catch (Exception e) {
+            GagSpeak.Log.Error($"Error processing message with gag {activeGags[highestPriorityGag].Catagory}: {e.Message}");
         }
+        // return the message
+        return message;
     }
 
-    private IGag GetHighestPriorityGag() {
-        IGag highestPriorityGag = null;
+    private int GetHighestPriorityGag() {
+        int highestPriorityGag = 0; 
         GagCatagory highestPriority = GagCatagory.Fashionable;
 
-        foreach (var gag in activeGags) {
-            if (gag.Catagory > highestPriority) {
-                highestPriority = gag.Catagory;
-                highestPriorityGag = gag;
-            }
+    for (int i = 0; i < activeGags.Count; i++) {
+        if (activeGags[i].Catagory > highestPriority) {
+            highestPriority = activeGags[i].Catagory;
+            highestPriorityGag = i;
         }
-
+    }
+        GagSpeak.Log.Debug($"Highest Priority Gag: {highestPriorityGag}");
+        // will have correct index after this
         return highestPriorityGag;
     }
 }
