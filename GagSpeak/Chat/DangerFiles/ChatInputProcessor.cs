@@ -10,6 +10,7 @@ using GagSpeak.Chat.Garbler;
 using GagSpeak.Data;
 using System.Linq;
 using Dalamud.Utility;
+using System.Text.RegularExpressions;
 // I swear to god, if any contributors even attempt to tinker with this file, I will swat you over the head. DO NOT DO IT.
 
 // Signatures located and adopted from sourcecode:
@@ -103,11 +104,27 @@ public unsafe class ChatInputProcessor : IDisposable {
             if (inputString.StartsWith("/")) {
                 // Check if command is not one of configured channels commands
                 matchedCommand = _configChannelsCommandsList.FirstOrDefault(prefix => inputString.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                
                 if (matchedCommand.IsNullOrEmpty())
                 {
                     // if it is isn't a command, we can just return the original message
                     GagSpeak.Log.Debug("[Chat Processor]: Ignoring Message as it is a command");
                     return processChatInputHook.Original(uiModule, message, a3);
+                }
+                // if tell command is matched, need extra step to protect target name
+                else if (matchedCommand.StartsWith("/tell") || matchedCommand.StartsWith("/t"))
+                {
+                    // Using /gag command on yourself sends /tell which should be caught by this
+                    /// Depends on <seealso cref="MsgEncoder.MessageEncoder"/> message to start like :"/tell {targetPlayer} *{playerPayload.PlayerName}"
+                    var selfTellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}(?<name>\S+\s{1}\S+)@\S+\s{1}\*\k<name>(?=\s|$)";
+                    if (!Regex.Match(inputString, selfTellRegex).Value.IsNullOrEmpty())
+                    {
+                        GagSpeak.Log.Debug("[Chat Processor]: Ignoring Message as it is a self /gag command");
+                        return processChatInputHook.Original(uiModule, message, a3);
+                    }
+                    // Match any other outgoing tell to preserve target name
+                    var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}\S+\s{1}\S+@\S+(?=\s|$)";                    
+                    matchedCommand = Regex.Match(inputString, tellRegex).Value;
                 }
             }
 
