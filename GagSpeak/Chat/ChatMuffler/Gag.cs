@@ -12,10 +12,10 @@ namespace GagSpeak.Chat;
 /// </summary>
 public enum GagCatagory
 {
-    Fashionable,        // For gag types such as the cage muzzle or loose ribbon wraps. Where sound can clearly be heard, and is for decoration.
-    NancyDrew,          // For gags that 
-    SweetGwendoline,    // For gags that 
-    Gimp,               // For gags that completely seal the mouth, such as mouth sealed latex hoods, pump gags, Dildo's.
+    Fashionable = 0,        // For gag types such as the cage muzzle or loose ribbon wraps. Where sound can clearly be heard, and is for decoration.
+    NancyDrew = 1,          // For gags that 
+    SweetGwendoline = 2,    // For gags that 
+    Gimp = 3,               // For gags that completely seal the mouth, such as mouth sealed latex hoods, pump gags, Dildo's.
 }
 
 /// <summary>
@@ -517,6 +517,7 @@ public class GagManager : IDisposable
         GagSpeak.Log.Debug($"Processing message with gag {activeGags[highestPriorityGag].Catagory}");
         try {
             message = activeGags[highestPriorityGag].GarbleMessage(message);
+            GagSpeak.Log.Debug($"Message after gag {activeGags[highestPriorityGag].Catagory}: {message}");
         } 
         catch (Exception e) {
             GagSpeak.Log.Error($"Error processing message with gag {activeGags[highestPriorityGag].Catagory}: {e.Message}");
@@ -530,12 +531,15 @@ public class GagManager : IDisposable
         GagCatagory highestPriority = GagCatagory.Fashionable;
 
     for (int i = 0; i < activeGags.Count; i++) {
+        GagSpeak.Log.Debug($"Active Gag: {activeGags[i].Catagory}");
+        // print out the value of the index at the enum for the catagory
+        GagSpeak.Log.Debug($"Active Gag Enum: {(int)activeGags[i].Catagory}");
         if (activeGags[i].Catagory > highestPriority) {
             highestPriority = activeGags[i].Catagory;
             highestPriorityGag = i;
         }
     }
-        GagSpeak.Log.Debug($"Highest Priority Gag: {highestPriorityGag}");
+        GagSpeak.Log.Debug($"Index of Highest Priority Gag: {highestPriorityGag}");
         // will have correct index after this
         return highestPriorityGag;
     }

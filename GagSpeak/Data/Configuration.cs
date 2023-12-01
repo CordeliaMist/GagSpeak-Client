@@ -116,8 +116,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
 
     /// <summary> Saves the config to our save service and updates the garble level to its new value. </summary>
     public void Save() {
-        // update garble scrore (DEPRICATED DUE TO GAG METHOD UPDATE)
-        // this.GarbleLevel = this.selectedGagTypes.Sum(gagType => this.GagTypes[gagType]);
         // initialize save service
         _saveService.DelaySave(this);
     }
