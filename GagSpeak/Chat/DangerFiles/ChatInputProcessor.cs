@@ -7,6 +7,10 @@ using Dalamud.Plugin.Services;
 using GagSpeak.Services;
 using GagSpeak.Utility;
 using GagSpeak.Chat.Garbler;
+using GagSpeak.Data;
+using System.Linq;
+using Dalamud.Utility;
+using System.Text.RegularExpressions;
 // I swear to god, if any contributors even attempt to tinker with this file, I will swat you over the head. DO NOT DO IT.
 
 // Signatures located and adopted from sourcecode:
@@ -25,11 +29,13 @@ public unsafe class ChatInputProcessor : IDisposable {
     private             HookWrapper<ProcessChatInputDelegate>   processChatInputHook = null!;       // should be storing the chat message
     public static       List<IHookWrapper>                      HookList = new();                   // list of hooks
     private unsafe delegate byte ProcessChatInputDelegate(nint uiModule, byte** message, nint a3);  // delegate for the chat input
+    private readonly List<string> _configChannelsCommandsList;
 
     /// <summary> Initializes a new instance of the <see cref="ChatInputProcessor"/> class. </summary>
     internal ChatInputProcessor(ISigScanner scanner, IGameInteropProvider interop, GagSpeakConfig config, HistoryService historyService) {
         // initialize interopfromattributes
         _config = config;
+        _configChannelsCommandsList = _config.Channels.GetChatChannelsListAliases();
         _historyService = historyService;
         _messageGarbler = new MessageGarbler();
         interop.InitializeFromAttributes(this);
@@ -92,12 +98,35 @@ public unsafe class ChatInputProcessor : IDisposable {
             }
             
             var inputString = Encoding.UTF8.GetString(*message, bc);
+            var matchedCommand = "";
             GagSpeak.Log.Debug($"[Chat Processor]: Detouring Message: {inputString}"); // see our message
             // first let's make sure its not a command
             if (inputString.StartsWith("/")) {
-                // if it is isn't a command, we can just return the original message
-                GagSpeak.Log.Debug("[Chat Processor]: Ignoring Message as it is a command");
-                return processChatInputHook.Original(uiModule, message, a3);
+                // Check if command is not one of configured channels commands
+                matchedCommand = _configChannelsCommandsList.FirstOrDefault(prefix => inputString.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                
+                if (matchedCommand.IsNullOrEmpty())
+                {
+                    // if it is isn't a command, we can just return the original message
+                    GagSpeak.Log.Debug("[Chat Processor]: Ignoring Message as it is a command");
+                    return processChatInputHook.Original(uiModule, message, a3);
+                }
+                // if tell command is matched, need extra step to protect target name
+                else if (matchedCommand.StartsWith("/tell") || matchedCommand.StartsWith("/t"))
+                {
+                    /// Using /gag command on yourself sends /tell which should be caught by this
+                    /// Depends on <seealso cref="MsgEncoder.MessageEncoder"/> message to start like :"/tell {targetPlayer} *{playerPayload.PlayerName}"
+                    /// Since only outgoing tells are affected, {targetPlayer} and {playerPayload.PlayerName} will be the same
+                    var selfTellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}(?<name>\S+\s{1}\S+)@\S+\s{1}\*\k<name>(?=\s|$)";
+                    if (!Regex.Match(inputString, selfTellRegex).Value.IsNullOrEmpty())
+                    {
+                        GagSpeak.Log.Debug("[Chat Processor]: Ignoring Message as it is a self /gag command");
+                        return processChatInputHook.Original(uiModule, message, a3);
+                    }
+                    // Match any other outgoing tell to preserve target name
+                    var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}\S+\s{1}\S+@\S+(?=\s|$)";                    
+                    matchedCommand = Regex.Match(inputString, tellRegex).Value;
+                }
             }
 
             // if our current channel is in our list of enabled channels AND we have enabled direct chat translation...
@@ -106,9 +135,11 @@ public unsafe class ChatInputProcessor : IDisposable {
                 GagSpeak.Log.Debug($"[Chat Processor]: Modifying Message");
                 // we can try to attempt modifying the message.
                 try {
-                    GagSpeak.Log.Debug($"[Chat Processor]: Input -> {inputString}");
-                    // create the output translated text
-                    var output = _messageGarbler.GarbleMessage(inputString, _config.GarbleLevel);
+                    GagSpeak.Log.Debug($"[Chat Processor]: Input -> {inputString}, MatchedCommand -> {matchedCommand}");
+                    // create the output translated text, cutting the command matched before to prevent it getting gargled
+                    var output = _messageGarbler.GarbleMessage(inputString.Substring(matchedCommand.Length), _config.GarbleLevel);
+                    // adding command back to front
+                    output = matchedCommand + output;
                     GagSpeak.Log.Debug($"[Chat Processor]: Output -> {output}");
                     _historyService.AddTranslation(new Translation(inputString, output));
                     // create the new string
