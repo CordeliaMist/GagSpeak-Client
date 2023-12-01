@@ -112,6 +112,7 @@ public class ChatManager
             }
         }
         // if the sender is not the local player, set the player payload to the sender
+        #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type, dont care didnt ask.
         else {
             if(type == XivChatType.StandardEmote) {
                 playerPayload = sender.Payloads.SingleOrDefault(x => x is PlayerPayload) as PlayerPayload ?? 
@@ -124,6 +125,7 @@ public class ChatManager
                 }
             }
         }
+        #pragma warning restore CS8600 // let us see if we have any others
         // append the chat message to the new formatted message 
         fmessage.Append(chatmessage);
         var isEmoteType = type is XivChatType.CustomEmote or XivChatType.StandardEmote;

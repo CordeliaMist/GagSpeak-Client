@@ -9,8 +9,8 @@ namespace GagSpeak.Events;
 public class ObservableList<T> : List<T>
 {
     public delegate void ItemChangedEventHandler(object sender, ItemChangedEventArgs e); // Define the delegate for the ItemChanged event handler
-    public event ItemChangedEventHandler ItemChanged;                                    // Define the ItemChanged event
-    public bool                          IsSafewordCommandExecuting { get; set; }        // Indicate if safeword command is being executed 
+    public event ItemChangedEventHandler?   ItemChanged;                                    // Define the ItemChanged event
+    public bool                             IsSafewordCommandExecuting { get; set; }        // Indicate if safeword command is being executed 
 
     // Override the indexer to fire the ItemChanged event when an item is set
     public new T this[int index] {
@@ -32,9 +32,9 @@ public class ItemChangedEventArgs : EventArgs
     // Index of the item that was changed
     public int Index { get; }
     // Old value of the item
-    public object OldValue { get; }
+    public object? OldValue { get; }
     // New value of the item
-    public object NewValue { get; }
+    public object? NewValue { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ItemChangedEventArgs"/> class.
@@ -43,7 +43,7 @@ public class ItemChangedEventArgs : EventArgs
     /// <item><c>oldValue</c><param name="oldValue"> - The old value of the item.</param></item>
     /// <item><c>newValue</c><param name="newValue"> - The new value of the item.</param></item>
     /// </list> </summary>
-    public ItemChangedEventArgs(int index, object oldValue, object newValue) {
+    public ItemChangedEventArgs(int index, object? oldValue, object? newValue) {
         Index = index;
         OldValue = oldValue;
         NewValue = newValue;

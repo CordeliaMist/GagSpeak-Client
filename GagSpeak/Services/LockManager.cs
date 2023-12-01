@@ -3,6 +3,7 @@ using System.Collections.Generic;                   // Provides classes for defi
 using GagSpeak.Services;                            // Contains service classes used in the GagSpeak application
 using GagSpeak.Events;                              // Contains event classes used in the GagSpeak application
 using GagSpeak.Data;                                // Contains data classes used in the GagSpeak application
+using GagSpeak.UI.Helpers;                          // Contains chat classes used in the GagSpeak application
 using Dalamud.Plugin.Services;                      // Contains service classes provided by the Dalamud plugin framework
 using Dalamud.Game.Text.SeStringHandling.Payloads;  // Contains classes for handling special encoded (SeString) payloads in the Dalamud game
 using Dalamud.Game.Text.SeStringHandling;           // Contains classes for handling special encoded (SeString) strings in the Dalamud game
@@ -105,13 +106,14 @@ public class GagAndLockManager : IDisposable
     /// </list> </summary>
     public void Unlock(int layerIndex) {
         // see if we can get the player payload
-        PlayerPayload playerPayload = GetPlayerPayload();
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         // if we can, use it, otherwise, use the default name
         if(playerPayload != null) {
-            Unlock(layerIndex, playerPayload.PlayerName, null, playerPayload.PlayerName);
+            Unlock(layerIndex, playerPayload.PlayerName, "", playerPayload.PlayerName);
         } else {
             GagSpeak.Log.Debug($"[Padlock Manager Service]: Player payload is null, so we are using the default name.");
-            Unlock(layerIndex, null);
+            Unlock(layerIndex, "");
         }
     }
 
@@ -123,7 +125,7 @@ public class GagAndLockManager : IDisposable
     /// <item><c>password</c><param name="password"> - The password.</param></item>
     /// <item><c>targetName</c><param name="targetName"> - The target name.</param></item>
     /// </list> </summary>
-    public void Unlock(int layerIndex, string assignerName, string password = null, string targetName = null) { // for the buttons
+    public void Unlock(int layerIndex, string assignerName, string password = "", string targetName = "") { // for the buttons
         GagSpeak.Log.Debug($"[Padlock Manager Service]: We are unlocking our padlock.");
         // if what we use to try and unlock the padlock is valid, we can unlock it
         if(_config._padlockIdentifier[layerIndex].CheckPassword(_config, assignerName, targetName, password))
@@ -147,14 +149,15 @@ public class GagAndLockManager : IDisposable
     /// </list> </summary>
     public void Lock(int layerIndex) {
         // see if we can get the player payload
-        PlayerPayload playerPayload = GetPlayerPayload();
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         // if the payload returned not null, we can use it
         if(playerPayload != null) {
-            Lock(layerIndex, playerPayload.PlayerName, null, null, playerPayload.PlayerName);
+            Lock(layerIndex, playerPayload.PlayerName, "", "", playerPayload.PlayerName);
         } else {
             // otherwise, we use the default name
             GagSpeak.Log.Debug($"[Padlock Manager Service]: Player payload is null, so we are using the default name.");
-            Lock(layerIndex, null);
+            Lock(layerIndex, "");
         }
     }
 
@@ -167,9 +170,9 @@ public class GagAndLockManager : IDisposable
     /// <item><c>password2</c><param name="password2"> - The password2.</param></item>
     /// <item><c>targetName</c><param name="targetName"> - The target name.</param></item>
     /// </list> </summary>
-    public void Lock(int layerIndex, string assignerName, string password1 = null, string password2 = null, string targetName = null) {
+    public void Lock(int layerIndex, string assignerName, string password1 = "", string password2 = "", string targetName = "") {
         // firstly, see if both our passwords are null, if it is true, it means this came from a button
-        if(password1 == null && password2 == null) {
+        if(password1 == "" && password2 == "") {
             GagSpeak.Log.Debug($"[Padlock Manager Service]: This Lock Request came from a button!");
             // if the padlock is valid, and has a valid password if it needs one, then we can lock
             if(_config._padlockIdentifier[layerIndex].ValidatePadlockPasswords(_config._isLocked[layerIndex], _config,  assignerName, targetName)) {
@@ -275,19 +278,5 @@ public class GagAndLockManager : IDisposable
         };
         // some dummy code to manually invoke the index change handler because im stupid and idk how to trigger events within an event trigger
         _config.selectedGagTypes[0] = _config.selectedGagTypes[0];
-    }
-
-    /// <summary>
-    /// This method is used to get the player payload.
-    /// </summary>
-    /// <returns>The player payload.</returns>
-    public PlayerPayload GetPlayerPayload() { // gets the player payload
-        try { 
-            return new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
-        }
-        catch {
-            GagSpeak.Log.Debug("[MsgResultLogic]: Failed to get player payload, returning null");
-            return null;
-        }
     }
 }

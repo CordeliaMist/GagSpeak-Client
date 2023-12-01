@@ -9,7 +9,7 @@ namespace GagSpeak.Events;
 public class SafewordUsedEvent 
 {
     public delegate void SafewordCommandEventHandler(object sender, SafewordCommandEventArgs e); // define the event handler
-    public event SafewordCommandEventHandler SafewordCommand;                                    // define the event
+    public event SafewordCommandEventHandler? SafewordCommand;                                    // define the event
 
     /// <summary> Manually triggered event invoker </summary>
     public void Invoke() {

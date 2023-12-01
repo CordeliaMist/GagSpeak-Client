@@ -12,8 +12,7 @@ public sealed class GagLockFilterCombo
 {
     private GagSpeakConfig  _config;              // the config for the plugin
     private string          _comboSearchText;     // the search text for the combo box
-    private GagPadlocks     _selectedGagPadlocks; // the selected gag padlock
-
+    
     /// <summary> 
     /// Initializes a new instance of the <see cref="GagLockFilterCombo"/> class.
     /// <list type="bullet">

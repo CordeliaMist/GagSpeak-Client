@@ -52,7 +52,7 @@ public class PadlockIdentifier {
     /// </list> </summary>
     /// <returns>True if the password is valid, false if not.</returns>
     public bool SetAndValidate(GagSpeakConfig _config, string locktype, string password = "", string secondPassword = "",
-    string assignerPlayerName = null, string targetPlayerName = null) {
+    string assignerPlayerName = "", string targetPlayerName = "") {
         // determine our padlock type
         if (!Enum.TryParse(locktype, true, out GagPadlocks padlockType)) {
             return false;}// or throw an exception
@@ -147,7 +147,7 @@ public class PadlockIdentifier {
     /// <item><c>targetPlayerName</c><param name="targetPlayerName"> - The name of the player who is being targetted for the check.</param></item>
     /// </list> </summary>
     /// <returns>True if the password is valid, false if not.</returns>
-    public bool ValidatePadlockPasswords(bool isUnlocking, GagSpeakConfig _config, string assignerPlayerName = null, string targetPlayerName = null) {
+    public bool ValidatePadlockPasswords(bool isUnlocking, GagSpeakConfig _config, string assignerPlayerName = "", string targetPlayerName = "") {
         // setup a return bool variable called ret
         bool ret = false;
         GagSpeak.Log.Debug($"[PadlockIdentifer]: Validating password");
@@ -275,7 +275,7 @@ public class PadlockIdentifier {
     /// <item><c>password</c><param name="password"> - The password to check.</param></item>
     /// </list> </summary>
     /// <returns>True if the password is valid, false if not.</returns> 
-    public bool CheckPassword(GagSpeakConfig _config, string assignerName = null, string targetName = null, string password = "") {
+    public bool CheckPassword(GagSpeakConfig _config, string assignerName = "", string targetName = "", string password = "") {
         // create a bool to return
         bool isValid = false;
         // determine if we need the password for the padlock type is valid, if the padlock contains one.

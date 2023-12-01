@@ -124,7 +124,7 @@ public static class ChatChannel
         // get the attribute of the channel
         var attribute = channel.GetType()
             .GetField(channel.ToString())
-            .GetCustomAttributes(typeof(EnumOrderAttribute), false)
+            ?.GetCustomAttributes(typeof(EnumOrderAttribute), false)
             .FirstOrDefault() as EnumOrderAttribute;
         // return the order of the channel, or if it doesnt have one, return the max value
         return attribute?.Order ?? int.MaxValue;

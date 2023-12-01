@@ -13,7 +13,7 @@ namespace GagSpeak.Services;
 public class TimerService : IDisposable
 {
    private readonly  GagSpeakConfig                _config;              // for config options
-   public event      Action<string, TimeSpan>      RemainingTimeChanged; // event to notify subscribers when remaining time changes
+   public event      Action<string, TimeSpan>?     RemainingTimeChanged; // event to notify subscribers when remaining time changes
    private readonly  Dictionary<string, TimerData> timers;               // Dictionary to store active timers
    public readonly   Dictionary<string, string>    remainingTimes;       // Dictionary to store active timers for UI
 
@@ -39,7 +39,7 @@ public class TimerService : IDisposable
    /// <item><c>onElapsed</c><param name="onElapsed"> - The action to invoke when the timer elapses.</param></item>
    /// </list> </summary>
    public void StartTimer(string timerName, string input, int elapsedMilliSecPeriod, Action onElapsed) {
-      StartTimer(timerName, input, elapsedMilliSecPeriod, onElapsed, null, -1);}
+      StartTimer(timerName, input, elapsedMilliSecPeriod, onElapsed, _config.selectedGagPadLockTimer, -1);}
    
    /// <summary>
    /// The augmented timer constructor to start a new timer.

@@ -14,6 +14,7 @@ using GagSpeak.Data;
 using GagSpeak.Events;
 using GagSpeak.Chat.Garbler;
 using GagSpeak.UI;
+using GagSpeak.UI.Helpers;
 
 namespace GagSpeak.Services;
 
@@ -255,8 +256,7 @@ public class CommandManager : IDisposable // Our main command list manager
     //       && /gag lock [layer] [locktype] | [password] | [timer] | [player target]
     private bool GagLock(string argument) { // arguement at this point = layer locktype | player target
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         // step 1, split by " | " to get the components into the parts we need.
         string[] parts = argument.Split(" | ");
         // if our parts == 2, then we have no password, if our parts == 3, then we have a password. Set our vars now so we dont set them in both statements
@@ -482,7 +482,7 @@ public class CommandManager : IDisposable // Our main command list manager
     /// <returns></returns>
     private bool IsInvalidPassword(string _locktype, string _password, string playername, string _password2) { // will return false if it password does not pass all condition checks
         bool ret = false;
-        if (Enum.TryParse(typeof(GagPadlocks), _locktype, out object parsedEnum)) {
+        if (Enum.TryParse(typeof(GagPadlocks), _locktype, out object? parsedEnum)) {
             switch (parsedEnum) {
                 case GagPadlocks.None:
                     return false;
@@ -541,8 +541,8 @@ public class CommandManager : IDisposable // Our main command list manager
     }
     private bool ValidateMistress(string playerName) {
         PlayerPayload playerPayload; // get the current player info
-        try { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
-        } catch { GagSpeak.Log.Error($"[Command Manager]: Error getting player payload."); return false;}
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
         if (playerName == playerPayload.PlayerName) { return true;}
         if (_config.Whitelist.Any(w => playerName.Contains(w.name) && w.relationshipStatus == "Mistress")) { return true;}
         return false;

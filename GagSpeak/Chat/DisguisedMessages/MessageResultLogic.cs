@@ -130,7 +130,8 @@ public class MessageResultLogic
         // all preconditions met, so now we can try to lock it.
         if (Enum.TryParse(decodedMessage[2], out GagPadlocks parsedLockType)) {
             // get our payload
-            PlayerPayload playerPayload = _lockManager.GetPlayerPayload();
+            PlayerPayload playerPayload; // get player payload
+            UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
             string[] nameParts = decodedMessage[4].Split(' ');
             decodedMessage[4] = nameParts[0] + " " + nameParts[1];
             // if the lock type is a mistress padlock, make sure the assigner is a mistress
@@ -163,7 +164,8 @@ public class MessageResultLogic
         if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.None) {
             isHandled = true; return LogError($"[MsgResultLogic]: No lock applied for layer {layer}, cannot remove lock!");}
         // if we made it here, we can try to unlock it.
-        PlayerPayload playerPayload = _lockManager.GetPlayerPayload();
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         string[] nameParts = decodedMessage[4].Split(' ');
         decodedMessage[4] = nameParts[0] + " " + nameParts[1];
         // try to unlock it

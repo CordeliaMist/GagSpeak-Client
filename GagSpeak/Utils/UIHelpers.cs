@@ -1,10 +1,12 @@
 using System.Text.RegularExpressions;
 using System;
 using System.Numerics;
+using Dalamud.Game.Text.SeStringHandling.Payloads;  // Contains classes for handling special encoded (SeString) payloads in the Dalamud game
 using ImGuiNET;
 using Lumina.Misc;
 using OtterGui;
 using OtterGui.Raii;
+using Dalamud.Plugin.Services;
 namespace GagSpeak.UI.Helpers;
 
 /// <summary> A class for all of the UI helpers, including basic functions for drawing repetative yet unique design elements </summary>
@@ -119,5 +121,21 @@ public static class UIHelpers
 
         // If the input string is not in the correct format, throw an exception
         throw new FormatException($"[MsgResultLogic]: Invalid duration format: {input}");
+    }
+
+    /// <summary>
+    /// This method is used to get the player payload.
+    /// </summary>
+    /// <returns>The player payload.</returns>
+    public static void GetPlayerPayload(IClientState _clientState, out PlayerPayload playerPayload) { // gets the player payload
+        if(_clientState.LocalPlayer != null)
+        {
+            playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+        } 
+        else
+        {
+            GagSpeak.Log.Debug("[PayloadFetch]: Failed to get player payload, returning null");
+            throw new Exception("Player is null!");
+        }
     }
 }

@@ -36,7 +36,6 @@ public class WhitelistTab : ITab, IDisposable
     private readonly    GagListingsDrawer           _gagListingsDrawer; // snag the gaglistingsdrawer from the main plugin for obvious reasons
     private readonly    TimerService                _timerService; // snag the timerservice from the main plugin for obvious reasons
     public              ReadOnlySpan<byte>          Label => "Whitelist"u8; // set label for the whitelist tab
-    private             bool                        emptyList = false; // if the whitelist is empty, disable lower section
     private             int                         _currentWhitelistItem; // store a value so we know which item is selected in whitelist
     private             int                         _layer; // layer of the gag
     private             string                      _gagLabel; // current selection on gag type DD
@@ -120,18 +119,10 @@ public class WhitelistTab : ITab, IDisposable
             _config.Save();
         }
 
-        // If the whitelist is has only none listed, disable lower section
-        if (whitelist.Count == 1 && whitelist[0].name == "None") {
-            emptyList = true;
-        } else {
-            emptyList = false;
-        }
-
         // Create a bool for if the player is targetted (more detail on this later after experimentation)
         bool playerTargetted = _clientState.LocalPlayer != null && _clientState.LocalPlayer.TargetObject != null;
-        // Create a bool for if the player is close enough to the targetted player (more detail on this later after experimentation)
-        bool playerCloseEnough = playerTargetted && Vector3.Distance( _clientState.LocalPlayer.Position, _clientState.LocalPlayer.TargetObject.Position) < 3;
-        
+        bool playerCloseEnough = playerTargetted && 
+                                 Vector3.Distance( _clientState.LocalPlayer?.Position ?? default, _clientState.LocalPlayer?.TargetObject?.Position ?? default) < 3;
         // Create a table for the whitelist
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ButtonTextAlign, new Vector2(0, 0.5f)); 
         using (var table = ImRaii.Table("WhitelistTable", 2)) {
@@ -267,25 +258,29 @@ public class WhitelistTab : ITab, IDisposable
 
             // Create a button for adding the targetted player to the whitelist, assuming they are within proxy.
             if (ImGui.Button(targetedPlayerText, buttonWidth)) {
-                if (_clientState.LocalPlayer.TargetObject.ObjectKind == ObjectKind.Player) { // if the player is targetting another player
-                    GagSpeak.Log.Debug($"[Whitelist]: Targetted Player: {_clientState.LocalPlayer.TargetObject.Name.TextValue}");
-                    string targetName = UIHelpers.CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
-                    // if the object kind of the target is a player, then get the character parse of that player
-                    var targetCharacter = (PlayerCharacter)_clientState.LocalPlayer.TargetObject;
-                    // now we can get the name and world from them
-                    var world = targetCharacter.HomeWorld.Id;
-                    var worldName = _dataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.World>()?.GetRow((uint)world)?.Name?.ToString();
-                    GagSpeak.Log.Debug($"[Whitelist]: Targetted Player: {targetName} from {world}, {worldName}");
+                // prevent possible null in _clientState.LocalPlayer.TargetObject
+                if (_clientState.LocalPlayer != null &&_clientState.LocalPlayer.TargetObject != null)
+                {
+                    if (_clientState.LocalPlayer.TargetObject.ObjectKind == ObjectKind.Player) { // if the player is targetting another player
+                        GagSpeak.Log.Debug($"[Whitelist]: Targetted Player: {_clientState.LocalPlayer.TargetObject.Name.TextValue}");
+                        string targetName = UIHelpers.CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
+                        // if the object kind of the target is a player, then get the character parse of that player
+                        var targetCharacter = (PlayerCharacter)_clientState.LocalPlayer.TargetObject;
+                        // now we can get the name and world from them
+                        var world = targetCharacter.HomeWorld.Id;
+                        var worldName = _dataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.World>()?.GetRow((uint)world)?.Name?.ToString() ?? "Unknown";
+                        GagSpeak.Log.Debug($"[Whitelist]: Targetted Player: {targetName} from {world}, {worldName}");
 
-                    // And now, if the player is not already in our whitelist, we will add them. Otherwise just do nothing.
-                    if (!_config.Whitelist.Any(item => item.name == targetName)) {
-                        GagSpeak.Log.Debug($"[Whitelist]: Adding targetted player to whitelist {_clientState.LocalPlayer.TargetObject})");
-                        if(whitelist.Count == 1 && whitelist[0].name == "None") { // If our whitelist just shows none, replace it with first addition.
-                            whitelist[0] = new WhitelistCharData(targetName, worldName, "None");
-                            _config.Save();
-                        } else {
-                            _config.Whitelist.Add(new WhitelistCharData(targetName, worldName, "None")); // Add the player to the whitelist
-                            _config.Save();
+                        // And now, if the player is not already in our whitelist, we will add them. Otherwise just do nothing.
+                        if (!_config.Whitelist.Any(item => item.name == targetName)) {
+                            GagSpeak.Log.Debug($"[Whitelist]: Adding targetted player to whitelist {_clientState.LocalPlayer.TargetObject})");
+                            if(whitelist.Count == 1 && whitelist[0].name == "None") { // If our whitelist just shows none, replace it with first addition.
+                                whitelist[0] = new WhitelistCharData(targetName, worldName, "None");
+                                _config.Save();
+                            } else {
+                                _config.Whitelist.Add(new WhitelistCharData(targetName, worldName, "None")); // Add the player to the whitelist
+                                _config.Save();
+                            }
                         }
                     }
                 }
@@ -384,7 +379,7 @@ public class WhitelistTab : ITab, IDisposable
             if (ImGui.Button("Lock Gag")) {
                 // get your data
                 PlayerPayload playerPayload;
-                playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+                UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
                 // get whitelist data of selected
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem];
                     // then we can apply the lock gag logic
@@ -423,7 +418,7 @@ public class WhitelistTab : ITab, IDisposable
             if (ImGui.Button("Unlock Gag")) {
                 // get your data
                 PlayerPayload playerPayload;
-                playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
+                UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
                 // get whitelist data of selected
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
                 // apply similar format to lock gag
@@ -546,9 +541,8 @@ public class WhitelistTab : ITab, IDisposable
 
     // Additional methods for applying, locking, unlocking, removing gags
     private void ApplyGagOnPlayer(int layer, string gagType, WhitelistCharData selectedPlayer) {
-        PlayerPayload playerPayload; // your player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         // Ensure a player is selected as a valid whitelist index
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
@@ -570,9 +564,8 @@ public class WhitelistTab : ITab, IDisposable
     }
 
     private void RemoveGagFromPlayer(int layer, WhitelistCharData selectedPlayer) {
-        PlayerPayload playerPayload;
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
 
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
@@ -587,9 +580,8 @@ public class WhitelistTab : ITab, IDisposable
     }
 
     private void RemoveAllGagsFromPlayer(WhitelistCharData selectedPlayer) {
-        PlayerPayload playerPayload;
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
 
@@ -607,8 +599,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RequestMistressToPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -623,8 +614,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RequestPetToPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -638,8 +628,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RequestSlaveToPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -653,8 +642,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RequestRelationRemovealToPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -670,8 +658,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void OrderLiveGarbleLockToPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -685,8 +672,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void RequestInfoFromPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // print to chat that you sent the request
@@ -699,8 +685,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void SendInfoToPlayer() {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         // format the player name from "firstname lastname homeworld" to "firstname lastname@homeworld"
         int lastSpaceIndex = _config.SendInfoName.LastIndexOf(' ');
         if (lastSpaceIndex >= 0) { // if we can do this, then do it.
@@ -722,8 +707,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void SendInfoToPlayer2() {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         // format the player name from "firstname lastname homeworld" to "firstname lastname@homeworld"
         int lastSpaceIndex = _config.SendInfoName.LastIndexOf(' ');
         if (lastSpaceIndex >= 0) { // if we can do this, then do it.
@@ -747,8 +731,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void AcceptMistressRequestFromPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the message
@@ -763,8 +746,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void AcceptPetRequestFromPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the message
@@ -776,8 +758,7 @@ public class WhitelistTab : ITab, IDisposable
 
     private void AcceptSlaveRequestFromPlayer(WhitelistCharData selectedPlayer) {
         PlayerPayload playerPayload; // get player payload
-        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
-        else { throw new Exception("Player is null!");}
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         if (_currentWhitelistItem < 0 || _currentWhitelistItem >= _config.Whitelist.Count)
             return;
         // send the message
