@@ -36,6 +36,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                whitelistOnly { get; set; } = false;                    // Is whitelist only enabled?
     public          bool                                DebugMode { get; set; } = false;                        // Is debug mode enabled?
     public          int                                 GarbleLevel { get; set; } = 0;                          // Current Garble Level (0-20)
+    public          bool                                ExperimentalGarbler { get; set; } = false;               // Is experimental garbler enabled?
     public          ObservableList<string>              selectedGagTypes { get; set; }                          // What gag types are selected?
     public          ObservableList<GagPadlocks>         selectedGagPadlocks { get; set; }                       // which padlocks are equipped currently?
     public          List<string>                        selectedGagPadlocksPassword { get; set; }               // password lock on padlocks, if any
