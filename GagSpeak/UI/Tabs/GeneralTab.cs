@@ -190,6 +190,9 @@ public class GeneralTab : ITab, IDisposable
             ImGui.NewLine();
         }
 
+        Checkbox("Experimental Garbler", "Enabled the Experimental Garbler using a developing advanced algorithm to translate the english lanuage to account for the 24 consonants in the alphaet.\n"+
+        "High experimental, and likely not perfect, but its nice)", _config.ExperimentalGarbler, v => _config.ExperimentalGarbler = v);
+
         // print out each of the gag managers active gag and its key from gagtypes, and the catagory it falls under in a tostring
         ImGui.Text("Active Gags:");
         for(int i = 0; i<3; i++) {
@@ -218,6 +221,20 @@ public class GeneralTab : ITab, IDisposable
         ImGui.Text($"Translated Message: {translatedMessage}");
             
     }
+
+
+    private void Checkbox(string label, string tooltip, bool current, Action<bool> setter) {
+        using var id  = ImRaii.PushId(label);
+        var       tmp = current;
+        if (ImGui.Checkbox(string.Empty, ref tmp) && tmp != current) {
+            setter(tmp);
+            _config.Save();
+        }
+
+        ImGui.SameLine();
+        ImGuiUtil.LabeledHelpMarker(label, tooltip);
+    }
+
 
     /// <summary> 
     /// This function disables the mode buttons after the cooldown is over.

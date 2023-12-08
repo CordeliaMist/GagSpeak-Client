@@ -16,7 +16,8 @@ using GagSpeak.UI.GagListings;                  // Contains classes for the gag 
 using GagSpeak.UI.Tabs.GeneralTab;              // Contains classes for the general tab in the GagSpeak plugin
 using GagSpeak.UI.Tabs.WhitelistTab;            // Contains classes for the whitelist tab in the GagSpeak plugin
 using GagSpeak.UI.Tabs.ConfigSettingsTab;       // Contains classes for the config settings tab in the GagSpeak plugin
-using GagSpeak.UI.UserProfile;                  // Contains classes for the user profile in the GagSpeak plugin
+using GagSpeak.UI.UserProfile;
+using GagSpeak.Chat.Garbler;                  // Contains classes for the user profile in the GagSpeak plugin
 
 // following namespace naming convention
 namespace GagSpeak.Services;
@@ -94,11 +95,13 @@ public static class ServiceHandler
                 var interop = _.GetRequiredService<IGameInteropProvider>();
                 var config = _.GetRequiredService<GagSpeakConfig>();
                 var historyService = _.GetRequiredService<HistoryService>();
-                return new ChatInputProcessor(sigService, interop, config, historyService);})
+                var gagManagerService = _.GetRequiredService<GagManager>();
+                return new ChatInputProcessor(sigService, interop, config, historyService, gagManagerService);})
              .AddSingleton<MessageEncoder>()
              .AddSingleton<MessageDecoder>()
              .AddSingleton<MessageResultLogic>()
-             .AddSingleton<GagManager>();
+             .AddSingleton<GagManager>()
+             .AddSingleton<MessageGarbler>();
 
     /// <summary>
     /// Adds the event services to the Event service collection.

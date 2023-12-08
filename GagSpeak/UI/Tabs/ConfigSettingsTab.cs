@@ -159,7 +159,7 @@ public class ConfigSettingsTab : ITab
             ImGui.Text($"Debug Mode?: {_config.DebugMode} || In DirectChatGarbler Mode?: {_config.DirectChatGarbler}");
             ImGui.Text($"Safeword: {_config.Safeword}");
             ImGui.Text($"Friends Only?: {_config.friendsOnly} || Party Only?: {_config.partyOnly} || Whitelist Only?: {_config.whitelistOnly}");
-            ImGui.Text($"Garble Level: {_config.GarbleLevel}");
+            ImGui.Text($"ExperimentalGarblerMode: {_config.ExperimentalGarbler}");
             ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval} || Max Translation History: {_config.TranslationHistoryMax}");
             ImGui.Text($"Total Gag List Count: {GagAndLockTypes.GagTypes.Count}");
             ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };

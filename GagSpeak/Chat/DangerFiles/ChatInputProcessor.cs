@@ -2,15 +2,16 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Dalamud.Game;
 using Dalamud.Plugin.Services;
+using Dalamud.Utility;
 using GagSpeak.Services;
 using GagSpeak.Utility;
 using GagSpeak.Chat.Garbler;
+using GagSpeak.Chat;
 using GagSpeak.Data;
-using System.Linq;
-using Dalamud.Utility;
-using System.Text.RegularExpressions;
 // I swear to god, if any contributors even attempt to tinker with this file, I will swat you over the head. DO NOT DO IT.
 
 // Signatures located and adopted from sourcecode:
@@ -23,6 +24,7 @@ public unsafe class ChatInputProcessor : IDisposable {
     private readonly    GagSpeakConfig                          _config;                            // for config options
     private readonly    HistoryService                          _historyService;                    // for history service
     private readonly    MessageGarbler                          _messageGarbler;                    // for message garbler
+    private readonly    GagManager                              _gagManager;                        // for gag manager
     public virtual      bool                                    Ready { get; protected set; }       // see if ready
     public virtual      bool                                    Enabled { get; protected set; }     // set if enabled
     private             nint                                    processChatInputAddress;            // address of the chat input
@@ -32,9 +34,10 @@ public unsafe class ChatInputProcessor : IDisposable {
     private readonly List<string> _configChannelsCommandsList;
 
     /// <summary> Initializes a new instance of the <see cref="ChatInputProcessor"/> class. </summary>
-    internal ChatInputProcessor(ISigScanner scanner, IGameInteropProvider interop, GagSpeakConfig config, HistoryService historyService) {
+    internal ChatInputProcessor(ISigScanner scanner, IGameInteropProvider interop, GagSpeakConfig config, HistoryService historyService, GagManager gagManager) {
         // initialize interopfromattributes
         _config = config;
+        _gagManager = gagManager;
         _configChannelsCommandsList = _config.Channels.GetChatChannelsListAliases();
         _historyService = historyService;
         _messageGarbler = new MessageGarbler();
@@ -137,7 +140,7 @@ public unsafe class ChatInputProcessor : IDisposable {
                 try {
                     GagSpeak.Log.Debug($"[Chat Processor]: Input -> {inputString}, MatchedCommand -> {matchedCommand}");
                     // create the output translated text, cutting the command matched before to prevent it getting gargled
-                    var output = _messageGarbler.GarbleMessage(inputString.Substring(matchedCommand.Length), _config.GarbleLevel);
+                    var output = _gagManager.ProcessMessage(inputString.Substring(matchedCommand.Length));
                     // adding command back to front
                     output = matchedCommand + output;
                     GagSpeak.Log.Debug($"[Chat Processor]: Output -> {output}");
