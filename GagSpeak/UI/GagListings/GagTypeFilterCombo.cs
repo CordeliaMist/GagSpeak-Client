@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface.Utility;
 using GagSpeak.Events;
-using GagSpeak.Chat;
 using GagSpeak.Data;
+using GagSpeak.Services;
 
 namespace GagSpeak.UI.GagListings;
 
@@ -15,8 +15,9 @@ namespace GagSpeak.UI.GagListings;
 public sealed class GagTypeFilterCombo 
 {
     private GagSpeakConfig          _config;            // the config for the plugin
+    private GagService              _gagService;        // the gag service
     private string                  _comboSearchText;   // the search text for the combo box
-    private Dictionary<string,IGag>  _gagTypes;          // the gag types
+    private Dictionary<string,Gag>  _gagTypes;          // the gag types
     private bool                    isDummy = false;    // used to distinguish between general tab appliers, and whitelist ones
 
     /// <summary>
@@ -25,10 +26,12 @@ public sealed class GagTypeFilterCombo
     /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
     /// <item><c>gagTypes</c><param name="gagTypes"> - The gag types.</param></item>
     /// </list> </summary>
-    public GagTypeFilterCombo(Dictionary<string,IGag> gagTypes, GagSpeakConfig config) {
+    public GagTypeFilterCombo(GagService gagService, GagSpeakConfig config) {
         _comboSearchText = string.Empty;
-        _gagTypes = gagTypes;
+        _gagService = gagService;
         _config = config;
+        // set the gagtypes temp dictionary
+        _gagTypes = _gagService.GagTypes;
     }
 
     /// <summary>
@@ -56,9 +59,9 @@ public sealed class GagTypeFilterCombo
                     if( ImGui.InputTextWithHint("##filter", "Filter...", ref _comboSearchText, 255 ) ) { // Draw filter bar
                         // If the search bar is empty, display all the types from the strings in contentList, otherwise, display only search matches
                         _gagTypes = string.IsNullOrEmpty(_comboSearchText) ? (
-                            GagAndLockTypes.GagTypes
+                            _gagService.GagTypes
                         ) : (
-                            GagAndLockTypes.GagTypes.Where(x=>x.Key.ToLower().Contains(_comboSearchText.ToLower())).ToDictionary(x=>x.Key, x=>x.Value)
+                            _gagService.GagTypes.Where(x=>x.Key.ToLower().Contains(_comboSearchText.ToLower())).ToDictionary(x=>x.Key, x=>x.Value)
                         );
                     }
                     // Now that we have our results, so draw the childs
@@ -73,7 +76,7 @@ public sealed class GagTypeFilterCombo
                                 listing[layerIndex] = item; // update data (if for generaltab)
                             label = item; // update label
                             _comboSearchText = string.Empty;
-                            _gagTypes = GagAndLockTypes.GagTypes;
+                            _gagTypes = _gagService.GagTypes;
                             ImGui.CloseCurrentPopup();
                             _config.Save();
                             return;

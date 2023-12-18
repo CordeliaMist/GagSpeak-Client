@@ -7,6 +7,8 @@ using Lumina.Misc;
 using OtterGui;
 using OtterGui.Raii;
 using Dalamud.Plugin.Services;
+using Dalamud.Interface.Colors;
+
 namespace GagSpeak.UI.Helpers;
 
 /// <summary> A class for all of the UI helpers, including basic functions for drawing repetative yet unique design elements </summary>
@@ -14,6 +16,19 @@ public static class UIHelpers
 {
     /// <summary> Frame Height for square icon buttons. </summary>
     public static Vector2 IconButtonSize = new Vector2(ImGui.GetFrameHeight());
+
+    /// <summary> Push a text under a certain font to the UI 
+    /// <list type="Bullet">
+    /// <item><c>text</c><param name="text"> - The text to push</param></item>
+    /// <item><c>font</c><param name="font"> - The font to push the text under</param></item>
+    /// <item><c>color</c><param name="color"> - The color of the text (optional)</param></item>
+    /// </list> </summary>
+    public static void FontText(string text, ImFontPtr font, Vector4? color = null) {
+        using var pushedFont = ImRaii.PushFont(font);
+        // using var pushedColor = ImRaii.PushColor(ImGuiCol.Text, Color(color ?? new Vector4(1, 1, 1, 1)), color != null);
+        ImGui.TextWrapped(text);
+    }
+
 
     /// <summary> 
     /// A helper function for drawing checkboxes
@@ -31,6 +46,26 @@ public static class UIHelpers
         ImGuiUtil.HoverTooltip(tooltip);
         on = value;
         return ret;
+    }
+
+    /// <summary>
+    /// This function draws a checkbox with a label and tooltip, alternative to the other helper function "DrawCheckbox"
+    /// <list type="bullet">
+    /// <item><c>label</c><param name="label"> - The label to display outside the checkbox</param></item>
+    /// <item><c>tooltip</c><param name="tooltip"> - The tooltip to display when hovering over the checkbox</param></item>
+    /// <item><c>current</c><param name="current"> - The current value of the checkbox</param></item>
+    /// <item><c>setter</c><param name="setter"> - The setter for the checkbox</param></item>
+    /// </list>
+    /// </summary>
+    public static void Checkbox(string label, string tooltip, bool current, Action<bool> setter, GagSpeakConfig _config) {
+        using var id  = ImRaii.PushId(label);
+        var       tmp = current;
+        if (ImGui.Checkbox(string.Empty, ref tmp) && tmp != current) {
+            setter(tmp);
+            _config.Save();
+        }
+        ImGui.SameLine();
+        ImGuiUtil.LabeledHelpMarker(label, tooltip);
     }
 
     /// <summary>
@@ -128,12 +163,9 @@ public static class UIHelpers
     /// </summary>
     /// <returns>The player payload.</returns>
     public static void GetPlayerPayload(IClientState _clientState, out PlayerPayload playerPayload) { // gets the player payload
-        if(_clientState.LocalPlayer != null)
-        {
+        if(_clientState.LocalPlayer != null) {
             playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
-        } 
-        else
-        {
+        } else {
             GagSpeak.Log.Debug("[PayloadFetch]: Failed to get player payload, returning null");
             throw new Exception("Player is null!");
         }

@@ -11,6 +11,7 @@ using GagSpeak.Data;
 using GagSpeak.UI;
 using GagSpeak.Services;
 using GagSpeak.Events;
+using GagSpeak.Translator;
 using Newtonsoft.Json;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
@@ -57,12 +58,17 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          List<string>                        displaytext { get; set; }                               // stores the display text for each gaglisting 
     public          List<PadlockIdentifier>             _padlockIdentifier { get; set; }                        // stores the padlock identifier for each gaglisting
     public          PadlockIdentifier                   _whitelistPadlockIdentifier {get; set; }                // stores the padlock identifier for the whitelist
-
+    // stuff for the garbler
+    public          string                              language { get; set; } = "English";                     // The language dialect to use for the IPA conversion
+    public          string                              languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
+    public          List<PhoneticSymbol>                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
+    // variables involved with saving and updating the config
+    private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
+    
+    
     /// <summary> Gets or sets the colors used within our UI </summary>
     public Dictionary<ColorId, uint> Colors { get; private set; }
         = Enum.GetValues<ColorId>().ToDictionary(c => c, c => c.Data().DefaultColor);
-
-    private readonly SaveService            _saveService;                                          // Save service for the GagSpeak plugin
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GagSpeakConfig"/> class, and initializes any empty lists and dictionaries and other variables so we get a clean fresh startup!
@@ -113,6 +119,10 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         if (this.TimerData == null || !this.TimerData.Any()) {
             GagSpeak.Log.Debug($"[Config]: TimerData is null, creating new list");
             this.TimerData = new Dictionary<string, DateTimeOffset>();}
+        // set default values for the phonetic listings for the default language
+        if (this.phoneticSymbolList == null || !this.phoneticSymbolList.Any()) {
+            GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
+            this.phoneticSymbolList = Data.PhonemMasterLists.MasterListEN_US;}
     }
 
     /// <summary> Saves the config to our save service and updates the garble level to its new value. </summary>

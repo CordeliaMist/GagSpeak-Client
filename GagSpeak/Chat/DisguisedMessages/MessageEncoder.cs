@@ -149,39 +149,6 @@ public class MessageEncoder
         "with pleading eyes in an embarassed tone* \"Would it be ok if I became your slave?\"";
     }
 
-    /// <summary> Composes a diguised encoded message for the request to remove a relation
-    /// <list type="bullet">
-    /// <item><c>playerPayload</c><param name="playerPayload"> - The player payload of the player sending the request.</param></item>
-    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the player who is having their relation with them removed.</param></item>
-    /// </list> </summary>
-    /// <returns> The disguised encoded message. </returns>
-    public string RequestRemovalEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
-        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks up at you with tears in her eyes. She never wanted this moment to come, but also knows due to the circumstances " +
-        "it was enivtable.* \"I'm sorry, but I cant keep our relationship going right now, there is just too much going on\"";
-    }
-
-    /// <summary> Composes a diguised encoded message for the request to remove a relation
-    /// <list type="bullet">
-    /// <item><c>playerPayload</c><param name="playerPayload"> - The player payload of the player sending the order.</param></item>
-    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the player who is having their garble speech locked.</param></item>
-    /// </list> </summary>
-    /// <returns> The disguised encoded message. </returns>
-    public string OrderGarblerLockEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
-        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down sternly at looks down sternly at the property they owned below them. They firmly slapped their " +
-        "companion across the cheek and held onto her chin firmly.* \"You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.\"";
-    }
-
-    /// <summary>
-    /// Requesting player info
-    /// <list type="bullet">
-    /// <item><c>playerPayload</c><param name="playerPayload"> - The player payload of the player sending the order.</param></item>
-    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the player who is having their garble speech locked.</param></item>
-    /// </list> </summary>
-    /// <returns> The disguised encoded message. </returns>
-    public string RequestInfoEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
-        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down upon you with a smile,* \"I'd love to hear you describe your situation to me my dear, I want hear all about how you feel right now";
-    }
-
     /// <summary>
     /// Accept Mistress Request
     /// <list type="bullet">
@@ -213,6 +180,72 @@ public class MessageEncoder
     /// <returns> The disguised encoded message. </returns>
     public string AcceptSlaveEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} glanced back down at her companion who had just crawled up to their legs with the pleading look and smiled. \"Why I would love to make you my slave dearest.\"";
+    }
+
+    /// <summary>
+    /// Decline A players request to become your Mistress
+    /// <list type="bullet">
+    /// <item><c>playerPayload</c><param name="playerPayload"> - The player who is accepting the target players request.</param></item>
+    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the target player that will recieved that you accepted their request.</param></item>
+    /// </list> </summary>
+    /// <returns> The disguised encoded message. </returns>
+    public string DeclineMistressEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} smiles gently and shakes their head* \"I'm sorry miss, but I dont think I have enough space left in my daily life to commit to such a bond quite yet.\"";
+    }
+
+    /// <summary>
+    /// Decline A players request to become your Pet
+    /// <list type="bullet">
+    /// <item><c>playerPayload</c><param name="playerPayload"> - The player who is accepting the target players request.</param></item>
+    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the target player that will recieved that you accepted their request.</param></item>
+    /// </list> </summary>
+    /// <returns> The disguised encoded message. </returns>
+    public string DeclinePetEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} shakes their head from side, \"I apologize dear, but I don't think im ready to commit myself to having a pet at the moment.\"";
+    }
+
+    /// <summary>
+    /// Decline A players request to become your Slave 
+    /// <list type="bullet">
+    /// <item><c>playerPayload</c><param name="playerPayload"> - The player who is accepting the target players request.</param></item>
+    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the target player that will recieved that you accepted their request.</param></item>
+    /// </list> </summary>
+    /// <returns> The disguised encoded message. </returns>
+    public string DeclineSlaveEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} takes a step back in surprise, \"Oh, I apologize, I didnt think you wanted a commitment that heavy... I Don't think im ready to have a slave just yet..\"";
+    }
+
+    /// <summary> Composes a diguised encoded message for the request to remove a relation
+    /// <list type="bullet">
+    /// <item><c>playerPayload</c><param name="playerPayload"> - The player payload of the player sending the request.</param></item>
+    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the player who is having their relation with them removed.</param></item>
+    /// </list> </summary>
+    /// <returns> The disguised encoded message. </returns>
+    public string RequestRemovalEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks up at you with tears in her eyes. She never wanted this moment to come, but also knows due to the circumstances " +
+        "it was enivtable.* \"I'm sorry, but I cant keep our relationship going right now, there is just too much going on\"";
+    }
+
+    /// <summary> Composes a diguised encoded message for the request to remove a relation
+    /// <list type="bullet">
+    /// <item><c>playerPayload</c><param name="playerPayload"> - The player payload of the player sending the order.</param></item>
+    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the player who is having their garble speech locked.</param></item>
+    /// </list> </summary>
+    /// <returns> The disguised encoded message. </returns>
+    public string OrderGarblerLockEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down sternly at looks down sternly at the property they owned below them. They firmly slapped their " +
+        "companion across the cheek and held onto her chin firmly.* \"You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.\"";
+    }
+    
+    /// <summary>
+    /// Requesting player info
+    /// <list type="bullet">
+    /// <item><c>playerPayload</c><param name="playerPayload"> - The player payload of the player sending the order.</param></item>
+    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the player who is having their garble speech locked.</param></item>
+    /// </list> </summary>
+    /// <returns> The disguised encoded message. </returns>
+    public string RequestInfoEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down upon you with a smile,* \"I'd love to hear you describe your situation to me my dear, I want hear all about how you feel right now";
     }
 
     /// <summary>

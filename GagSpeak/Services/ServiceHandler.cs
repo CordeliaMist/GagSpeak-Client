@@ -17,8 +17,8 @@ using GagSpeak.UI.Tabs.GeneralTab;              // Contains classes for the gene
 using GagSpeak.UI.Tabs.WhitelistTab;            // Contains classes for the whitelist tab in the GagSpeak plugin
 using GagSpeak.UI.Tabs.ConfigSettingsTab;       // Contains classes for the config settings tab in the GagSpeak plugin
 using GagSpeak.UI.UserProfile;
-using GagSpeak.Chat.Garbler;                  // Contains classes for the user profile in the GagSpeak plugin
-
+using GagSpeak.Chat.Garbler;
+using GagSpeak.Translator;
 // following namespace naming convention
 namespace GagSpeak.Services;
 
@@ -45,6 +45,7 @@ public static class ServiceHandler
             .AddMeta()
             .AddChat()
             .AddEvent()
+            .AddTranslator()
             .AddUi()
             .AddApi();
         // return the built services provider in the form of a instanced service collection
@@ -78,7 +79,9 @@ public static class ServiceHandler
              .AddSingleton<ConfigMigrationService>()
              .AddSingleton<MessageService>()
              .AddSingleton<GagAndLockManager>()
-             .AddSingleton<TimerService>();
+             .AddSingleton<TimerService>()
+             .AddSingleton<InfoRequestService>()
+             .AddSingleton<FontService>();
 
     /// <summary>
     /// Adds the chat services to the Chat service collection.
@@ -109,7 +112,16 @@ public static class ServiceHandler
     /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
     /// </list> </summary>
     private static IServiceCollection AddEvent(this IServiceCollection services)
-        => services.AddSingleton<SafewordUsedEvent>();
+        => services.AddSingleton<SafewordUsedEvent>()
+                .AddSingleton<InfoRequestEvent>();
+
+    /// <summary>
+    /// 
+    private static IServiceCollection AddTranslator(this IServiceCollection services)
+        => services.AddSingleton<IpaParserEN_FR_JP_SP>()
+                .AddSingleton<IpaParserCantonese>()
+                .AddSingleton<IpaParserMandarian>()
+                .AddSingleton<IpaParserPersian>();
 
     /// <summary>
     /// Adds the UI services to the UI service collection.

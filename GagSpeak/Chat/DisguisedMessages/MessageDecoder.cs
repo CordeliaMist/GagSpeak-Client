@@ -203,8 +203,81 @@ public class MessageDecoder {
             GagSpeak.Log.Debug($"[Message Decoder]: request slave: (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
         }
-        // decoder for requesting a removal of relationship
+        // decoder for accepting a player as your new Mistress (relation)
         else if (encodedMsgIndex == 12) {
+            decodedMessage[0] = "acceptMistressRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("smiles and gracefully and nods in agreement* \"Oh yes, most certainly. I would love to have you as my mistress.\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() +
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"[Message Decoder]: accepting a players request to become your mistress (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            return decodedMessage;
+        }
+        // decoder for accepting a player as your new pet (relation)
+        else if (encodedMsgIndex == 13) {
+            decodedMessage[0] = "acceptPetRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("smiles upon hearing the request and nods in agreement as their blushed companion had a collar clicked shut around their neck.* \"Yes dear, I'd love to make you my pet.\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() +
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"[Message Decoder]: accepting a players request to become your pet (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            return decodedMessage;
+        }
+        // decoder for accepting a player as your new slave (relation)
+        else if (encodedMsgIndex == 14) {
+            decodedMessage[0] = "acceptSlaveRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("glanced back down at her companion who had just crawled up to their legs with the pleading look and smiled.* \"Why I would love to make you my slave dearest.\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() +
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"[Message Decoder]:  accepting a players request to become your slave (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            return decodedMessage;
+        }
+        // decoder for declining a players request to become your mistress (relation)
+        else if (encodedMsgIndex == 15) {
+            decodedMessage[0] = "acceptMistressRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("smiles gently and shakes their head* \"I'm sorry miss, but I dont think I have enough space left in my daily life to commit to such a bond quite yet.\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() +
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"[Message Decoder]:  declining a players request to become your Mistress (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            return decodedMessage;
+        }
+        // decoder for declining a players request to become your pet (relation)
+        else if (encodedMsgIndex == 16) {
+            decodedMessage[0] = "acceptPetRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("shakes their head from side, \"I apologize dear, but I don't think im ready to commit myself to having a pet at the moment.\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() +
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"[Message Decoder]:  declining a players request to become your pet (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            return decodedMessage;
+        }
+        // decoder for declining a players request to become your slave (relation)
+        else if (encodedMsgIndex == 17) {
+            decodedMessage[0] = "acceptSlaveRelation";      // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("takes a step back in surprise, \"Oh, I apologize, I didnt think you wanted a commitment that heavy... I Don't think im ready to have a slave just yet..\"","");
+            string[] messageParts = recievedMessage.Split("from");
+            string trimmedMessage = string.Empty;
+            decodedMessage[4] = messageParts[0].Trim() +
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"[Message Decoder]:  declining a players request to become your slave (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
+            return decodedMessage;
+        }
+
+        // decoder for requesting a removal of relationship
+        else if (encodedMsgIndex == 18) {
             decodedMessage[0] = "removePlayerRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
             recievedMessage = recievedMessage.Replace("looks up at you with tears in her eyes. She never wanted this moment to come, but also knows due to the circumstances it was enivtable.* \"I'm sorry, but I cant keep our relationship going right now, there is just too much going on\"","");
@@ -216,7 +289,7 @@ public class MessageDecoder {
             return decodedMessage;
         }
         // decoder for forcing a garbler locker
-        else if (encodedMsgIndex == 13) {
+        else if (encodedMsgIndex == 19) {
             decodedMessage[0] = "orderForceGarbleLock";     // we found the command type
             recievedMessage = recievedMessage.Trim('*');
             recievedMessage = recievedMessage.Replace("looks down sternly at looks down sternly at the property they owned below them. They firmly slapped their companion across the cheek and held onto her chin firmly.* \"You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.\"","");
@@ -228,7 +301,7 @@ public class MessageDecoder {
             return decodedMessage;
         }
         // decoder for requesting information from whitelisted player.
-        else if (encodedMsgIndex == 14) {
+        else if (encodedMsgIndex == 20) {
             decodedMessage[0] = "requestInfo";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
             recievedMessage = recievedMessage.Replace("looks down upon you with a smile,* \"I'd love to hear you describe your situation to me my dear, I want hear all about how you feel right now","");
@@ -238,46 +311,9 @@ public class MessageDecoder {
                           " " + messageParts[1].Trim(); // we found player
             GagSpeak.Log.Debug($"[Message Decoder]: request info (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
-        }
-        // decoder for accepting mistress relation
-        else if (encodedMsgIndex == 15) {
-            decodedMessage[0] = "acceptMistressRelation";      // we found commandtype
-            recievedMessage = recievedMessage.Trim('*');
-            recievedMessage = recievedMessage.Replace("smiles and gracefully and nods in agreement* \"Oh yes, most certainly. I would love to have you as my mistress.\"","");
-            string[] messageParts = recievedMessage.Split("from");
-            string trimmedMessage = string.Empty;
-            decodedMessage[4] = messageParts[0].Trim() +
-                          " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: accept mistress relation (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
-            return decodedMessage;
-        }
-        // decoder for accepting pet relation
-        else if (encodedMsgIndex == 16) {
-            decodedMessage[0] = "acceptPetRelation";      // we found commandtype
-            recievedMessage = recievedMessage.Trim('*');
-            recievedMessage = recievedMessage.Replace("smiles upon hearing the request and nods in agreement as their blushed companion had a collar clicked shut around their neck.* \"Yes dear, I'd love to make you my pet.\"","");
-            string[] messageParts = recievedMessage.Split("from");
-            string trimmedMessage = string.Empty;
-            decodedMessage[4] = messageParts[0].Trim() +
-                          " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: accept pet relation (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
-            return decodedMessage;
-        }
-        // decoder for accepting slave relation
-        else if (encodedMsgIndex == 17) {
-            decodedMessage[0] = "acceptSlaveRelation";      // we found commandtype
-            recievedMessage = recievedMessage.Trim('*');
-            recievedMessage = recievedMessage.Replace("glanced back down at her companion who had just crawled up to their legs with the pleading look and smiled.* \"Why I would love to make you my slave dearest.\"","");
-            string[] messageParts = recievedMessage.Split("from");
-            string trimmedMessage = string.Empty;
-            decodedMessage[4] = messageParts[0].Trim() +
-                          " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: accept slave relation (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
-            return decodedMessage;
-        }
-        
+        }        
         // decoder for sharing info about player
-        else if (encodedMsgIndex == 18) {
+        else if (encodedMsgIndex == 21) {
             decodedMessage[0] = "provideInfo";      // we found commandtype
             try
             {
@@ -363,7 +399,7 @@ public class MessageDecoder {
             return decodedMessage;
         }
         // its the second half of the request info message
-        else if (encodedMsgIndex == 19) {
+        else if (encodedMsgIndex == 22) {
             decodedMessage[0] = "provideInfo2";      // we found commandtype
             /* decodedMessageFormat:
                 [0] = commandtype

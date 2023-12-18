@@ -1,87 +1,101 @@
-let IPA_result = "";
+using System;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using Dalamud.Plugin;
+using Newtonsoft.Json;
 
-function update_result () {
-  
-  let c_w = (pre(get_IPA_tBox())+" ").split(" ");
+namespace GagSpeak.Translator;
+// Class to convert Persian text to International Phonetic Alphabet (IPA) notation
+public class IpaParserPersian
+{
+    private             string                      data_file;       // Path to the JSON file containing the conversion rules
+    private             Dictionary<string, string>  obj;             // Dictionary to store the conversion rules in JSON
+    private readonly    GagSpeakConfig              _config;         // The GagSpeak configuration
+    private             DalamudPluginInterface      _pluginInterface; // used to get the plugin interface
 
-  set_IPA_tBox ("loading....");
-
-  get_IPA_DB ((obj)=>{
-
-    
-    let str = "";
-
-    for (var i = 0; i < c_w.length; i++) {
-
-      let word = c_w[i];
-
-      console.log(word, obj[word]);
-      if ( word != "") {
-        if(typeof obj[word] != "undefined" ){
-          //console.log(word,obj[word]);
-
-          let s_words = [];
-          s_words[0] = c_w[i];
-          s_words[1] = s_words[0] + " " + c_w[i+1];
-          s_words[2] = s_words[1] + " " + c_w[i+2];
-          s_words[3] = s_words[2] + " " + c_w[i+3];
-          s_words[4] = s_words[3] + " " + c_w[i+4];
-          s_words[5] = s_words[4] + " " + c_w[i+5];
-
-          let words_index = 0;
-          if (typeof obj[s_words[5]] != "undefined") { words_index = 5; }
-          else if (typeof obj[s_words[4]] != "undefined") { words_index = 4;}
-          else if (typeof obj[s_words[3]] != "undefined") { words_index = 3;}
-          else if (typeof obj[s_words[2]] != "undefined") { words_index = 2;}
-          else if (typeof obj[s_words[1]] != "undefined") { words_index = 1;}
-          else if (typeof obj[s_words[0]] != "undefined") { words_index = 0;}
-
-          search_words = s_words[words_index];
-
-          if (document.getElementById("wf_c_words").checked) {
-
-              str += "{ " + search_words + " - " + obj[search_words] + " }";
-
-          }else  str += obj[search_words] + " ";
-
-          i += words_index;
-
-        }else str += word + " ";
-
-        set_IPA_tBox (str);
-
-      }
+    public IpaParserPersian(GagSpeakConfig config, DalamudPluginInterface pluginInterface)
+    {
+        _config = config;
+        _pluginInterface = pluginInterface;
+        // Set the path to the JSON file based on the language dialect
+        data_file = "GarblerParser\\jsonFiles\\fa.json";
+		// Try to read the JSON file and deserialize it into the obj dictionary
+		try {
+			// Assuming you have an instance of DalamudPluginInterface named _pluginInterface
+			string jsonFilePath = Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, data_file);
+			// read the file
+			string json = File.ReadAllText(jsonFilePath);
+			// deserialize the json into the obj dictionary
+			obj = JsonConvert.DeserializeObject<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+			// let log know that the file was read
+			GagSpeak.Log.Debug($"[IPA Parser] File read: {jsonFilePath}");
+		}
+		catch (FileNotFoundException) {
+			// If the file does not exist, log an error and initialize obj as an empty dictionary
+			GagSpeak.Log.Debug($"[IPA Parser] File does not exist: {data_file}");
+			obj = new Dictionary<string, string>();
+		}
+		catch (Exception ex) {
+			// If any other error occurs, log the error and initialize obj as an empty dictionary
+			GagSpeak.Log.Debug($"[IPA Parser] An error occurred while reading the file: {ex.Message}");
+			obj = new Dictionary<string, string>();
+		}
     }
 
-  });
+    /// <summary> Function for converting an input string to IPA notation.
+    /// <list type="Bullet"><item><c>input</c><param name="input"> - string to convert</param></item></list>
+    /// </summary><returns> The input string converted to IPA notation</returns>
+    public string UpdateResult(string input) {
+        // Preprocessing the input and splitting it into words
+        string[] c_w = (Preprocess(input) + " ").Split(" ");
+        string str = "";
+        // Looping through each word
+        for (int i = 0; i < c_w.Length; i++) {
+            string word = c_w[i];
+            // Checking if the word is not empty
+            if (!string.IsNullOrEmpty(word)) {
+                // Checking if the word exists in the dictionary
+                if (obj.ContainsKey(word)) {
+                    // Initializing an array to store potential multi-word entries
+                    string[] s_words = new string[6];
+                    // Adding the first word to the array
+                    s_words[0] = c_w[i];
+                    // iterating through the next 5 words
+                    for (int j = 1; j < 6; j++) {
+                        // if index is within the bounds of the array
+                        if (i + j < c_w.Length) {
+                            // Adding the next word to the array
+                            s_words[j] = s_words[j - 1] + " " + c_w[i + j];
+                        }
+                    }
+                    // Find the last index of a word that exists in the dictionary
+                    int words_index = Array.FindLastIndex(s_words, sw => obj.ContainsKey(sw));
+                    // Getting the word from the dictionary at found index
+                    string search_words = s_words[words_index];
+                    // Adding the word and its corresponding value in the dictionary to the result string
+                    str += "{ " + search_words + " - " + obj[search_words] + " }";
+                    // Incrementing the index by the number of words in the multi-word entry
+                    i += words_index;
+                } else {
+                    // If the word DNE in dictionary, add to the result string as original text
+                    str += word + " ";
+                }
+            }
+        }
+        return str;
+    }
+
+	/// <summary> Preprocess input string by converting it to lower case and removing certain characters.
+	/// <list type="Bullet"><item><c>x</c><param name="x"> - String to preprocess</param></item></list>
+	/// </summary> <returns> The preprocessed input string</returns>
+	private string Preprocess(string x) {
+        // Converting to lowercase
+		x = x.ToLower();
+        // Removing all punctuation and newlines
+		x = Regex.Replace(x, @"\.", "");
+		x = Regex.Replace(x, @"\,", "");
+		x = Regex.Replace(x, @"\n", "");
+		return x;
+	}
 }
-
-function get_IPA_DB (s) {
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-          var myObj = JSON.parse(this.responseText);
-          return s(myObj);
-      }
-  };
-
-  xmlhttp.open("GET", "./fa.json", true);
-  xmlhttp.send();
-}
-
-function get_IPA_tBox () {
-  return document.getElementById("cWords_tBox").value
-}
-
-function set_IPA_tBox (v = IPA_result) {
-  document.getElementById("IPA_tBox").value = v;
-}
-
-function pre(x){
-  x = x.replace(/\./g, "");
-  x = x.replace(/\,/g, "");
-  x = x.replace(/\n/g, "");
-  return x;
-}
-
-update_result ();

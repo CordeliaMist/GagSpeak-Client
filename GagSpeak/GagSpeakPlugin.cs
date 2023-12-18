@@ -45,7 +45,7 @@ public class GagSpeak : IDalamudPlugin
           _services.GetRequiredService<CommandManager>(); // Initialize the command manager
           _services.GetRequiredService<ChatManager>(); // Initialize the OnChatMessage
           _services.GetRequiredService<ChatInputProcessor>(); // Initialize the chat message detour
-          Log.Information($"GagSpeak version{Version} loaded successfully."); // Log the version to the /xllog menu
+          Log.Information($"GagSpeak v{Version} loaded successfully."); // Log the version to the /xllog menu
       }
       catch
       {

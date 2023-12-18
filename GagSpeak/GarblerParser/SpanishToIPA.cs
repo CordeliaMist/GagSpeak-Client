@@ -1,104 +1,94 @@
-let IPA_result = "";
-let data_file = './es_ES.json';
-// let data_file = './es_MX.json';
+using System;
+using System.IO;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
-function update_result () {
-  
-  let c_w = (get_IPA_tBox()+" ").split(" ");
+namespace GagSpeak.Translator;
 
-  set_IPA_tBox ("loading....");
+// Class to convert English text to International Phonetic Alphabet (IPA) notation
+public class IpaParserSpanish
+{  
+	
+	private 			string 						data_file;		 // Path to the JSON file containing the conversion rules
+	private 			Dictionary<string, string> 	obj;			 // Dictionary to store the conversion rules in JSON
+	private readonly 	GagSpeakConfig 				_config;		 // The GagSpeak configuration
+	
+	/// <summary>
+	/// Constructor for the EnglishToIPA class.
+	/// <list type="Bullet">
+	/// <item><c>usedLangDialect</c><param name="usedLangDialect"> - The language dialect to use for the IPA conversion</param></item>
+	/// </list> </summary>
+	public IpaParserSpanish(GagSpeakConfig config) {
+		_config = config;
 
-  get_IPA_DB ((obj)=>{
+		// Set the path to the JSON file based on the language dialect
+		switch (_config.languageDialect) {
+			case "IPA_Spain":
+			data_file = "./jsonFiles/es_ES.json";
+			break;
+			case "IPA_Mexico":
+			data_file = "./jsonFiles/es_MX.json";
+			break;
+			default:
+			data_file = "./jsonFiles/es_ES.json";
+			break;
+		}
+		// Try to read the JSON file and deserialize it into the obj dictionary
+		try
+		{
+			string json = File.ReadAllText(data_file);
+			obj = JsonConvert.DeserializeObject<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+		}
+		catch (FileNotFoundException)
+		{
+			// If the file does not exist, log an error and initialize obj as an empty dictionary
+			Console.WriteLine($"File does not exist: {data_file}");
+			obj = new Dictionary<string, string>();
+		}
+		catch (Exception ex)
+		{
+			// If any other error occurs, log the error and initialize obj as an empty dictionary
+			Console.WriteLine($"An error occurred while reading the file: {ex.Message}");
+			obj = new Dictionary<string, string>();
+		}
+	}
 
-    
-    let str = "";
+	/// <summary>
+	/// Function for converting an input string to IPA notation.
+	/// <list type="Bullet">
+	/// <item><c>input</c><param name="input"> - The input string to convert</param></item>
+	/// </list> </summary>
+	/// <returns> The input string converted to IPA notation</returns>
+    public string UpdateResult(string input) {
+        string[] c_w = (PreprocessEng(input) + " ").Split(" ");
+        string str = "";
 
-    for (var i = 0; i < c_w.length; i++) {
-
-      let word = c_w[i];
-
-      preprocess_eng(word,(t_word)=>{
-
-        if ( word != "") {
-          if(typeof obj[t_word] != "undefined"){
-
-            let ipa = obj[t_word];
-
-            if (document.getElementById("wf_c_words").checked) {
-
-                str += "( " + word + " : " + ipa + " ) ";
-
-              }else  str += ipa + " ";
-
-          }else str += word + " ";
-
-          set_IPA_tBox (str);
-
+        foreach (var word in c_w) {
+            if (!string.IsNullOrEmpty(word)) {
+                if (obj.ContainsKey(word)) {
+                    string ipa = obj[word];
+                    str += $"( {word} : {ipa} ) ";
+                }
+                else {
+                    str += $"{word} ";
+                }
+            }
         }
-      });
+        return str;
     }
 
-  });
+	/// <summary>
+	/// Function for preprocessing an input string by converting it to lower case and removing certain characters.
+	/// <list type="Bullet">
+	/// <item><c>x</c><param name="x"> - The input string to preprocess</param></item>
+	/// </list> </summary>
+	/// <returns> The preprocessed input string</returns>
+	private string PreprocessEng(string x) {
+		x = x.ToLower();
+		x = Regex.Replace(x, @"\.", "");
+		x = Regex.Replace(x, @"\,", "");
+		x = Regex.Replace(x, @"\n", "");
+		return x;
+	}
 }
-
-function get_IPA_DB (s) {
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-          var myObj = JSON.parse(this.responseText);
-          return s(myObj);
-      }
-  };
-
-  if (document.getElementById("IPA_Spain").checked){
-    data_file = './es_ES.json';
-  }else if (document.getElementById("IPA_Mexico").checked) {
-    data_file = './es_MX.json';
-  }
-
-  xmlhttp.open("GET", data_file, true);
-  xmlhttp.send();
-}
-
-function get_IPA_tBox () {
-  return document.getElementById("cWords_tBox").value
-}
-
-function set_IPA_tBox (v = IPA_result) {
-  document.getElementById("IPA_tBox").value = v;
-}
-
-function preprocess_eng (x,callback){
-  x = x.replace(/A/g, "a");
-  x = x.replace(/B/g, "b");
-  x = x.replace(/C/g, "c");
-  x = x.replace(/D/g, "d");
-  x = x.replace(/E/g, "e");
-  x = x.replace(/F/g, "f");
-  x = x.replace(/G/g, "g");
-  x = x.replace(/H/g, "h");
-  x = x.replace(/I/g, "i");
-  x = x.replace(/J/g, "j");
-  x = x.replace(/K/g, "k");
-  x = x.replace(/L/g, "l");
-  x = x.replace(/M/g, "m");
-  x = x.replace(/N/g, "n");
-  x = x.replace(/O/g, "o");
-  x = x.replace(/P/g, "p");
-  x = x.replace(/Q/g, "q");
-  x = x.replace(/R/g, "r");
-  x = x.replace(/S/g, "s");
-  x = x.replace(/T/g, "t");
-  x = x.replace(/U/g, "u");
-  x = x.replace(/V/g, "v");
-  x = x.replace(/W/g, "w");
-  x = x.replace(/X/g, "x");
-  x = x.replace(/Y/g, "y");
-  x = x.replace(/Z/g, "z");
-  x = x.replace(/\./g, "");
-  x = x.replace(/\,/g, "");
-  x = x.replace(/\n/g, "");
-  callback(x);
-}
-
-update_result ();

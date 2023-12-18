@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Timers;
+using GagSpeak.Events;
 using GagSpeak.UI.Helpers;
+
 
 namespace GagSpeak.Services;
 
@@ -12,18 +14,20 @@ namespace GagSpeak.Services;
 /// </summary>
 public class TimerService : IDisposable
 {
-   private readonly  GagSpeakConfig                _config;              // for config options
-   public event      Action<string, TimeSpan>?     RemainingTimeChanged; // event to notify subscribers when remaining time changes
-   private readonly  Dictionary<string, TimerData> timers;               // Dictionary to store active timers
-   public readonly   Dictionary<string, string>    remainingTimes;       // Dictionary to store active timers for UI
+   private readonly  GagSpeakConfig                _config;                // for config options
+   public            InfoRequestEvent              _infoRequestEvent {get;}// event to notify subscribers when info is requested
+   public event      Action<string, TimeSpan>?     RemainingTimeChanged;   // event to notify subscribers when remaining time changes
+   private readonly  Dictionary<string, TimerData> timers;                 // Dictionary to store active timers
+   public readonly   Dictionary<string, string>    remainingTimes;         // Dictionary to store active timers for UI
 
    /// <summary>
    /// Initializes a new instance of the <see cref="TimerService"/> class.
    /// <list type="bullet">
    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
    /// </list> </summary>
-   public TimerService(GagSpeakConfig config) {
+   public TimerService(GagSpeakConfig config, InfoRequestEvent infoRequestEvent) {
       _config = config;
+      _infoRequestEvent = infoRequestEvent;
       timers = new Dictionary<string, TimerData>();
       remainingTimes = new Dictionary<string, string>();
       // this is only called every time the plugin is loaded, so call restoretimerdata to restore any active timers.
@@ -122,6 +126,17 @@ public class TimerService : IDisposable
                // Notify subscribers about remaining time change
                RemainingTimeChanged?.Invoke(timerName, remainingTime);
          }
+      }
+   }
+
+   /// <summary>
+   /// Checks to see if someone is requesting info and if a timer by the name of "InteractionCooldown" either
+   /// isnt in the timerservice AND the configs sendInfoName is not null or empty.
+   /// </summary>
+   public void CheckForInfoRequestInvokeConditoin() {
+      // If the timer is not in the timers dictionary and the config.sendInfoName is not null or empty
+      if (!timers.ContainsKey("interactionButtonPressed") && !string.IsNullOrEmpty(_config.SendInfoName)) {
+         _infoRequestEvent.Invoke();
       }
    }
 
@@ -298,10 +313,10 @@ public class TimerService : IDisposable
    /// </summary>
    public void Dispose() {
       // save timers upon unloading, printing all active ones to the debug log.
-      GagSpeak.Log.Debug("--------Saving & Unloading Timers-------");
+      GagSpeak.Log.Debug("[Timer Service] --------Saving & Unloading Timers-------");
       SaveTimerData(_config);
       DebugPrintRemainingTimers();
-      GagSpeak.Log.Debug("--------Timers Saved Sucessfully--------");
+      GagSpeak.Log.Debug("[Timer Service] --------Timers (If Any) Now Saved--------");
       // Dispose all timers
       foreach (var timerData in timers.Values) {
          timerData.Timer.Dispose();

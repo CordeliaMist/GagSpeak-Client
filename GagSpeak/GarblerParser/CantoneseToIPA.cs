@@ -1,135 +1,140 @@
 using System;
-using System.Net.Http;
-using System.Threading.Tasks;
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using Dalamud.Plugin;
 using Newtonsoft.Json;
 
-namespace Gagspeak.Translator.ParseIPA
+namespace GagSpeak.Translator;
+// Class to convert Cantonese text to International Phonetic Alphabet (IPA) notation
+public class IpaParserCantonese
 {
-  public class IpaParserCantonese
-  {
-    private string IpaResult = "";
+    private             string                      data_file;       // Path to the JSON file containing the conversion rules
+    private             Dictionary<string, string>  obj;             // Dictionary to store the conversion rules in JSON
+    private readonly    GagSpeakConfig              _config;         // The GagSpeak configuration
+    private             DalamudPluginInterface      _pluginInterface; // used to get the plugin interface
 
-    public async Task UpdateResult() {
-      var cWords = GetIpaTextBox().Split(' ');
+    public IpaParserCantonese(GagSpeakConfig config, DalamudPluginInterface pluginInterface)
+    {
+        _config = config;
+        _pluginInterface = pluginInterface;
+        // Set the path to the JSON file based on the language dialect
+        data_file = "GarblerParser\\jsonFiles\\yue.json";
+		// Try to read the JSON file and deserialize it into the obj dictionary
+		try {
+			// Assuming you have an instance of DalamudPluginInterface named _pluginInterface
+			string jsonFilePath = Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, data_file);
+			// read the file
+			string json = File.ReadAllText(jsonFilePath);
+			// deserialize the json into the obj dictionary
+			obj = JsonConvert.DeserializeObject<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+			// let log know that the file was read
+			GagSpeak.Log.Debug($"[IPA Parser] File read: {jsonFilePath}");
+		}
+		catch (FileNotFoundException) {
+			// If the file does not exist, log an error and initialize obj as an empty dictionary
+			GagSpeak.Log.Debug($"[IPA Parser] File does not exist: {data_file}");
+			obj = new Dictionary<string, string>();
+		}
+		catch (Exception ex) {
+			// If any other error occurs, log the error and initialize obj as an empty dictionary
+			GagSpeak.Log.Debug($"[IPA Parser] An error occurred while reading the file: {ex.Message}");
+			obj = new Dictionary<string, string>();
+		}
+    }
 
-      SetIpaTextBox("loading....");
-
-      var obj = await GetIpaDb();
-
-      string str = "";
-
-      for (int i = 0; i < cWords.Length; i++) {
-        if (obj.ContainsKey(cWords[i])) {
-          /* check if allow_words_search is checked */
-          if (true) {
-            var sWords = new string[6];
-            sWords[0] = cWords[i];
-            sWords[1] = sWords[0] + cWords[i + 1];
-            sWords[2] = sWords[1] + cWords[i + 2];
-            sWords[3] = sWords[2] + cWords[i + 3];
-            sWords[4] = sWords[3] + cWords[i + 4];
-            sWords[5] = sWords[4] + cWords[i + 5];
-
-            int wordsIndex = 0;
-            if (obj.ContainsKey(sWords[5])) wordsIndex = 5;
-            else if (obj.ContainsKey(sWords[4])) wordsIndex = 4;
-            else if (obj.ContainsKey(sWords[3])) wordsIndex = 3;
-            else if (obj.ContainsKey(sWords[2])) wordsIndex = 2;
-            else if (obj.ContainsKey(sWords[1])) wordsIndex = 1;
-            else if (obj.ContainsKey(sWords[0])) wordsIndex = 0;
-
-            var searchWords = sWords[wordsIndex];
-            
-            str += $"({searchWords} /{obj[searchWords]}/ )";
-            
-            i += wordsIndex;
-          } else {
-            str += $"{cWords[i]}/{obj[cWords[i]]}/ ";
-
-          }
-        } else {
-          str += $"{cWords[i]} ";
+    /// <summary> Function for converting an input string to IPA notation.
+    /// <list type="Bullet"><item><c>input</c><param name="input"> - string to convert</param></item></list>
+    /// </summary><returns> The input string converted to IPA notation</returns>
+    public string UpdateResult(string input) { // remember it's splitting by chars, but they are chinese chars, which are words.
+        string c_w = input;
+        string str = "";
+        // Iterate over each character in the input string
+        for (int i = 0; i < c_w.Length; i++) {
+            // If the character exists in the dictionary
+            if (obj.ContainsKey(c_w[i].ToString())) {
+                // Initialize an array to store potential multi-word entries
+                string[] s_words = new string[6];
+                // Assign the first word
+                s_words[0] = c_w[i].ToString();
+                // Iterate through the next 5 words
+                for (int j = 1; j < 6; j++) {
+                    // If index is within the bounds of the array
+                    if (i + j < c_w.Length) {
+                        // Add the next word to the array
+                        s_words[j] = s_words[j - 1] + c_w[i + j];
+                    }
+                }
+                // Find the last index of the array that exists in the dictionary
+                int words_index = Array.FindLastIndex(s_words, sw => obj.ContainsKey(sw));
+                // If the index is not -1, append the word to the result
+                string search_words = s_words[words_index];
+                // Adding word and its phonetic to the result
+                str += "(" + search_words + " /" + obj[search_words] + "/ )";
+                // Increment the index by the number of words in the array
+                i += words_index;
+            }
+            // If the character does not exist in the obj dictionary
+            else {
+                // Add the character to the result
+                str += c_w[i] + " ";
+            }
         }
-      }
-      SetIpaTextBox(str);
+        // return the formatted string relative to the language dialect.
+        return FormatMain(str);
     }
 
-    private async Task<Dictionary<string, string>> GetIpaDb() {
-      var response = await client.GetStringAsync("./yue.json");
-      var myObj = JsonConvert.DeserializeObject<Dictionary<string, string>>(response);
+    /// <summary> Function for formatting the output string based on the selected dialect.
+    /// <list type="Bullet"><item><c>t_str</c><param name="t_str"> - String to format</param></item></list>
+    /// </summary><returns> The formatted output string</returns>
+    private string FormatMain(string t_str) {
+        string f_str = t_str;
 
-      return myObj;
-    }
-    private string GetIpaTextBox() {
-      // This depends on your UI framework
-      // For example, in WPF, you might do something like this:
-      // return cWords_tBox.Text;
-      return "";
-    }
+        if (_config.languageDialect == "IPA_nei5") f_str = FormatIPANum(t_str);         // nei13
+        else if (_config.languageDialect == "IPA_org") f_str = FormatIPAOrg(t_str);     // nei˩˧
+        else if (_config.languageDialect == "Jyutping") f_str = FormatJyutping(t_str);  // nei5
 
-    private void SetIpaTextBox(string value = null) {
-      // Set the value of IPA_tBox
-      // This depends on your UI framework
-      // For example, in WPF, you might do something like this:
-      // IPA_tBox.Text = FormatMain(value ?? IpaResult);
+        return f_str;
     }
 
-    private string FormatMain(string tStr) {
-      string fStr = tStr;
-      // Replace the following if checks with the appropriate checks for your UI framework
-      if (/* check if IPA_num is checked */) fStr = FormatIpaNum(tStr);
-      else if (/* check if IPA_org is checked */) fStr = FormatIpaOrg(tStr);
-      else if (/* check if Jyutping is checked */) fStr = FormatJyutping(tStr);
-
-      return fStr;
+    // Below are all the language dialect formatters
+    private string FormatIPANum(string x) { // nei13
+        x = Regex.Replace(x, "˥", "5");
+        x = Regex.Replace(x, "˧", "3");
+        x = Regex.Replace(x, "˨", "2");
+        x = Regex.Replace(x, "˩", "1");
+        x = Regex.Replace(x, ":", "");
+        return x;
     }
 
-    private string FormatIpaOrg(string x)
-    {
-      return x;
+    private string FormatIPAOrg(string x) { // nei˩˧
+        return x;
     }
-    private string FormatIpaNum(string x)
-    {
-      x = x.Replace("˥", "5");
-      x = x.Replace("˧", "3");
-      x = x.Replace("˨", "2");
-      x = x.Replace("˩", "1");
-      x = x.Replace(":", "");
-      return x;
+    private string FormatJyutping(string x) { // nei5
+        x = Regex.Replace(x, "˥˧|˥˥", "1");
+        x = Regex.Replace(x, "˧˥", "2");
+        x = Regex.Replace(x, "˧˧", "3");
+        x = Regex.Replace(x, "˨˩|˩˩", "4");
+        x = Regex.Replace(x, "˩˧|˨˧", "5");
+        x = Regex.Replace(x, "˨˨", "6");
+
+        x = Regex.Replace(x, "k˥", "k7");
+        x = Regex.Replace(x, "k˧", "k8");
+        x = Regex.Replace(x, "k˨", "k9");
+
+        x = Regex.Replace(x, "t˥", "t7");
+        x = Regex.Replace(x, "t˧", "t8");
+        x = Regex.Replace(x, "t˨", "t9");
+
+        x = Regex.Replace(x, "p˥", "p7");
+        x = Regex.Replace(x, "p˧", "p8");
+        x = Regex.Replace(x, "p˨", "p9");
+
+        x = Regex.Replace(x, "˥", "1");
+        x = Regex.Replace(x, "˧", "3");
+        x = Regex.Replace(x, "˨", "6");
+
+        x = Regex.Replace(x, ":", "");
+        return x;
     }
-
-    private string FormatJyutping(string x)
-    {
-      x = x.Replace("˥˧", "1");
-      x = x.Replace("˥˥", "1");
-      x = x.Replace("˧˥", "2");
-      x = x.Replace("˧˥", "2");
-      x = x.Replace("˧˧", "3");
-      x = x.Replace("˨˩", "4");
-      x = x.Replace("˩˩", "4");
-      x = x.Replace("˩˧", "5");
-      x = x.Replace("˨˧", "5");
-      x = x.Replace("˨˨", "6");
-
-      x = x.Replace("k˥", "k7");
-      x = x.Replace("k˧", "k8");
-      x = x.Replace("k˨", "k9");
-
-      x = x.Replace("t˥", "t7");
-      x = x.Replace("t˧", "t8");
-      x = x.Replace("t˨", "t9");
-
-      x = x.Replace("p˥", "p7");
-      x = x.Replace("p˧", "p8");
-      x = x.Replace("p˨", "p9");
-
-      x = x.Replace("˥", "1");
-      x = x.Replace("˧", "3");
-      x = x.Replace("˨", "6");
-
-      x = x.Replace(":", "");
-      return x;
-    }
-  }
 }

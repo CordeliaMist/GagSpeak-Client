@@ -41,8 +41,6 @@ public class DalamudServices {
 		services.AddSingleton(SigScanner);
 		services.AddSingleton(this);
 	}
-		
-	#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 	[PluginService] public IGameInteropProvider GameInteropProvider { get; private set; } = null!; // helps with detouring the chat input for our plugin
 	[PluginService] public DalamudPluginInterface DalamudPluginInterface { get; private set; } = null!; // for interfacing w/ plugin.
 	[PluginService] public IChatGui ChatGui { get; private set; } = null!; // For interfacing with the chat
@@ -55,6 +53,4 @@ public class DalamudServices {
 	[PluginService] public IPartyFinderGui PartyFinderGui { get; private set; } = null!; // For interfacing with the party finder (may remove)
 	[PluginService] public IPluginLog PluginLog { get; private set; } = null!; // For interfacing with the plugin logger
 	[PluginService] public ISigScanner SigScanner { get; private set; } = null!; // For getting our signatures to perform the operations in our danger files.
-
-	#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }

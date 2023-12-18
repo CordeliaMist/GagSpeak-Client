@@ -47,7 +47,7 @@ public unsafe class ChatInputProcessor : IDisposable {
             // try to get the chatinput address
             processChatInputAddress = scanner.ScanText("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86 ?? ?? ?? ?? ?? ?? ?? ??");
             Ready = true;
-            GagSpeak.Log.Debug($"[Chat Processor]: Input Address Found Sucessfully: {processChatInputAddress:X}");
+            GagSpeak.Log.Debug($"[Chat Processor]: Input Address Found: {processChatInputAddress:X} || 7FF7E2D8A910 expected for patch 6.5");
         } catch {
             GagSpeak.Log.Error($"[Chat Processor]: Failed to find input address!");
         }

@@ -1,6 +1,11 @@
 using System.Collections.Generic;
 
 namespace GagSpeak.UI;
+/* General Purpose Note:
+    - This file is primarily for visual styles. I aimed to adapt it in the use of my UI design, but quickly realized that
+    outside of the header styles, I was too burnt out to apply using it everywhere else I have defined my colors.
+    - As such, these primarily dictate the colors of the profile viewer and the header, but not much else at the moment sadly.
+*/
 
 // Enum to represent different color IDs
 public enum ColorId {
@@ -35,7 +40,7 @@ public static class Colors
             ColorId.DisabledLock            => (0xFFFFF0C0, "Disabled Lock Buttons",            "The color that the buttons in the general tab will have when unlocked."),
             ColorId.WhitelistBG             => (0xFFFFF0C0, "Whitelist Background",             "The color of the background that the whitelist viewer uses."           ),
             ColorId.AddRemovePlayerButtons  => (0xFFA0F0A0, "Add or Remove Player Buttons",     "the color that the add and remove player buttons will use."            ),
-            _                               => (0x00000000, string.Empty,                         string.Empty                                                                                                ),
+            _                               => (0x00000000, string.Empty,                         string.Empty                                                          ),
             // @formatter:on
         };
 

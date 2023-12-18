@@ -10,10 +10,11 @@ public class WhitelistCharData {
     public string                       name;                                     // get the character name
     public string                       homeworld;                                // get the characters world (dont know how to get this for now)
     public string                       relationshipStatus;                       // who you are to them
+    public string                       relationshipStatusToYou;                  // who they are to you
     public bool                         isDomMode;                                // is the character in dom mode?
     public int                          garbleLevel;                              // get the garble level of the character
-    public string                       PendingRelationRequestFromPlayer;         // Ex. If recieve a request from someone wanting to be your pet, that is stored here
-    public string                       PendingRelationRequestFromYou;            // Ex. If you press the button for "Become Their Pet", it will store "Pet" here
+    public string                       PendingRelationRequestFromYou;            // Once approved by the other player, the relationshipStatus variable is updated
+    public string                       PendingRelationRequestFromPlayer;         // Stores a request from another player. Stored in relationshipStatusToYou if approved
     public DateTimeOffset               timeOfCommitment;                         // how long has your commitment lasted?
     public bool                         lockedLiveChatGarbler { get; set; }       // is the live chat garbler locked?
     public ObservableList<string>       selectedGagTypes { get; set; }            // What gag types are selected?
@@ -34,6 +35,7 @@ public class WhitelistCharData {
         this.name = _name;
         this.homeworld = _homeworld;
         this.relationshipStatus = _relationshipStatus;
+        this.relationshipStatusToYou = "None";
         this.lockedLiveChatGarbler = false;
         this.PendingRelationRequestFromPlayer = "None"; // remember, this keeps track of people wanting to declare relations with you
         this.PendingRelationRequestFromYou = "None"; // and this keeps track of the relation requests you issue out to others for message feedback
