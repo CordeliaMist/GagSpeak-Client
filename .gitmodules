@@ -1,6 +1,8 @@
 [submodule "Penumbra.String"]
 	path = Penumbra.String
 	url = https://github.com/Ottermandias/Penumbra.String.git
+	branch = main
 [submodule "OtterGui"]
 	path = OtterGui
-	url = https://github.com/Ottermandias/OtterGui/
+	url = https://github.com/Ottermandias/OtterGui.git
+	branch = main

@@ -8,6 +8,7 @@ using OtterGui.Log;                             // Contains classes for logging 
 using GagSpeak.Chat;                            // Contains classes for handling chat in the GagSpeak plugin
 using GagSpeak.Chat.MsgDecoder;                 // Contains classes for decoding chat messages in the GagSpeak plugin
 using GagSpeak.Chat.MsgEncoder;                 // Contains classes for encoding chat messages in the GagSpeak plugin
+using GagSpeak.Data;
 using GagSpeak.Chat.MsgResultLogic;             // Contains classes for handling the result of chat messages in the GagSpeak plugin
 using GagSpeak.Events;                          // Contains classes for handling events in the GagSpeak plugin
 using GagSpeak.UI;                              // Contains classes for the UI of the GagSpeak plugin
@@ -80,6 +81,7 @@ public static class ServiceHandler
              .AddSingleton<MessageService>()
              .AddSingleton<GagAndLockManager>()
              .AddSingleton<TimerService>()
+             .AddSingleton<GagService>()
              .AddSingleton<InfoRequestService>()
              .AddSingleton<FontService>();
 
