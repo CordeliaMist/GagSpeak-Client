@@ -8,6 +8,7 @@ using OtterGui.Classes;
 using GagSpeak.Data;
 using GagSpeak.UI.GagListings;
 using GagSpeak.UI.Helpers;
+using GagSpeak.Services;
 
 namespace GagSpeak.Chat.MsgResultLogic;
 
@@ -21,6 +22,7 @@ public class MessageResultLogic
     private readonly GagSpeakConfig     _config;           // used to get the config
     private readonly IClientState       _clientState;      // used to get the client state
     private readonly GagAndLockManager  _lockManager;      // used to get the lock manager
+    private readonly GagService         _gagService;       // used to get the gag service
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageResultLogic"/> class.
@@ -32,12 +34,13 @@ public class MessageResultLogic
     /// <item><c>lockManager</c><param name="lockManager"> - The GagAndLockManager.</param></item>
     /// </list> </summary>
     public MessageResultLogic(GagListingsDrawer gagListingsDrawer, IChatGui clientChat, GagSpeakConfig config,
-    IClientState clientState, GagAndLockManager lockManager) {
+    IClientState clientState, GagAndLockManager lockManager, GagService gagService) {
         _gagListingsDrawer = gagListingsDrawer;
         _clientChat = clientChat;
         _config = config;
         _clientState = clientState;
         _lockManager = lockManager;
+        _gagService = gagService;
     }
     
     /// <summary>
@@ -246,7 +249,8 @@ public class MessageResultLogic
         if (!int.TryParse(decodedMessage[1], out int layer)) { 
             isHandled = true; return LogError("[MsgResultLogic]: Invalid layer value.");}
         // secondly, see if our gagtype is in our list of gagtypes
-        if (!GagAndLockTypes.GagTypes.ContainsKey(decodedMessage[2]) && _config.selectedGagTypes[layer-1] != "None") {
+        string gagName = decodedMessage[2];
+        if (!_gagService.GagTypes.Any(gag => gag.Name == gagName) && _config.selectedGagTypes[layer-1] != "None") {
             isHandled = true; return LogError("[MsgResultLogic]: Invalid gag type.");}
         // if we make it here, apply the gag
         _lockManager.ApplyGag(layer-1, decodedMessage[2]);

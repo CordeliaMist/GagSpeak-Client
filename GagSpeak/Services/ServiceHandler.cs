@@ -19,7 +19,8 @@ using GagSpeak.UI.Tabs.WhitelistTab;            // Contains classes for the whit
 using GagSpeak.UI.Tabs.ConfigSettingsTab;       // Contains classes for the config settings tab in the GagSpeak plugin
 using GagSpeak.UI.UserProfile;
 using GagSpeak.Chat.Garbler;
-using GagSpeak.Translator;
+using GagSpeak.Garbler.Translator;
+using GagSpeak.Garbler.PhonemeData;
 // following namespace naming convention
 namespace GagSpeak.Services;
 

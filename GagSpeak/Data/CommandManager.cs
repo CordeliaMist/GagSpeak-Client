@@ -219,7 +219,7 @@ public class CommandManager : IDisposable // Our main command list manager
         string layer = argumentsBeforePipeList[0]; // get the layer
 
         // if our arguments are not valid, display help information
-        if (! (_gagService.GagTypes.ContainsKey(gagType) && (layer == "1" || layer == "2" || layer == "3") && targetPlayer.Contains("@")) )
+        if (! (_gagService.GagTypes.Any(gag => gag.Name == gagType) && (layer == "1" || layer == "2" || layer == "3") && targetPlayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
             _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments").BuiltString);
             _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag ").AddYellow("layer ").AddGreen("gagtype").AddText(" | ").AddBlue("player name@homeworld").BuiltString);

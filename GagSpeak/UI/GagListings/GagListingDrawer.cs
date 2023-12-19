@@ -75,7 +75,7 @@ public class GagListingsDrawer : IDisposable
         _comboLength = 280 * ImGuiHelpers.GlobalScale;
         // if the required combo with is unscaled
         if (_requiredComboWidthUnscaled == 0)
-            _requiredComboWidthUnscaled = _gagService.GagTypes.Keys.Max(key => ImGui.CalcTextSize(key).X) / ImGuiHelpers.GlobalScale;
+            _requiredComboWidthUnscaled = _gagService.GagTypes.Max(gag => ImGui.CalcTextSize(gag.Name).X) / ImGuiHelpers.GlobalScale;
         // get the scaled combo width
         _requiredComboWidth = _requiredComboWidthUnscaled * ImGuiHelpers.GlobalScale;
     }
@@ -206,7 +206,7 @@ public class GagListingsDrawer : IDisposable
 
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                config.selectedGagTypes[layerIndex] = _gagService.GagTypes.Keys.First(); // to the first option, none
+                config.selectedGagTypes[layerIndex] = _gagService.GagTypes.First().Name; // to the first option, none
                 _config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
@@ -265,7 +265,7 @@ public class GagListingsDrawer : IDisposable
         combo.Draw(ID, ref gagLabel, charData.selectedGagTypes, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                gagLabel = _gagService.GagTypes.Keys.First();
+                gagLabel = _gagService.GagTypes.First().Name;
                 _config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");

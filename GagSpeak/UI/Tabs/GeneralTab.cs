@@ -11,7 +11,7 @@ using GagSpeak.Services;
 using GagSpeak.Chat;
 using GagSpeak.Data;
 using GagSpeak.UI.Helpers;
-using GagSpeak.Translator;
+using GagSpeak.Garbler.Translator;
 using System.Text.Unicode;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
