@@ -1,17 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Linq; // For enabling lists
+using System.Linq;
 using System.IO;
 using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Configuration;
 using OtterGui.Classes;
 using OtterGui.Widgets;
-using GagSpeak.Chat;
 using GagSpeak.Data;
 using GagSpeak.UI;
 using GagSpeak.Services;
 using GagSpeak.Events;
-using GagSpeak.Translator;
+using GagSpeak.Garbler.PhonemeData;
 using Newtonsoft.Json;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
@@ -122,7 +121,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         // set default values for the phonetic listings for the default language
         if (this.phoneticSymbolList == null || !this.phoneticSymbolList.Any()) {
             GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
-            this.phoneticSymbolList = Data.PhonemMasterLists.MasterListEN_US;}
+            this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
     }
 
     /// <summary> Saves the config to our save service and updates the garble level to its new value. </summary>

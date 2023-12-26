@@ -8,9 +8,9 @@ using OtterGui;
 using ImGuiNET;
 using System.Text;
 using System.Linq;
-using GagSpeak.Data;
+using GagSpeak.Garbler.PhonemeData;
 
-namespace GagSpeak.Translator;
+namespace GagSpeak.Garbler.Translator;
 
 // Class to convert English, French, Japanese, and Spanish text to International Phonetic Alphabet (IPA) notation
 public class IpaParserEN_FR_JP_SP
@@ -117,18 +117,6 @@ public class IpaParserEN_FR_JP_SP
             }
         }
 		GagSpeak.Log.Debug($"[IPA Parser] Parsed IPA string: {str}");
-		// return the formatted string
-        UTF8Encoding utf8 = new();
-
-
-        // // Convert a string to a byte array
-        // byte[] bytes = utf8.GetBytes(str);
-		// GagSpeak.Log.Debug($"[IPA Parser] Parsed IPA string bytes: {bytes}");
-
-        // // Convert a byte array back to a string
-        // string decodedText = utf8.GetString(bytes);
-		// GagSpeak.Log.Debug($"[IPA Parser] Parsed IPA string decoded: {decodedText}");
-        // ImGui.TextUnformatted(decodedText);
 
 		str = ConvertToSpacedPhonetics(str);
         return str;

@@ -38,11 +38,12 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly IFramework _framework; 
     private readonly TimerService _timerService;
     private readonly GagService _gagService;
+    private readonly GagManager _gagManager;
     private readonly SafewordUsedEvent _safewordCommandEvent;
 
     // Constructor for the command manager
     public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow, HistoryService historyService,
-    IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, IFramework framework, GagService gagService, 
+    IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, IFramework framework, GagService gagService, GagManager gagManager, 
     RealChatInteraction realchatinteraction, TimerService timerService, SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder)
     {
         // set the private readonly's to the passed in data of the respective names
@@ -57,6 +58,7 @@ public class CommandManager : IDisposable // Our main command list manager
         _framework = framework;
         _gagMessages = messageEncoder;
         _gagService = gagService;
+        _gagManager = gagManager;
         _historyService = historyService;
         _timerService = timerService;
         _safewordCommandEvent = safewordCommandEvent;
@@ -217,7 +219,7 @@ public class CommandManager : IDisposable // Our main command list manager
         string layer = argumentsBeforePipeList[0]; // get the layer
 
         // if our arguments are not valid, display help information
-        if (! (_gagService.GagTypes.ContainsKey(gagType) && (layer == "1" || layer == "2" || layer == "3") && targetPlayer.Contains("@")) )
+        if (! (_gagService.GagTypes.Any(gag => gag.Name == gagType) && (layer == "1" || layer == "2" || layer == "3") && targetPlayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
             _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments").BuiltString);
             _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag ").AddYellow("layer ").AddGreen("gagtype").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
@@ -559,7 +561,7 @@ public class CommandManager : IDisposable // Our main command list manager
             try {
                 // Otherwise, what we have after should be a message to translate into GagSpeak
                 var input = arguments; // get the text input
-                var output = this._gagService.ProcessMessage(arguments);
+                var output = this._gagManager.ProcessMessage(arguments);
                 _realChatInteraction.SendMessage(output);
                 _historyService.AddTranslation(new Translation(input, output));
             }

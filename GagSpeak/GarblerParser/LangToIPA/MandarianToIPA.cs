@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Dalamud.Plugin;
 using Newtonsoft.Json;
 
-namespace GagSpeak.Translator;
+namespace GagSpeak.Garbler.Translator;
 // Class to convert Mandarian text to International Phonetic Alphabet (IPA) notation
 public class IpaParserMandarian
 {

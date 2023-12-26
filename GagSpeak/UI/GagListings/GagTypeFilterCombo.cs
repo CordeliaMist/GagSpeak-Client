@@ -17,7 +17,7 @@ public sealed class GagTypeFilterCombo
     private GagSpeakConfig          _config;            // the config for the plugin
     private GagService              _gagService;        // the gag service
     private string                  _comboSearchText;   // the search text for the combo box
-    private Dictionary<string,Gag>  _gagTypes;          // the gag types
+    private List<Gag>               _gagTypes;          // the gag types
     private bool                    isDummy = false;    // used to distinguish between general tab appliers, and whitelist ones
 
     /// <summary>
@@ -61,7 +61,7 @@ public sealed class GagTypeFilterCombo
                         _gagTypes = string.IsNullOrEmpty(_comboSearchText) ? (
                             _gagService.GagTypes
                         ) : (
-                            _gagService.GagTypes.Where(x=>x.Key.ToLower().Contains(_comboSearchText.ToLower())).ToDictionary(x=>x.Key, x=>x.Value)
+                            _gagService.GagTypes.Where(gag => gag.Name.ToLower().Contains(_comboSearchText.ToLower())).ToList()
                         );
                     }
                     // Now that we have our results, so draw the childs
@@ -70,11 +70,10 @@ public sealed class GagTypeFilterCombo
                     using var indent = ImRaii.PushIndent(ImGuiHelpers.GlobalScale);
 
                     // draw list
-                    foreach( var item in _gagTypes.Keys ) { // We will draw out one selectable for each item.
-                        if( ImGui.Selectable( item, item == listing[layerIndex] ) ) { // If our item is selected, set it and break
-                            if(isDummy)
-                                listing[layerIndex] = item; // update data (if for generaltab)
-                            label = item; // update label
+                    foreach( var item in _gagTypes ) { // We will draw out one selectable for each item.
+                        if( ImGui.Selectable( item.Name, item.Name == listing[layerIndex] ) ) { // If our item is selected, set it and break
+                            if(isDummy) { listing[layerIndex] = item.Name; } // update data (if for generaltab)
+                            label = item.Name; // update label
                             _comboSearchText = string.Empty;
                             _gagTypes = _gagService.GagTypes;
                             ImGui.CloseCurrentPopup();
