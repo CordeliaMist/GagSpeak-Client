@@ -90,12 +90,19 @@ public unsafe class ChatInputProcessor : IDisposable {
         // try the following
         try {
             var bc = 0;
+            int matchSequence = 0; //in ourcase 4 means that message contains autocomplete marker so we ignore message completely
             for (var i=0; i <=500; i++) { // making sure command / message is within 500 characters
+                // match autocomplete byte pattern 02 2e ... f2 ... 03
+                if (i + 5 < 500 && (*message)[i] == 0x02 && (*message)[i + 1] == 0x2e) matchSequence += 2;
+                if ((*message)[i] == 0xf2 && matchSequence == 2) matchSequence++;
+                if ((*message)[i] == 0x03 && matchSequence == 3) matchSequence++;
+                // if message contain autocomplete matchSequence will be 4
+
                 if (*(*message + i) != 0) continue; // if the message is empty, break
                 bc = i; // increment bc
                 break;
             }
-            if(bc < 2 || bc > 500) {
+            if(bc < 2 || bc > 500 || matchSequence == 4) {
                 // if we satsify this condition it means our message is an invalid message so disregard it
                 return processChatInputHook.Original(uiModule, message, a3); // just send the message as invalid or whatever
             }
