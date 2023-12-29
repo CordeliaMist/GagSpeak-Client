@@ -19,6 +19,7 @@ public class GagSpeakChangelog
         _config   = config; // initialize the config in our constructor
         Changelog = new Changelog("GagSpeak Changelog", ConfigData, Save); // initialize the changelog
         // what displays inside the change log
+        Add0_9_9_10(Changelog); 
         Add0_9_9_0(Changelog); 
         Add0_9_7_0(Changelog);
     }
@@ -49,6 +50,11 @@ public class GagSpeakChangelog
     }
 
     // all versions are added here, the order doesnt madder, but it should be in order of newest to oldest.
+    private static void Add0_9_9_10(Changelog log)
+        => log.NextVersion("Version 0.9.9.10 Pre-Release")
+            .RegisterHighlight("Advanced Chat Garbler now fully implemented!.")
+            .RegisterHighlight("Plugin File Size slightly increased due to the inclusion of dictionaries.")
+            .RegisterHighlight("Debug Menu moved to /gagspeak debug , will no longer show up in config menu.");
     private static void Add0_9_9_0(Changelog log)
         => log.NextVersion("Version 0.9.9.0 Pre-Release")
             .RegisterHighlight("GagAndLockManager to syncronize config and padlockidentifier locks has been implemented.")

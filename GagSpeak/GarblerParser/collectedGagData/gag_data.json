@@ -12,7 +12,7 @@
         "θ":    { "MUFFLE": 0,  "SOUND": "th"  },
         "ð":    { "MUFFLE": 0,  "SOUND": "th"  },
         "t":    { "MUFFLE": 0,  "SOUND": "t"  },
-        "d":    { "MUFFLE": 1,  "SOUND": "th"  },
+        "d":    { "MUFFLE": 1,  "SOUND": "h"  },
         "s":    { "MUFFLE": 0,  "SOUND": "s"  },
         "z":    { "MUFFLE": 1,  "SOUND": "ss"  },
         "n":    { "MUFFLE": 0,  "SOUND": "n"  },
