@@ -250,7 +250,7 @@ public class MessageResultLogic
             isHandled = true; return LogError("[MsgResultLogic]: Invalid layer value.");}
         // secondly, see if our gagtype is in our list of gagtypes
         string gagName = decodedMessage[2];
-        if (!_gagService.GagTypes.Any(gag => gag.Name == gagName) && _config.selectedGagTypes[layer-1] != "None") {
+        if (!_gagService._gagTypes.Any(gag => gag._gagName == gagName) && _config.selectedGagTypes[layer-1] != "None") {
             isHandled = true; return LogError("[MsgResultLogic]: Invalid gag type.");}
         // if we make it here, apply the gag
         _lockManager.ApplyGag(layer-1, decodedMessage[2]);

@@ -36,7 +36,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                whitelistOnly { get; set; } = false;                    // Is whitelist only enabled?
     public          bool                                DebugMode { get; set; } = false;                        // Is debug mode enabled?
     public          int                                 GarbleLevel { get; set; } = 0;                          // Current Garble Level (0-20)
-    public          bool                                ExperimentalGarbler { get; set; } = false;               // Is experimental garbler enabled?
+    public          bool                                ExperimentalGarbler { get; set; } = false;               // Is experimental garbler enabled?,
     public          ObservableList<string>              selectedGagTypes { get; set; }                          // What gag types are selected?
     public          ObservableList<GagPadlocks>         selectedGagPadlocks { get; set; }                       // which padlocks are equipped currently?
     public          List<string>                        selectedGagPadlocksPassword { get; set; }               // password lock on padlocks, if any
@@ -60,7 +60,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     // stuff for the garbler
     public          string                              language { get; set; } = "English";                     // The language dialect to use for the IPA conversion
     public          string                              languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
-    public          List<PhoneticSymbol>                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
+    public          List<string>                        phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
     // variables involved with saving and updating the config
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
     
@@ -79,6 +79,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     {
         _saveService = saveService;
         Load(migrator);
+
+        languageDialect = "IPA_US";
 
         // Make sure we aren't getting any duplicates
         if (this.selectedGagTypes == null || !this.selectedGagTypes.Any() || this.selectedGagTypes.Count > 3) {

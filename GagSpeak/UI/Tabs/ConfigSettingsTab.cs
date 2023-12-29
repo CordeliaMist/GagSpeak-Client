@@ -17,8 +17,6 @@ namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
 public class ConfigSettingsTab : ITab
 {
     private readonly IDalamudTextureWrap    _dalamudTextureWrap;
-    private readonly GagListingsDrawer      _gagListingsDrawer;
-    private readonly GagService             _gagService;
     private readonly GagSpeakConfig         _config;
     private readonly UiBuilder              _uiBuilder;
 
@@ -33,8 +31,6 @@ public class ConfigSettingsTab : ITab
     GagListingsDrawer gagListingsDrawer, GagService gagService) {
         _config = config;
         _uiBuilder = uiBuilder;
-        _gagListingsDrawer = gagListingsDrawer;
-        _gagService = gagService;
         var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "icon.png");
         GagSpeak.Log.Debug($"[Image Display]: Loading image from {imagePath}");
         var IconImage = _uiBuilder.LoadImage(imagePath);
@@ -98,8 +94,6 @@ public class ConfigSettingsTab : ITab
         ImGui.Columns(1);
 
         // Show Debug Menu when Debug logging is enabled
-        if (_config.DebugMode)
-            DrawDebug();
         if(_config.LockDirectChatGarbler == true) {ImGui.BeginDisabled();}
         ImGui.Text("Enabled Channels:"); ImGui.Separator();
         var i = 0;
@@ -128,84 +122,5 @@ public class ConfigSettingsTab : ITab
         ImGui.Columns(1);
         ImGui.PopStyleVar();
         if(_config.LockDirectChatGarbler == true) {ImGui.EndDisabled();}
-    }
-
-    /// <summary>
-    /// This just literally displays extra information for debugging variables in game to keep track of them.
-    /// </summary>
-    private void DrawDebug() {
-        ImGui.Text("DEBUG INFORMATION:");
-        try
-        {
-            ImGui.Text($"Fresh Install?: {_config.FreshInstall} || Is Enabled?: {_config.Enabled} || In Dom Mode?: {_config.InDomMode}");
-            ImGui.Text($"Debug Mode?: {_config.DebugMode} || In DirectChatGarbler Mode?: {_config.DirectChatGarbler}");
-            ImGui.Text($"Safeword: {_config.Safeword}");
-            ImGui.Text($"Friends Only?: {_config.friendsOnly} || Party Only?: {_config.partyOnly} || Whitelist Only?: {_config.whitelistOnly}");
-            ImGui.Text($"ExperimentalGarblerMode: {_config.ExperimentalGarbler}");
-            ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval} || Max Translation History: {_config.TranslationHistoryMax}");
-            ImGui.Text($"Total Gag List Count: {_gagService.GagTypes.Count}");
-            ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-            ImGui.Text("Selected GagPadlocks: ||"); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} ||");};
-            ImGui.Text("Selected GagPadlocks Passwords: ||"); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} ||"); };
-            ImGui.Text("Selected GagPadlock Timers: ||"); ImGui.SameLine(); foreach (var gagPadlockTimer in _config.selectedGagPadLockTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} ||"); };
-            ImGui.Text("Selected GagPadlocks Assigners: ||"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} ||"); };
-            ImGui.Text($"Translatable Chat Types:");
-            foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };
-            ImGui.Text($"Current ChatBox Channel: {ChatChannel.GetChatChannel()} || Requesting Info: {_config.SendInfoName} || Accepting?: {_config.acceptingInfoRequests}");
-            ImGui.Text("Whitelist:"); ImGui.Indent();
-            foreach (var whitelistPlayerData in _config.Whitelist) {
-                ImGui.Text(whitelistPlayerData.name);
-                ImGui.Indent();
-                ImGui.Text($"Relationship to this Player: {whitelistPlayerData.relationshipStatus}");
-                ImGui.Text($"Commitment Duration: {whitelistPlayerData.GetCommitmentDuration()}");
-                ImGui.Text($"Locked Live Chat Garbler: {whitelistPlayerData.lockedLiveChatGarbler}");
-                ImGui.Text($"Pending Relationship Request: {whitelistPlayerData.PendingRelationRequestFromPlayer}");
-                ImGui.Text($"Pending Relationship Request From You: {whitelistPlayerData.PendingRelationRequestFromYou}");
-                ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in whitelistPlayerData.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-                ImGui.Text($"Selected GagPadlocks: || "); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in whitelistPlayerData.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
-                ImGui.Text($"Selected GagPadlocks Timers: || "); ImGui.SameLine(); foreach (var gagPadlockTimer in whitelistPlayerData.selectedGagPadlocksTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} || "); };
-                ImGui.Text($"Selected GagPadlocks Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in whitelistPlayerData.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
-                ImGui.Unindent();
-            }
-            ImGui.Unindent();
-            ImGui.NewLine();
-            ImGui.Text("Padlock Identifiers Variables:");
-            // output debug messages to display the gaglistingdrawers boolean list for _islocked, _adjustDisp. For each padlock identifer, diplay all of its public varaibles
-            ImGui.Text($"Listing Drawer _isLocked: ||"); ImGui.SameLine(); foreach(var index in _config._isLocked) { ImGui.SameLine(); ImGui.Text($"{index} ||"); };
-            ImGui.Text($"Listing Drawer _adjustDisp: ||"); ImGui.SameLine(); foreach(var index in _gagListingsDrawer._adjustDisp) { ImGui.SameLine(); ImGui.Text($"{index} ||"); };
-            var width = ImGui.GetContentRegionAvail().X / 3;
-            foreach(var index in _config._padlockIdentifier) {
-                ImGui.Columns(3,"DebugColumns", true);
-                ImGui.SetColumnWidth(0,width); ImGui.SetColumnWidth(1,width); ImGui.SetColumnWidth(2,width);
-                ImGui.Text($"Input Password: {index._inputPassword}"); ImGui.NextColumn();
-                ImGui.Text($"Input Combination: {index._inputCombination}"); ImGui.NextColumn();
-                ImGui.Text($"Input Timer: {index._inputTimer}");ImGui.NextColumn();
-                ImGui.Text($"Stored Password: {index._storedPassword}");ImGui.NextColumn();
-                ImGui.Text($"Stored Combination: {index._storedCombination}");ImGui.NextColumn();
-                ImGui.Text($"Stored Timer: {index._storedTimer}");ImGui.NextColumn();
-                ImGui.Text($"Padlock Type: {index._padlockType}");ImGui.NextColumn();
-                ImGui.Text($"Padlock Assigner: {index._mistressAssignerName}");ImGui.NextColumn();
-                ImGui.Columns(1);
-                ImGui.NewLine();
-            }
-            ImGui.Columns(3,"DebugColumns", true);
-            ImGui.SetColumnWidth(0,width); ImGui.SetColumnWidth(1,width); ImGui.SetColumnWidth(2,width);
-            ImGui.Text($"Input Password: {_config._whitelistPadlockIdentifier._inputPassword}"); ImGui.NextColumn();
-            ImGui.Text($"Input Combination: {_config._whitelistPadlockIdentifier._inputCombination}"); ImGui.NextColumn();
-            ImGui.Text($"Input Timer: {_config._whitelistPadlockIdentifier._inputTimer}");ImGui.NextColumn();
-            ImGui.Text($"Stored Password: {_config._whitelistPadlockIdentifier._storedPassword}");ImGui.NextColumn();
-            ImGui.Text($"Stored Combination: {_config._whitelistPadlockIdentifier._storedCombination}");ImGui.NextColumn();
-            ImGui.Text($"Stored Timer: {_config._whitelistPadlockIdentifier._storedTimer}");ImGui.NextColumn();
-            ImGui.Text($"Padlock Type: {_config._whitelistPadlockIdentifier._padlockType}");ImGui.NextColumn();
-            ImGui.Text($"Padlock Assigner: {_config._whitelistPadlockIdentifier._mistressAssignerName}");ImGui.NextColumn();
-            ImGui.Columns(1);
-            ImGui.NewLine();   
-        }
-        catch (Exception e)
-        {
-            ImGui.NewLine();
-            ImGui.Text($"Error while fetching config in debug: {e}");
-            ImGui.NewLine();
-        }
     }
 }

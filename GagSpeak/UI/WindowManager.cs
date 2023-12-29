@@ -28,14 +28,15 @@ public class GagSpeakWindowManager : IDisposable
     /// <item><c>changelog</c><param name="changelog"> - The changelog.</param></item>
     /// <item><c>userProfile</c><param name="userProfile"> - The user profile window.</param></item>
     /// </list> </summary>
-    public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config,
-    IChatGui chatGui, HistoryWindow uiHistory, HelpPageTab helpPage, GagSpeakChangelog changelog, UserProfileWindow userProfile) {
+    public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config, IChatGui chatGui,
+    HistoryWindow uiHistory, DebugWindow uiDebug, HelpPageTab helpPage, GagSpeakChangelog changelog, UserProfileWindow userProfile) {
         // set the main ui window
         _uiBuilder       = uiBuilder;
         _ui              = ui;
         _chatGui         = chatGui;
         _windowSystem.AddWindow(ui);
         _windowSystem.AddWindow(uiHistory);
+        _windowSystem.AddWindow(uiDebug);
         _windowSystem.AddWindow(helpPage);
         _windowSystem.AddWindow(userProfile);
         _windowSystem.AddWindow(changelog.Changelog);

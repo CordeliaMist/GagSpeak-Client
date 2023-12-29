@@ -29,6 +29,7 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly ICommandManager _commands;
     private readonly MainWindow _mainWindow;
     private readonly HistoryWindow _historyWindow;
+    private readonly DebugWindow _debugWindow;
     private readonly HistoryService _historyService;
     private readonly IChatGui _chat;
     private readonly GagSpeakConfig _config;
@@ -42,7 +43,7 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly SafewordUsedEvent _safewordCommandEvent;
 
     // Constructor for the command manager
-    public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow, HistoryService historyService,
+    public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow, HistoryService historyService, DebugWindow debugWindow,
     IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, IFramework framework, GagService gagService, GagManager gagManager, 
     RealChatInteraction realchatinteraction, TimerService timerService, SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder)
     {
@@ -50,6 +51,7 @@ public class CommandManager : IDisposable // Our main command list manager
         _commands = command;
         _mainWindow = mainwindow;
         _historyWindow = historywindow;
+        _debugWindow = debugWindow;
         _chat = chat;
         _realChatInteraction = realchatinteraction;
         _config = config;
@@ -111,6 +113,9 @@ public class CommandManager : IDisposable // Our main command list manager
                 return;
             case "history":
                 _historyWindow.Toggle();   // when [/gagspeak history] is typed
+                return;
+            case "debug":
+                _debugWindow.Toggle();     // when [/gagspeak debug] is typed
                 return;
             case "":
                 _mainWindow.Toggle(); // when [/gagspeak] is typed
@@ -219,7 +224,7 @@ public class CommandManager : IDisposable // Our main command list manager
         string layer = argumentsBeforePipeList[0]; // get the layer
 
         // if our arguments are not valid, display help information
-        if (! (_gagService.GagTypes.Any(gag => gag.Name == gagType) && (layer == "1" || layer == "2" || layer == "3") && targetPlayer.Contains("@")) )
+        if (! (_gagService._gagTypes.Any(gag => gag._gagName == gagType) && (layer == "1" || layer == "2" || layer == "3") && targetPlayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
             _chat.Print(new SeStringBuilder().AddRed("Invalid Arguments").BuiltString);
             _chat.Print(new SeStringBuilder().AddText("Correct Usage is: /gag ").AddYellow("layer ").AddGreen("gagtype").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
@@ -571,7 +576,7 @@ public class CommandManager : IDisposable // Our main command list manager
             }
         } else {
             _chat.Print(new SeStringBuilder().AddRed("Invalid Channel").BuiltString);
-            _chat.Print(new SeStringBuilder().AddText("The channel you have selected is not enabled in the config. Please select a valid channel.").BuiltString);
+            _chat.Print(new SeStringBuilder().AddText("[GagSpeak] The channel the message was sent to is not enabled in configuration options! Aborting Message ♥").BuiltString);
             return;
         }
     }

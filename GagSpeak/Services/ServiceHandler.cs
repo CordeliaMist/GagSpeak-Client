@@ -21,6 +21,7 @@ using GagSpeak.UI.UserProfile;
 using GagSpeak.Chat.Garbler;
 using GagSpeak.Garbler.Translator;
 using GagSpeak.Garbler.PhonemeData;
+using System.Diagnostics;
 // following namespace naming convention
 namespace GagSpeak.Services;
 
@@ -116,7 +117,8 @@ public static class ServiceHandler
     /// </list> </summary>
     private static IServiceCollection AddEvent(this IServiceCollection services)
         => services.AddSingleton<SafewordUsedEvent>()
-                .AddSingleton<InfoRequestEvent>();
+                .AddSingleton<InfoRequestEvent>()
+                .AddSingleton<LanguageChangedEvent>();
 
     /// <summary>
     /// 
@@ -136,10 +138,11 @@ public static class ServiceHandler
             .AddSingleton<GeneralTab>()
             .AddSingleton<WhitelistTab>()
             .AddSingleton<ConfigSettingsTab>()
+            .AddSingleton<HelpPageTab>()
+            .AddSingleton<MainWindow>()
             .AddSingleton<HistoryWindow>()
             .AddSingleton<UserProfileWindow>()
-            .AddSingleton<MainWindow>()
-            .AddSingleton<HelpPageTab>()
+            .AddSingleton<DebugWindow>()
             .AddSingleton<GagListingsDrawer>()
             .AddSingleton<GagSpeakChangelog>();
 

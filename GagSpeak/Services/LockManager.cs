@@ -32,7 +32,7 @@ public class GagAndLockManager : IDisposable
     /// <item><c>clientChat</c><param name="clientChat"> - The client chat.</param></item>
     /// </list> </summary>
     public GagAndLockManager(GagSpeakConfig config, TimerService timerService, IClientState clientState,
-    SafewordUsedEvent safewordUsedEvent, IChatGui clientChat) {
+    SafewordUsedEvent safewordUsedEvent , IChatGui clientChat) {
         _config = config;
         _clientChat = clientChat;
         _clientState = clientState;

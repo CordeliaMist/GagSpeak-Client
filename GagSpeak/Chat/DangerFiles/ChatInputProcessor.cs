@@ -139,12 +139,16 @@ public unsafe class ChatInputProcessor : IDisposable {
                 // we can try to attempt modifying the message.
                 try {
                     GagSpeak.Log.Debug($"[Chat Processor]: Input -> {inputString}, MatchedCommand -> {matchedCommand}");
+
+                    //////////////////////// MAIN SECTION WHERE THE MESSAGE IS ACTUALLY TRANSLATED ////////////////////////
                     // create the output translated text, cutting the command matched before to prevent it getting gargled
                     var output = _gagManager.ProcessMessage(inputString.Substring(matchedCommand.Length));
                     // adding command back to front
                     output = matchedCommand + output;
                     GagSpeak.Log.Debug($"[Chat Processor]: Output -> {output}");
                     _historyService.AddTranslation(new Translation(inputString, output));
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
                     // create the new string
                     var newStr = output;
                     // if our new string is less than or equal to 500 characters, we can alias it
