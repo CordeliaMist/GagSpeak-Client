@@ -67,7 +67,7 @@ public class MessageResultLogic
             "removeall"         => HandleRemoveAllMessage(ref decodedMessage, ref isHandled, config),
             "remove"            => HandleRemoveMessage(ref decodedMessage, ref isHandled, config),
             "apply"             => HandleApplyMessage(ref decodedMessage, ref isHandled, config),
-            _                => LogError("Invalid message parse, If you see this report it to cordy ASAP.")
+            _                => LogError("Invalid Order message parse, If you see this report it to cordy ASAP.")
         };
         return true;
     }
@@ -97,12 +97,12 @@ public class MessageResultLogic
             "acceptmistressrelation"  => HandleAcceptMistressMessage(ref decodedMessage, ref isHandled, config),
             "acceptpetrelation"       => HandleAcceptPetMessage(ref decodedMessage, ref isHandled, config),
             "acceptslaverelation"     => HandleAcceptSlaveMessage(ref decodedMessage, ref isHandled, config),
-            "declineMistressRelation" => HandleDeclineMistressMessage(ref decodedMessage, ref isHandled, config),
-            "declinePetRelation"      => HandleDeclinePetMessage(ref decodedMessage, ref isHandled, config),
-            "declineSlaveRelation"    => HandleDeclineSlaveMessage(ref decodedMessage, ref isHandled, config), 
+            "declinemistressrelation" => HandleDeclineMistressMessage(ref decodedMessage, ref isHandled, config),
+            "declinepetrelation"      => HandleDeclinePetMessage(ref decodedMessage, ref isHandled, config),
+            "declineslaverelation"    => HandleDeclineSlaveMessage(ref decodedMessage, ref isHandled, config), 
             "provideinfo"             => HandleProvideInfoMessage(ref decodedMessage, ref isHandled, config),
             "provideinfo2"            => HandleProvideInfo2Message(ref decodedMessage, ref isHandled, config),
-            _                         => LogError("Invalid message parse, If you see this report it to cordy ASAP.")
+            _                         => LogError("Invalid Whitelist message parse, If you see this report it to cordy ASAP.")
         };
         return true;
     }
@@ -442,8 +442,9 @@ public class MessageResultLogic
             // see if they exist
             if(playerInWhitelist != null) {
                 // they are in our whitelist, so set our information sender to the players name.
-                _config.SendInfoName = playerNameWorld;
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Received info request from {playerName}. Providing Information in 4 seconds.").AddItalicsOff().BuiltString);
+                _config.SendInfoName = playerName;
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is requesting an update on your info for the profile viewer." +
+                "Providing Over the next 3 Seconds.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");
             }
         } catch {
@@ -501,6 +502,8 @@ public class MessageResultLogic
                 if(playerInWhitelist.relationshipStatusToYou != "None") { playerInWhitelist.SetTimeOfCommitment(); } // set the commitment time if relationship is now two-way!
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s pet. Enjoy yourself~.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Pet relation");
+            } else {
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Player {playerName} not found in whitelist.");
             }
         } catch {
             return LogError($"ERROR, Invalid accept pet message parse.");
@@ -552,10 +555,9 @@ public class MessageResultLogic
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
-                playerInWhitelist.relationshipStatus = "Mistress";
-                playerInWhitelist.PendingRelationRequestFromYou = "Established";
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s mistress. Enjoy~.").AddItalicsOff().BuiltString);
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Declineing Mistress relation");
+                playerInWhitelist.PendingRelationRequestFromYou = "";
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has declined your offer to be their mistress.").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Declining Mistress relation");
             }
         } catch {
             return LogError($"ERROR, Invalid Decline mistress message parse.");
@@ -579,10 +581,9 @@ public class MessageResultLogic
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
-                playerInWhitelist.relationshipStatus = "Pet";
-                playerInWhitelist.PendingRelationRequestFromYou = "Established";
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s pet. Enjoy yourself~.").AddItalicsOff().BuiltString);
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Declineing Pet relation");
+                playerInWhitelist.PendingRelationRequestFromYou = "";
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has declined your offer to be their pet.").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Declining Pet relation");
             }
         } catch {
             return LogError($"ERROR, Invalid Decline pet message parse.");
@@ -606,10 +607,9 @@ public class MessageResultLogic
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
-                playerInWhitelist.relationshipStatus = "Slave";
-                playerInWhitelist.PendingRelationRequestFromYou = "Established";
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s slave, Be sure to Behave~.").AddItalicsOff().BuiltString);
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Declineing Slave relation");
+                playerInWhitelist.PendingRelationRequestFromYou = "";
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has declined your offer to be their slave.").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Declining Slave relation");
             }
         } catch {
             return LogError($"ERROR, Invalid Decline Slave message parse.");

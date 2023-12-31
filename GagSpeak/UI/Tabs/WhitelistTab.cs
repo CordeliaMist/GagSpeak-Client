@@ -348,7 +348,7 @@ public class WhitelistTab : ITab, IDisposable
                     _config, _chatManager, _gagMessages, _clientState, _chatGui);
                 }
                 // set the relation request to none
-                whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer = "None";
+                whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer = "";
                 GagSpeak.Log.Debug($"[Whitelist]: Declining {whitelist[_currentWhitelistItem].name}'s relation request");
             }
         }

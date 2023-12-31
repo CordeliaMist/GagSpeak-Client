@@ -37,8 +37,8 @@ public class WhitelistCharData {
         this.relationshipStatus = _relationshipStatus;
         this.relationshipStatusToYou = "None";
         this.lockedLiveChatGarbler = false;
-        this.PendingRelationRequestFromPlayer = "None"; // remember, this keeps track of people wanting to declare relations with you
-        this.PendingRelationRequestFromYou = "None"; // and this keeps track of the relation requests you issue out to others for message feedback
+        this.PendingRelationRequestFromPlayer = ""; // remember, this keeps track of people wanting to declare relations with you
+        this.PendingRelationRequestFromYou = ""; // and this keeps track of the relation requests you issue out to others for message feedback
         // Make sure we aren't getting any duplicates
         if (this.selectedGagTypes == null || !this.selectedGagTypes.Any() || this.selectedGagTypes.Count > 3) {
             this.selectedGagTypes = new ObservableList<string> { "None", "None", "None" };}

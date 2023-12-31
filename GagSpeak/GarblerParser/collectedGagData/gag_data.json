@@ -87,7 +87,88 @@
         "ゎ":   { "MUFFLE": 0,  "SOUND": "ゎ"  }
     },
     "Ball Gag Mask": {
-
+        "p":    { "MUFFLE": 1,  "SOUND": "p"  },
+        "b":    { "MUFFLE": 1,  "SOUND": "b"  },
+        "m":    { "MUFFLE": 1,  "SOUND": "m"  },
+        "w":    { "MUFFLE": 0,  "SOUND": "w"  },
+        "f":    { "MUFFLE": 0,  "SOUND": "f"  },
+        "v":    { "MUFFLE": 1,  "SOUND": "v"  },
+        "θ":    { "MUFFLE": 0,  "SOUND": "th"  },
+        "ð":    { "MUFFLE": 0,  "SOUND": "th"  },
+        "t":    { "MUFFLE": 0,  "SOUND": "t"  },
+        "d":    { "MUFFLE": 1,  "SOUND": "h"  },
+        "s":    { "MUFFLE": 0,  "SOUND": "s"  },
+        "z":    { "MUFFLE": 1,  "SOUND": "ss"  },
+        "n":    { "MUFFLE": 0,  "SOUND": "n"  },
+        "ɫ":    { "MUFFLE": 1,  "SOUND": "l"  },
+        "ɹ":    { "MUFFLE": 0,  "SOUND": "r"  },
+        "ʃ":    { "MUFFLE": 1,  "SOUND": "ss"  },
+        "ʒ":    { "MUFFLE": 1,  "SOUND": "zuh"  },
+        "dʒ":   { "MUFFLE": 2,  "SOUND": "zuh"  },
+        "tʃ":   { "MUFFLE": 2,  "SOUND": "ss"  },
+        "j":    { "MUFFLE": 2,  "SOUND": "yh"  },
+        "k":    { "MUFFLE": 1,  "SOUND": "ka"  },
+        "ɡ":    { "MUFFLE": 1,  "SOUND": "g"  },
+        "ŋ":    { "MUFFLE": 1,  "SOUND": "n"  },
+        "h":    { "MUFFLE": 0,  "SOUND": "h"  },
+        
+        "eɪ":   { "MUFFLE": 0,  "SOUND": "ay"  },
+        "ə":    { "MUFFLE": 0,  "SOUND": "a"  },
+        "ɔ":    { "MUFFLE": 0,  "SOUND": "aw"  },
+        "æ":    { "MUFFLE": 1,  "SOUND": "eh"  },
+        "i":    { "MUFFLE": 1,  "SOUND": "ee"  },
+        "ɛ":    { "MUFFLE": 2,  "SOUND": "ah"  },
+        "ɝ":    { "MUFFLE": 0,  "SOUND": "er"  },
+        "ɪə":   { "MUFFLE": 1,  "SOUND": "err"  },
+        "aɪ":   { "MUFFLE": 0,  "SOUND": "i"  },
+        "ɪ":    { "MUFFLE": 1,  "SOUND": "eh"  },
+        "oʊ":   { "MUFFLE": 2,  "SOUND": "ou"  },
+        "u":    { "MUFFLE": 0,  "SOUND": "oo"  },
+        "ɑ":    { "MUFFLE": 0,  "SOUND": "o"  },
+        "ʊ":    { "MUFFLE": 0,  "SOUND": "oo"  },
+        "aʊ":   { "MUFFLE": 0,  "SOUND": "ow "  },
+        "ɔɪ":   { "MUFFLE": 0,  "SOUND": "oy"  },
+        
+        "ɾ":    { "MUFFLE": 2,  "SOUND": "ewa"  },
+        "β":    { "MUFFLE": 1,  "SOUND": "sa"  },
+        "ʎ":    { "MUFFLE": 0,  "SOUND": "yh"  },
+        "x":    { "MUFFLE": 0,  "SOUND": "kh"  },
+        "ɲ":    { "MUFFLE": 2,  "SOUND": "nn"  },
+        "ɣ":    { "MUFFLE": 2,  "SOUND": "gr"  },
+        "ʝ":    { "MUFFLE": 1,  "SOUND": "zh"  },
+        
+        "œ̃":    { "MUFFLE": 1,  "SOUND": "uh"  },
+        "ɔ̃":    { "MUFFLE": 0,  "SOUND": "aw"  },
+        "ɑ̃":    { "MUFFLE": 0,  "SOUND": "ah"  },
+        "ʁ":    { "MUFFLE": 2,  "SOUND": "ss"  },
+        "œ":    { "MUFFLE": 1,  "SOUND": "h"  },
+        "wa":   { "MUFFLE": 0,  "SOUND": "wa"  },
+        "ɥ":    { "MUFFLE": 1,  "SOUND": "zu"  },
+        "ø":    { "MUFFLE": 2,  "SOUND": "eu"  },
+        "ʁː":   { "MUFFLE": 2,  "SOUND": "ss"  },
+        "ε":    { "MUFFLE": 2,  "SOUND": "eh"  },
+    
+        "ʏ":    { "MUFFLE": 0,  "SOUND": "bh"  },
+        "ʀ":    { "MUFFLE": 2,  "SOUND": "gh"  },
+        "õ":    { "MUFFLE": 0,  "SOUND": "on"  },
+        "ẽ":    { "MUFFLE": 0,  "SOUND": "en"  },
+        "ĩ":    { "MUFFLE": 1,  "SOUND": "ih"  },
+        "ã":    { "MUFFLE": 1,  "SOUND": "an"  },
+        
+        "ɯ":    { "MUFFLE": 1,  "SOUND": "ou"  },
+        "tɕ":   { "MUFFLE": 1,  "SOUND": "auh"  },
+        "ts":   { "MUFFLE": 1,  "SOUND": "sa"  },
+        "ɴ":    { "MUFFLE": 0,  "SOUND": "ng"  },
+        "dʑ":   { "MUFFLE": 1,  "SOUND": "cha"  },
+        "ɕ":    { "MUFFLE": 1,  "SOUND": "sah"  },
+        "ɰᵝ":   { "MUFFLE": 2,  "SOUND": "mv"  },
+        "ɸ":    { "MUFFLE": 0,  "SOUND": "fuh"  },
+        "ç":    { "MUFFLE": 1,  "SOUND": "auh"  },
+        "っ":   { "MUFFLE": 0,  "SOUND": "っ"  },
+        "ッ":   { "MUFFLE": 0,  "SOUND": "ッ"  },
+        "ヮ":   { "MUFFLE": 0,  "SOUND": "ヮ"  },
+        "ヶ":   { "MUFFLE": 0,  "SOUND": "ヶ"  },
+        "ゎ":   { "MUFFLE": 0,  "SOUND": "ゎ"  }
     },
     "Bamboo Gag": {
 
@@ -98,7 +179,7 @@
     "Bit Gag": {
 
     },
-    "Padded Bit Gag": {
+    "Bit Gag Padded": {
 
     },
     "Bone Gag": {
@@ -107,16 +188,16 @@
     "Bone Gag (XL)": {
 
     },
-    "Candle Gag": {
+    "Cage Muzzle": {
 
     },
-    "Cage Muzzle": {
+    "Candle Gag": {
 
     },
     "Cleave Gag": {
 
     },
-    "Cloth Over Mouth": {
+    "Chloroform Gag": {
 
     },
     "Chopstick Gag": {
@@ -143,7 +224,7 @@
     "Dildo Gag": {
 
     },
-    "Tape Gag": {
+    "Duct Tape Gag": {
 
     },
     "Duster Gag": {
@@ -152,19 +233,19 @@
     "Funnel Gag": {
 
     },
-    "Futuristic Ball Gag": {
+    "Futuristic Harness Ball Gag": {
 
     },
     "Futuristic Harness Panel Gag": {
 
     },
-    "Gas Mask N-95 Mask Works Too": {
+    "Gas Mask": {
 
     },
     "Harness Ball Gag": {
 
     },
-    "Harness Ball Gag (XL)": {
+    "Harness Ball Gag XL": {
 
     },
     "Harness Panel Gag": {
@@ -194,7 +275,7 @@
     "Leather Hood": {
 
     },
-    "Lip Lock Gag": {
+    "Lip Gag": {
 
     },
     "Medical Mask": {
@@ -203,10 +284,10 @@
     "Muzzle Gag": {
 
     },
-    "Panty Stuffing": {
+    "Panty Stuffing Gag": {
 
     },
-    "Plastic Wrap": {
+    "Plastic Wrap Gag": {
 
     },
     "Plug Gag": {
@@ -215,16 +296,16 @@
     "Pony Gag": {
 
     },
-    "Pump Gag (fully deflated)": {
+    "Pump Gag lv.1": {
 
     },
-    "Pump Gag (partially inflated)": {
+    "Pump Gag lv.2": {
 
     },
-    "Pump Gag (Mostly inflated)": {
+    "Pump Gag lv.3": {
 
     },
-    "Pump Gag (Fully inflated)": {
+    "Pump Gag lv.4": {
 
     },
     "Ribbon Gag": {
@@ -240,6 +321,9 @@
 
     },
     "Sensory Deprivation Hood": {
+
+    },
+    "Slime Gag": {
 
     },
     "Sock Stuffing Gag": {

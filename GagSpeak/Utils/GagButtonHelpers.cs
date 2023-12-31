@@ -264,8 +264,8 @@ public static class GagButtonHelpers {
         if (currentWhitelistItem < 0 || currentWhitelistItem >= config.Whitelist.Count) { return; }
         // print to chat that you sent the request
         chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted {selectedPlayer.name} as your Mistress."+
-            "Creating new commitment timer with user and updating their whitelist information").AddItalicsOff().BuiltString);
+            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted {selectedPlayer.name} as your Mistress. "+
+            "Updating their whitelist information").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         // set the relationship status the player has towards you "They are your Mistress" here, because once you hit accept, both sides agree
@@ -288,8 +288,8 @@ public static class GagButtonHelpers {
         if (currentWhitelistItem < 0 || currentWhitelistItem >= config.Whitelist.Count) { return; }
         // print to chat that you sent the request
         chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted {selectedPlayer.name} as your pet."+
-            "Creating new commitment timer with user and updating their whitelist information").AddItalicsOff().BuiltString);
+            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted {selectedPlayer.name} as your pet. "+
+            "Updating their whitelist information").AddItalicsOff().BuiltString);
         // update whitelist with new information and send message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         // set the relationship status the player has towards you "They are your Pet" here, because once you hit accept, both sides agree
@@ -312,8 +312,8 @@ public static class GagButtonHelpers {
         if (currentWhitelistItem < 0 || currentWhitelistItem >= config.Whitelist.Count) { return; }
         // print to chat that you sent the request
         chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted {selectedPlayer.name} as your slave."+
-            "Creating new commitment timer with user and updating their whitelist information").AddItalicsOff().BuiltString);
+            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted {selectedPlayer.name} as your slave. "+
+            "Updating their whitelist information").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         // set the relationship status the player has towards you "They are your Slave" here, because once you hit accept, both sides agree

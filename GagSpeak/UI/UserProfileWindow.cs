@@ -83,8 +83,6 @@ public class UserProfileWindow : Window, IDisposable
                 ImGui.Text($"Commited for: "); ImGui.SameLine();
                 ImGui.TextColored(new Vector4(0.9f, 0.9f, 0.2f, 1.0f), $"{whitelistPlayerData.GetCommitmentDuration()}");
             }
-            ImGui.Text($"Gag Strength: "); ImGui.SameLine();
-            ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1.0f), $"{whitelistPlayerData.garbleLevel}");
             ImGui.Separator();
             using var style = ImRaii.PushStyle(ImGuiStyleVar.ButtonTextAlign, new Vector2(0, 0.5f)); 
             // create a table with 3 columns
