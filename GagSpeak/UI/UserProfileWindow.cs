@@ -66,11 +66,20 @@ public class UserProfileWindow : Window, IDisposable
             ImGui.TextColored(new Vector4(0.4f, 0.9f, 0.4f, 1.0f), $"Lean: {(whitelistPlayerData.isDomMode ? "Dominant" : "Submissive")}");
             ImGui.NextColumn(); ImGui.Columns(1); ImGui.Separator();
             if(whitelistPlayerData.relationshipStatus == "None" || whitelistPlayerData.relationshipStatus == "") {
-                ImGui.Text($"Player Relation: "); ImGui.SameLine();
+                ImGui.Text($"Relation To Character: "); ImGui.SameLine();
                 ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1.0f), $"{whitelistPlayerData.relationshipStatus}");
             } else {
-                ImGui.Text($"{whitelistPlayerData.name.Split(' ')[0]} Is Your "); ImGui.SameLine();
+                ImGui.Text($"You are {whitelistPlayerData.name.Split(' ')[0]}'s: "); ImGui.SameLine();
                 ImGui.TextColored(new Vector4(0.9f, 0.2f, 0.4f, 1.0f), $"{whitelistPlayerData.relationshipStatus}");
+            }
+            if(whitelistPlayerData.relationshipStatusToYou == "None" || whitelistPlayerData.relationshipStatusToYou == "") {
+                ImGui.Text($"Their Relation to You: "); ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1.0f), $"{whitelistPlayerData.relationshipStatusToYou}");
+            } else {
+                ImGui.Text($"{whitelistPlayerData.name.Split(' ')[0]} is your: "); ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.9f, 0.2f, 0.4f, 1.0f), $"{whitelistPlayerData.relationshipStatusToYou}");
+            }
+            if(whitelistPlayerData.relationshipStatus != "None" && whitelistPlayerData.relationshipStatusToYou != "None") {
                 ImGui.Text($"Commited for: "); ImGui.SameLine();
                 ImGui.TextColored(new Vector4(0.9f, 0.9f, 0.2f, 1.0f), $"{whitelistPlayerData.GetCommitmentDuration()}");
             }

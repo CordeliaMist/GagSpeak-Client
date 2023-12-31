@@ -133,7 +133,7 @@ public static class MessageDictionary {
         // DECLINE ALLOWING THE PLAYER TO BECOME YOUR MISTRESS
         else if (textVal.Contains("from") && textVal.Contains("smiles gently and shakes their head") &&
                 textVal.Contains("I'm sorry miss, but I dont think I have enough space left in my daily life to commit to such a bond quite yet.")) {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Letting Whitelisted Player know you Accept them as your Mistress");
+            GagSpeak.Log.Debug($"[Message Dictionary]: Letting Whitelisted Player know you Decline allowing them to be your Mistress");
             encodedMsgIndex = 15;
             return true;
         }
@@ -141,7 +141,7 @@ public static class MessageDictionary {
         // DECLINE ALLOWING THE PLAYER TO BECOME YOUR PET
         else if (textVal.Contains("from") && textVal.Contains("shakes their head from side,") &&
                 textVal.Contains("I apologize dear, but I don't think im ready to commit myself to having a pet at the moment.")) {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Letting Whitelisted Player know you Accept them as your Pet");
+            GagSpeak.Log.Debug($"[Message Dictionary]: Letting Whitelisted Player know you Decline allowing them to be your Pet");
             encodedMsgIndex = 16;
             return true;
         }
@@ -149,7 +149,7 @@ public static class MessageDictionary {
         // DECLINE ALLOWING THE PLAYER TO BECOME YOUR SLAVE
         else if (textVal.Contains("from") && textVal.Contains("takes a step back in surprise,") &&
                 textVal.Contains("Oh, I apologize, I didnt think you wanted a commitment that heavy... I Don't think im ready to have a slave just yet..")) {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Letting Whitelisted Player know you Accept them as your Slave");
+            GagSpeak.Log.Debug($"[Message Dictionary]: Letting Whitelisted Player know you Decline allowing them to be your Slave");
             encodedMsgIndex = 17;
             return true;
         }

@@ -84,9 +84,7 @@ public class ConfigSettingsTab : ITab
             "This does make use of chat to server interception. Even though now it is ensured safe, always turn this OFF after any patch or game update, until the plug curator says it's safe",
             _config.DirectChatGarbler, v => _config.DirectChatGarbler = v, _config);
         if(_config.LockDirectChatGarbler == true) {ImGui.EndDisabled();}
-        // UIHelpers.Checkbox to display debug information
-        UIHelpers.Checkbox("Debug Display", "Displays information for plugin variables. For developer", _config.DebugMode, v => _config.DebugMode = v, _config);
-        // UIHelpers.Checkbox will dictate if only players from their party are allowed to use /gag (target) commands on them.
+        
         ImGui.NextColumn();
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 50);
         // you might normally want to embed resources and load them from the manifest stream

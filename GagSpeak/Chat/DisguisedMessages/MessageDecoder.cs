@@ -241,7 +241,7 @@ public class MessageDecoder {
         }
         // decoder for declining a players request to become your mistress (relation)
         else if (encodedMsgIndex == 15) {
-            decodedMessage[0] = "acceptMistressRelation";      // we found commandtype
+            decodedMessage[0] = "declineMistressRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
             recievedMessage = recievedMessage.Replace("smiles gently and shakes their head* \"I'm sorry miss, but I dont think I have enough space left in my daily life to commit to such a bond quite yet.\"","");
             string[] messageParts = recievedMessage.Split("from");
@@ -253,7 +253,7 @@ public class MessageDecoder {
         }
         // decoder for declining a players request to become your pet (relation)
         else if (encodedMsgIndex == 16) {
-            decodedMessage[0] = "acceptPetRelation";      // we found commandtype
+            decodedMessage[0] = "declinePetRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
             recievedMessage = recievedMessage.Replace("shakes their head from side, \"I apologize dear, but I don't think im ready to commit myself to having a pet at the moment.\"","");
             string[] messageParts = recievedMessage.Split("from");
@@ -265,7 +265,7 @@ public class MessageDecoder {
         }
         // decoder for declining a players request to become your slave (relation)
         else if (encodedMsgIndex == 17) {
-            decodedMessage[0] = "acceptSlaveRelation";      // we found commandtype
+            decodedMessage[0] = "declineSlaveRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
             recievedMessage = recievedMessage.Replace("takes a step back in surprise, \"Oh, I apologize, I didnt think you wanted a commitment that heavy... I Don't think im ready to have a slave just yet..\"","");
             string[] messageParts = recievedMessage.Split("from");

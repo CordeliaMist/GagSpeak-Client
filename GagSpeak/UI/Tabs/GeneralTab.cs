@@ -21,37 +21,22 @@ public class GeneralTab : ITab, IDisposable
     private readonly GagListingsDrawer      _gagListingsDrawer;         // the drawer for the gag listings
     private readonly GagAndLockManager      _lockManager;               // the lock manager for the plugin
     private readonly GagService             _gagService;                // the gag manager for the plugin
-    private readonly GagManager             _gagManager;                // the gag manager for the plugin
     private          GagTypeFilterCombo[]   _gagTypeFilterCombo;        // create an array of item combos
     private          GagLockFilterCombo[]   _gagLockFilterCombo;        // create an array of item combos
     private          bool?                  _inDomMode;                 // lets us know if we are in dom mode or not
     private          string?                _tempSafeword;              // for initializing a temporary safeword for the text input field
     private          bool                   modeButtonsDisabled = false;// lets us know if the mode buttons are disabled or not
-    private          string?                _tempTestMessage;           // stores the input password for the test translation system
-    private          string?                translatedMessage = "";     // stores the translated message for the test translation system
-    private          string?                translatedMessageSpaced ="";// stores the translated message for the test translation system
-    private          string?                translatedMessageOutput ="";// stores the translated message for the test translation system
-    private          IpaParserEN_FR_JP_SP   _translatorLanguage;        // creates an instance of the EnglishToIPA class
-    private readonly FontService            _fontService;               // the font service for the plugin
     
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneralTab"/> class.
-    /// <list type="bullet">
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// <item><c>timerService</c><param name="timerService"> - The timer service for the plugin.</param></item>
-    /// <item><c>gagListingsDrawer</c><param name="gagListingsDrawer"> - The drawer for the gag listings.</param></item>
-    /// <item><c>lockManager</c><param name="lockManager"> - The lock manager for the plugin.</param></item>
-    /// </list> </summary>
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService, GagManager gagManager,
-    GagAndLockManager lockManager, GagService gagService, IpaParserEN_FR_JP_SP translatorEnglish, FontService fontService) {
+    /// </summary>
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config,
+    TimerService timerService, GagAndLockManager lockManager, GagService gagService) {
         _config = config;
         _timerService = timerService;
         _gagListingsDrawer = gagListingsDrawer;
         _lockManager = lockManager;
         _gagService = gagService;
-        _gagManager = gagManager;
-        _translatorLanguage = translatorEnglish;
-        _fontService = fontService;
 
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
             new GagTypeFilterCombo(_gagService, _config),
@@ -199,47 +184,6 @@ public class GeneralTab : ITab, IDisposable
             }
             ImGui.NewLine();
         }
-
-        // Everything below here is temporary for testing purposes
-
-        UIHelpers.Checkbox("Experimental Garbler", "Enabled the Experimental Garbler using a developing advanced algorithm to translate the english lanuage to account for the 24 consonants in the alphaet.\n"+
-        "High experimental, and likely not perfect, but its nice)", _config.ExperimentalGarbler, v => _config.ExperimentalGarbler = v, _config);
-
-        // create a input text field here, that stores the result into a string. On the same line, have a button that says garble message. It should display the garbled message in text on the next l
-        var testMessage  = _tempTestMessage ?? ""; // temp storage to hold until we de-select the text input
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
-        if (ImGui.InputText("##GarblerTesterField", ref testMessage, 400, ImGuiInputTextFlags.None))
-            _tempTestMessage = testMessage;
-
-        ImGui.SameLine();
-        if (ImGui.Button("Garble Message")) {
-            // Use the EnglishToIPA instance to translate the message
-            try {
-                translatedMessage       = _translatorLanguage.ToIPAStringDisplay(testMessage);
-                translatedMessageSpaced = _translatorLanguage.ToIPAStringSpacedDisplay(testMessage);
-                translatedMessageOutput = _gagManager.ProcessMessage(testMessage);
-            } catch (Exception ex) {
-                GagSpeak.Log.Debug($"An error occurred while attempting to parse phonetics: {ex.Message}");
-            }
-        }
-        // DISPLAYS THE ORIGINAL MESSAGE STRING
-        ImGui.Text($"Original Message: {testMessage}");
-        // DISPLAYS THE IPA PARSED DEFINED MESSAGE DISPLAY
-        ImGui.Text("Decoded Message: "); ImGui.SameLine();
-        UIHelpers.FontText($"{translatedMessage}", _fontService.UidFont);
-        // DISPLAYS THE DECODED MESSAGE SPACED
-        ImGui.Text("Decoded Message: "); ImGui.SameLine();
-        UIHelpers.FontText($"{translatedMessageSpaced}", _fontService.UidFont);   
-        // DISPLAYS THE OUTPUT STRING 
-        ImGui.Text("Output Message: "); ImGui.SameLine();
-        UIHelpers.FontText($"{translatedMessageOutput}", _fontService.UidFont);
-
-        // DISPLAYS THE UNIQUE SYMBOLS FOR CURRENT LANGUAGE DIALECT
-        string uniqueSymbolsString = _translatorLanguage.uniqueSymbolsString;
-        ImGui.PushFont(_fontService.UidFont);
-        ImGui.Text($"Unique Symbols for {_config.language} with dialect {_config.languageDialect}: ");
-        ImGui.InputText("##UniqueSymbolsField", ref uniqueSymbolsString, 128, ImGuiInputTextFlags.ReadOnly);
-        ImGui.PopFont();
     }
 
     /// <summary> This function disables the mode buttons after the cooldown is over. </summary>

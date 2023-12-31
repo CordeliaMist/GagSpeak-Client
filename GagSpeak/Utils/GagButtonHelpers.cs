@@ -208,7 +208,7 @@ public static class GagButtonHelpers {
         // print to chat that you sent the request
         chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
-            $"{selectedPlayer.name}, to see if they would like to become your Mistress.").AddItalicsOff().BuiltString);
+            $"{selectedPlayer.name}, to see if they would like you to become their Mistress.").AddItalicsOff().BuiltString);
         //update information and send message
         selectedPlayer.PendingRelationRequestFromYou = "Mistress";
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
@@ -227,7 +227,7 @@ public static class GagButtonHelpers {
         // print to chat that you sent the request
         chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
-            $"{selectedPlayer.name}, to see if they would like to become your Pet.").AddItalicsOff().BuiltString);
+            $"{selectedPlayer.name}, to see if they would like you to become their Pet.").AddItalicsOff().BuiltString);
         //update information and send message
         selectedPlayer.PendingRelationRequestFromYou = "Pet";
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
@@ -246,7 +246,7 @@ public static class GagButtonHelpers {
         // print to chat that you sent the request
         chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
-            $"{selectedPlayer.name}, to see if they would like to become your Slave.").AddItalicsOff().BuiltString);
+            $"{selectedPlayer.name}, to see if they would like you to become their Slave.").AddItalicsOff().BuiltString);
         //update information and send message
         selectedPlayer.PendingRelationRequestFromYou = "Slave";
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
@@ -268,8 +268,11 @@ public static class GagButtonHelpers {
             "Creating new commitment timer with user and updating their whitelist information").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
-        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
-        selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
+        // set the relationship status the player has towards you "They are your Mistress" here, because once you hit accept, both sides agree
+        selectedPlayer.relationshipStatusToYou = selectedPlayer.PendingRelationRequestFromPlayer;
+        if(selectedPlayer.relationshipStatus != "None") {
+            selectedPlayer.SetTimeOfCommitment(); // set the commitment time if relationship is now two-way!
+        }
         chatManager.SendRealMessage(gagMessages.AcceptMistressEncodedMessage(playerPayload, targetPlayer));
     }
 
@@ -289,8 +292,11 @@ public static class GagButtonHelpers {
             "Creating new commitment timer with user and updating their whitelist information").AddItalicsOff().BuiltString);
         // update whitelist with new information and send message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
-        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
-        selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
+        // set the relationship status the player has towards you "They are your Pet" here, because once you hit accept, both sides agree
+        selectedPlayer.relationshipStatusToYou = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
+        if(selectedPlayer.relationshipStatus != "None") {
+            selectedPlayer.SetTimeOfCommitment(); // set the commitment time if relationship is now two-way!
+        }
         chatManager.SendRealMessage(gagMessages.AcceptPetEncodedMessage(playerPayload, targetPlayer));
     }
 
@@ -310,8 +316,11 @@ public static class GagButtonHelpers {
             "Creating new commitment timer with user and updating their whitelist information").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
-        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
-        selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
+        // set the relationship status the player has towards you "They are your Slave" here, because once you hit accept, both sides agree
+        selectedPlayer.relationshipStatusToYou = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
+        if(selectedPlayer.relationshipStatus != "None") {
+            selectedPlayer.SetTimeOfCommitment(); // set the commitment time if relationship is now two-way!
+        }
         chatManager.SendRealMessage(gagMessages.AcceptSlaveEncodedMessage(playerPayload, targetPlayer));
     }
 
@@ -330,9 +339,10 @@ public static class GagButtonHelpers {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Declining {selectedPlayer.name}'s request to become your Mistress.").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
-        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
-        selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
-        chatManager.SendRealMessage(gagMessages.AcceptMistressEncodedMessage(playerPayload, targetPlayer));
+        // clear the pending status and not change the relationship status, rather set it to none, because both sides do not agree.
+        selectedPlayer.relationshipStatusToYou = "None";
+        selectedPlayer.PendingRelationRequestFromPlayer = "";
+        chatManager.SendRealMessage(gagMessages.DeclineMistressEncodedMessage(playerPayload, targetPlayer));
     }
 
 	/// <summary>  Controls logic for what to do once the the decline pet relation button is pressed in the whitelist tab. 
@@ -349,9 +359,10 @@ public static class GagButtonHelpers {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Declining {selectedPlayer.name}'s request to become your Pet.").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
-        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
-        selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
-        chatManager.SendRealMessage(gagMessages.AcceptPetEncodedMessage(playerPayload, targetPlayer));
+        // clear the pending status and not change the relationship status, rather set it to none, because both sides do not agree.
+        selectedPlayer.relationshipStatusToYou = "None";
+        selectedPlayer.PendingRelationRequestFromPlayer = "";
+        chatManager.SendRealMessage(gagMessages.DeclinePetEncodedMessage(playerPayload, targetPlayer));
     }
 
 	/// <summary>  Controls logic for what to do once the the decline slave relation button is pressed in the whitelist tab. 
@@ -368,9 +379,10 @@ public static class GagButtonHelpers {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Declining {selectedPlayer.name}'s request to become your Slave.").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
-        selectedPlayer.relationshipStatus = selectedPlayer.PendingRelationRequestFromPlayer; // set the relationship status
-        selectedPlayer.SetTimeOfCommitment(); // set the commitment time!
-        chatManager.SendRealMessage(gagMessages.AcceptSlaveEncodedMessage(playerPayload, targetPlayer));
+        // clear the pending status and not change the relationship status, rather set it to none, because both sides do not agree.
+        selectedPlayer.relationshipStatusToYou = "None";
+        selectedPlayer.PendingRelationRequestFromPlayer = "";
+        chatManager.SendRealMessage(gagMessages.DeclineSlaveEncodedMessage(playerPayload, targetPlayer));
     }
 
 	/// <summary>  Controls logic for what to do once the the remove relation button is pressed in the whitelist tab. 
@@ -388,8 +400,9 @@ public static class GagButtonHelpers {
             $"with {selectedPlayer.name}.").AddItalicsOff().BuiltString);
         //update information and send message
         selectedPlayer.relationshipStatus = "None";
-        selectedPlayer.PendingRelationRequestFromPlayer = "";
+        selectedPlayer.relationshipStatusToYou = "None";
         selectedPlayer.PendingRelationRequestFromYou = "";
+        selectedPlayer.PendingRelationRequestFromPlayer = "";
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
         chatManager.SendRealMessage(gagMessages.RequestRemovalEncodedMessage(playerPayload, targetPlayer));
     }

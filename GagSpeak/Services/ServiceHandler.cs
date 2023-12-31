@@ -18,17 +18,12 @@ using GagSpeak.UI.Tabs.GeneralTab;              // Contains classes for the gene
 using GagSpeak.UI.Tabs.WhitelistTab;            // Contains classes for the whitelist tab in the GagSpeak plugin
 using GagSpeak.UI.Tabs.ConfigSettingsTab;       // Contains classes for the config settings tab in the GagSpeak plugin
 using GagSpeak.UI.UserProfile;
-using GagSpeak.Chat.Garbler;
 using GagSpeak.Garbler.Translator;
-using GagSpeak.Garbler.PhonemeData;
-using System.Diagnostics;
+
 // following namespace naming convention
 namespace GagSpeak.Services;
 
-
-/// <summary>
-/// This class is used to handle the services for the GagSpeak plugin.
-/// </summary>
+/// <summary> This class is used to handle the services for the GagSpeak plugin. </summary>
 public static class ServiceHandler
 {
     /// <summary>
@@ -107,8 +102,7 @@ public static class ServiceHandler
              .AddSingleton<MessageEncoder>()
              .AddSingleton<MessageDecoder>()
              .AddSingleton<MessageResultLogic>()
-             .AddSingleton<GagManager>()
-             .AddSingleton<MessageGarbler>();
+             .AddSingleton<GagManager>();
 
     /// <summary>
     /// Adds the event services to the Event service collection.

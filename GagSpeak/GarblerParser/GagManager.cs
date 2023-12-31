@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using GagSpeak.Events;
 using GagSpeak.Garbler.Translator;
 
@@ -66,44 +67,57 @@ public class GagManager : IDisposable
             GagSpeak.Log.Debug($"[GagManager] All gags are None, returning original message.");
             return inputMessage;
         }
-
+        // Initialize the algorithmed scoped variables 
         GagSpeak.Log.Debug($"[GagManager] Converting message to GagSpeak, at least one gag is not None.");
-        // Initialize the final message
-        string finalMessage = "";
-        // initialize a detection on if we are skipping translations or not
+        StringBuilder finalMessage = new StringBuilder(); // initialize a stringbuilder object so we dont need to make a new string each time
         bool skipTranslation = false;
+
         // begin the translation
         try {
             // Convert the message to a list of phonetics for each word
             List<Tuple<string, List<string>>> wordsAndPhonetics = _IPAParser.ToIPAList(inputMessage);
             // Iterate over each word and its phonetics
             foreach (Tuple<string, List<string>> entry in wordsAndPhonetics) {
-                // if the word is either just *, or has * at the start or end of the word, toggle the skip translation flag
-                if (entry.Item1 == "*" || entry.Item1.StartsWith("*") || entry.Item1.EndsWith("*")) {
+                string word = entry.Item1; // create a variable to store the word (which includes its puncuation)
+                // If the word is "*", then toggle skip translations
+                if (word == "*") {
                     skipTranslation = !skipTranslation;
-                    finalMessage += entry.Item1 + " ";
-                    continue;
+                    finalMessage.Append(word + " "); // append the word to the string
+                    continue; // Skip the rest of the loop for this word
                 }
-                // if we are skipping translation, just add the word to the final message and continue
-                if (skipTranslation) {
-                    finalMessage += entry.Item1 + " ";
-                    continue;
+                // If the word starts with "*", toggle skip translations and remove the "*"
+                if (word.StartsWith("*")) {
+                    skipTranslation = !skipTranslation;
                 }
-                // otherwise, extract puncuation, captialization, and convert!
-                bool isFirstLetterCapitalized = char.IsUpper(entry.Item1[0]);
-                char? leadingPunctuation = char.IsPunctuation(entry.Item1[0]) ? entry.Item1[0] : null; // punctuation at the start of the word
-                char? trailingPunctuation = char.IsPunctuation(entry.Item1[^1]) ? entry.Item1[^1] : null; // punctuation at the end of the word
-                // Convert the phonetics to GagSpeak if the list is not empty, otherwise use the original word
-                string gagSpeak = entry.Item2.Any() ? ConvertPhoneticsToGagSpeak(entry.Item2, isFirstLetterCapitalized) : entry.Item1;
-                // Add the GagSpeak to the final message
-                finalMessage += (leadingPunctuation?.ToString() ?? "") + gagSpeak + (trailingPunctuation?.ToString() ?? "") + " ";
+                // If the word ends with "*", remove the "*" and set a flag to toggle skip translations after processing the word
+                bool toggleAfter = false;
+                if (word.EndsWith("*")) {
+                    toggleAfter = true;
+                }
+                // If the word is not to be translated, just add the word to the final message and continue
+                if (!skipTranslation && word.Any(char.IsLetter)) {
+                    // do checks for punctuation stuff
+                    bool isAllCaps = word.All(c => !char.IsLetter(c) || char.IsUpper(c));       // Set to true if the full letter is in caps
+                    bool isFirstLetterCaps = char.IsUpper(word[0]);
+                    // Extract all leading and trailing punctuation
+                    string leadingPunctuation = new string(word.TakeWhile(char.IsPunctuation).ToArray());
+                    string trailingPunctuation = new string(word.Reverse().TakeWhile(char.IsPunctuation).Reverse().ToArray());
+                    // Convert the phonetics to GagSpeak if the list is not empty, otherwise use the original word
+                    string gaggedSpeak = entry.Item2.Any() ? ConvertPhoneticsToGagSpeak(entry.Item2, isAllCaps, isFirstLetterCaps) : word;
+                    // Add the GagSpeak to the final message
+                    finalMessage.Append(leadingPunctuation + gaggedSpeak + trailingPunctuation + " ");
+                } else {
+                    finalMessage.Append(word + " "); // append the word to the string
+                }
+                // If the word ended with "*", toggle skip translations now
+                if (toggleAfter) {
+                    skipTranslation = !skipTranslation;
+                }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             GagSpeak.Log.Error($"[GagManager] Error converting from IPA Spaced to final output. Puncutation error or other type possible : {e.Message}");
         }
-        // Return the final message 
-        return finalMessage.Trim();
+        return finalMessage.ToString().Trim();
     }
 
     /// <summary>
@@ -111,7 +125,7 @@ public class GagManager : IDisposable
     /// <list type="bullet">
     /// <item><c>phonetics</c><param name="phonetics"> - The list of phonetic symbols to be translated.</param></item>
     /// </list> </summary>
-    public string ConvertPhoneticsToGagSpeak(List<string> phonetics, bool isFirstLetterCapitalized) {
+    public string ConvertPhoneticsToGagSpeak(List<string> phonetics, bool isAllCaps, bool isFirstLetterCapitalized) {
         string outputString = "";
         // Iterate over each phonetic symbol
         foreach (string phonetic in phonetics) {
@@ -126,7 +140,10 @@ public class GagManager : IDisposable
                 string translationSound = _activeGags[GagIndex]._ipaSymbolSound[phonetic];
                 // Add the symbol sound to the output string
                 outputString += translationSound;
-
+                // If the original word is all caps, make the output string all caps
+                if (isAllCaps) { 
+                    outputString = outputString.ToUpper();
+                }
                 // If the first letter of the word is capitalized, capitalize the first letter of the output string
                 if (isFirstLetterCapitalized && outputString.Length > 0) {
                     outputString = char.ToUpper(outputString[0]) + outputString.Substring(1);

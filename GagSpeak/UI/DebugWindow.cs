@@ -8,26 +8,28 @@ using GagSpeak.Services;
 using GagSpeak.UI.GagListings;
 using GagSpeak.Data;
 using GagSpeak.UI.Helpers;
+using GagSpeak.Garbler.Translator;
 
 namespace GagSpeak.UI;
 /// <summary> This class is used to show the debug menu in its own window. </summary>
 public class DebugWindow : Window //, IDisposable
 {
-    private readonly GagSpeakConfig     _config;
-    private readonly GagService         _gagService;
-    private readonly FontService        _fontService;
-    private readonly GagManager         _gagManager;
-    private readonly GagListingsDrawer  _gagListingsDrawer;
+    private          string?                _tempTestMessage;           // stores the input password for the test translation system
+    private          string?                _translatedMessage = "";     // stores the translated message for the test translation system
+    private          string?                _translatedMessageSpaced ="";// stores the translated message for the test translation system
+    private          string?                _translatedMessageOutput ="";// stores the translated message for the test translation system
+    private readonly FontService            _fontService;               // the font service for the plugin
+    private readonly GagService             _gagService;
+    private readonly GagSpeakConfig         _config;
+    private readonly IpaParserEN_FR_JP_SP   _translatorLanguage;        // creates an instance of the EnglishToIPA class
+    private readonly GagManager             _gagManager;                // the gag manager for the plugin
+    private readonly GagListingsDrawer      _gagListingsDrawer;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HistoryWindow"/> class.
-    /// <list type="bullet">
-    /// <item><c>pluginInt</c><param name="pluginInt"> - The DalamudPluginInterface.</param></item>
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// 
-    /// </list> </summary>
-    public DebugWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GagService gagService,
-    GagListingsDrawer gagListingsDrawer, GagManager gagManager, FontService fontService) : base(GetLabel()) {
+    /// </summary>
+    public DebugWindow(DalamudPluginInterface pluginInt, FontService fontService, GagService gagService, IpaParserEN_FR_JP_SP translatorLanguage,
+    GagSpeakConfig config, GagManager gagManager, GagListingsDrawer gagListingsDrawer) : base(GetLabel()) {
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
         // Next let's set the size of the window
@@ -40,11 +42,67 @@ public class DebugWindow : Window //, IDisposable
         _gagService = gagService;
         _gagManager = gagManager;
         _gagListingsDrawer = gagListingsDrawer;
+        _translatorLanguage = translatorLanguage;
     }
 
     /// <summary> This function is used to draw the history window. </summary>
     public override void Draw() {
-        ImGui.Text("DEBUG INFORMATION:");
+        DrawAdvancedGarblerInspector();
+        DrawDebugInformation();
+    }
+
+    // basic string function to get the label of title for the window
+    private static string GetLabel() => "GagSpeakDebug###GagSpeakDebug";    
+
+
+    /// <summary>
+    /// Draws the advanced garbler inspector.
+    /// </summary>
+    public void DrawAdvancedGarblerInspector() {
+        // create a collapsing header for this.
+        if(!ImGui.CollapsingHeader("Advanced Garbler Debug Testing")) { return; }
+        // create a input text field here, that stores the result into a string. On the same line, have a button that says garble message. It should display the garbled message in text on the next l
+        var testMessage  = _tempTestMessage ?? ""; // temp storage to hold until we de-select the text input
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
+        if (ImGui.InputText("##GarblerTesterField", ref testMessage, 400, ImGuiInputTextFlags.None))
+            _tempTestMessage = testMessage;
+
+        ImGui.SameLine();
+        if (ImGui.Button("Garble Message")) {
+            // Use the EnglishToIPA instance to translate the message
+            try {
+                _translatedMessage       = _translatorLanguage.ToIPAStringDisplay(testMessage);
+                _translatedMessageSpaced = _translatorLanguage.ToIPAStringSpacedDisplay(testMessage);
+                _translatedMessageOutput = _gagManager.ProcessMessage(testMessage);
+            } catch (Exception ex) {
+                GagSpeak.Log.Debug($"An error occurred while attempting to parse phonetics: {ex.Message}");
+            }
+        }
+        // DISPLAYS THE ORIGINAL MESSAGE STRING
+        ImGui.Text($"Original Message: {testMessage}");
+        // DISPLAYS THE IPA PARSED DEFINED MESSAGE DISPLAY
+        ImGui.Text("Decoded Message: "); ImGui.SameLine();
+        UIHelpers.FontText($"{_translatedMessage}", _fontService.UidFont);
+        // DISPLAYS THE DECODED MESSAGE SPACED
+        ImGui.Text("Decoded Message: "); ImGui.SameLine();
+        UIHelpers.FontText($"{_translatedMessageSpaced}", _fontService.UidFont);   
+        // DISPLAYS THE OUTPUT STRING 
+        ImGui.Text("Output Message: "); ImGui.SameLine();
+        UIHelpers.FontText($"{_translatedMessageOutput}", _fontService.UidFont);
+
+        // DISPLAYS THE UNIQUE SYMBOLS FOR CURRENT LANGUAGE DIALECT
+        string uniqueSymbolsString = _translatorLanguage.uniqueSymbolsString;
+        ImGui.PushFont(_fontService.UidFont);
+        ImGui.Text($"Unique Symbols for {_config.language} with dialect {_config.languageDialect}: ");
+        ImGui.InputText("##UniqueSymbolsField", ref uniqueSymbolsString, 128, ImGuiInputTextFlags.ReadOnly);
+        ImGui.PopFont();
+    }
+
+    /// <summary>
+    /// Draws the debug information.
+    /// </summary>
+    public void DrawDebugInformation() {
+        if(!ImGui.CollapsingHeader("DEBUG INFORMATION")) { return; }
         try
         {
             // General information
@@ -52,7 +110,6 @@ public class DebugWindow : Window //, IDisposable
             ImGui.Text($"Debug Mode?: {_config.DebugMode} || In DirectChatGarbler Mode?: {_config.DirectChatGarbler}");
             ImGui.Text($"Safeword: {_config.Safeword}");
             ImGui.Text($"Friends Only?: {_config.friendsOnly} || Party Only?: {_config.partyOnly} || Whitelist Only?: {_config.whitelistOnly}");
-            ImGui.Text($"ExperimentalGarblerMode: {_config.ExperimentalGarbler}");
             ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval} || Max Translation History: {_config.TranslationHistoryMax}");
             ImGui.Text($"Total Gag List Count: {_gagService._gagTypes.Count}");
             ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
@@ -70,10 +127,11 @@ public class DebugWindow : Window //, IDisposable
                 ImGui.Text(whitelistPlayerData.name);
                 ImGui.Indent();
                 ImGui.Text($"Relationship to this Player: {whitelistPlayerData.relationshipStatus}");
+                ImGui.Text($"Relationship to You: {whitelistPlayerData.relationshipStatusToYou}");
                 ImGui.Text($"Commitment Duration: {whitelistPlayerData.GetCommitmentDuration()}");
                 ImGui.Text($"Locked Live Chat Garbler: {whitelistPlayerData.lockedLiveChatGarbler}");
-                ImGui.Text($"Pending Relationship Request: {whitelistPlayerData.PendingRelationRequestFromPlayer}");
                 ImGui.Text($"Pending Relationship Request From You: {whitelistPlayerData.PendingRelationRequestFromYou}");
+                ImGui.Text($"Pending Relationship Request: {whitelistPlayerData.PendingRelationRequestFromPlayer}");
                 ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in whitelistPlayerData.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
                 ImGui.Text($"Selected GagPadlocks: || "); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in whitelistPlayerData.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
                 ImGui.Text($"Selected GagPadlocks Timers: || "); ImGui.SameLine(); foreach (var gagPadlockTimer in whitelistPlayerData.selectedGagPadlocksTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} || "); };
@@ -161,16 +219,11 @@ public class DebugWindow : Window //, IDisposable
                 ImGui.NewLine();
                 GagSpeak.Log.Error($"Error while fetching config in debug: {e}");
             }
-        }
-
-        catch (Exception e)
-        {
-            ImGui.NewLine();
-            ImGui.Text($"Error while fetching config in debug: {e}");
-            ImGui.NewLine();
+        } catch (Exception e) {
+            GagSpeak.Log.Error($"Error while fetching config in debug: {e}");
         }
     }
 
-    // basic string function to get the label of title for the window
-    private static string GetLabel() => "GagSpeakDebug###GagSpeakDebug";    
+
 }
+
