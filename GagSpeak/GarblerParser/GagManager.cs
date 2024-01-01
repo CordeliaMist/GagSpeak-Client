@@ -49,6 +49,7 @@ public class GagManager : IDisposable
         string outputStr = "";
         try {
             outputStr = ConvertToGagSpeak(inputMessage);
+            GagSpeak.Log.Debug($"[GagManager] Converted message to GagSpeak: {outputStr}");
         }
         catch (Exception e) {
             GagSpeak.Log.Error($"[GagManager] Error processing message: {e.Message}");
@@ -102,9 +103,12 @@ public class GagManager : IDisposable
                     // Extract all leading and trailing punctuation
                     string leadingPunctuation = new string(word.TakeWhile(char.IsPunctuation).ToArray());
                     string trailingPunctuation = new string(word.Reverse().TakeWhile(char.IsPunctuation).Reverse().ToArray());
+                    // Remove leading and trailing punctuation from the word
+                    string wordWithoutPunctuation = word.Substring(leadingPunctuation.Length, word.Length - leadingPunctuation.Length - trailingPunctuation.Length);
                     // Convert the phonetics to GagSpeak if the list is not empty, otherwise use the original word
-                    string gaggedSpeak = entry.Item2.Any() ? ConvertPhoneticsToGagSpeak(entry.Item2, isAllCaps, isFirstLetterCaps) : word;
+                    string gaggedSpeak = entry.Item2.Any() ? ConvertPhoneticsToGagSpeak(entry.Item2, isAllCaps, isFirstLetterCaps) : wordWithoutPunctuation;
                     // Add the GagSpeak to the final message
+                    GagSpeak.Log.Debug($"[GagManager] Converted [{leadingPunctuation}] + [{word}] + [{trailingPunctuation}]");
                     finalMessage.Append(leadingPunctuation + gaggedSpeak + trailingPunctuation + " ");
                 } else {
                     finalMessage.Append(word + " "); // append the word to the string

@@ -107,7 +107,7 @@
         "dʒ":   { "MUFFLE": 2,  "SOUND": "zuh"  },
         "tʃ":   { "MUFFLE": 2,  "SOUND": "ss"  },
         "j":    { "MUFFLE": 2,  "SOUND": "yh"  },
-        "k":    { "MUFFLE": 1,  "SOUND": "ka"  },
+        "k":    { "MUFFLE": 1,  "SOUND": "kh"  },
         "ɡ":    { "MUFFLE": 1,  "SOUND": "g"  },
         "ŋ":    { "MUFFLE": 1,  "SOUND": "n"  },
         "h":    { "MUFFLE": 0,  "SOUND": "h"  },
@@ -126,7 +126,7 @@
         "u":    { "MUFFLE": 0,  "SOUND": "oo"  },
         "ɑ":    { "MUFFLE": 0,  "SOUND": "o"  },
         "ʊ":    { "MUFFLE": 0,  "SOUND": "oo"  },
-        "aʊ":   { "MUFFLE": 0,  "SOUND": "ow "  },
+        "aʊ":   { "MUFFLE": 0,  "SOUND": "ow"  },
         "ɔɪ":   { "MUFFLE": 0,  "SOUND": "oy"  },
         
         "ɾ":    { "MUFFLE": 2,  "SOUND": "ewa"  },

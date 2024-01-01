@@ -306,6 +306,7 @@ public class WhitelistTab : ITab, IDisposable
                 } else {
                     _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
                 }
+                _currentWhitelistItem = 0;
                 _config.Save();
             }
         } // end our main table
