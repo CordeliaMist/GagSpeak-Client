@@ -442,7 +442,7 @@ public class MessageResultLogic
             // see if they exist
             if(playerInWhitelist != null) {
                 // they are in our whitelist, so set our information sender to the players name.
-                _config.SendInfoName = playerName;
+                _config.SendInfoName = playerName + "@" + world;
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is requesting an update on your info for the profile viewer." +
                 "Providing Over the next 3 Seconds.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");

@@ -22,7 +22,6 @@ public class Gag
         _muffleStrOnPhoneme = new Dictionary<string, int>();
         // set up the ipa symbol sounds
         _ipaSymbolSound = new Dictionary<string, string>();
-
     }
 
     // Adding this stupid info here because it's being a butt and i dont want to put up with this things sorry ass right now.

@@ -5,6 +5,7 @@ namespace GagSpeak.UI;
     - This file is primarily for visual styles. I aimed to adapt it in the use of my UI design, but quickly realized that
     outside of the header styles, I was too burnt out to apply using it everywhere else I have defined my colors.
     - As such, these primarily dictate the colors of the profile viewer and the header, but not much else at the moment sadly.
+    - At least now you know the general structure for doing something like this if you ever decide to.
 */
 
 // Enum to represent different color IDs

@@ -15,7 +15,8 @@ public class FontService : IDisposable
     public FontService(DalamudPluginInterface pluginInterface) {
         _pluginInterface = pluginInterface;
         _pluginInterface.UiBuilder.BuildFonts += BuildFont;  // subscribe to the build fonts event
-        _pluginInterface.UiBuilder.RebuildFonts();           // rebuild the fonts      
+        _pluginInterface.UiBuilder.RebuildFonts();           // rebuild the fonts
+        GagSpeak.Log.Debug("[FontService] SERVICE CONSUTRCTOR INITIALIZED");  
     }
     private unsafe void BuildFont() {
         var fontFile = Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, "DoulosSIL-Regular.ttf");

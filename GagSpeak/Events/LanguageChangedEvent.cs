@@ -10,6 +10,7 @@ public class LanguageChangedEvent
 
     /// <summary> Manually triggered event invoker </summary>
     public void Invoke() {
+        GagSpeak.Log.Debug("[LanguageChangedEventHandler] Invoked");
         LanguageChanged?.Invoke(this, new LanguageChangedEventArgs());
     }
 }

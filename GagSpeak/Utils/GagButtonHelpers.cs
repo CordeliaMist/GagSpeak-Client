@@ -1,21 +1,12 @@
-using System.Text.RegularExpressions;
 using System;
-using System.Numerics;
-using System.Collections.Generic;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using ImGuiNET;
-using Lumina.Misc;
-using OtterGui;
 using OtterGui.Classes;
-using OtterGui.Raii;
 using GagSpeak.Data;
 using GagSpeak.Chat;
 using GagSpeak.UI.Helpers;
 using GagSpeak.Chat.MsgEncoder;
-using GagSpeak.Services;
 using Dalamud.Plugin.Services;
-
 
 namespace GagSpeak.Utility.GagButtonHelpers;
  
@@ -451,25 +442,29 @@ public static class GagButtonHelpers {
     {    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        // format the player name from "firstname lastname homeworld" to "firstname lastname@homeworld"
-        int lastSpaceIndex = config.SendInfoName.LastIndexOf(' ');
-        if (lastSpaceIndex >= 0) { // if we can do this, then do it.
-            string targetPlayer = config.SendInfoName.Remove(lastSpaceIndex, 1).Insert(lastSpaceIndex, "@");
-            // get your relationship to that player, if any. Search for their name in the whitelist.
+        // format a secondary string from the configs.sendinfoname's "firstname lastname@homeworld" to "firstname lastname"
+        try {
+            string targetPlayer = config.SendInfoName;
+            string playername = config.SendInfoName.Substring(0, config.SendInfoName.IndexOf('@'));
+            // Also, get your relationship to that player, if any. Search for their name in the whitelist.
             string relationshipVar = "None";
             config.Whitelist.ForEach(delegate(WhitelistCharData entry) {
                 if (config.SendInfoName.Contains(entry.name)) {
-                    relationshipVar = entry.relationshipStatus;
+                    relationshipVar = entry.relationshipStatus; 
                 }
             });
             // print to chat that you sent the request
             chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Whitelist Player has requested Information."+
-                "Updating them with details(1/2)").AddItalicsOff().BuiltString);
-            // send the message
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{targetPlayer}] "+
+                "with your details(1/2)").AddItalicsOff().BuiltString);
+            //send the message
             chatManager.SendRealMessage(gagMessages.ProvideInfoEncodedMessage(playerPayload, targetPlayer, config.InDomMode,
                 config.DirectChatGarbler, config.GarbleLevel, config.selectedGagTypes, config.selectedGagPadlocks,
                 config.selectedGagPadlocksAssigner, config.selectedGagPadLockTimer, relationshipVar));
+        }
+        catch (Exception e) {
+            chatGui.Print(
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
         }
     }
 
@@ -481,24 +476,29 @@ public static class GagButtonHelpers {
     {    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        // format the player name from "firstname lastname homeworld" to "firstname lastname@homeworld"
-        int lastSpaceIndex = config.SendInfoName.LastIndexOf(' ');
-        if (lastSpaceIndex >= 0) { // if we can do this, then do it.
-            string targetPlayer = config.SendInfoName.Remove(lastSpaceIndex, 1).Insert(lastSpaceIndex, "@");
-            // get your relationship to that player, if any. Search for their name in the whitelist.
+        // format a secondary string from the configs.sendinfoname's "firstname lastname@homeworld" to "firstname lastname"
+        try {
+            string targetPlayer = config.SendInfoName;
+            string playername = config.SendInfoName.Substring(0, config.SendInfoName.IndexOf('@'));
+            // Also, get your relationship to that player, if any. Search for their name in the whitelist.
             string relationshipVar = "None";
             config.Whitelist.ForEach(delegate(WhitelistCharData entry) {
                 if (config.SendInfoName.Contains(entry.name)) {
-                    relationshipVar = entry.relationshipStatus;
+                    relationshipVar = entry.relationshipStatus; 
                 }
             });
             // print to chat that you sent the request
             chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating them with details(2/2)").AddItalicsOff().BuiltString);
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{targetPlayer}] "+
+                "with your details(2/2)").AddItalicsOff().BuiltString);
             // send the message
             chatManager.SendRealMessage(gagMessages.ProvideInfoEncodedMessage2(playerPayload, targetPlayer, config.InDomMode,
                 config.DirectChatGarbler, config.GarbleLevel, config.selectedGagTypes, config.selectedGagPadlocks,
                 config.selectedGagPadlocksAssigner, config.selectedGagPadLockTimer, relationshipVar));
+        }
+        catch (Exception e) {
+            chatGui.Print(
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
         }
     }    
 }

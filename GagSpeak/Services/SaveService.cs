@@ -26,6 +26,6 @@ public sealed class SaveService : SaveServiceBase<FilenameService>
     public SaveService(Logger log, FrameworkManager framework, FilenameService fileNames)
         : base(log, framework, fileNames)
     {
-        // just pass it straight to the base call.
+        GagSpeak.Log.Debug("[SaveService] SERVICE CONSUTRCTOR INITIALIZED");
     }
 }

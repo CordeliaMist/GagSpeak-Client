@@ -25,22 +25,22 @@ public class CommandManager : IDisposable // Our main command list manager
     private const string MainCommandString = "/gagspeak"; // The primary command used for & displays
     private const string ActionsCommandString = "/gag"; // subcommand for more in-depth actions.
     private const string TranslateCommandString = "/gsm"; // convient subcommand for translating messages
-    private readonly MessageEncoder _gagMessages;
-    private readonly ICommandManager _commands;
-    private readonly MainWindow _mainWindow;
-    private readonly HistoryWindow _historyWindow;
-    private readonly DebugWindow _debugWindow;
-    private readonly HistoryService _historyService;
-    private readonly IChatGui _chat;
-    private readonly GagSpeakConfig _config;
-    private readonly ChatManager _chatManager;
-    private readonly IClientState _clientState;
-    private RealChatInteraction _realChatInteraction;
-    private readonly IFramework _framework; 
-    private readonly TimerService _timerService;
-    private readonly GagService _gagService;
-    private readonly GagManager _gagManager;
-    private readonly SafewordUsedEvent _safewordCommandEvent;
+    private readonly    MessageEncoder      _gagMessages;
+    private readonly    ICommandManager     _commands;
+    private readonly    MainWindow          _mainWindow;
+    private readonly    HistoryWindow       _historyWindow;
+    private readonly    DebugWindow         _debugWindow;
+    private readonly    HistoryService      _historyService;
+    private readonly    IChatGui            _chat;
+    private readonly    GagSpeakConfig      _config;
+    private readonly    ChatManager         _chatManager;
+    private readonly    IClientState        _clientState;
+    private             RealChatInteraction _realChatInteraction;
+    private readonly    IFramework          _framework; 
+    private readonly    TimerService        _timerService;
+    private readonly    GagService          _gagService;
+    private readonly    GagManager          _gagManager;
+    private readonly    SafewordUsedEvent   _safewordCommandEvent;
 
     // Constructor for the command manager
     public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow, HistoryService historyService, DebugWindow debugWindow,
@@ -83,6 +83,7 @@ public class CommandManager : IDisposable // Our main command list manager
         if (_config.DirectChatGarbler) {
             _chat.PrintError("Direct Chat Garbler is still enabled. If you don't want this on, remember to disable it!");
         }
+        GagSpeak.Log.Debug("[Command Manager] Constructor Finished Initializing");
     }
 
     // Dispose of the command manager
@@ -128,31 +129,44 @@ public class CommandManager : IDisposable // Our main command list manager
 
     private bool Safeword(string argument) { // Handler for the safeword subcommand
         if (string.IsNullOrWhiteSpace(argument)) { // If no safeword is provided
-            _chat.Print("Please provide a safeword. Usage: /gagspeak safeword [your_safeword]"); return false; }
-        if (_config.Safeword == argument) { // If the safeword is the same as the one we are trying to set
-            _chat.Print("Safeword matched, deactivating all gags and locks"); 
-            
-            // Disable the ObserveList so we dont trigger the safeword event
-            _config.selectedGagTypes.IsSafewordCommandExecuting = true;
-            _config.selectedGagPadlocks.IsSafewordCommandExecuting = true;
-            
-            for (int layerIndex = 0; layerIndex < _config.selectedGagTypes.Count; layerIndex++) {
-                _config.selectedGagTypes[layerIndex] = "None";
-                _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None;
-                _config.selectedGagPadlocksPassword[layerIndex] = "";
-                _config.selectedGagPadlocksAssigner[layerIndex] = "";
+            _chat.Print("Please provide a safeword. Usage: /gagspeak safeword [your_safeword]"); 
+            return false;
+        }
+
+        // If the safeword is the same as the one we are trying to set and there is no "SafewordUsed" timer
+        if (_config.Safeword == argument) {
+            // see if the safeword is on cooldown
+            if (!_timerService.timers.ContainsKey("SafewordUsed")) {
+                GagSpeak.Log.Debug($"[Command Manager]: Safeword matched, and is off cooldown, deactivating all gags and locks");
+                _chat.Print("Safeword matched, and is off cooldown, deactivating all gags and locks");
+                // Disable the ObserveList so we dont trigger the safeword event
+                _config.selectedGagTypes.IsSafewordCommandExecuting = true;
+                _config.selectedGagPadlocks.IsSafewordCommandExecuting = true;
+                // remove all data
+                for (int layerIndex = 0; layerIndex < _config.selectedGagTypes.Count; layerIndex++) {
+                    _config.selectedGagTypes[layerIndex] = "None";
+                    _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None;
+                    _config.selectedGagPadlocksPassword[layerIndex] = "";
+                    _config.selectedGagPadlocksAssigner[layerIndex] = "";
+                }
+                // Re-enable the ObserveList
+                _config.selectedGagTypes.IsSafewordCommandExecuting = false;
+                _config.selectedGagPadlocks.IsSafewordCommandExecuting = false;
+                // Fire the safeword command event
+                GagSpeak.Log.Debug($"[Command Manager]: Firing Invoke from CommandManager");
+                _safewordCommandEvent.Invoke();
+                // fire the safewordUsed bool to true so that we set the cooldown
+                _config.SafewordUsed = true;
+                _timerService.StartTimer("SafewordUsed", "15s", 1000, () => _config.SafewordUsed = false);
             }
-
-            // Re-enable the ObserveList
-            _config.selectedGagTypes.IsSafewordCommandExecuting = false;
-            _config.selectedGagPadlocks.IsSafewordCommandExecuting = false;
-
-            // Fire the safeword command event 
-            _safewordCommandEvent.Invoke();
-
-            // fire the safewordUsed bool to true so that we set the cooldown
-            _config.SafewordUsed = true;
-            _timerService.StartTimer("SafewordUsed", "15s", 1000, () => _config.SafewordUsed = false);
+            // otherwise inform the user that the cooldown for safeword being used is still present
+            else {
+                GagSpeak.Log.Debug($"[Command Manager]: Safeword matched, but the usage is still on cooldown");
+                _chat.Print("Safeword matched, but the usage is still on cooldown");
+            }
+        } else { // if the safeword is not the same as the one we are trying to set
+            GagSpeak.Log.Debug($"[Command Manager]: Safeword did not match");
+            _chat.Print("Safeword did not match!");
         }
 
         return true;

@@ -7,7 +7,8 @@ namespace GagSpeak.Data;
 /// <summary>
 /// This class is used to handle the the idenfitication of padlocks before and after they are equipped, seperate from the config padlocks yet linked all the same
 /// </summary>
-public class PadlockIdentifier {
+public class PadlockIdentifier
+{
     public string       _inputPassword { get; set; }                    // This will hold the input password
     public string       _inputCombination { get; set; }                 // This will hold the input combination
     public string       _inputTimer { get; set; }                       // This will hold the input timer

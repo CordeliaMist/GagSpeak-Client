@@ -14,16 +14,16 @@ namespace GagSpeak.UI;
 /// <summary> This class is used to show the debug menu in its own window. </summary>
 public class DebugWindow : Window //, IDisposable
 {
-    private          string?                _tempTestMessage;           // stores the input password for the test translation system
-    private          string?                _translatedMessage = "";     // stores the translated message for the test translation system
-    private          string?                _translatedMessageSpaced ="";// stores the translated message for the test translation system
-    private          string?                _translatedMessageOutput ="";// stores the translated message for the test translation system
-    private readonly FontService            _fontService;               // the font service for the plugin
-    private readonly GagService             _gagService;
-    private readonly GagSpeakConfig         _config;
-    private readonly IpaParserEN_FR_JP_SP   _translatorLanguage;        // creates an instance of the EnglishToIPA class
-    private readonly GagManager             _gagManager;                // the gag manager for the plugin
-    private readonly GagListingsDrawer      _gagListingsDrawer;
+    private          string?                _tempTestMessage;               // stores the input password for the test translation system
+    private          string?                _translatedMessage = "";        // stores the translated message for the test translation system
+    private          string?                _translatedMessageSpaced ="";   // stores the translated message for the test translation system
+    private          string?                _translatedMessageOutput ="";   // stores the translated message for the test translation system
+    private readonly FontService            _fontService;                   // for displaying the IPA symbols on the bottom chart
+    private readonly GagService             _gagService;                    // for displaying the number of registered gags
+    private readonly GagSpeakConfig         _config;                        // for retrieving the config data to display to the window
+    private readonly IpaParserEN_FR_JP_SP   _translatorLanguage;            // creates an instance of the EnglishToIPA class
+    private readonly GagManager             _gagManager;                    // for knowing what gags are equipped
+    private readonly GagListingsDrawer      _gagListingsDrawer;             // for knowing the information in the currently equipped gags
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HistoryWindow"/> class.
@@ -105,21 +105,36 @@ public class DebugWindow : Window //, IDisposable
         if(!ImGui.CollapsingHeader("DEBUG INFORMATION")) { return; }
         try
         {
-            // General information
-            ImGui.Text($"Fresh Install?: {_config.FreshInstall} || Is Enabled?: {_config.Enabled} || In Dom Mode?: {_config.InDomMode}");
-            ImGui.Text($"Debug Mode?: {_config.DebugMode} || In DirectChatGarbler Mode?: {_config.DirectChatGarbler}");
+            // General plugin information
+            ImGui.Text($"Fresh Install?: {_config.FreshInstall}");
+            ImGui.Text($"In Dom Mode?: {_config.InDomMode}");
             ImGui.Text($"Safeword: {_config.Safeword}");
-            ImGui.Text($"Friends Only?: {_config.friendsOnly} || Party Only?: {_config.partyOnly} || Whitelist Only?: {_config.whitelistOnly}");
-            ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval} || Max Translation History: {_config.TranslationHistoryMax}");
+            ImGui.Text($"Has Safeword Been Used?: {_config.SafewordUsed}");
+            ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval}");
+            ImGui.Text($"Max Translation History: {_config.TranslationHistoryMax}");
+            ImGui.Separator();
+            // configuration tab options & details
+            ImGui.Text($"Friends Only?: {_config.friendsOnly}");
+            ImGui.Text($"Party Only?: {_config.partyOnly}");
+            ImGui.Text($"Whitelist Only?: {_config.whitelistOnly}");
+            ImGui.Text($"In DirectChatGarbler Mode?: {_config.DirectChatGarbler}");
+            ImGui.Text($"Can glamourer items be equipped upon putting on gags? [WIP]: {_config.GrantWardrobeControl}");
+            ImGui.Text($"Selected Language: {_config.language}");
+            ImGui.Text($"Selected Dialect: {_config.languageDialect}");
+            ImGui.Text($"Translatable Chat Types:");
+            foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text($"{chanel.ToString()}, "); };
+            ImGui.Text($"Current ChatBox Channel: {ChatChannel.GetChatChannel()}");
+            ImGui.Text($"Player Current Requesting Info: {_config.SendInfoName}");
+            ImGui.Text($"Ready To Accept sending player information?: {_config.acceptingInfoRequests}");
+            // Gag details
+            ImGui.Separator();
             ImGui.Text($"Total Gag List Count: {_gagService._gagTypes.Count}");
-            ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
+            ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text($"{gagType} ||"); };
             ImGui.Text("Selected GagPadlocks: ||"); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} ||");};
             ImGui.Text("Selected GagPadlocks Passwords: ||"); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} ||"); };
             ImGui.Text("Selected GagPadlock Timers: ||"); ImGui.SameLine(); foreach (var gagPadlockTimer in _config.selectedGagPadLockTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} ||"); };
             ImGui.Text("Selected GagPadlocks Assigners: ||"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} ||"); };
-            ImGui.Text($"Translatable Chat Types:");
-            foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };
-            ImGui.Text($"Current ChatBox Channel: {ChatChannel.GetChatChannel()} || Requesting Info: {_config.SendInfoName} || Accepting?: {_config.acceptingInfoRequests}");
+            ImGui.Separator();
             
             // Whitelist uder information
             ImGui.Text("Whitelist:"); ImGui.Indent();

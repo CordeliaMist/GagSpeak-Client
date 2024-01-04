@@ -355,10 +355,11 @@ public class WhitelistTab : ITab, IDisposable
         }
 
         // create a collapsing header for this.
-        if(!ImGui.CollapsingHeader("PLAYER's Interaction Options")) { return; }
+        if(!ImGui.CollapsingHeader($"Interactions to use on {whitelist[_currentWhitelistItem].name}")) { return; }
 
         if(!enableInteractions || interactionButtonPressed) { ImGui.BeginDisabled(); }
-
+        // inform the player how this works
+        ImGui.TextColored(new Vector4(1.0f, 0.5f, 0.0f, 1.0f), "Use REQUEST PLAYER INFO button each time you meet up to have accurate data!");
         // create a new table for this section
         using (var InfoTable = ImRaii.Table("InfoTable", 1)) {
             // for our first row, display the DD for layer, DD gag type, and apply gag to player buttons
@@ -439,7 +440,7 @@ public class WhitelistTab : ITab, IDisposable
             // add a filler row
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             // Create the button for the sixth row, first column
-            if (ImGui.Button("Toggle Lock Live Chat Garbler")) {
+            if (ImGui.Button("Toggle Live Garbler Lock")) {
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
                 // the player you are doing this on must be a relationstatus of slave
                 if(selectedWhitelistItem.relationshipStatus == "Slave") {

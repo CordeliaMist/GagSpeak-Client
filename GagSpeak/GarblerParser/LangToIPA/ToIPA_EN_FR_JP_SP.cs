@@ -16,8 +16,8 @@ public class IpaParserEN_FR_JP_SP
 	private 			Dictionary<string, string> 	obj;			 	// Dictionary to store the conversion rules in JSON
 	private readonly 	GagSpeakConfig 				_config;		 	// The GagSpeak configuration
     private             DalamudPluginInterface  _pluginInterface;		// used to get the plugin interface
-	private List<string> CombinationsEng = new List<string> { "aʊ", "oʊ", "eɪ", "aɪ", "dʒ", "tʃ", "ɔɪ", "ɪə" }; 
-	private HashSet<string> uniqueSymbols = new HashSet<string>();
+	// private List<string> CombinationsEng = new List<string> { "aʊ", "oʊ", "eɪ", "aɪ", "dʒ", "tʃ", "ɔɪ", "ɪə" }; 
+	// private HashSet<string> uniqueSymbols = new HashSet<string>();
 	public string uniqueSymbolsString = "";
 	
 	
@@ -161,10 +161,10 @@ public class IpaParserEN_FR_JP_SP
 						if (i < phonetics.Length - 1) {
 							// first 
 							string possibleCombination = phonetics.Substring(i, 2);
-							int index = PhonemMasterLists.MasterListEN_US.FindIndex(t => t == possibleCombination);
+							int index = GetMasterListBasedOnDialect().FindIndex(t => t == possibleCombination);
 							if (index != -1) {
 								// If a combination is found, add it to the list and skip the next character
-								phoneticSymbols.Add(PhonemMasterLists.MasterListEN_US[index]);
+								phoneticSymbols.Add(GetMasterListBasedOnDialect()[index]);
 								i++;
 							} else {
 								// If no combination is found, add the current character to the list
@@ -188,6 +188,9 @@ public class IpaParserEN_FR_JP_SP
 		return result;
 	}
 
+	/// <summary>
+	/// Converts a dictionary of words and their phonetic symbols to a string of spaced phonetics
+	/// </summary>
 	public string ConvertDictionaryToSpacedPhonetics(List<Tuple<string, List<string>>> inputTupleList) {
 		// Initialize a string to hold the result
 		string result = "";
@@ -206,6 +209,37 @@ public class IpaParserEN_FR_JP_SP
 		return result.Trim();
 	}
 
+	/// <summary>
+	/// Returns the master list of phonemes for the selected language
+	/// </summary>
+	public List<string> GetMasterListBasedOnDialect() {
+		switch (_config.languageDialect) {
+			case "IPA_UK":      return PhonemMasterLists.MasterListEN_UK;
+			case "IPA_US":      return PhonemMasterLists.MasterListEN_US;
+			case "IPA_SPAIN":   return PhonemMasterLists.MasterListSP_SPAIN;
+			case "IPA_MEXICO":  return PhonemMasterLists.MasterListSP_MEXICO;
+			case "IPA_FRENCH":  return PhonemMasterLists.MasterListFR_FRENCH;
+			case "IPA_QUEBEC":  return PhonemMasterLists.MasterListFR_QUEBEC;
+			case "IPA_JAPAN":   return PhonemMasterLists.MasterListJP;
+			default:            throw new Exception("Invalid language Dialect");
+		}
+	}
+
+	/// <summary>
+	/// Sets the uniqueSymbolsString to the master list of phonemes for the selected language
+	/// </summary>
+	public void SetUniqueSymbolsString() {
+        switch (_config.languageDialect) {
+            case "IPA_UK":      uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListEN_UK); break;
+            case "IPA_US":      uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListEN_US); break;
+            case "IPA_SPAIN":   uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListSP_SPAIN); break;
+            case "IPA_MEXICO":  uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListSP_MEXICO); break;
+            case "IPA_FRENCH":  uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListFR_FRENCH); break;
+            case "IPA_QUEBEC":  uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListFR_QUEBEC); break;
+            case "IPA_JAPAN":   uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListJP); break;
+            default:            throw new Exception("Invalid language Dialect");
+        }
+	}
 	/*
 	public string ConvertToSpacedPhonetics(string input) {
 		GagSpeak.Log.Debug($"[IPA Parser] Converting phonetics to spaced phonetics: {input}");
@@ -262,42 +296,30 @@ public class IpaParserEN_FR_JP_SP
 	/// <summary>
 	/// Sets the uniqueSymbolsString to the master list of phonemes for the selected language
 	/// </summary>
-	public void SetUniqueSymbolsString() {
-        switch (_config.languageDialect) {
-            case "IPA_UK":      uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListEN_UK); break;
-            case "IPA_US":      uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListEN_US); break;
-            case "IPA_SPAIN":   uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListSP_SPAIN); break;
-            case "IPA_MEXICO":  uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListSP_MEXICO); break;
-            case "IPA_FRENCH":  uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListFR_FRENCH); break;
-            case "IPA_QUEBEC":  uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListFR_QUEBEC); break;
-            case "IPA_JAPAN":   uniqueSymbolsString = string.Join(",", PhonemMasterLists.MasterListJP); break;
-            default:            throw new Exception("Invalid language Dialect");
-        }
-	}
 
 	// helper function for extracting new languages phonetic dictionaries. not actually used in the plugin
-	public List<string> ExtractUniquePhonetics() {
-		// Iterate over each word in the dictionary
-		foreach (KeyValuePair<string, string> entry in obj) {
-			// Extract the phonetic symbols between the slashes
-        	string phonetics = entry.Value.Replace("/", "").Replace(",", "");
-			// Check for known combinations first
-			for (int i = 0; i < phonetics.Length - 1; i++) {
-				string possibleCombination = phonetics.Substring(i, 2);
-				if (CombinationsEng.Contains(possibleCombination)) {
-					uniqueSymbols.Add(possibleCombination);
-					i++; // Skip next character as it's part of the combination
-				} else {
-					if (phonetics[i] != ',') { // Skip commas
-						uniqueSymbols.Add(phonetics[i].ToString());
-                	}
-				}
-			}
-			// Check the last character if it wasn't part of a combination
-        	if (!uniqueSymbols.Contains(phonetics[^1].ToString()) && phonetics[^1] != ',') {
-				uniqueSymbols.Add(phonetics[^1].ToString());
-			}
-		}
-		return uniqueSymbols.ToList();
-	}
+	// public List<string> ExtractUniquePhonetics() {
+	// 	// Iterate over each word in the dictionary
+	// 	foreach (KeyValuePair<string, string> entry in obj) {
+	// 		// Extract the phonetic symbols between the slashes
+    //     	string phonetics = entry.Value.Replace("/", "").Replace(",", "");
+	// 		// Check for known combinations first
+	// 		for (int i = 0; i < phonetics.Length - 1; i++) {
+	// 			string possibleCombination = phonetics.Substring(i, 2);
+	// 			if (CombinationsEng.Contains(possibleCombination)) {
+	// 				uniqueSymbols.Add(possibleCombination);
+	// 				i++; // Skip next character as it's part of the combination
+	// 			} else {
+	// 				if (phonetics[i] != ',') { // Skip commas
+	// 					uniqueSymbols.Add(phonetics[i].ToString());
+    //             	}
+	// 			}
+	// 		}
+	// 		// Check the last character if it wasn't part of a combination
+    //     	if (!uniqueSymbols.Contains(phonetics[^1].ToString()) && phonetics[^1] != ',') {
+	// 			uniqueSymbols.Add(phonetics[^1].ToString());
+	// 		}
+	// 	}
+	// 	return uniqueSymbols.ToList();
+	// }
 }

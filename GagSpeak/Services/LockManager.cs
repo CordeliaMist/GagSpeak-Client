@@ -40,6 +40,8 @@ public class GagAndLockManager : IDisposable
         _safewordUsedEvent = safewordUsedEvent;
         // subscribe to the safeword event
         _safewordUsedEvent.SafewordCommand += CleanupVariables;
+
+        GagSpeak.Log.Debug("[GagAndLockManager] SERVICE CONSUTRCTOR INITIALIZED");
     }
 
     /// <summary> Unsubscribes from our subscribed event upon disposal </summary>
@@ -262,6 +264,7 @@ public class GagAndLockManager : IDisposable
     /// </list> </summary>
     private void CleanupVariables(object sender, SafewordCommandEventArgs e) {
         // clear EVERYTHING
+        GagSpeak.Log.Debug("Safeword command invoked, and subscribed function called.");
         _config._isLocked = new List<bool> { false, false, false }; // reset is locked
         _config.TimerData.Clear(); // reset the timer data
         _timerService.ClearIdentifierTimers(); // and the associated timers timerdata reflected

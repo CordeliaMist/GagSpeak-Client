@@ -30,6 +30,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                InDomMode { get; set; } = false;                        // Is plugin in dom mode?
     public          bool                                DirectChatGarbler { get; set; } = false;                // Is direct chat garbler enabled?
     public          bool                                LockDirectChatGarbler { get; set; } = false;            // Is live chat garbler enabled?
+    public          bool                                GrantWardrobeControl { get; set; } = false;             // Dictates whether or not the plugin can force you to wear things.
     public          string                              Safeword { get; set; } = "safeword";                    // What is the safeword?
     public          bool                                friendsOnly { get; set; } = false;                      // is friend only enabled?
     public          bool                                partyOnly { get; set; } = false;                        // Is party only enabled?
@@ -79,8 +80,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         _saveService = saveService;
         Load(migrator);
 
-        languageDialect = "IPA_US";
-
         // Make sure we aren't getting any duplicates
         if (this.selectedGagTypes == null || !this.selectedGagTypes.Any() || this.selectedGagTypes.Count > 3) {
             this.selectedGagTypes = new ObservableList<string> { "None", "None", "None" };}
@@ -123,6 +122,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         if (this.phoneticSymbolList == null || !this.phoneticSymbolList.Any()) {
             GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
             this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
+
+        GagSpeak.Log.Debug("[Configuration File] Constructor Finished Initializing and setting default values, and previous data restored.");
     }
 
     /// <summary> Saves the config to our save service and updates the garble level to its new value. </summary>

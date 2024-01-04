@@ -11,32 +11,39 @@ using GagSpeak.Data;
 using GagSpeak.Services;
 using GagSpeak.UI.Helpers;
 using GagSpeak.UI.GagListings;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>
 public class ConfigSettingsTab : ITab
 {
-    private readonly IDalamudTextureWrap    _dalamudTextureWrap;
-    private readonly GagSpeakConfig         _config;
-    private readonly UiBuilder              _uiBuilder;
+    private readonly    IDalamudTextureWrap             _dalamudTextureWrap;    // for loading images
+    private readonly    GagSpeakConfig                  _config;                // for getting the config
+    private readonly    UiBuilder                       _uiBuilder;             // for loading images
+    private             Dictionary<string, string[]>    _languages;             // the dictionary of languages & dialects 
+    private             string[]                        _currentDialects;       // the array of language names
+    private             string                          _activeDialect;         // the dialect selected
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ConfigSettingsTab"/> class.
-    /// <list type="bullet">
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// <item><c>uiBuilder</c><param name="uiBuilder"> - The UiBuilder.</param></item>
-    /// <item><c>pluginInterface</c><param name="pluginInterface"> - The DalamudPluginInterface.</param></item>
-    /// </list> </summary>
+    /// <summary> Initializes a new instance of the <see cref="ConfigSettingsTab"/> class. <summary>
     public ConfigSettingsTab(GagSpeakConfig config, UiBuilder uiBuilder, DalamudPluginInterface pluginInterface,
     GagListingsDrawer gagListingsDrawer, GagService gagService) {
         _config = config;
         _uiBuilder = uiBuilder;
-        var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "icon.png");
-        GagSpeak.Log.Debug($"[Image Display]: Loading image from {imagePath}");
+        var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "iconUI.png");
         var IconImage = _uiBuilder.LoadImage(imagePath);
-        GagSpeak.Log.Debug($"[Image Display]: Loaded image from {imagePath}");
-
+        // sets the icon
         _dalamudTextureWrap = IconImage;
+        // load the dropdown info
+        _languages = new Dictionary<string, string[]> {
+            { "English", new string[] { "US", "UK" } },
+            { "Spanish", new string[] { "Spain", "Mexico" } },
+            { "French", new string[] { "France", "Quebec" } },
+            { "Japanese", new string[] { "Japan" } }
+        };
+
+        _currentDialects = _languages[_config.language]; // put all dialects into an array
+        _activeDialect = GetDialectFromConfigDialect();  // set the active dialect to the one in the config
     }
 
     public ReadOnlySpan<byte> Label => "Settings"u8; // apply the tab label
@@ -47,7 +54,6 @@ public class ConfigSettingsTab : ITab
         using var child = ImRaii.Child("MainWindowChild");
         if (!child)
             return;
-
         // Draw the child grouping for the ConfigSettings Tab
         using (var child2 = ImRaii.Child("SettingsChild")) {
             DrawHeader();
@@ -68,7 +74,7 @@ public class ConfigSettingsTab : ITab
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         ImGui.Columns(2,"ConfigColumns", false);
         // See "setpanel.cs" for other UIHelpers.Checkbox options that base off the above ^^
-        ImGui.Text("Gag Configuration:");
+        ImGui.Text("GagSpeak Configuration:");
         // UIHelpers.Checkbox will dictate if only players from their friend list are allowed to use /gag (target) commands on them.
         UIHelpers.Checkbox("Only Friends", "Only processes process /gag (target) commands from others if they are on your friend list.\n" +
             "(Does NOT need to be enabled for you to use /gag (target) commands on them)", _config.friendsOnly, v => _config.friendsOnly = v, _config);
@@ -84,9 +90,61 @@ public class ConfigSettingsTab : ITab
             "This does make use of chat to server interception. Even though now it is ensured safe, always turn this OFF after any patch or game update, until the plug curator says it's safe",
             _config.DirectChatGarbler, v => _config.DirectChatGarbler = v, _config);
         if(_config.LockDirectChatGarbler == true) {ImGui.EndDisabled();}
+        UIHelpers.Checkbox("Wardrobe Control [WIP]", "Allows plugin to force gear onto you via glamourer when certain gags are equipped.\n[Glamourer currently does"+
+        "not allow this and thus it is a placeholder for the future]", _config.GrantWardrobeControl, v => _config.GrantWardrobeControl = v, _config);
         
+        // Create the language dropdown
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
+        string prevLang = _config.language; // to only execute code to update data once it is changed
+        if (ImGui.BeginCombo("##Language", _config.language)) {
+            foreach (var language in _languages.Keys.ToArray()) {
+                bool isSelected = (_config.language == language);
+                if (ImGui.Selectable(language, isSelected)) {
+                    _config.language = language;
+                    GagSpeak.Log.Debug($"[ConfigSettingsTab] Language changed to: {_config.language}");
+                }
+                if (isSelected) {
+                    ImGui.SetItemDefaultFocus();
+                }
+            }
+            ImGui.EndCombo();
+        }
+        //update if changed 
+        if (prevLang != _config.language) { // set the language to the newly selected language once it is changed
+            _currentDialects = _languages[_config.language]; // update the dialects for the new language
+            _activeDialect = _currentDialects[0]; // set the active dialect to the first dialect of the new language
+            SetConfigDialectFromDialect(_activeDialect);
+            _config.Save();
+        }
+        ImGui.SameLine(); ImGui.Text("Language");
+
+        // Create the dialect dropdown
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
+        string[] dialects = _languages[_config.language];
+        string prevDialect = _activeDialect; // to only execute code to update data once it is changed
+        if (ImGui.BeginCombo("##Dialect", _activeDialect)) {
+            foreach (var dialect in dialects) {
+                bool isSelected = (_activeDialect == dialect);
+                if (ImGui.Selectable(dialect, isSelected)) {
+                    _activeDialect = dialect;
+                }
+                if (isSelected) {
+                    ImGui.SetItemDefaultFocus();
+                }
+            }
+            ImGui.EndCombo();
+        }
+        //update if changed
+        if (prevDialect != _activeDialect) { // set the dialect to the newly selected dialect once it is changed
+            SetConfigDialectFromDialect(_activeDialect);
+            _config.Save();
+        }
+        ImGui.SameLine(); ImGui.Text("Dialect");
+
+        // channel listings
         ImGui.NextColumn();
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 50);
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX());
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 10);
         // you might normally want to embed resources and load them from the manifest stream
         ImGui.Image(_dalamudTextureWrap.ImGuiHandle, new Vector2(_dalamudTextureWrap.Width, _dalamudTextureWrap.Height));
         ImGui.Columns(1);
@@ -120,5 +178,37 @@ public class ConfigSettingsTab : ITab
         ImGui.Columns(1);
         ImGui.PopStyleVar();
         if(_config.LockDirectChatGarbler == true) {ImGui.EndDisabled();}
+    }
+
+    /// <summary>
+    /// Used to restore the dropdown to the selection from the config
+    /// </summary>
+    private string GetDialectFromConfigDialect() {
+        switch (_config.languageDialect) {
+            case "IPA_US": return "US";
+            case "IPA_UK": return "UK";
+            case "IPA_FRENCH": return "France";
+            case "IPA_QUEBEC": return "Quebec";
+            case "IPA_JAPAN": return "Japan";
+            case "IPA_SPAIN": return "Spain";
+            case "IPA_MEXICO": return "Mexico";
+            default: return "US";
+        }
+    }
+
+    /// <summary>
+    /// Sets the config dialect from dialect string selected by the dropdown.
+    /// </summary>
+    private void SetConfigDialectFromDialect(string dialect) {
+        switch (dialect) {
+            case "US": _config.languageDialect = "IPA_US"; break;
+            case "UK": _config.languageDialect = "IPA_UK"; break;
+            case "France": _config.languageDialect = "IPA_FRENCH"; break;
+            case "Quebec": _config.languageDialect = "IPA_QUEBEC"; break;
+            case "Japan": _config.languageDialect = "IPA_JAPAN"; break;
+            case "Spain": _config.languageDialect = "IPA_SPAIN"; break;
+            case "Mexico": _config.languageDialect = "IPA_MEXICO"; break;
+            default: _config.languageDialect = "IPA_US"; break;
+        }
     }
 }

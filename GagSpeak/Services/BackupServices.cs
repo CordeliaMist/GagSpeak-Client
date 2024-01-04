@@ -23,6 +23,8 @@ public class BackupService
         _configDirectory = new DirectoryInfo(fileNames.ConfigDirectory);
         // Create the backup directory if it does not exist
         Backup.CreateAutomaticBackup(logger, _configDirectory, _fileNames);
+
+        GagSpeak.Log.Debug("[BackupService] SERVICE CONSUTRCTOR INITIALIZED");
     }
 
     /// <summary> Create a permanent backup with a given name for migrations. </summary>

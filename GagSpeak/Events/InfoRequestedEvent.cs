@@ -1,4 +1,5 @@
 using System;
+using GagSpeak.Data;
 
 namespace GagSpeak.Events;
 
@@ -12,6 +13,7 @@ public class InfoRequestEvent
     public event InfoRequestEventHandler? InfoRequest;
 
     public void Invoke() {
+        GagSpeak.Log.Debug($"[InfoRequestEvent] Invoked");
         InfoRequest?.Invoke(this, new InfoRequestEventArgs());
     }
 }

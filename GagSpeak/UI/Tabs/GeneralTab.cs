@@ -9,8 +9,6 @@ using OtterGui.Widgets;
 using GagSpeak.UI.GagListings;
 using GagSpeak.Services;
 using GagSpeak.Data;
-using GagSpeak.UI.Helpers;
-using GagSpeak.Garbler.Translator;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>
@@ -97,30 +95,40 @@ public class GeneralTab : ITab, IDisposable
         // let's start by drawing the outline for the container
         using var child = ImRaii.Child("GeneralTabPanel", -Vector2.One, true);
         // Let's create a table in this panel
-        using var style = ImRaii.PushStyle(ImGuiStyleVar.ButtonTextAlign, new Vector2(0, 0.5f));
-        using (var table = ImRaii.Table("Main Declarations", 2)) {
+        using (var table = ImRaii.Table("Main Declarations", 3)) {
             if(!table) { return; } // make sure our table was made
             // Identify our columns.
-            ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Declare Safewordm").X);
-            ImGui.TableSetupColumn("Data", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Set Safewordm").X);
+            ImGui.TableSetupColumn("Data", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("mmmmmmmmmmmmmmmmm").X);
+            ImGui.TableSetupColumn("Cooldowns", ImGuiTableColumnFlags.WidthStretch);
 
             // draw our our first row
-            ImGuiUtil.DrawFrameColumn("Declare Safeword");
+            ImGuiUtil.DrawFrameColumn("Set Safeword");
             ImGui.TableNextColumn();
+            // if the safeword was used, disable the section and show cooldown message
+            if(_config.SafewordUsed) { ImGui.BeginDisabled(); }
+
             // add variables for the safeword stuff
-            var width = new Vector2(ImGui.GetContentRegionAvail().X,0);
+            var width = new Vector2(-1, 0);
             var safeword  = _tempSafeword ?? _config.Safeword; // temp storage to hold until we de-select the text input
             ImGui.SetNextItemWidth(width.X);
-            if (ImGui.InputText("##Safeword", ref safeword, 128, ImGuiInputTextFlags.None))
+            if (ImGui.InputText("##Safeword", ref safeword, 30, ImGuiInputTextFlags.None))
                 _tempSafeword = safeword;
             if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
                 _config.Safeword = safeword;
                 _tempSafeword = null;
             }
+            // draw the cooldown timer
+            if(_config.SafewordUsed) { ImGui.EndDisabled(); }
+            ImGui.TableNextColumn();
+            if(_config.SafewordUsed) {
+                ImGui.Text($"Safeword Cooldown: {_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
+            }
             // draw our our second row
             var mode = _inDomMode ?? _config.InDomMode;
             ImGuiUtil.DrawFrameColumn("Mode Selector");
             ImGui.TableNextColumn();
+            width = new Vector2(ImGui.GetContentRegionAvail().X-5,0);
             // draw out our two buttons to set the modes. When the button labeled sub is pressed, it will switch isDomMode to false, and lock the interactability of the sub button.
             // when the button labeled dom is pressed, it will switch isDomMode to true, and lock the interactability of the dom button.
             if(modeButtonsDisabled) {
@@ -129,12 +137,12 @@ public class GeneralTab : ITab, IDisposable
             if (mode == true) {
                 // User is in Dom mode
                 if(!modeButtonsDisabled) {ImGui.BeginDisabled();}
-                if (ImGui.Button("Dominant")) {
+                if (ImGui.Button("Dominant", width/2)) {
                     // Dom mode is already active, do nothing or display a message
                 }
                 if(!modeButtonsDisabled) {ImGui.EndDisabled();}
                 ImGui.SameLine();
-                if (ImGui.Button("Submissive")) {
+                if (ImGui.Button("Submissive", width/2)) {
                     _inDomMode = false; // Switch to Sub mode
                     _config.InDomMode = false;
                     modeButtonsDisabled = true;
@@ -143,7 +151,7 @@ public class GeneralTab : ITab, IDisposable
                 }
             } else {
                 // User is in Sub mode
-                if (ImGui.Button("Dominant")) {
+                if (ImGui.Button("Dominant", width/2)) {
                     _inDomMode = true; // Switch to Dom mode
                     _config.InDomMode = true;
                     modeButtonsDisabled = true;
@@ -152,14 +160,14 @@ public class GeneralTab : ITab, IDisposable
                 }
                 if(!modeButtonsDisabled) {ImGui.BeginDisabled();}
                 ImGui.SameLine();
-                if (ImGui.Button("Submissive")) {
+                if (ImGui.Button("Submissive", width/2)) {
                     // do nothing
                 }
                 if(!modeButtonsDisabled) {ImGui.EndDisabled();}
             }
+            ImGui.TableNextColumn();
             if(modeButtonsDisabled) {
                 ImGui.EndDisabled();
-                ImGui.SameLine();
                 ImGui.Text($"[{(_config.InDomMode? "Dom" : "Sub")}] Swap Cooldown: {_timerService.remainingTimes.GetValueOrDefault("RoleSwitchCooldown", "N/A")}");
             }
         } // end our table
@@ -170,10 +178,11 @@ public class GeneralTab : ITab, IDisposable
             ImGui.Text($"Safeword Used! Disabling All Actions! CD: {_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
         }
 
+        // disable this interactability if our safeword is on cooldown
+        if(_config.SafewordUsed) { ImGui.BeginDisabled(); }
+        ImGui.NewLine();
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
-
-        style.Pop();
         int width2 = (int)(ImGui.GetContentRegionAvail().X / 2);
         // draw our 3 gag listings
         foreach(var slot in Enumerable.Range(0, 3)) {
@@ -184,6 +193,9 @@ public class GeneralTab : ITab, IDisposable
             }
             ImGui.NewLine();
         }
+
+        // end of disabled stuff
+        if(_config.SafewordUsed) { ImGui.EndDisabled(); }
     }
 
     /// <summary> This function disables the mode buttons after the cooldown is over. </summary>

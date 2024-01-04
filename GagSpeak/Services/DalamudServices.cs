@@ -17,6 +17,7 @@ public class DalamudServices {
 	public DalamudServices(DalamudPluginInterface pluginInt) {
 		// Set the services to the pluginInt
 		pluginInt.Inject(this);
+        GagSpeak.Log.Debug("[DalamudServices] SERVICE CONSUTRCTOR INITIALIZED");
 	}
 
 	/// <summary>

@@ -15,7 +15,7 @@ public class GagManager : IDisposable
     private readonly    GagSpeakConfig          _config;        // Da configggg
     private readonly    GagService              _gagService;    // the gag service for getting the information off of the json stored within the obj
     private readonly    IpaParserEN_FR_JP_SP    _IPAParser;     // the class used to translate sent message to an IPA string that we can convert to gagspeak here. 
-    public              List<Gag>               _activeGags;
+    public              List<Gag>               _activeGags;    // the list of gags that are currently active
 
     public GagManager(GagSpeakConfig config, GagService gagService, IpaParserEN_FR_JP_SP IPAParser) {
         _config = config;
@@ -28,7 +28,6 @@ public class GagManager : IDisposable
             .ToList();
         // subscribe to our events
         _config.selectedGagTypes.ItemChanged += OnSelectedTypesChanged;
-
     }
 
     public void Dispose() {
@@ -37,6 +36,9 @@ public class GagManager : IDisposable
     }
 
 
+    /// <summary>
+    /// Changes the gag list to match the equipped gags whenever a gag item is changed.
+    /// </summary>
     private void OnSelectedTypesChanged(object sender, ItemChangedEventArgs e) {
         // Update _activeGags when _config.selectedGagTypes changes
         _activeGags = _config.selectedGagTypes
@@ -45,6 +47,12 @@ public class GagManager : IDisposable
             .ToList();
     }
 
+    /// <summary>
+    /// Processes a message and returns the GagSpeak translation.
+    /// <list type="bullet">
+    /// <item><c>inputMessage</c><param name="inputMessage"> - The message to be translated.</param></item>
+    /// </list> </summary>
+    /// <returns> The GagSpeak translation of the message. </returns>
     public string ProcessMessage(string inputMessage) {
         string outputStr = "";
         try {
