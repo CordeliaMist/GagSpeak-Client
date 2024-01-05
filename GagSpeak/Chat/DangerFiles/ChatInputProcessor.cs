@@ -9,8 +9,6 @@ using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 using GagSpeak.Services;
 using GagSpeak.Utility;
-using GagSpeak.Chat.Garbler;
-using GagSpeak.Chat;
 using GagSpeak.Data;
 // I swear to god, if any contributors even attempt to tinker with this file, I will swat you over the head. DO NOT DO IT.
 
@@ -23,7 +21,6 @@ namespace GagSpeak.Chat;
 public unsafe class ChatInputProcessor : IDisposable {
     private readonly    GagSpeakConfig                          _config;                            // for config options
     private readonly    HistoryService                          _historyService;                    // for history service
-    private readonly    MessageGarbler                          _messageGarbler;                    // for message garbler
     private readonly    GagManager                              _gagManager;                        // for gag manager
     public virtual      bool                                    Ready { get; protected set; }       // see if ready
     public virtual      bool                                    Enabled { get; protected set; }     // set if enabled
@@ -40,7 +37,6 @@ public unsafe class ChatInputProcessor : IDisposable {
         _gagManager = gagManager;
         _configChannelsCommandsList = _config.Channels.GetChatChannelsListAliases();
         _historyService = historyService;
-        _messageGarbler = new MessageGarbler();
         interop.InitializeFromAttributes(this);
         // try to get the chatinput address
         try {
@@ -146,12 +142,16 @@ public unsafe class ChatInputProcessor : IDisposable {
                 // we can try to attempt modifying the message.
                 try {
                     GagSpeak.Log.Debug($"[Chat Processor]: Input -> {inputString}, MatchedCommand -> {matchedCommand}");
+
+                    //////////////////////// MAIN SECTION WHERE THE MESSAGE IS ACTUALLY TRANSLATED ////////////////////////
                     // create the output translated text, cutting the command matched before to prevent it getting gargled
                     var output = _gagManager.ProcessMessage(inputString.Substring(matchedCommand.Length));
                     // adding command back to front
                     output = matchedCommand + output;
                     GagSpeak.Log.Debug($"[Chat Processor]: Output -> {output}");
                     _historyService.AddTranslation(new Translation(inputString, output));
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
                     // create the new string
                     var newStr = output;
                     // if our new string is less than or equal to 500 characters, we can alias it

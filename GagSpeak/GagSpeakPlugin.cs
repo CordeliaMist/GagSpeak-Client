@@ -41,10 +41,19 @@ public class GagSpeak : IDalamudPlugin
           _services = ServiceHandler.CreateProvider(pluginInt, Log); // Initialize the services in the large Service collection. (see ServiceHandler.cs)
           Messager = _services.GetRequiredService<MessageService>(); // Initialize messager service here
 
+          /* Big Knowledge Info Time:
+           The services we initialize here, are the classes that are not called upon by any other class in our Gagspeak plugin.
+           This is because our service constructor does "lazy initialization", meaning it wont initialize the classes if they
+           are never called upon, but rather stand alone. Because it is an event we only invoke and do not interact with, we have to call it here.
+          
+           As for why it invokes the safewordcommand used and not the info request event, idk, im still figuring that out.
+           All I know is that if you have a class struggling to initialize, you can call it here.
+          */ 
           _services.GetRequiredService<GagSpeakWindowManager>(); // Initialize the UI
           _services.GetRequiredService<CommandManager>(); // Initialize the command manager
           _services.GetRequiredService<ChatManager>(); // Initialize the OnChatMessage
           _services.GetRequiredService<ChatInputProcessor>(); // Initialize the chat message detour
+          _services.GetRequiredService<InfoRequestService>(); // Because the info request service is being a stubborn bitch and needs to subscribe to events and not be lazy.
           Log.Information($"GagSpeak v{Version} loaded successfully."); // Log the version to the /xllog menu
       }
       catch

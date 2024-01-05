@@ -8,11 +8,7 @@ using OtterGui;
 using OtterGui.Widgets;
 using GagSpeak.UI.GagListings;
 using GagSpeak.Services;
-using GagSpeak.Chat;
 using GagSpeak.Data;
-using GagSpeak.UI.Helpers;
-using GagSpeak.Garbler.Translator;
-using System.Text.Unicode;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>
@@ -28,28 +24,17 @@ public class GeneralTab : ITab, IDisposable
     private          bool?                  _inDomMode;                 // lets us know if we are in dom mode or not
     private          string?                _tempSafeword;              // for initializing a temporary safeword for the text input field
     private          bool                   modeButtonsDisabled = false;// lets us know if the mode buttons are disabled or not
-    private          string?                _tempTestMessage;           // stores the input password for the test translation system
-    private          string?                translatedMessage = "";     // stores the translated message for the test translation system
-    private          IpaParserEN_FR_JP_SP   _translatorEnglish;         // creates an instance of the EnglishToIPA class
-    private readonly FontService            _fontService;               // the font service for the plugin
     
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneralTab"/> class.
-    /// <list type="bullet">
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// <item><c>timerService</c><param name="timerService"> - The timer service for the plugin.</param></item>
-    /// <item><c>gagListingsDrawer</c><param name="gagListingsDrawer"> - The drawer for the gag listings.</param></item>
-    /// <item><c>lockManager</c><param name="lockManager"> - The lock manager for the plugin.</param></item>
-    /// </list> </summary>
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, TimerService timerService,
-    GagAndLockManager lockManager, GagService gagService, IpaParserEN_FR_JP_SP translatorEnglish, FontService fontService) {
+    /// </summary>
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config,
+    TimerService timerService, GagAndLockManager lockManager, GagService gagService) {
         _config = config;
         _timerService = timerService;
         _gagListingsDrawer = gagListingsDrawer;
         _lockManager = lockManager;
         _gagService = gagService;
-        _translatorEnglish = translatorEnglish;
-        _fontService = fontService;
 
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
             new GagTypeFilterCombo(_gagService, _config),
@@ -110,30 +95,40 @@ public class GeneralTab : ITab, IDisposable
         // let's start by drawing the outline for the container
         using var child = ImRaii.Child("GeneralTabPanel", -Vector2.One, true);
         // Let's create a table in this panel
-        using var style = ImRaii.PushStyle(ImGuiStyleVar.ButtonTextAlign, new Vector2(0, 0.5f));
-        using (var table = ImRaii.Table("Main Declarations", 2)) {
+        using (var table = ImRaii.Table("Main Declarations", 3)) {
             if(!table) { return; } // make sure our table was made
             // Identify our columns.
-            ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Declare Safewordm").X);
-            ImGui.TableSetupColumn("Data", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Set Safewordm").X);
+            ImGui.TableSetupColumn("Data", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("mmmmmmmmmmmmmmmmm").X);
+            ImGui.TableSetupColumn("Cooldowns", ImGuiTableColumnFlags.WidthStretch);
 
             // draw our our first row
-            ImGuiUtil.DrawFrameColumn("Declare Safeword");
+            ImGuiUtil.DrawFrameColumn("Set Safeword");
             ImGui.TableNextColumn();
+            // if the safeword was used, disable the section and show cooldown message
+            if(_config.SafewordUsed) { ImGui.BeginDisabled(); }
+
             // add variables for the safeword stuff
-            var width = new Vector2(ImGui.GetContentRegionAvail().X,0);
+            var width = new Vector2(-1, 0);
             var safeword  = _tempSafeword ?? _config.Safeword; // temp storage to hold until we de-select the text input
             ImGui.SetNextItemWidth(width.X);
-            if (ImGui.InputText("##Safeword", ref safeword, 128, ImGuiInputTextFlags.None))
+            if (ImGui.InputText("##Safeword", ref safeword, 30, ImGuiInputTextFlags.None))
                 _tempSafeword = safeword;
             if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
                 _config.Safeword = safeword;
                 _tempSafeword = null;
             }
+            // draw the cooldown timer
+            if(_config.SafewordUsed) { ImGui.EndDisabled(); }
+            ImGui.TableNextColumn();
+            if(_config.SafewordUsed) {
+                ImGui.Text($"Safeword Cooldown: {_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
+            }
             // draw our our second row
             var mode = _inDomMode ?? _config.InDomMode;
             ImGuiUtil.DrawFrameColumn("Mode Selector");
             ImGui.TableNextColumn();
+            width = new Vector2(ImGui.GetContentRegionAvail().X-5,0);
             // draw out our two buttons to set the modes. When the button labeled sub is pressed, it will switch isDomMode to false, and lock the interactability of the sub button.
             // when the button labeled dom is pressed, it will switch isDomMode to true, and lock the interactability of the dom button.
             if(modeButtonsDisabled) {
@@ -142,12 +137,12 @@ public class GeneralTab : ITab, IDisposable
             if (mode == true) {
                 // User is in Dom mode
                 if(!modeButtonsDisabled) {ImGui.BeginDisabled();}
-                if (ImGui.Button("Dominant")) {
+                if (ImGui.Button("Dominant", width/2)) {
                     // Dom mode is already active, do nothing or display a message
                 }
                 if(!modeButtonsDisabled) {ImGui.EndDisabled();}
                 ImGui.SameLine();
-                if (ImGui.Button("Submissive")) {
+                if (ImGui.Button("Submissive", width/2)) {
                     _inDomMode = false; // Switch to Sub mode
                     _config.InDomMode = false;
                     modeButtonsDisabled = true;
@@ -156,7 +151,7 @@ public class GeneralTab : ITab, IDisposable
                 }
             } else {
                 // User is in Sub mode
-                if (ImGui.Button("Dominant")) {
+                if (ImGui.Button("Dominant", width/2)) {
                     _inDomMode = true; // Switch to Dom mode
                     _config.InDomMode = true;
                     modeButtonsDisabled = true;
@@ -165,14 +160,14 @@ public class GeneralTab : ITab, IDisposable
                 }
                 if(!modeButtonsDisabled) {ImGui.BeginDisabled();}
                 ImGui.SameLine();
-                if (ImGui.Button("Submissive")) {
+                if (ImGui.Button("Submissive", width/2)) {
                     // do nothing
                 }
                 if(!modeButtonsDisabled) {ImGui.EndDisabled();}
             }
+            ImGui.TableNextColumn();
             if(modeButtonsDisabled) {
                 ImGui.EndDisabled();
-                ImGui.SameLine();
                 ImGui.Text($"[{(_config.InDomMode? "Dom" : "Sub")}] Swap Cooldown: {_timerService.remainingTimes.GetValueOrDefault("RoleSwitchCooldown", "N/A")}");
             }
         } // end our table
@@ -183,10 +178,11 @@ public class GeneralTab : ITab, IDisposable
             ImGui.Text($"Safeword Used! Disabling All Actions! CD: {_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
         }
 
+        // disable this interactability if our safeword is on cooldown
+        if(_config.SafewordUsed) { ImGui.BeginDisabled(); }
+        ImGui.NewLine();
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
-
-        style.Pop();
         int width2 = (int)(ImGui.GetContentRegionAvail().X / 2);
         // draw our 3 gag listings
         foreach(var slot in Enumerable.Range(0, 3)) {
@@ -198,36 +194,8 @@ public class GeneralTab : ITab, IDisposable
             ImGui.NewLine();
         }
 
-        UIHelpers.Checkbox("Experimental Garbler", "Enabled the Experimental Garbler using a developing advanced algorithm to translate the english lanuage to account for the 24 consonants in the alphaet.\n"+
-        "High experimental, and likely not perfect, but its nice)", _config.ExperimentalGarbler, v => _config.ExperimentalGarbler = v, _config);
-
-        // create a input text field here, that stores the result into a string. On the same line, have a button that says garble message. It should display the garbled message in text on the next l
-        var testMessage  = _tempTestMessage ?? ""; // temp storage to hold until we de-select the text input
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
-        if (ImGui.InputText("##GarblerTesterField", ref testMessage, 128, ImGuiInputTextFlags.None))
-            _tempTestMessage = testMessage;
-
-        ImGui.SameLine();
-        if (ImGui.Button("Garble Message")) {
-            // Use the EnglishToIPA instance to translate the message
-            try {
-                translatedMessage = _translatorEnglish.UpdateResult(testMessage);
-            } catch (Exception ex) {
-                GagSpeak.Log.Debug($"An error occurred while attempting to parse phonetics: {ex.Message}");
-            }
-        }
-        // new line, should display the testmessage, new line below that should display the garbled one
-        ImGui.Text($"Original Message: {testMessage}");
-        ImGui.Text("Translated Message: ");
-        ImGui.SameLine();
-        UIHelpers.FontText($"{translatedMessage}", _fontService.UidFont);  
-        ImGui.ShowMetricsWindow();
-
-        string uniqueSymbolsString = _translatorEnglish.uniqueSymbolsString;
-        // Create a string from the uniqueSymbols list
-        ImGui.PushFont(_fontService.UidFont);
-        ImGui.InputText("##UniqueSymbolsField", ref uniqueSymbolsString, 128, ImGuiInputTextFlags.ReadOnly);
-        ImGui.PopFont();
+        // end of disabled stuff
+        if(_config.SafewordUsed) { ImGui.EndDisabled(); }
     }
 
     /// <summary> This function disables the mode buttons after the cooldown is over. </summary>

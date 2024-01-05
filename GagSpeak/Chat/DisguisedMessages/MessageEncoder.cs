@@ -168,7 +168,7 @@ public class MessageEncoder
     /// </list> </summary>
     /// <returns> The disguised encoded message. </returns>
     public string AcceptPetEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
-        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} smiles upon hearing the request and nods in agreement as their blushed companion had a collar clicked shut around their neck. \"Yes dear, I'd love to make you my pet.\"";
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} smiles upon hearing the request and nods in agreement as their blushed companion had a collar clicked shut around their neck.* \"Yes dear, I'd love to make you my pet.\"";
     }
 
     /// <summary>
@@ -179,7 +179,7 @@ public class MessageEncoder
     /// </list> </summary>
     /// <returns> The disguised encoded message. </returns>
     public string AcceptSlaveEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
-        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} glanced back down at her companion who had just crawled up to their legs with the pleading look and smiled. \"Why I would love to make you my slave dearest.\"";
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} glanced back down at her companion who had just crawled up to their legs with the pleading look and smiled.* \"Why I would love to make you my slave dearest.\"";
     }
 
     /// <summary>

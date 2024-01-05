@@ -20,6 +20,7 @@ public class ConfigMigrationService
     public ConfigMigrationService(SaveService saveService, BackupService backupService) {
         _saveService         = saveService;
         _backupService       = backupService;
+        GagSpeak.Log.Debug("[ConfigMigrationService] SERVICE CONSUTRCTOR INITIALIZED");
     }
 
     /// <summary>

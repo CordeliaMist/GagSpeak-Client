@@ -4,13 +4,14 @@ using GagSpeak.Events;
 using GagSpeak.Chat;
 using GagSpeak.Chat.MsgEncoder;
 using GagSpeak.Utility.GagButtonHelpers;
+using System;
 
 namespace GagSpeak.Services;
 
 /// <summary>
 /// This class is used to handle the info request service, and triggers every time it is invoked by its corresponding event.
 /// </summary>
-public class InfoRequestService
+public class InfoRequestService : IDisposable
 {
     private readonly GagSpeakConfig     _config;            // for getting the config
     private readonly TimerService       _timerService;      // for setting up timers
@@ -29,16 +30,23 @@ public class InfoRequestService
         _clientState = clientState;
         _chatGui = chatGui;
         _infoRequestEvent = infoRequestEvent;
-
         // subscribe to the event
-        infoRequestEvent.InfoRequest += SendInformationPartOne;
+        _infoRequestEvent.InfoRequest += SendInformationPartOne;
+        
+        GagSpeak.Log.Debug("[InfoRequestService] SERVICE CONSUTRCTOR INITIALIZED");
+    }
+
+    public void Dispose() {
+        // unsubscribe from the event
+        _infoRequestEvent.InfoRequest -= SendInformationPartOne;
     }
 
     private void SendInformationPartOne(object sender, InfoRequestEventArgs e) {
         GagSpeak.Log.Debug("[Whitelist]: Received Player Info Request, Verifying if player is in your whitelist and we are accepting info requests at the moment...");
         // check if the player is in your whitelist
-        if (_config.Whitelist.Any(x => x.name == _config.SendInfoName)) {
-            _config.acceptingInfoRequests = false;
+        string senderName = _config.SendInfoName.Substring(0, _config.SendInfoName.IndexOf('@'));
+        if (_config.Whitelist.Any(x => x.name == senderName)) {
+            //_config.acceptingInfoRequests = false;
             GagSpeak.Log.Debug("[Whitelist]: Player is in your whitelist, sending info...");
         } else {
             GagSpeak.Log.Debug("[Whitelist]: Player is not in your whitelist, ignoring request...");

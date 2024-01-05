@@ -6,7 +6,7 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <Copyright>Copyright © 2023</Copyright>
     <LangVersion>latest</LangVersion>
-    <Version>0.9.9.9</Version>
+    <Version>0.9.9.14</Version>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
@@ -22,7 +22,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
-    <Content Include=".\GarblerParser\jsonFiles\*.json">
+    <Content Include=".\GarblerParser\**\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>

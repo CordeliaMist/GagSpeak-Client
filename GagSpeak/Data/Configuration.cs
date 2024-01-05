@@ -30,13 +30,13 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                InDomMode { get; set; } = false;                        // Is plugin in dom mode?
     public          bool                                DirectChatGarbler { get; set; } = false;                // Is direct chat garbler enabled?
     public          bool                                LockDirectChatGarbler { get; set; } = false;            // Is live chat garbler enabled?
+    public          bool                                GrantWardrobeControl { get; set; } = false;             // Dictates whether or not the plugin can force you to wear things.
     public          string                              Safeword { get; set; } = "safeword";                    // What is the safeword?
     public          bool                                friendsOnly { get; set; } = false;                      // is friend only enabled?
     public          bool                                partyOnly { get; set; } = false;                        // Is party only enabled?
     public          bool                                whitelistOnly { get; set; } = false;                    // Is whitelist only enabled?
     public          bool                                DebugMode { get; set; } = false;                        // Is debug mode enabled?
-    public          int                                 GarbleLevel { get; set; } = 0;                          // Current Garble Level (0-20)
-    public          bool                                ExperimentalGarbler { get; set; } = false;               // Is experimental garbler enabled?
+    public          int                                 GarbleLevel { get; set; } = 0;                          // Current Garble Level (0-20)        
     public          ObservableList<string>              selectedGagTypes { get; set; }                          // What gag types are selected?
     public          ObservableList<GagPadlocks>         selectedGagPadlocks { get; set; }                       // which padlocks are equipped currently?
     public          List<string>                        selectedGagPadlocksPassword { get; set; }               // password lock on padlocks, if any
@@ -60,7 +60,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     // stuff for the garbler
     public          string                              language { get; set; } = "English";                     // The language dialect to use for the IPA conversion
     public          string                              languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
-    public          List<PhoneticSymbol>                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
+    public          List<string>                        phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
     // variables involved with saving and updating the config
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
     
@@ -122,6 +122,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         if (this.phoneticSymbolList == null || !this.phoneticSymbolList.Any()) {
             GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
             this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
+
+        GagSpeak.Log.Debug("[Configuration File] Constructor Finished Initializing and setting default values, and previous data restored.");
     }
 
     /// <summary> Saves the config to our save service and updates the garble level to its new value. </summary>

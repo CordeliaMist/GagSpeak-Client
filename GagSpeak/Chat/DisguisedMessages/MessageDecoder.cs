@@ -157,7 +157,8 @@ public class MessageDecoder {
         else if (encodedMsgIndex == 8) {
             decodedMessage[0] = "removeall";            // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
-            recievedMessage = recievedMessage.Replace("reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.", "");
+            recievedMessage = recievedMessage.Replace(
+                "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.", "");
             string[] messageParts = recievedMessage.Split("from");
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
@@ -170,7 +171,8 @@ public class MessageDecoder {
         else if (encodedMsgIndex == 9) {
             decodedMessage[0] = "requestMistressRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
-            recievedMessage = recievedMessage.Replace("looks down upon you from above, a smirk in her eyes as she sees the pleading look in your own* \"Well now darling, your actions speak for you well enough, so tell me, do you wish for me to become your mistress?\"","");
+            recievedMessage = recievedMessage.Replace(
+                "looks down upon you from above, a smirk in her eyes as she sees the pleading look in your own* \"Well now darling, your actions speak for you well enough, so tell me, do you wish for me to become your mistress?\"","");
             string[] messageParts = recievedMessage.Split("from");
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
@@ -183,7 +185,8 @@ public class MessageDecoder {
         else if (encodedMsgIndex == 10) {
             decodedMessage[0] = "requestPetRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
-            recievedMessage = recievedMessage.Replace("looks up at you, her nervous tone clear and cheeks blushing red as she studders out the words.* \"U-um, If it's ok with you, could I become your pet?\"","");
+            recievedMessage = recievedMessage.Replace(
+                "looks up at you, her nervous tone clear and cheeks blushing red as she studders out the words.* \"U-um, If it's ok with you, could I become your pet?\"","");
             string[] messageParts = recievedMessage.Split("from");
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
@@ -195,7 +198,8 @@ public class MessageDecoder {
         else if (encodedMsgIndex == 11) {
             decodedMessage[0] = "requestSlaveRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
-            recievedMessage = recievedMessage.Replace("hears the sound of her leash's chain rattling along the floor as she crawls up to your feet. Stopping, looking up with pleading eyes in an embarassed tone* \"Would it be ok if I became your slave?\"","");
+            recievedMessage = recievedMessage.Replace(
+                "hears the sound of her leash's chain rattling along the floor as she crawls up to your feet. Stopping, looking up with pleading eyes in an embarassed tone* \"Would it be ok if I became your slave?\"","");
             string[] messageParts = recievedMessage.Split("from");
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() + 
@@ -207,7 +211,8 @@ public class MessageDecoder {
         else if (encodedMsgIndex == 12) {
             decodedMessage[0] = "acceptMistressRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
-            recievedMessage = recievedMessage.Replace("smiles and gracefully and nods in agreement* \"Oh yes, most certainly. I would love to have you as my mistress.\"","");
+            recievedMessage = recievedMessage.Replace(
+                "smiles and gracefully and nods in agreement* \"Oh yes, most certainly. I would love to have you as my mistress.\"","");
             string[] messageParts = recievedMessage.Split("from");
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() +
@@ -219,7 +224,8 @@ public class MessageDecoder {
         else if (encodedMsgIndex == 13) {
             decodedMessage[0] = "acceptPetRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
-            recievedMessage = recievedMessage.Replace("smiles upon hearing the request and nods in agreement as their blushed companion had a collar clicked shut around their neck.* \"Yes dear, I'd love to make you my pet.\"","");
+            recievedMessage = recievedMessage.Replace(
+                "smiles upon hearing the request and nods in agreement as their blushed companion had a collar clicked shut around their neck.* \"Yes dear, I'd love to make you my pet.\"","");
             string[] messageParts = recievedMessage.Split("from");
             string trimmedMessage = string.Empty;
             decodedMessage[4] = messageParts[0].Trim() +
@@ -241,7 +247,7 @@ public class MessageDecoder {
         }
         // decoder for declining a players request to become your mistress (relation)
         else if (encodedMsgIndex == 15) {
-            decodedMessage[0] = "acceptMistressRelation";      // we found commandtype
+            decodedMessage[0] = "declineMistressRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
             recievedMessage = recievedMessage.Replace("smiles gently and shakes their head* \"I'm sorry miss, but I dont think I have enough space left in my daily life to commit to such a bond quite yet.\"","");
             string[] messageParts = recievedMessage.Split("from");
@@ -253,7 +259,7 @@ public class MessageDecoder {
         }
         // decoder for declining a players request to become your pet (relation)
         else if (encodedMsgIndex == 16) {
-            decodedMessage[0] = "acceptPetRelation";      // we found commandtype
+            decodedMessage[0] = "declinePetRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
             recievedMessage = recievedMessage.Replace("shakes their head from side, \"I apologize dear, but I don't think im ready to commit myself to having a pet at the moment.\"","");
             string[] messageParts = recievedMessage.Split("from");
@@ -265,7 +271,7 @@ public class MessageDecoder {
         }
         // decoder for declining a players request to become your slave (relation)
         else if (encodedMsgIndex == 17) {
-            decodedMessage[0] = "acceptSlaveRelation";      // we found commandtype
+            decodedMessage[0] = "declineSlaveRelation";      // we found commandtype
             recievedMessage = recievedMessage.Trim('*');
             recievedMessage = recievedMessage.Replace("takes a step back in surprise, \"Oh, I apologize, I didnt think you wanted a commitment that heavy... I Don't think im ready to have a slave just yet..\"","");
             string[] messageParts = recievedMessage.Split("from");

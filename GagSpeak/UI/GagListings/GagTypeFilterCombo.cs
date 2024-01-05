@@ -31,7 +31,7 @@ public sealed class GagTypeFilterCombo
         _gagService = gagService;
         _config = config;
         // set the gagtypes temp dictionary
-        _gagTypes = _gagService.GagTypes;
+        _gagTypes = _gagService._gagTypes;
     }
 
     /// <summary>
@@ -59,9 +59,9 @@ public sealed class GagTypeFilterCombo
                     if( ImGui.InputTextWithHint("##filter", "Filter...", ref _comboSearchText, 255 ) ) { // Draw filter bar
                         // If the search bar is empty, display all the types from the strings in contentList, otherwise, display only search matches
                         _gagTypes = string.IsNullOrEmpty(_comboSearchText) ? (
-                            _gagService.GagTypes
+                            _gagService._gagTypes
                         ) : (
-                            _gagService.GagTypes.Where(gag => gag.Name.ToLower().Contains(_comboSearchText.ToLower())).ToList()
+                            _gagService._gagTypes.Where(gag => gag._gagName.ToLower().Contains(_comboSearchText.ToLower())).ToList()
                         );
                     }
                     // Now that we have our results, so draw the childs
@@ -71,11 +71,11 @@ public sealed class GagTypeFilterCombo
 
                     // draw list
                     foreach( var item in _gagTypes ) { // We will draw out one selectable for each item.
-                        if( ImGui.Selectable( item.Name, item.Name == listing[layerIndex] ) ) { // If our item is selected, set it and break
-                            if(isDummy) { listing[layerIndex] = item.Name; } // update data (if for generaltab)
-                            label = item.Name; // update label
+                        if( ImGui.Selectable( item._gagName, item._gagName == listing[layerIndex] ) ) { // If our item is selected, set it and break
+                            if(isDummy) { listing[layerIndex] = item._gagName; } // update data (if for generaltab)
+                            label = item._gagName; // update label
                             _comboSearchText = string.Empty;
-                            _gagTypes = _gagService.GagTypes;
+                            _gagTypes = _gagService._gagTypes;
                             ImGui.CloseCurrentPopup();
                             _config.Save();
                             return;

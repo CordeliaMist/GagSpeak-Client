@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Timers;
+using GagSpeak.Data;
 using GagSpeak.Events;
 using GagSpeak.UI.Helpers;
 
@@ -15,9 +16,9 @@ namespace GagSpeak.Services;
 public class TimerService : IDisposable
 {
    private readonly  GagSpeakConfig                _config;                // for config options
-   public            InfoRequestEvent              _infoRequestEvent {get;}// event to notify subscribers when info is requested
+   private readonly  InfoRequestEvent              _infoRequestEvent;      // event to notify subscribers when info is requested
    public event      Action<string, TimeSpan>?     RemainingTimeChanged;   // event to notify subscribers when remaining time changes
-   private readonly  Dictionary<string, TimerData> timers;                 // Dictionary to store active timers
+   public            Dictionary<string, TimerData> timers;                 // Dictionary to store active timers
    public readonly   Dictionary<string, string>    remainingTimes;         // Dictionary to store active timers for UI
 
    /// <summary>
@@ -32,6 +33,8 @@ public class TimerService : IDisposable
       remainingTimes = new Dictionary<string, string>();
       // this is only called every time the plugin is loaded, so call restoretimerdata to restore any active timers.
       RestoreTimerData(_config);
+
+      GagSpeak.Log.Debug("[Timer Service] SERVICE CONSUTRCTOR INITIALIZED");
    }
 
    /// <summary>
@@ -120,6 +123,8 @@ public class TimerService : IDisposable
                onElapsed?.Invoke(); // invoke the action that you put in the _timerService.StartTimer() method
                timers.Remove(timerName); // remove the timer from the timer service's TIMERS dictionary
                SaveTimerData(_config); // save the timerdata so that we properly update the config's timerdata with the correct
+               // check if the info request condition is met, and if so, invoke the event.
+               CheckForInfoRequestInvokeConditoin();
          }
          // if the remaining time is greater than zero, then the timer is still active.
          else {
@@ -134,8 +139,10 @@ public class TimerService : IDisposable
    /// isnt in the timerservice AND the configs sendInfoName is not null or empty.
    /// </summary>
    public void CheckForInfoRequestInvokeConditoin() {
-      // If the timer is not in the timers dictionary and the config.sendInfoName is not null or empty
+      // first check to see if our interaction cooldown timer is gone, and if so, invoke the info request condition
+      GagSpeak.Log.Debug($"[Timer Service]: Checking for info request invoke condition...");
       if (!timers.ContainsKey("interactionButtonPressed") && !string.IsNullOrEmpty(_config.SendInfoName)) {
+         GagSpeak.Log.Debug($"[Timer Service]: Info request invoke condition met, invoking event...");
          _infoRequestEvent.Invoke();
       }
    }
@@ -261,7 +268,7 @@ public class TimerService : IDisposable
    }
 
    // subclass to store timer data in the dictionary of timers with the timer and endtime.
-   private class TimerData {
+   public class TimerData {
       public Timer Timer { get; }
       public DateTimeOffset EndTime { get; }
       // the constructor for this subclass

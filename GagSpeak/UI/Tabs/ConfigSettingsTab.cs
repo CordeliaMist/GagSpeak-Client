@@ -11,36 +11,39 @@ using GagSpeak.Data;
 using GagSpeak.Services;
 using GagSpeak.UI.Helpers;
 using GagSpeak.UI.GagListings;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>
 public class ConfigSettingsTab : ITab
 {
-    private readonly IDalamudTextureWrap    _dalamudTextureWrap;
-    private readonly GagListingsDrawer      _gagListingsDrawer;
-    private readonly GagService             _gagService;
-    private readonly GagSpeakConfig         _config;
-    private readonly UiBuilder              _uiBuilder;
+    private readonly    IDalamudTextureWrap             _dalamudTextureWrap;    // for loading images
+    private readonly    GagSpeakConfig                  _config;                // for getting the config
+    private readonly    UiBuilder                       _uiBuilder;             // for loading images
+    private             Dictionary<string, string[]>    _languages;             // the dictionary of languages & dialects 
+    private             string[]                        _currentDialects;       // the array of language names
+    private             string                          _activeDialect;         // the dialect selected
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ConfigSettingsTab"/> class.
-    /// <list type="bullet">
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// <item><c>uiBuilder</c><param name="uiBuilder"> - The UiBuilder.</param></item>
-    /// <item><c>pluginInterface</c><param name="pluginInterface"> - The DalamudPluginInterface.</param></item>
-    /// </list> </summary>
+    /// <summary> Initializes a new instance of the <see cref="ConfigSettingsTab"/> class. <summary>
     public ConfigSettingsTab(GagSpeakConfig config, UiBuilder uiBuilder, DalamudPluginInterface pluginInterface,
     GagListingsDrawer gagListingsDrawer, GagService gagService) {
         _config = config;
         _uiBuilder = uiBuilder;
-        _gagListingsDrawer = gagListingsDrawer;
-        _gagService = gagService;
-        var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "icon.png");
-        GagSpeak.Log.Debug($"[Image Display]: Loading image from {imagePath}");
+        var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "iconUI.png");
         var IconImage = _uiBuilder.LoadImage(imagePath);
-        GagSpeak.Log.Debug($"[Image Display]: Loaded image from {imagePath}");
-
+        // sets the icon
         _dalamudTextureWrap = IconImage;
+        // load the dropdown info
+        _languages = new Dictionary<string, string[]> {
+            { "English", new string[] { "US", "UK" } },
+            { "Spanish", new string[] { "Spain", "Mexico" } },
+            { "French", new string[] { "France", "Quebec" } },
+            { "Japanese", new string[] { "Japan" } }
+        };
+
+        _currentDialects = _languages[_config.language]; // put all dialects into an array
+        _activeDialect = GetDialectFromConfigDialect();  // set the active dialect to the one in the config
     }
 
     public ReadOnlySpan<byte> Label => "Settings"u8; // apply the tab label
@@ -51,7 +54,6 @@ public class ConfigSettingsTab : ITab
         using var child = ImRaii.Child("MainWindowChild");
         if (!child)
             return;
-
         // Draw the child grouping for the ConfigSettings Tab
         using (var child2 = ImRaii.Child("SettingsChild")) {
             DrawHeader();
@@ -72,7 +74,7 @@ public class ConfigSettingsTab : ITab
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         ImGui.Columns(2,"ConfigColumns", false);
         // See "setpanel.cs" for other UIHelpers.Checkbox options that base off the above ^^
-        ImGui.Text("Gag Configuration:");
+        ImGui.Text("GagSpeak Configuration:");
         // UIHelpers.Checkbox will dictate if only players from their friend list are allowed to use /gag (target) commands on them.
         UIHelpers.Checkbox("Only Friends", "Only processes process /gag (target) commands from others if they are on your friend list.\n" +
             "(Does NOT need to be enabled for you to use /gag (target) commands on them)", _config.friendsOnly, v => _config.friendsOnly = v, _config);
@@ -88,18 +90,66 @@ public class ConfigSettingsTab : ITab
             "This does make use of chat to server interception. Even though now it is ensured safe, always turn this OFF after any patch or game update, until the plug curator says it's safe",
             _config.DirectChatGarbler, v => _config.DirectChatGarbler = v, _config);
         if(_config.LockDirectChatGarbler == true) {ImGui.EndDisabled();}
-        // UIHelpers.Checkbox to display debug information
-        UIHelpers.Checkbox("Debug Display", "Displays information for plugin variables. For developer", _config.DebugMode, v => _config.DebugMode = v, _config);
-        // UIHelpers.Checkbox will dictate if only players from their party are allowed to use /gag (target) commands on them.
+        UIHelpers.Checkbox("Wardrobe Control [WIP]", "Allows plugin to force gear onto you via glamourer when certain gags are equipped.\n[Glamourer currently does"+
+        "not allow this and thus it is a placeholder for the future]", _config.GrantWardrobeControl, v => _config.GrantWardrobeControl = v, _config);
+        
+        // Create the language dropdown
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
+        string prevLang = _config.language; // to only execute code to update data once it is changed
+        if (ImGui.BeginCombo("##Language", _config.language)) {
+            foreach (var language in _languages.Keys.ToArray()) {
+                bool isSelected = (_config.language == language);
+                if (ImGui.Selectable(language, isSelected)) {
+                    _config.language = language;
+                    GagSpeak.Log.Debug($"[ConfigSettingsTab] Language changed to: {_config.language}");
+                }
+                if (isSelected) {
+                    ImGui.SetItemDefaultFocus();
+                }
+            }
+            ImGui.EndCombo();
+        }
+        //update if changed 
+        if (prevLang != _config.language) { // set the language to the newly selected language once it is changed
+            _currentDialects = _languages[_config.language]; // update the dialects for the new language
+            _activeDialect = _currentDialects[0]; // set the active dialect to the first dialect of the new language
+            SetConfigDialectFromDialect(_activeDialect);
+            _config.Save();
+        }
+        ImGui.SameLine(); ImGui.Text("Language");
+
+        // Create the dialect dropdown
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
+        string[] dialects = _languages[_config.language];
+        string prevDialect = _activeDialect; // to only execute code to update data once it is changed
+        if (ImGui.BeginCombo("##Dialect", _activeDialect)) {
+            foreach (var dialect in dialects) {
+                bool isSelected = (_activeDialect == dialect);
+                if (ImGui.Selectable(dialect, isSelected)) {
+                    _activeDialect = dialect;
+                }
+                if (isSelected) {
+                    ImGui.SetItemDefaultFocus();
+                }
+            }
+            ImGui.EndCombo();
+        }
+        //update if changed
+        if (prevDialect != _activeDialect) { // set the dialect to the newly selected dialect once it is changed
+            SetConfigDialectFromDialect(_activeDialect);
+            _config.Save();
+        }
+        ImGui.SameLine(); ImGui.Text("Dialect");
+
+        // channel listings
         ImGui.NextColumn();
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 50);
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX());
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 10);
         // you might normally want to embed resources and load them from the manifest stream
         ImGui.Image(_dalamudTextureWrap.ImGuiHandle, new Vector2(_dalamudTextureWrap.Width, _dalamudTextureWrap.Height));
         ImGui.Columns(1);
 
         // Show Debug Menu when Debug logging is enabled
-        if (_config.DebugMode)
-            DrawDebug();
         if(_config.LockDirectChatGarbler == true) {ImGui.BeginDisabled();}
         ImGui.Text("Enabled Channels:"); ImGui.Separator();
         var i = 0;
@@ -131,81 +181,34 @@ public class ConfigSettingsTab : ITab
     }
 
     /// <summary>
-    /// This just literally displays extra information for debugging variables in game to keep track of them.
+    /// Used to restore the dropdown to the selection from the config
     /// </summary>
-    private void DrawDebug() {
-        ImGui.Text("DEBUG INFORMATION:");
-        try
-        {
-            ImGui.Text($"Fresh Install?: {_config.FreshInstall} || Is Enabled?: {_config.Enabled} || In Dom Mode?: {_config.InDomMode}");
-            ImGui.Text($"Debug Mode?: {_config.DebugMode} || In DirectChatGarbler Mode?: {_config.DirectChatGarbler}");
-            ImGui.Text($"Safeword: {_config.Safeword}");
-            ImGui.Text($"Friends Only?: {_config.friendsOnly} || Party Only?: {_config.partyOnly} || Whitelist Only?: {_config.whitelistOnly}");
-            ImGui.Text($"ExperimentalGarblerMode: {_config.ExperimentalGarbler}");
-            ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval} || Max Translation History: {_config.TranslationHistoryMax}");
-            ImGui.Text($"Total Gag List Count: {_gagService.GagTypes.Count}");
-            ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-            ImGui.Text("Selected GagPadlocks: ||"); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} ||");};
-            ImGui.Text("Selected GagPadlocks Passwords: ||"); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} ||"); };
-            ImGui.Text("Selected GagPadlock Timers: ||"); ImGui.SameLine(); foreach (var gagPadlockTimer in _config.selectedGagPadLockTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} ||"); };
-            ImGui.Text("Selected GagPadlocks Assigners: ||"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} ||"); };
-            ImGui.Text($"Translatable Chat Types:");
-            foreach (var chanel in _config.Channels) { ImGui.SameLine(); ImGui.Text(chanel.ToString()); };
-            ImGui.Text($"Current ChatBox Channel: {ChatChannel.GetChatChannel()} || Requesting Info: {_config.SendInfoName} || Accepting?: {_config.acceptingInfoRequests}");
-            ImGui.Text("Whitelist:"); ImGui.Indent();
-            foreach (var whitelistPlayerData in _config.Whitelist) {
-                ImGui.Text(whitelistPlayerData.name);
-                ImGui.Indent();
-                ImGui.Text($"Relationship to this Player: {whitelistPlayerData.relationshipStatus}");
-                ImGui.Text($"Commitment Duration: {whitelistPlayerData.GetCommitmentDuration()}");
-                ImGui.Text($"Locked Live Chat Garbler: {whitelistPlayerData.lockedLiveChatGarbler}");
-                ImGui.Text($"Pending Relationship Request: {whitelistPlayerData.PendingRelationRequestFromPlayer}");
-                ImGui.Text($"Pending Relationship Request From You: {whitelistPlayerData.PendingRelationRequestFromYou}");
-                ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in whitelistPlayerData.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-                ImGui.Text($"Selected GagPadlocks: || "); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in whitelistPlayerData.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
-                ImGui.Text($"Selected GagPadlocks Timers: || "); ImGui.SameLine(); foreach (var gagPadlockTimer in whitelistPlayerData.selectedGagPadlocksTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} || "); };
-                ImGui.Text($"Selected GagPadlocks Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in whitelistPlayerData.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
-                ImGui.Unindent();
-            }
-            ImGui.Unindent();
-            ImGui.NewLine();
-            ImGui.Text("Padlock Identifiers Variables:");
-            // output debug messages to display the gaglistingdrawers boolean list for _islocked, _adjustDisp. For each padlock identifer, diplay all of its public varaibles
-            ImGui.Text($"Listing Drawer _isLocked: ||"); ImGui.SameLine(); foreach(var index in _config._isLocked) { ImGui.SameLine(); ImGui.Text($"{index} ||"); };
-            ImGui.Text($"Listing Drawer _adjustDisp: ||"); ImGui.SameLine(); foreach(var index in _gagListingsDrawer._adjustDisp) { ImGui.SameLine(); ImGui.Text($"{index} ||"); };
-            var width = ImGui.GetContentRegionAvail().X / 3;
-            foreach(var index in _config._padlockIdentifier) {
-                ImGui.Columns(3,"DebugColumns", true);
-                ImGui.SetColumnWidth(0,width); ImGui.SetColumnWidth(1,width); ImGui.SetColumnWidth(2,width);
-                ImGui.Text($"Input Password: {index._inputPassword}"); ImGui.NextColumn();
-                ImGui.Text($"Input Combination: {index._inputCombination}"); ImGui.NextColumn();
-                ImGui.Text($"Input Timer: {index._inputTimer}");ImGui.NextColumn();
-                ImGui.Text($"Stored Password: {index._storedPassword}");ImGui.NextColumn();
-                ImGui.Text($"Stored Combination: {index._storedCombination}");ImGui.NextColumn();
-                ImGui.Text($"Stored Timer: {index._storedTimer}");ImGui.NextColumn();
-                ImGui.Text($"Padlock Type: {index._padlockType}");ImGui.NextColumn();
-                ImGui.Text($"Padlock Assigner: {index._mistressAssignerName}");ImGui.NextColumn();
-                ImGui.Columns(1);
-                ImGui.NewLine();
-            }
-            ImGui.Columns(3,"DebugColumns", true);
-            ImGui.SetColumnWidth(0,width); ImGui.SetColumnWidth(1,width); ImGui.SetColumnWidth(2,width);
-            ImGui.Text($"Input Password: {_config._whitelistPadlockIdentifier._inputPassword}"); ImGui.NextColumn();
-            ImGui.Text($"Input Combination: {_config._whitelistPadlockIdentifier._inputCombination}"); ImGui.NextColumn();
-            ImGui.Text($"Input Timer: {_config._whitelistPadlockIdentifier._inputTimer}");ImGui.NextColumn();
-            ImGui.Text($"Stored Password: {_config._whitelistPadlockIdentifier._storedPassword}");ImGui.NextColumn();
-            ImGui.Text($"Stored Combination: {_config._whitelistPadlockIdentifier._storedCombination}");ImGui.NextColumn();
-            ImGui.Text($"Stored Timer: {_config._whitelistPadlockIdentifier._storedTimer}");ImGui.NextColumn();
-            ImGui.Text($"Padlock Type: {_config._whitelistPadlockIdentifier._padlockType}");ImGui.NextColumn();
-            ImGui.Text($"Padlock Assigner: {_config._whitelistPadlockIdentifier._mistressAssignerName}");ImGui.NextColumn();
-            ImGui.Columns(1);
-            ImGui.NewLine();   
+    private string GetDialectFromConfigDialect() {
+        switch (_config.languageDialect) {
+            case "IPA_US": return "US";
+            case "IPA_UK": return "UK";
+            case "IPA_FRENCH": return "France";
+            case "IPA_QUEBEC": return "Quebec";
+            case "IPA_JAPAN": return "Japan";
+            case "IPA_SPAIN": return "Spain";
+            case "IPA_MEXICO": return "Mexico";
+            default: return "US";
         }
-        catch (Exception e)
-        {
-            ImGui.NewLine();
-            ImGui.Text($"Error while fetching config in debug: {e}");
-            ImGui.NewLine();
+    }
+
+    /// <summary>
+    /// Sets the config dialect from dialect string selected by the dropdown.
+    /// </summary>
+    private void SetConfigDialectFromDialect(string dialect) {
+        switch (dialect) {
+            case "US": _config.languageDialect = "IPA_US"; break;
+            case "UK": _config.languageDialect = "IPA_UK"; break;
+            case "France": _config.languageDialect = "IPA_FRENCH"; break;
+            case "Quebec": _config.languageDialect = "IPA_QUEBEC"; break;
+            case "Japan": _config.languageDialect = "IPA_JAPAN"; break;
+            case "Spain": _config.languageDialect = "IPA_SPAIN"; break;
+            case "Mexico": _config.languageDialect = "IPA_MEXICO"; break;
+            default: _config.languageDialect = "IPA_US"; break;
         }
     }
 }

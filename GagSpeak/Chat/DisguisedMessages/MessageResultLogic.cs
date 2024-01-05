@@ -67,7 +67,7 @@ public class MessageResultLogic
             "removeall"         => HandleRemoveAllMessage(ref decodedMessage, ref isHandled, config),
             "remove"            => HandleRemoveMessage(ref decodedMessage, ref isHandled, config),
             "apply"             => HandleApplyMessage(ref decodedMessage, ref isHandled, config),
-            _                => LogError("Invalid message parse, If you see this report it to cordy ASAP.")
+            _                => LogError("Invalid Order message parse, If you see this report it to cordy ASAP.")
         };
         return true;
     }
@@ -97,9 +97,12 @@ public class MessageResultLogic
             "acceptmistressrelation"  => HandleAcceptMistressMessage(ref decodedMessage, ref isHandled, config),
             "acceptpetrelation"       => HandleAcceptPetMessage(ref decodedMessage, ref isHandled, config),
             "acceptslaverelation"     => HandleAcceptSlaveMessage(ref decodedMessage, ref isHandled, config),
+            "declinemistressrelation" => HandleDeclineMistressMessage(ref decodedMessage, ref isHandled, config),
+            "declinepetrelation"      => HandleDeclinePetMessage(ref decodedMessage, ref isHandled, config),
+            "declineslaverelation"    => HandleDeclineSlaveMessage(ref decodedMessage, ref isHandled, config), 
             "provideinfo"             => HandleProvideInfoMessage(ref decodedMessage, ref isHandled, config),
             "provideinfo2"            => HandleProvideInfo2Message(ref decodedMessage, ref isHandled, config),
-            _                         => LogError("Invalid message parse, If you see this report it to cordy ASAP.")
+            _                         => LogError("Invalid Whitelist message parse, If you see this report it to cordy ASAP.")
         };
         return true;
     }
@@ -250,7 +253,7 @@ public class MessageResultLogic
             isHandled = true; return LogError("[MsgResultLogic]: Invalid layer value.");}
         // secondly, see if our gagtype is in our list of gagtypes
         string gagName = decodedMessage[2];
-        if (!_gagService.GagTypes.Any(gag => gag.Name == gagName) && _config.selectedGagTypes[layer-1] != "None") {
+        if (!_gagService._gagTypes.Any(gag => gag._gagName == gagName) && _config.selectedGagTypes[layer-1] != "None") {
             isHandled = true; return LogError("[MsgResultLogic]: Invalid gag type.");}
         // if we make it here, apply the gag
         _lockManager.ApplyGag(layer-1, decodedMessage[2]);
@@ -372,8 +375,9 @@ public class MessageResultLogic
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
                 playerInWhitelist.relationshipStatus = "None";
-                playerInWhitelist.PendingRelationRequestFromPlayer = "None"; // remove any recieved relation establishments or requests.
-                playerInWhitelist.PendingRelationRequestFromYou = "None"; // remove any relations you have sent out
+                playerInWhitelist.relationshipStatusToYou = "None";
+                playerInWhitelist.PendingRelationRequestFromYou = "";
+                playerInWhitelist.PendingRelationRequestFromPlayer = "";
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Relation Status with {playerName} sucessfully removed.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for relation removal");
             }
@@ -438,8 +442,9 @@ public class MessageResultLogic
             // see if they exist
             if(playerInWhitelist != null) {
                 // they are in our whitelist, so set our information sender to the players name.
-                _config.SendInfoName = playerNameWorld;
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Received info request from {playerName}. Providing Information in 4 seconds.").AddItalicsOff().BuiltString);
+                _config.SendInfoName = playerName + "@" + world;
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is requesting an update on your info for the profile viewer." +
+                "Providing Over the next 3 Seconds.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");
             }
         } catch {
@@ -448,13 +453,10 @@ public class MessageResultLogic
         return true;
     }
 
-    /// <summary>
-    /// handle the accept mistress message
-    /// <list type="bullet">
+    /// <summary> handle the accept mistress (this comes from the player approving your request) <list type="bullet">
     /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
     /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// </list> </summary>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item> </list> </summary>
     /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleAcceptMistressMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try { // whole goal is just to apply the request update to the players whitelist
@@ -467,6 +469,9 @@ public class MessageResultLogic
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
+                playerInWhitelist.relationshipStatus = "Mistress";
+                playerInWhitelist.PendingRelationRequestFromYou = "Established";
+                if(playerInWhitelist.relationshipStatusToYou != "None") { playerInWhitelist.SetTimeOfCommitment(); } // set the commitment time if relationship is now two-way!
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s mistress. Enjoy~.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Mistress relation");
             }
@@ -476,13 +481,10 @@ public class MessageResultLogic
         return true;
     }
 
-    /// <summary>
-    /// handle the accept pet request message
-    /// <list type="bullet">
+    /// <summary> handle the accept pet request (this comes from the player approving your request) <list type="bullet">
     /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
     /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// </list> </summary>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item> </list> </summary>
     /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleAcceptPetMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try { // whole goal is just to apply the request update to the players whitelist
@@ -495,8 +497,13 @@ public class MessageResultLogic
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
+                playerInWhitelist.relationshipStatus = "Pet";
+                playerInWhitelist.PendingRelationRequestFromYou = "Established";
+                if(playerInWhitelist.relationshipStatusToYou != "None") { playerInWhitelist.SetTimeOfCommitment(); } // set the commitment time if relationship is now two-way!
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s pet. Enjoy yourself~.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Pet relation");
+            } else {
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Player {playerName} not found in whitelist.");
             }
         } catch {
             return LogError($"ERROR, Invalid accept pet message parse.");
@@ -504,13 +511,10 @@ public class MessageResultLogic
         return true;
     }
 
-    /// <summary>
-    /// handle the accept slave message
-    /// <list type="bullet">
+    /// <summary> handle the accept slave (this comes from the player approving your request) <list type="bullet">
     /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
     /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// </list> </summary>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item> </list> </summary>
     /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleAcceptSlaveMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try { // whole goal is just to apply the request update to the players whitelist
@@ -523,11 +527,92 @@ public class MessageResultLogic
             // see if they exist
             if(playerInWhitelist != null) {
                 // set the pending relationship to none and relationship with that player to none
+                playerInWhitelist.relationshipStatus = "Slave";
+                playerInWhitelist.PendingRelationRequestFromYou = "Established";
+                if(playerInWhitelist.relationshipStatusToYou != "None") { playerInWhitelist.SetTimeOfCommitment(); } // set the commitment time if relationship is now two-way!
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s slave, Be sure to Behave~.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting Slave relation");
             }
         } catch {
             return LogError($"ERROR, Invalid accept Slave message parse.");
+        }
+        return true;
+    }
+
+    /// <summary> handle the decline mistress (this comes from the player declining your request) <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item> </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
+    private bool HandleDeclineMistressMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
+        try { // whole goal is just to apply the request update to the players whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                // set the pending relationship to none and relationship with that player to none
+                playerInWhitelist.PendingRelationRequestFromYou = "";
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has declined your offer to be their mistress.").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Declining Mistress relation");
+            }
+        } catch {
+            return LogError($"ERROR, Invalid Decline mistress message parse.");
+        }
+        return true;
+    }
+
+    /// <summary> handle the Decline pet request (this comes from the player declining your request) <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item> </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
+    private bool HandleDeclinePetMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
+        try { // whole goal is just to apply the request update to the players whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                // set the pending relationship to none and relationship with that player to none
+                playerInWhitelist.PendingRelationRequestFromYou = "";
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has declined your offer to be their pet.").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Declining Pet relation");
+            }
+        } catch {
+            return LogError($"ERROR, Invalid Decline pet message parse.");
+        }
+        return true;
+    }
+
+    /// <summary> handle the Decline slave (this comes from the player declining your request) <list type="bullet">
+    /// <item><c>decodedMessage</c><param name="decodedMessage"> - The decoded message.</param></item>
+    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message has been handled.</param></item>
+    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item> </list> </summary>
+    /// <returns>Whether or not the message has been handled, along with the updated decoded message list.</returns>
+    private bool HandleDeclineSlaveMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
+        try { // whole goal is just to apply the request update to the players whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string world = parts.Length > 1 ? parts.Last() : "";
+            string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // locate player in whitelist
+            var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
+            // see if they exist
+            if(playerInWhitelist != null) {
+                // set the pending relationship to none and relationship with that player to none
+                playerInWhitelist.PendingRelationRequestFromYou = "";
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has declined your offer to be their slave.").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Declining Slave relation");
+            }
+        } catch {
+            return LogError($"ERROR, Invalid Decline Slave message parse.");
         }
         return true;
     }

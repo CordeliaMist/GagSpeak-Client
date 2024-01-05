@@ -17,5 +17,6 @@ public class FilenameService
         // Set the configuration directory and file from the plugin interface
         ConfigDirectory = pi.ConfigDirectory.FullName;
         ConfigFile = pi.ConfigFile.FullName;
+        GagSpeak.Log.Debug("[FilenameService] SERVICE CONSUTRCTOR INITIALIZED");
     }
 }

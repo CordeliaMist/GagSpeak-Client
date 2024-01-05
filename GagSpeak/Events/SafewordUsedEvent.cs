@@ -1,4 +1,5 @@
-using System;   // for basic C# types
+using System;
+using GagSpeak.Data;   // for basic C# types
 
 namespace GagSpeak.Events;
 
@@ -13,6 +14,7 @@ public class SafewordUsedEvent
 
     /// <summary> Manually triggered event invoker </summary>
     public void Invoke() {
+        GagSpeak.Log.Debug("[SafewordUsedEvent] Invoked");
         SafewordCommand?.Invoke(this, new SafewordCommandEventArgs());
     }
 }

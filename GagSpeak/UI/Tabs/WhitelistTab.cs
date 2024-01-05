@@ -137,7 +137,7 @@ public class WhitelistTab : ITab, IDisposable
             // Create the listbox for the whitelist
             ImGui.SetNextItemWidth(ImGui.GetContentRegionMax().X-5);
             string[] whitelistNames = whitelist.Select(entry => entry.name).ToArray();
-            ImGui.ListBox("##whitelist", ref _currentWhitelistItem, whitelistNames, whitelistNames.Length, 10);;
+            ImGui.ListBox("##whitelist", ref _currentWhitelistItem, whitelistNames, whitelistNames.Length, 11);
 
             // Create the second column of the first row
             ImGui.TableNextColumn();
@@ -167,9 +167,16 @@ public class WhitelistTab : ITab, IDisposable
                 if(!enableInteractions || interactionButtonPressed)
                     ImGui.BeginDisabled();
                 
-                ImGuiUtil.DrawFrameColumn($"{whitelist[_currentWhitelistItem].name.Split(' ')[0]} is your: "); ImGui.TableNextColumn();
+                // Draw out the line that displays the players defined relationship towards you
+                ImGuiUtil.DrawFrameColumn($"You are {whitelist[_currentWhitelistItem].name.Split(' ')[0]}'s: "); ImGui.TableNextColumn();
                 var width2 = new Vector2(ImGui.GetContentRegionAvail().X, 0);
                 ImGui.Text($"{whitelist[_currentWhitelistItem].relationshipStatus}");
+
+                // Draw out the line that displays your defined relationship towards that player
+                ImGuiUtil.DrawFrameColumn($"{whitelist[_currentWhitelistItem].name.Split(' ')[0]} is your: "); ImGui.TableNextColumn();
+                ImGui.Text($"{whitelist[_currentWhitelistItem].relationshipStatusToYou}");
+
+
 
                 ImGuiUtil.DrawFrameColumn("Commitment Length: "); ImGui.TableNextColumn(); // Next Row (Commitment Length)
                 ImGui.Text($"{whitelist[_currentWhitelistItem].GetCommitmentDuration()}");
@@ -214,7 +221,7 @@ public class WhitelistTab : ITab, IDisposable
             } // end our relations manager table
             var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
             ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
-            var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X/2, 25.0f * ImGuiHelpers.GlobalScale );
+            var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X/2, 22.0f * ImGuiHelpers.GlobalScale );
             // create a button for popping out the current players profile. Update the currently selected person for the profile list
             _userProfileWindow._profileIndexOfUserSelected = _currentWhitelistItem;
             // add a button to display it
@@ -249,7 +256,7 @@ public class WhitelistTab : ITab, IDisposable
                 ImGui.EndDisabled();
 
             // Message to display based on target proximity
-            string targetedPlayerText = "Add Targetted Player"; // Displays if no target
+            string targetedPlayerText = "Add Targeted Player"; // Displays if no target
             if (!playerTargetted) {
                 targetedPlayerText = "No Player Target!"; // If not tagetting a player, display "No Target"
                 ImGui.BeginDisabled(); // Disable the button since no target to add
@@ -264,18 +271,18 @@ public class WhitelistTab : ITab, IDisposable
                 if (_clientState.LocalPlayer != null &&_clientState.LocalPlayer.TargetObject != null)
                 {
                     if (_clientState.LocalPlayer.TargetObject.ObjectKind == ObjectKind.Player) { // if the player is targetting another player
-                        GagSpeak.Log.Debug($"[Whitelist]: Targetted Player: {_clientState.LocalPlayer.TargetObject.Name.TextValue}");
+                        GagSpeak.Log.Debug($"[Whitelist]: Targeted Player: {_clientState.LocalPlayer.TargetObject.Name.TextValue}");
                         string targetName = UIHelpers.CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
                         // if the object kind of the target is a player, then get the character parse of that player
                         var targetCharacter = (PlayerCharacter)_clientState.LocalPlayer.TargetObject;
                         // now we can get the name and world from them
                         var world = targetCharacter.HomeWorld.Id;
                         var worldName = _dataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.World>()?.GetRow((uint)world)?.Name?.ToString() ?? "Unknown";
-                        GagSpeak.Log.Debug($"[Whitelist]: Targetted Player: {targetName} from {world}, {worldName}");
+                        GagSpeak.Log.Debug($"[Whitelist]: Targeted Player: {targetName} from {world}, {worldName}");
 
                         // And now, if the player is not already in our whitelist, we will add them. Otherwise just do nothing.
                         if (!_config.Whitelist.Any(item => item.name == targetName)) {
-                            GagSpeak.Log.Debug($"[Whitelist]: Adding targetted player to whitelist {_clientState.LocalPlayer.TargetObject})");
+                            GagSpeak.Log.Debug($"[Whitelist]: Adding targeted player to whitelist {_clientState.LocalPlayer.TargetObject})");
                             if(whitelist.Count == 1 && whitelist[0].name == "None") { // If our whitelist just shows none, replace it with first addition.
                                 whitelist[0] = new WhitelistCharData(targetName, worldName, "None");
                                 _config.Save();
@@ -299,6 +306,7 @@ public class WhitelistTab : ITab, IDisposable
                 } else {
                     _config.Whitelist.Remove(_config.Whitelist[_currentWhitelistItem]);
                 }
+                _currentWhitelistItem = 0;
                 _config.Save();
             }
         } // end our main table
@@ -341,16 +349,17 @@ public class WhitelistTab : ITab, IDisposable
                     _config, _chatManager, _gagMessages, _clientState, _chatGui);
                 }
                 // set the relation request to none
-                whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer = "None";
+                whitelist[_currentWhitelistItem].PendingRelationRequestFromPlayer = "";
                 GagSpeak.Log.Debug($"[Whitelist]: Declining {whitelist[_currentWhitelistItem].name}'s relation request");
             }
         }
 
         // create a collapsing header for this.
-        if(!ImGui.CollapsingHeader("PLAYER's Interaction Options")) { return; }
+        if(!ImGui.CollapsingHeader($"Interactions to use on {whitelist[_currentWhitelistItem].name}")) { return; }
 
         if(!enableInteractions || interactionButtonPressed) { ImGui.BeginDisabled(); }
-
+        // inform the player how this works
+        ImGui.TextColored(new Vector4(1.0f, 0.5f, 0.0f, 1.0f), "Use REQUEST PLAYER INFO button each time you meet up to have accurate data!");
         // create a new table for this section
         using (var InfoTable = ImRaii.Table("InfoTable", 1)) {
             // for our first row, display the DD for layer, DD gag type, and apply gag to player buttons
@@ -431,7 +440,7 @@ public class WhitelistTab : ITab, IDisposable
             // add a filler row
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             // Create the button for the sixth row, first column
-            if (ImGui.Button("Toggle Lock Live Chat Garbler")) {
+            if (ImGui.Button("Toggle Live Garbler Lock")) {
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
                 // the player you are doing this on must be a relationstatus of slave
                 if(selectedWhitelistItem.relationshipStatus == "Slave") {
