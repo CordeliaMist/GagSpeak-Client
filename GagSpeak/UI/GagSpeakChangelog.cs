@@ -51,7 +51,7 @@ public class GagSpeakChangelog
 
     // all versions are added here, the order doesnt madder, but it should be in order of newest to oldest.
     private static void Add0_9_9_10(Changelog log)
-        => log.NextVersion("Version 1.0.0.1 Pre-Release")
+        => log.NextVersion("Version 1.0.0.2 Pre-Release")
             .RegisterHighlight("Advanced Chat Garbler now fully implemented!.")
             .RegisterHighlight("Plugin File Size slightly increased due to the inclusion of dictionaries.")
             .RegisterHighlight("Debug Menu moved to /gagspeak debug , will no longer show up in config menu.");
