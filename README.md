@@ -5,7 +5,7 @@ Its Finally here, after like 3 months of coding and begging literally everyone I
 
 For those who just want to install the plugin:
 
-**Repo Link:** `https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json`
+**Repo Link:** ```https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json```
 
 # Overview
 GagSpeak is made with the intent of being more than just a one-sided translator. Gagspeak will allow the user to muffle their speech using a sophisticated garbler algorithm, based on real life gag sound data, to accurately garble speech for each individual gag in their own unique way.
