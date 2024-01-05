@@ -85,16 +85,63 @@ public unsafe class ChatInputProcessor : IDisposable {
         GagSpeak.Log.Debug("[Chat Processor]: Detouring Chat Input Message");
         // try the following
         try {
-            var bc = 0;
+            var bc = 0; // start the bit counter
+            int matchSequence = 0; //in ourcase 4 means that message contains autocomplete marker so we ignore message completely
             for (var i=0; i <=500; i++) { // making sure command / message is within 500 characters
+                // match autocomplete byte pattern 02 2e ... f2 ... 03
+                if (i + 5 < 500 && (*message)[i] == 0x02 && (*message)[i + 1] == 0x2e) matchSequence += 2;
+                if ((*message)[i] == 0xf2 && matchSequence == 2) matchSequence++;
+                if ((*message)[i] == 0x03 && matchSequence == 3) matchSequence++;
+                // if message contain autocomplete matchSequence will be 4
+                if (matchSequence == 4) break;
+
                 if (*(*message + i) != 0) continue; // if the message is empty, break
                 bc = i; // increment bc
                 break;
             }
-            if(bc < 2 || bc > 500) {
+            if(bc < 2 || bc > 500 || matchSequence == 4) {
                 // if we satsify this condition it means our message is an invalid message so disregard it
                 return processChatInputHook.Original(uiModule, message, a3); // just send the message as invalid or whatever
             }
+
+/*  Supposedly better detection and removal, look into later
+        try {
+            var bc = 0; // start the bit counter
+            int matchSequence = 0; //in ourcase 4 means that message contains autocomplete marker so we ignore message completely
+            int autocompleteStartIndex = -1; // start index of the autocomplete sequence
+            int autocompleteEndIndex = -1; // end index of the autocomplete sequence
+            for (var i=0; i <=500; i++) {
+                if (i + 5 < 500 && (*message)[i] == 0x02 && (*message)[i + 1] == 0x2e) {
+                    matchSequence += 2;
+                    autocompleteStartIndex = i;
+                    GagSpeak.Log.Debug($"[Chat Processor]: Autocomplete Start Index: {autocompleteStartIndex}");
+                }
+                if ((*message)[i] == 0xf2 && matchSequence == 2) matchSequence++;
+                if ((*message)[i] == 0x03 && matchSequence == 3) {
+                    matchSequence++;
+                    autocompleteEndIndex = i;
+                    GagSpeak.Log.Debug($"[Chat Processor]: Autocomplete End Index: {autocompleteEndIndex}");
+                }
+                if (*(*message + i) != 0) continue;
+                bc = i;
+                break;
+            }
+            if(bc < 2 || bc > 500) {
+                GagSpeak.Log.Debug($"[Chat Processor]: Ignoring Message as it is too long or empty");
+                return processChatInputHook.Original(uiModule, message, a3);
+            }
+            if (autocompleteStartIndex != -1 && autocompleteEndIndex != -1) {
+                GagSpeak.Log.Debug($"[Chat Processor]: Message contains autocomplete marker, removing from message!");
+                bc = bc - (autocompleteEndIndex - autocompleteStartIndex + 1);
+                byte* newMessage = (byte*)Marshal.AllocHGlobal(bc + 1);
+                for (int j = 0, k = 0; j < bc + (autocompleteEndIndex - autocompleteStartIndex + 1); j++) {
+                    if (j >= autocompleteStartIndex && j <= autocompleteEndIndex) continue;
+                    newMessage[k++] = (*message)[j];
+                }
+                newMessage[bc] = 0;
+                *message = newMessage;
+            }
+*/
             
             var inputString = Encoding.UTF8.GetString(*message, bc);
             var matchedCommand = "";

@@ -52,6 +52,7 @@ public class GagSpeakWindowManager : IDisposable
                 .AddText("to see main functions, ").AddBlue("/gag ").AddText("to view gagging commands, and ").AddBlue("/gsm ")
                 .AddText("to chat in gagspeak.").BuiltString);
             config.FreshInstall = false;
+            config.whitelistOnly = true;
             config.Save();
             _ui.Toggle();
         }

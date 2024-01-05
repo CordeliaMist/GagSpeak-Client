@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using GagSpeak.Data;
-using Microsoft.VisualBasic;
 
 namespace GagSpeak.Garbler.PhonemeData;
 

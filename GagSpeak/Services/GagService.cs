@@ -5,7 +5,6 @@ using Dalamud.Plugin;
 using Newtonsoft.Json;
 using GagSpeak.Data;                                // Contains data classes used in the GagSpeak application
 using GagSpeak.Events;                              // Contains event classes used in the GagSpeak application
-using GagSpeak.Services;
 using GagSpeak.Garbler.PhonemeData;                 // Contains phoneme data used in the GagSpeak application
 
 namespace GagSpeak.Services;

@@ -145,7 +145,7 @@ public class GagManager : IDisposable
                 // Find the index of the gag with the maximum muffle strength for the phonetic
                 int GagIndex = _activeGags
                     .Select((gag, index) => new { gag, index })
-                    .Where(item => item.gag._muffleStrOnPhoneme.ContainsKey(phonetic))
+                                        .Where(item => item.gag._muffleStrOnPhoneme.ContainsKey(phonetic) && !string.IsNullOrEmpty(item.gag._ipaSymbolSound[phonetic]))
                     .OrderByDescending(item => item.gag._muffleStrOnPhoneme[phonetic])
                     .FirstOrDefault()?.index ?? -1;
                 // Now that we have the index, let's get the translation value for the phonetic

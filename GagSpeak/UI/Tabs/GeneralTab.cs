@@ -99,7 +99,7 @@ public class GeneralTab : ITab, IDisposable
             if(!table) { return; } // make sure our table was made
             // Identify our columns.
             ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Set Safewordm").X);
-            ImGui.TableSetupColumn("Data", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("mmmmmmmmmmmmmmmmm").X);
+            ImGui.TableSetupColumn("Data", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("mmmmmmmmmmmmmmmmmm").X);
             ImGui.TableSetupColumn("Cooldowns", ImGuiTableColumnFlags.WidthStretch);
 
             // draw our our first row
@@ -128,7 +128,7 @@ public class GeneralTab : ITab, IDisposable
             var mode = _inDomMode ?? _config.InDomMode;
             ImGuiUtil.DrawFrameColumn("Mode Selector");
             ImGui.TableNextColumn();
-            width = new Vector2(ImGui.GetContentRegionAvail().X-5,0);
+            width = new Vector2(ImGui.GetContentRegionAvail().X-10,0);
             // draw out our two buttons to set the modes. When the button labeled sub is pressed, it will switch isDomMode to false, and lock the interactability of the sub button.
             // when the button labeled dom is pressed, it will switch isDomMode to true, and lock the interactability of the dom button.
             if(modeButtonsDisabled) {
@@ -180,22 +180,29 @@ public class GeneralTab : ITab, IDisposable
 
         // disable this interactability if our safeword is on cooldown
         if(_config.SafewordUsed) { ImGui.BeginDisabled(); }
-        ImGui.NewLine();
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
         int width2 = (int)(ImGui.GetContentRegionAvail().X / 2);
         // draw our 3 gag listings
+        int i = 0;
         foreach(var slot in Enumerable.Range(0, 3)) {
             _gagListingsDrawer.DrawGagAndLockListing(slot, _config, _gagTypeFilterCombo[slot], _gagLockFilterCombo[slot], slot, $"Gag Slot {slot + 1}", width2);
             // display timer here.
             if(_lockManager.IsLockedWithTimer(slot)) {
                 ImGui.TextColored(new Vector4(1,1,0,0.5f), _timerService.GetRemainingTimeForPadlock(slot));
             }
-            ImGui.NewLine();
+            i++;
+            if(i<3) { ImGui.NewLine(); }
         }
 
         // end of disabled stuff
         if(_config.SafewordUsed) { ImGui.EndDisabled(); }
+    
+        // let people know which gags are not working
+        ImGui.Text("These Gags dont work yet! If you have any IRL, contact me to help fill in the data!");
+        ImGui.TextColored(new Vector4(0,1,0,1), "Bit Gag Padded, Bone Gag, Bone Gag XL, Chopstick Gag, Dental Gag,\n"+
+                                                "Harness Panel Gag, Hook Gag, Inflatable Hood, Latex/Leather Hoods, Plug Gag\n"+
+                                                "Pump Gag, Sensory Deprivation Hood, Spider Gag, Tenticle Gag.");
     }
 
     /// <summary> This function disables the mode buttons after the cooldown is over. </summary>
