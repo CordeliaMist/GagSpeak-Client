@@ -4,6 +4,7 @@
 Its Finally here, after like 3 months of coding and begging literally everyone I knew for help!
 
 For those who just want to install the plugin:
+
 **Repo Link:** `https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json`
 
 # Overview
