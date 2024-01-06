@@ -173,11 +173,13 @@ public class GagAndLockManager : IDisposable
     /// <item><c>targetName</c><param name="targetName"> - The target name.</param></item>
     /// </list> </summary>
     public void Lock(int layerIndex, string assignerName, string password1 = "", string password2 = "", string targetName = "") {
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
         // firstly, see if both our passwords are null, if it is true, it means this came from a button
         if(password1 == "" && password2 == "") {
             GagSpeak.Log.Debug($"[Padlock Manager Service]: This Lock Request came from a button!");
             // if the padlock is valid, and has a valid password if it needs one, then we can lock
-            if(_config._padlockIdentifier[layerIndex].ValidatePadlockPasswords(_config._isLocked[layerIndex], _config,  assignerName, targetName)) {
+            if(_config._padlockIdentifier[layerIndex].ValidatePadlockPasswords(_config._isLocked[layerIndex], _config,  assignerName, targetName, playerPayload.PlayerName)) {
                 // if we reached this point it means our password was valid, so we can lock
                 _config._isLocked[layerIndex] = true;
                 _config._padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, false, _config);
@@ -266,7 +268,7 @@ public class GagAndLockManager : IDisposable
         // clear EVERYTHING
         GagSpeak.Log.Debug("Safeword command invoked, and subscribed function called.");
         _config._isLocked = new List<bool> { false, false, false }; // reset is locked
-        _config.LockDirectChatGarbler = false; // reset the garbler lock to be off now
+        _config.LockDirectChatGarbler = false; // reset the garbler lock to be off
         _config.TimerData.Clear(); // reset the timer data
         _timerService.ClearIdentifierTimers(); // and the associated timers timerdata reflected
         _config._padlockIdentifier = new List<PadlockIdentifier> { // new blank padlockidentifiers

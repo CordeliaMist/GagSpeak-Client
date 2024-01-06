@@ -146,7 +146,7 @@ public class MessageResultLogic
             _config._padlockIdentifier[layer-1].SetType(parsedLockType); // set the type of the padlock
             _lockManager.Lock((layer-1), decodedMessage[4], decodedMessage[3], decodedMessage[5], playerPayload.PlayerName);
             // if we reached this point, it means we sucessfully locked the layer
-            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerPayload.PlayerName} locked your " +
+            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{decodedMessage[4]} locked your " +
             $"{_config.selectedGagTypes[layer-1]} with a {_config.selectedGagPadlocks[layer-1]}.").AddItalicsOff().BuiltString);
             GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag lock");
             return true; // sucessful parse
@@ -184,7 +184,7 @@ public class MessageResultLogic
         }
         _lockManager.Unlock((layer-1), decodedMessage[4], decodedMessage[3], playerPayload.PlayerName); // attempt to unlock
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{decodedMessage[4]} " +
-        $"sucessfully unlocked the {_config.selectedGagPadlocks[layer-1]} from your {_config.selectedGagPadlocks}.").AddItalicsOff().BuiltString);        
+        $"sucessfully unlocked the {_config.selectedGagPadlocks[layer-1]} from your {_config.selectedGagTypes[layer-1]}.").AddItalicsOff().BuiltString);        
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag unlock");
         return true; // sucessful parse
     }

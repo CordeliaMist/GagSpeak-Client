@@ -32,8 +32,7 @@ public static class GagButtonHelpers {
                 "a gag is already on this layer!").AddItalicsOff().BuiltString);
         } else {
             chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Applying {selectedPlayer.name}'s"+
-                ""+gagType+" gag").AddItalicsOff().BuiltString);
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Applying a "+ gagType+ $"to {selectedPlayer.name}").AddItalicsOff().BuiltString);
             // update information and send message
             string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
             chatManager.SendRealMessage(gagMessages.GagEncodedApplyMessage(playerPayload, targetPlayer, gagType, (layer+1).ToString()));
@@ -51,8 +50,12 @@ public static class GagButtonHelpers {
         if (currentWhitelistItem < 0 || currentWhitelistItem >= config.Whitelist.Count) { return; }
         if (selectedPlayer.selectedGagPadlocks[layer] == GagPadlocks.None && selectedPlayer.selectedGagTypes[layer] != "None") {
             Enum.TryParse(lockLabel, true, out GagPadlocks padlockType);
+
+            GagSpeak.Log.Debug($"Padlock Type: {padlockType}, assigning to whitelisted user {selectedPlayer.name}");
             config._whitelistPadlockIdentifier.SetType(padlockType);
-            config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, config, playerPayload.PlayerName, selectedPlayer.name);
+            GagSpeak.Log.Debug($"Validating password for {selectedPlayer.name}");
+            config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, config, playerPayload.PlayerName, selectedPlayer.name, playerPayload.PlayerName);
+            // if we make it here, we have a valid password, so we can send the message            
             string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
             // then we can apply the lock gag logic after we have verified it is an acceptable password
             if(config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MetalPadlock ||
@@ -60,23 +63,56 @@ public static class GagButtonHelpers {
             config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MistressPadlock) {
                 chatManager.SendRealMessage(gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockLabel, 
                 (layer+1).ToString()));
+                // update information after sending message and verifying, and setting cooldown timer
+                chatGui.Print(
+                    new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {selectedPlayer.name}'s "+
+                    selectedPlayer.selectedGagTypes[layer]+" gag with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"Padlock Type: {config._whitelistPadlockIdentifier._padlockType}");
+                selectedPlayer.selectedGagPadlocks[layer] = config._whitelistPadlockIdentifier._padlockType;
             }
             else if (config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MistressTimerPadlock) {
                 chatManager.SendRealMessage(gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockLabel, 
                 (layer+1).ToString(), config._whitelistPadlockIdentifier._inputTimer));
+                // update information after sending message and verifying, and setting cooldown timer
+                chatGui.Print(
+                    new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {selectedPlayer.name}'s "+
+                    selectedPlayer.selectedGagTypes[layer]+" gag with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"Padlock Type: {config._whitelistPadlockIdentifier._padlockType}");
+                selectedPlayer.selectedGagPadlocks[layer] = config._whitelistPadlockIdentifier._padlockType;
             }
             else if (config._whitelistPadlockIdentifier._padlockType == GagPadlocks.CombinationPadlock) {
                 chatManager.SendRealMessage(gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockLabel, 
                 (layer+1).ToString(), config._whitelistPadlockIdentifier._inputCombination));
+                // update information after sending message and verifying, and setting cooldown timer
+                chatGui.Print(
+                    new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {selectedPlayer.name}'s "+
+                    selectedPlayer.selectedGagTypes[layer]+" gag with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"Padlock Type: {config._whitelistPadlockIdentifier._padlockType}");
+                selectedPlayer.selectedGagPadlocks[layer] = config._whitelistPadlockIdentifier._padlockType;
             }
             else if (config._whitelistPadlockIdentifier._padlockType == GagPadlocks.PasswordPadlock) {
                 chatManager.SendRealMessage(gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockLabel, 
                 (layer+1).ToString(), config._whitelistPadlockIdentifier._inputPassword));
+                // update information after sending message and verifying, and setting cooldown timer
+                chatGui.Print(
+                    new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {selectedPlayer.name}'s "+
+                    selectedPlayer.selectedGagTypes[layer]+" gag with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"Padlock Type: {config._whitelistPadlockIdentifier._padlockType}");
+                selectedPlayer.selectedGagPadlocks[layer] = config._whitelistPadlockIdentifier._padlockType;
             }
             else if (config._whitelistPadlockIdentifier._padlockType == GagPadlocks.TimerPasswordPadlock) {
                 chatManager.SendRealMessage(gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockLabel, 
                 (layer+1).ToString(), config._whitelistPadlockIdentifier._inputPassword, config._whitelistPadlockIdentifier._inputTimer));
+                // update information after sending message and verifying, and setting cooldown timer
+                chatGui.Print(
+                    new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {selectedPlayer.name}'s "+
+                    selectedPlayer.selectedGagTypes[layer]+" gag with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"Padlock Type: {config._whitelistPadlockIdentifier._padlockType}");
+                selectedPlayer.selectedGagPadlocks[layer] = config._whitelistPadlockIdentifier._padlockType;
             }
+        } else {
+            chatGui.Print(
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Cannot lock {selectedPlayer.name}'s gag, it is already locked!").AddItalicsOff().BuiltString);
         }
     }
 
@@ -90,41 +126,52 @@ public static class GagButtonHelpers {
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         if (currentWhitelistItem < 0 || currentWhitelistItem >= config.Whitelist.Count) { return; }
         string targetPlayer = selectedPlayer.name + "@" + selectedPlayer.homeworld;
+        // check which gag it is
+        GagSpeak.Log.Debug($"Padlock Type: {config._whitelistPadlockIdentifier._padlockType}");
 
         if(config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MetalPadlock ||
         config._whitelistPadlockIdentifier._padlockType == GagPadlocks.FiveMinutesPadlock ||
         config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MistressPadlock ||
         config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MistressTimerPadlock) {
-            if(config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, config, playerPayload.PlayerName, selectedPlayer.name)
-            && config._whitelistPadlockIdentifier.CheckPassword(config, password, playerPayload.PlayerName, selectedPlayer.name)) {
-                // update information after sending message and verifying, and setting cooldown timer
-                chatGui.Print(
-                    new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Unlocking {selectedPlayer.name}'s"+
-                    selectedPlayer.selectedGagTypes[layer]+" gag").AddItalicsOff().BuiltString);
-                chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString()));
+            if(config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, config, playerPayload.PlayerName, selectedPlayer.name, playerPayload.PlayerName)) {
+                GagSpeak.Log.Debug($"Padlock Type: {config._whitelistPadlockIdentifier._padlockType} validated for unlock");
+                if(config._whitelistPadlockIdentifier.CheckPassword(config, playerPayload.PlayerName, selectedPlayer.name, password, playerPayload.PlayerName)) {
+                    // update information after sending message and verifying, and setting cooldown timer
+                    chatGui.Print(
+                        new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Unlocking {selectedPlayer.name}'s"+
+                        selectedPlayer.selectedGagTypes[layer]+" gag").AddItalicsOff().BuiltString);
+                    chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString()));
+                    selectedPlayer.selectedGagPadlocks[layer] = GagPadlocks.None;
+                }
             }
         }
         else if (config._whitelistPadlockIdentifier._padlockType == GagPadlocks.CombinationPadlock) {
-            if(config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, config, playerPayload.PlayerName, selectedPlayer.name)
-            && config._whitelistPadlockIdentifier.CheckPassword(config, password, playerPayload.PlayerName, selectedPlayer.name)) {
-                // update information after sending message and verifying, and setting cooldown timer
-                chatGui.Print(
-                    new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Unlocking {selectedPlayer.name}'s"+
-                    selectedPlayer.selectedGagTypes[layer]+" gag").AddItalicsOff().BuiltString);
-                chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(),
-                config._whitelistPadlockIdentifier._inputCombination));
+            if(config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, config, playerPayload.PlayerName, selectedPlayer.name, playerPayload.PlayerName)) {
+                GagSpeak.Log.Debug($"Padlock Type: {config._whitelistPadlockIdentifier._padlockType} validated for unlock");
+                if(config._whitelistPadlockIdentifier.CheckPassword(config, playerPayload.PlayerName, selectedPlayer.name, password, playerPayload.PlayerName)) {
+                    // update information after sending message and verifying, and setting cooldown timer
+                    chatGui.Print(
+                        new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Unlocking {selectedPlayer.name}'s"+
+                        selectedPlayer.selectedGagTypes[layer]+" gag").AddItalicsOff().BuiltString);
+                    chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(),
+                    config._whitelistPadlockIdentifier._inputCombination));
+                    selectedPlayer.selectedGagPadlocks[layer] = GagPadlocks.None;
+                }
             }
         }
         else if (config._whitelistPadlockIdentifier._padlockType == GagPadlocks.PasswordPadlock || 
         config._whitelistPadlockIdentifier._padlockType == GagPadlocks.TimerPasswordPadlock) {
-            if(config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, config, playerPayload.PlayerName, selectedPlayer.name)
-            && config._whitelistPadlockIdentifier.CheckPassword(config, password, playerPayload.PlayerName, selectedPlayer.name)) {               
-                // update information after sending message and verifying, and setting cooldown timer
-                chatGui.Print(
-                    new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Unlocking {selectedPlayer.name}'s"+
-                    selectedPlayer.selectedGagTypes[layer]+" gag").AddItalicsOff().BuiltString);
-                chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(),
-                config._whitelistPadlockIdentifier._inputPassword));
+            if(config._whitelistPadlockIdentifier.ValidatePadlockPasswords(true, config, playerPayload.PlayerName, selectedPlayer.name, playerPayload.PlayerName)) {
+                GagSpeak.Log.Debug($"Padlock Type: {config._whitelistPadlockIdentifier._padlockType} validated for unlock");
+                if(config._whitelistPadlockIdentifier.CheckPassword(config, playerPayload.PlayerName, selectedPlayer.name, password, playerPayload.PlayerName)) {             
+                    // update information after sending message and verifying, and setting cooldown timer
+                    chatGui.Print(
+                        new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Unlocking {selectedPlayer.name}'s"+
+                        selectedPlayer.selectedGagTypes[layer]+" gag").AddItalicsOff().BuiltString);
+                    chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(),
+                    config._whitelistPadlockIdentifier._inputPassword));
+                    selectedPlayer.selectedGagPadlocks[layer] = GagPadlocks.None;
+                }
             }
         }
     }

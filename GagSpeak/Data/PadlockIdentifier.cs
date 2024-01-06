@@ -2,6 +2,9 @@ using System;
 using ImGuiNET;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
+using GagSpeak.UI.Helpers;
+using Dalamud.Plugin.Services;
 
 namespace GagSpeak.Data;
 /// <summary>
@@ -53,7 +56,7 @@ public class PadlockIdentifier
     /// </list> </summary>
     /// <returns>True if the password is valid, false if not.</returns>
     public bool SetAndValidate(GagSpeakConfig _config, string locktype, string password = "", string secondPassword = "",
-    string assignerPlayerName = "", string targetPlayerName = "") {
+    string assignerPlayerName = "", string targetPlayerName = "", string YourPlayerName = "") {
         // determine our padlock type
         if (!Enum.TryParse(locktype, true, out GagPadlocks padlockType)) {
             return false;}// or throw an exception
@@ -85,7 +88,7 @@ public class PadlockIdentifier
                 break;
         }
         // finally, return if the password for it is actually valid, through the validation function normally used for UI input
-        return ValidatePadlockPasswords(false, _config, assignerPlayerName, targetPlayerName);
+        return ValidatePadlockPasswords(false, _config, assignerPlayerName, targetPlayerName, YourPlayerName);
     }
 
     /// <summary>
@@ -148,7 +151,7 @@ public class PadlockIdentifier
     /// <item><c>targetPlayerName</c><param name="targetPlayerName"> - The name of the player who is being targetted for the check.</param></item>
     /// </list> </summary>
     /// <returns>True if the password is valid, false if not.</returns>
-    public bool ValidatePadlockPasswords(bool isUnlocking, GagSpeakConfig _config, string assignerPlayerName = "", string targetPlayerName = "") {
+    public bool ValidatePadlockPasswords(bool isUnlocking, GagSpeakConfig _config, string assignerPlayerName = "", string targetPlayerName = "", string YourPlayerName = "") {
         // setup a return bool variable called ret
         bool ret = false;
         GagSpeak.Log.Debug($"[PadlockIdentifer]: Validating password");
@@ -178,13 +181,13 @@ public class PadlockIdentifier
                     _inputTimer = "";}
                 return ret;
             case GagPadlocks.MistressPadlock:
-                ret = ValidateMistress(_config, assignerPlayerName, targetPlayerName);
+                ret = ValidateMistress(_config, assignerPlayerName, targetPlayerName, YourPlayerName);
                 if(ret && !isUnlocking) {
                     _mistressAssignerName = assignerPlayerName;
                 }
                 return ret;
             case GagPadlocks.MistressTimerPadlock:
-                ret = (ValidateMistress(_config, assignerPlayerName, targetPlayerName) && ValidateTimer());
+                ret = (ValidateMistress(_config, assignerPlayerName, targetPlayerName, YourPlayerName) && ValidateTimer());
                 if(ret && !isUnlocking) { _mistressAssignerName = assignerPlayerName; }
                 if(ret && !isUnlocking && _inputTimer != "") {
                     _storedTimer = _inputTimer;
@@ -249,19 +252,45 @@ public class PadlockIdentifier
     /// <item><c>assignerPlayerName</c><param name="assignerPlayerName"> - The name of the player who assigned the padlock.</param></item>
     /// <item><c>targetPlayerName</c><param name="targetPlayerName"> - The name of the player who is being targetted for the check.</param></item>
     /// </list> </summary>
-    private bool ValidateMistress(GagSpeakConfig _config, string assignerPlayerName, string targetPlayerName) {
+    private bool ValidateMistress(GagSpeakConfig _config, string assignerPlayerName, string targetPlayerName, string YourPlayerName) {
         GagSpeak.Log.Debug($"[PadlockIdentifer]: AssignedPlayerName: {assignerPlayerName}");
         GagSpeak.Log.Debug($"[PadlockIdentifer]: TargetPlayerName {targetPlayerName}");
+
+        
         // if we are the assigner, then we can just return true.
         if(assignerPlayerName == null) {
             GagSpeak.Log.Debug($"[PadlockIdentifer]: Assigner name is null!"); return false;}
-        // if we are trying to assign it to ourselves, then we can just return true.
+        
+        // first see if the assigner is us. If it is us, we must be the mistress
+        if(assignerPlayerName == YourPlayerName && _config.InDomMode == true) {
+            // if we reach this point, it means we are the one assigning it and are in dom mode.
+            // next make sure the target we are using this on views us as mistress
+            if(_config.Whitelist.Any(w => targetPlayerName.Contains(w.name) && w.relationshipStatus == "Mistress"
+            && (w.relationshipStatusToYou == "Pet" || w.relationshipStatusToYou == "Slave") )) {
+                // if we reached this point our dynamic is OK for a mistress assigning a lock to a pet or slave
+                GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the Mistress locking the padlock to your submissive, {targetPlayerName}");
+                return true;
+            }
+        }
+
+        // if the target player is us, and we are not in dominant mode, then we are the submissive receieving the mistress padlock from our mistress 
+        if(targetPlayerName == YourPlayerName && _config.InDomMode == false) {
+            // at this point we know what relation we are, so now we must verify the relations
+            if(_config.Whitelist.Any(w => assignerPlayerName.Contains(w.name)
+            && (w.relationshipStatus == "Pet" || w.relationshipStatus == "Slave")
+            && (w.relationshipStatusToYou == "Mistress"))) {
+                // if we reached this point we know our dynamic is sucessful and we can accept it.
+                GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the submissive recieving the lock from your mistress, {assignerPlayerName}");
+                return true;
+            }
+        }
+
+        // yes we can gag ourself
         if (assignerPlayerName == targetPlayerName && _config.InDomMode == true) {
+            GagSpeak.Log.Debug($"[PadlockIdentifer]: You are able to gag yourself with that, yes!");
             return true;
         }
-        if (_config.Whitelist.Any(w => assignerPlayerName.Contains(w.name) && w.relationshipStatus == "Mistress")) {
-            return true;
-        }
+
         // if we reach here, then we failed all conditions, so return false.
         GagSpeak.Log.Debug($"[PadlockIdentifer]: {assignerPlayerName} is not your mistress!");
         return false;
@@ -276,7 +305,7 @@ public class PadlockIdentifier
     /// <item><c>password</c><param name="password"> - The password to check.</param></item>
     /// </list> </summary>
     /// <returns>True if the password is valid, false if not.</returns> 
-    public bool CheckPassword(GagSpeakConfig _config, string assignerName = "", string targetName = "", string password = "") {
+    public bool CheckPassword(GagSpeakConfig _config, string assignerName = "", string targetName = "", string password = "", string YourPlayerName = "") {
         // create a bool to return
         bool isValid = false;
         // determine if we need the password for the padlock type is valid, if the padlock contains one.
@@ -316,10 +345,10 @@ public class PadlockIdentifier
                 }
                 break;
             case GagPadlocks.MistressPadlock:
-                isValid = ValidateMistress(_config, assignerName, targetName);
+                isValid = ValidateMistress(_config, assignerName, targetName, YourPlayerName);
                 break;
             case GagPadlocks.MistressTimerPadlock:
-                isValid = ValidateMistress(_config, assignerName, targetName);
+                isValid = ValidateMistress(_config, assignerName, targetName, YourPlayerName);
                 break;
             default:
                 return false;
