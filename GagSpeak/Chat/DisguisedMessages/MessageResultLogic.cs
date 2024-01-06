@@ -183,9 +183,10 @@ public class MessageResultLogic
             }
         }
 
+        GagPadlocks tempPadlock = _config.selectedGagPadlocks[layer-1]; // store the padlock
         _lockManager.Unlock((layer-1), decodedMessage[4], decodedMessage[3], playerPayload.PlayerName, playerPayload.PlayerName); // attempt to unlock
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{decodedMessage[4]} " +
-        $"sucessfully unlocked the {Enum.GetName(typeof(GagPadlocks), _config.selectedGagPadlocks[layer-1])}  from your {_config.selectedGagTypes[layer-1]}.").AddItalicsOff().BuiltString);        
+        $"sucessfully unlocked the {Enum.GetName(typeof(GagPadlocks), tempPadlock)} from your {_config.selectedGagTypes[layer-1]}.").AddItalicsOff().BuiltString);        
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag unlock");
         return true; // sucessful parse
     }
