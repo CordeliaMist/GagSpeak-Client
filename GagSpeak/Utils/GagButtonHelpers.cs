@@ -70,8 +70,10 @@ public static class GagButtonHelpers {
                     selectedPlayer.selectedGagTypes[layer]+" with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"Padlock Type: {config._whitelistPadlockIdentifier._padlockType}");
                 selectedPlayer.selectedGagPadlocks[layer] = config._whitelistPadlockIdentifier._padlockType;
+
                 if(config._whitelistPadlockIdentifier._padlockType == GagPadlocks.FiveMinutesPadlock) {
                     selectedPlayer.selectedGagPadlocksTimer[layer] = UIHelpers.GetEndTime("5m");
+                
                 } else if(config._whitelistPadlockIdentifier._padlockType == GagPadlocks.MistressPadlock) {
                     selectedPlayer.selectedGagPadlocksAssigner[layer] = playerPayload.PlayerName;
                 }

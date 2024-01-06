@@ -175,6 +175,7 @@ public class GagAndLockManager : IDisposable
     public void Lock(int layerIndex, string assignerName, string password1 = "", string password2 = "", string targetName = "") {
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
+        GagSpeak.Log.Debug($"[Padlock Manager Service]: targetName: {targetName}");
         // firstly, see if both our passwords are null, if it is true, it means this came from a button
         if(password1 == "" && password2 == "") {
             GagSpeak.Log.Debug($"[Padlock Manager Service]: This Lock Request came from a button!");
