@@ -12,6 +12,7 @@ using XivCommon.Functions;
 using GagSpeak.Chat.MsgDictionary;
 using GagSpeak.Chat.MsgDecoder;
 using GagSpeak.Chat.MsgResultLogic;
+using GagSpeak.Data;
 
 namespace GagSpeak.Chat;
 
@@ -70,7 +71,6 @@ public class ChatManager
         if ( type == XivChatType.TellOutgoing) {
             // Scan if the message contains all words from the an ncoded tell message
             if(MessageDictionary.EncodedMsgDictionary(message.TextValue)) {
-                // if it does, hide it from the chat log
                 isHandled = true;
                 _config.Save();
                 return;

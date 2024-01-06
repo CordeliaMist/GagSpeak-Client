@@ -23,6 +23,7 @@ public class MessageResultLogic
     private readonly IClientState       _clientState;      // used to get the client state
     private readonly GagAndLockManager  _lockManager;      // used to get the lock manager
     private readonly GagService         _gagService;       // used to get the gag service
+    private readonly TimerService       _timerService;     // used to get the timer service
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageResultLogic"/> class.
@@ -34,13 +35,14 @@ public class MessageResultLogic
     /// <item><c>lockManager</c><param name="lockManager"> - The GagAndLockManager.</param></item>
     /// </list> </summary>
     public MessageResultLogic(GagListingsDrawer gagListingsDrawer, IChatGui clientChat, GagSpeakConfig config,
-    IClientState clientState, GagAndLockManager lockManager, GagService gagService) {
+    IClientState clientState, GagAndLockManager lockManager, GagService gagService, TimerService timerService) {
         _gagListingsDrawer = gagListingsDrawer;
         _clientChat = clientChat;
         _config = config;
         _clientState = clientState;
         _lockManager = lockManager;
         _gagService = gagService;
+        _timerService = timerService;
     }
     
     /// <summary>
@@ -446,6 +448,9 @@ public class MessageResultLogic
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is requesting an update on your info for the profile viewer." +
                 "Providing Over the next 3 Seconds.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");
+
+                // invoke the interaction button cooldown timer
+                _timerService.StartTimer("InteractionCooldown", "3s", 100, () => {});
             }
         } catch {
             return LogError($"ERROR, Invalid information request message parse.");
