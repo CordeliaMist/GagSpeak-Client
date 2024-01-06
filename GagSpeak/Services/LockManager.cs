@@ -266,6 +266,7 @@ public class GagAndLockManager : IDisposable
         // clear EVERYTHING
         GagSpeak.Log.Debug("Safeword command invoked, and subscribed function called.");
         _config._isLocked = new List<bool> { false, false, false }; // reset is locked
+        _config.LockDirectChatGarbler = false; // reset the garbler lock to be off now
         _config.TimerData.Clear(); // reset the timer data
         _timerService.ClearIdentifierTimers(); // and the associated timers timerdata reflected
         _config._padlockIdentifier = new List<PadlockIdentifier> { // new blank padlockidentifiers

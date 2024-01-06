@@ -405,7 +405,7 @@ public class MessageResultLogic
         string playerName = string.Join(" ", parts.Take(parts.Length - 1));
         var playerInWhitelist = _config.Whitelist.FirstOrDefault(x => x.name == playerName);
         // see if they exist AND sure they have a mistress relation on your end
-        if(playerInWhitelist != null && playerInWhitelist.relationshipStatus == "Mistress") {
+        if(playerInWhitelist != null && playerInWhitelist.relationshipStatus == "Slave" && playerInWhitelist.relationshipStatusToYou == "Mistress") {
             if(_config.LockDirectChatGarbler == false) {
                 _config.DirectChatGarbler = true; _config.LockDirectChatGarbler = true;
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Your Mistress has decided you no longer have permission to speak clearly...").AddItalicsOff().BuiltString);

@@ -443,7 +443,7 @@ public class WhitelistTab : ITab, IDisposable
             if (ImGui.Button("Toggle Live Garbler Lock")) {
                 var selectedWhitelistItem = _config.Whitelist[_currentWhitelistItem]; // get the selected whitelist item
                 // the player you are doing this on must be a relationstatus of slave
-                if(selectedWhitelistItem.relationshipStatus == "Slave") {
+                if(selectedWhitelistItem.relationshipStatus == "Mistress" || selectedWhitelistItem.relationshipStatusToYou == "Slave") {
                     selectedWhitelistItem.lockedLiveChatGarbler = true; // modify property.
                     _config.Whitelist[_currentWhitelistItem] = selectedWhitelistItem; // update the whitelist
                     GagButtonHelpers.OrderLiveGarbleLockToPlayer(_currentWhitelistItem, _config.Whitelist[_currentWhitelistItem],
