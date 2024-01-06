@@ -83,7 +83,15 @@ public class WhitelistCharData {
     public string GetPadlockTimerDurationLeft(int index) {
         TimeSpan duration = this.selectedGagPadlocksTimer[index] - DateTimeOffset.Now; // Get the duration
         if (duration < TimeSpan.Zero) {
+            // check if the padlock type was a type with a timer, and if so, set the other stuff to none
+            if (this.selectedGagPadlocks[index] == GagPadlocks.FiveMinutesPadlock || this.selectedGagPadlocks[index] == GagPadlocks.MistressTimerPadlock
+            || this.selectedGagPadlocks[index] == GagPadlocks.TimerPasswordPadlock) {
+                this.selectedGagPadlocks[index] = GagPadlocks.None;
+                this.selectedGagPadlocksPassword[index] = "";
+                this.selectedGagPadlocksAssigner[index] = "";
+            }
             return "";
+            
         }
         // Display the duration in the desired format
         return $"{duration.Hours}h, {duration.Minutes}m, {duration.Seconds}s";

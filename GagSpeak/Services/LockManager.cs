@@ -127,10 +127,10 @@ public class GagAndLockManager : IDisposable
     /// <item><c>password</c><param name="password"> - The password.</param></item>
     /// <item><c>targetName</c><param name="targetName"> - The target name.</param></item>
     /// </list> </summary>
-    public void Unlock(int layerIndex, string assignerName, string password = "", string targetName = "") { // for the buttons
+    public void Unlock(int layerIndex, string assignerName, string password = "", string targetName = "", string YourPlayerName = "") { // for the buttons
         GagSpeak.Log.Debug($"[Padlock Manager Service]: We are unlocking our padlock.");
         // if what we use to try and unlock the padlock is valid, we can unlock it
-        if(_config._padlockIdentifier[layerIndex].CheckPassword(_config, assignerName, targetName, password))
+        if(_config._padlockIdentifier[layerIndex].CheckPassword(_config, assignerName, targetName, password, YourPlayerName))
         {
             // unlock the padlock in all locations where we should be updating it as unlocked, clearing any stored lock information
             _config._isLocked[layerIndex] = false;

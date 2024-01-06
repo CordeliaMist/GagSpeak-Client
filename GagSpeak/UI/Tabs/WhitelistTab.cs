@@ -7,9 +7,11 @@ using Dalamud.Plugin.Services;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.Text.SeStringHandling;
 using ImGuiNET;
 using OtterGui.Widgets;
 using OtterGui;
+using OtterGui.Classes;
 using GagSpeak.Data;
 using GagSpeak.UI.Helpers;
 using GagSpeak.UI.GagListings;
@@ -401,11 +403,19 @@ public class WhitelistTab : ITab, IDisposable
             }
             ImGui.SameLine();
             if (ImGui.Button("Unlock Gag")) {
-                GagButtonHelpers.UnlockGagOnPlayer(layer, _currentWhitelistItem, whitelist[_currentWhitelistItem],
-                _config, _chatManager, _gagMessages, _clientState, _chatGui, _lockLabel);
-                // Start a 5-second cooldown timer
-                interactionButtonPressed = true;
-                _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
+                // if our selected dropdown lock label doesnt match the currently equipped type of the player, send an error message to the chat
+                if(_lockLabel != whitelist[_currentWhitelistItem].selectedGagPadlocks[layer].ToString()) {
+                    GagSpeak.Log.Debug($"[Whitelist]: Selected lock type does not match equipped lock type of that player! ({_lockLabel} != {whitelist[_currentWhitelistItem].selectedGagPadlocks[layer].ToString()})");
+                    _chatGui.Print(
+                        new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Selected lock type does not match equipped lock type of that player!").AddItalicsOff().BuiltString
+                    );
+                } else {
+                    GagButtonHelpers.UnlockGagOnPlayer(layer, _lockLabel, _currentWhitelistItem, whitelist[_currentWhitelistItem],
+                    _config, _chatManager, _gagMessages, _clientState, _chatGui);
+                    // Start a 5-second cooldown timer
+                    interactionButtonPressed = true;
+                    _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
+                }
             }
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             // display the password field, if any.

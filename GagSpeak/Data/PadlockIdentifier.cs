@@ -167,7 +167,11 @@ public class PadlockIdentifier
                 return ret;
             case GagPadlocks.PasswordPadlock:
                 ret = ValidatePassword();
-                if(ret && !isUnlocking && _inputPassword != "") {_storedPassword = _inputPassword; _inputPassword = "";}
+                if(ret && !isUnlocking && _inputPassword != "") {
+                    GagSpeak.Log.Debug($"[PadlockIdentifer]: Password Validated and set to stored data");
+                    _storedPassword = _inputPassword;
+                    _inputPassword = "";
+                }
                 return ret;
             case GagPadlocks.FiveMinutesPadlock:
                 _storedTimer = "0h5m0s";
@@ -308,6 +312,8 @@ public class PadlockIdentifier
     public bool CheckPassword(GagSpeakConfig _config, string assignerName = "", string targetName = "", string password = "", string YourPlayerName = "") {
         // create a bool to return
         bool isValid = false;
+        GagSpeak.Log.Debug($"[PadlockIdentifer]: Checking password {password}");
+        GagSpeak.Log.Debug($"[PadlockIdentifer]: Stored Password: {_storedPassword}");
         // determine if we need the password for the padlock type is valid, if the padlock contains one.
         switch (_padlockType) {
             case GagPadlocks.None:

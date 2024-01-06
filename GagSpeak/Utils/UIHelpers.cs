@@ -170,4 +170,9 @@ public static class UIHelpers
             throw new Exception("Player is null!");
         }
     }
+
+    /// <summary>
+    /// This method gets the string equal of the enum listing.
+    /// </summary>
+    /// <returns>The string equal of the enum listing.</returns>
 }
