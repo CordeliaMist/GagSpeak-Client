@@ -420,7 +420,9 @@ public class MessageResultLogic
             }
         }
         else {
-            return LogError($"ERROR, Invalid live chat garbler lock message parse.");
+            // let the user know they do not have the nessisary relation configuration to do this
+            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"You are not a slave to this person, or this person is not your Mistress. Both must be true for this to work.").AddItalicsOff().BuiltString);
+            return false;
         }
         return true;
     }
