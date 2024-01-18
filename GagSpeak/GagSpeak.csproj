@@ -78,7 +78,9 @@
 
 
   <ItemGroup>
+    <ProjectReference Include="..\Penumbra.Api\Penumbra.Api.csproj" />
     <ProjectReference Include="..\Penumbra.String\Penumbra.String.csproj" />
+	  <ProjectReference Include="..\Penumbra.GameData\Penumbra.GameData.csproj" />
     <ProjectReference Include="..\OtterGui\OtterGui.csproj" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
   </ItemGroup>

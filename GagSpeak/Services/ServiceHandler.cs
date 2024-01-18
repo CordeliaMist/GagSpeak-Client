@@ -11,6 +11,8 @@ using GagSpeak.Chat.MsgEncoder;                 // Contains classes for encoding
 using GagSpeak.Data;
 using GagSpeak.Chat.MsgResultLogic;             // Contains classes for handling the result of chat messages in the GagSpeak plugin
 using GagSpeak.Events;                          // Contains classes for handling events in the GagSpeak plugin
+using GagSpeak.Garbler.Translator;
+using GagSpeak.Interop;
 using GagSpeak.UI;                              // Contains classes for the UI of the GagSpeak plugin
 using GagSpeak.UI.Tabs.HelpPageTab;             // Contains classes for the help page tab in the GagSpeak plugin
 using GagSpeak.UI.GagListings;                  // Contains classes for the gag listings in the GagSpeak plugin
@@ -18,7 +20,6 @@ using GagSpeak.UI.Tabs.GeneralTab;              // Contains classes for the gene
 using GagSpeak.UI.Tabs.WhitelistTab;            // Contains classes for the whitelist tab in the GagSpeak plugin
 using GagSpeak.UI.Tabs.ConfigSettingsTab;       // Contains classes for the config settings tab in the GagSpeak plugin
 using GagSpeak.UI.UserProfile;
-using GagSpeak.Garbler.Translator;
 
 // following namespace naming convention
 namespace GagSpeak.Services;
@@ -43,6 +44,7 @@ public static class ServiceHandler
             .AddData()
             .AddEvent()
             .AddGarbleCore()
+            .AddInterop()
             .AddServiceClasses()
             .AddUi()
             .AddApi();
@@ -113,6 +115,8 @@ public static class ServiceHandler
                 .AddSingleton<GagManager>();
 
 
+    private static IServiceCollection AddInterop(this IServiceCollection services)
+        => services.AddSingleton<GlamourerInterop>();
     /// <summary> Adds the classes identified as self-made services for the overarching service collection.
     /// <list type="bullet">
     /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>

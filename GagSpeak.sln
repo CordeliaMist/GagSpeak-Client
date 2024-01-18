@@ -5,6 +5,10 @@ VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GagSpeak", "GagSpeak\GagSpeak.csproj", "{13C812E9-0D42-4B95-8646-40EEBF30636F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Penumbra.Api", "Penumbra.Api\Penumbra.Api.csproj", "{29C589ED-7AF1-4DE9-82EF-33EBEF19AAFA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Penumbra.GameData", "Penumbra.GameData\Penumbra.GameData.csproj", "{C0A2FAF8-C3AE-4B7B-ADDB-4AAC1A855428}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Penumbra.String", "Penumbra.String\Penumbra.String.csproj", "{77895120-9D50-43F0-A908-41B66F47B736}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OtterGui", "OtterGui\OtterGui.csproj", "{8830BF74-F127-438B-8135-29CCBC328D86}"
@@ -19,6 +23,14 @@ Global
 		{13C812E9-0D42-4B95-8646-40EEBF30636F}.Debug|x64.Build.0 = Debug|x64
 		{13C812E9-0D42-4B95-8646-40EEBF30636F}.Release|x64.ActiveCfg = Release|x64
 		{13C812E9-0D42-4B95-8646-40EEBF30636F}.Release|x64.Build.0 = Release|x64
+		{29C589ED-7AF1-4DE9-82EF-33EBEF19AAFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29C589ED-7AF1-4DE9-82EF-33EBEF19AAFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29C589ED-7AF1-4DE9-82EF-33EBEF19AAFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29C589ED-7AF1-4DE9-82EF-33EBEF19AAFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0A2FAF8-C3AE-4B7B-ADDB-4AAC1A855428}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0A2FAF8-C3AE-4B7B-ADDB-4AAC1A855428}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0A2FAF8-C3AE-4B7B-ADDB-4AAC1A855428}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0A2FAF8-C3AE-4B7B-ADDB-4AAC1A855428}.Release|Any CPU.Build.0 = Release|Any CPU
 		{77895120-9D50-43F0-A908-41B66F47B736}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{77895120-9D50-43F0-A908-41B66F47B736}.Debug|x64.Build.0 = Debug|Any CPU
 		{77895120-9D50-43F0-A908-41B66F47B736}.Release|x64.ActiveCfg = Release|Any CPU
