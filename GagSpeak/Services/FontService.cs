@@ -16,7 +16,6 @@ public class FontService : IDisposable
         _pluginInterface = pluginInterface;
         _pluginInterface.UiBuilder.BuildFonts += BuildFont;  // subscribe to the build fonts event
         _pluginInterface.UiBuilder.RebuildFonts();           // rebuild the fonts
-        GagSpeak.Log.Debug("[FontService] SERVICE CONSUTRCTOR INITIALIZED");  
     }
     private unsafe void BuildFont() {
         var fontFile = Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, "DoulosSIL-Regular.ttf");
@@ -67,7 +66,7 @@ public class FontService : IDisposable
                 // pin the glyph ranges
                 GCHandle handle = GCHandle.Alloc(glyphRanges, GCHandleType.Pinned);
                 // attempt to load them in
-                UidFont = ImGui.GetIO().Fonts.AddFontFromFileTTF(fontFile, 24f, null, handle.AddrOfPinnedObject());
+                UidFont = ImGui.GetIO().Fonts.AddFontFromFileTTF(fontFile, 30f, null, handle.AddrOfPinnedObject());
                 UidFontBuilt = true;
                 GagSpeak.Log.Debug($"[Font] Constructed. {fontFile}");
             }

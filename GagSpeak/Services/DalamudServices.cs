@@ -9,49 +9,23 @@ namespace GagSpeak.Services;
 
 /// <summary> Provides services for the Dalamud plugin. </summary>
 public class DalamudServices {
-	/// <summary>
-	/// Initializes a new instance of the <see cref="DalamudServices"/> class.
-	/// <list type="bullet">
-	/// <item><c>pluginInt</c><param name="pluginInt"> - The Dalamud plugin interface.</param></item>
-	/// </list> </summary>
-	public DalamudServices(DalamudPluginInterface pluginInt) {
-		// Set the services to the pluginInt
-		pluginInt.Inject(this);
-        GagSpeak.Log.Debug("[DalamudServices] SERVICE CONSUTRCTOR INITIALIZED");
+	/// <summary> A more simplified version of the AddServices method, thanks to the new service manager </summary>
+	public static void AddServices(ServiceManager services, DalamudPluginInterface pi)
+	{
+        services.AddExistingService(pi);
+        services.AddExistingService(pi.UiBuilder);
+		// now add the dalamud services
+		services.AddDalamudService<IChatGui>(pi);				// For interfacing with the chat
+		services.AddDalamudService<IClientState>(pi);			// For interfacing with the client state, getting player info, etc.
+		services.AddDalamudService<ICommandManager>(pi);		// For interfacing with commands
+		services.AddDalamudService<IDataManager>(pi);			// for parsing object data
+		services.AddDalamudService<IFramework>(pi);				// For interfacing with the dalamud framework (scheduler, timings, etc.)
+		services.AddDalamudService<IGameInteropProvider>(pi);	// helps with detouring the chat input for our plugin
+		services.AddDalamudService<IKeyState>(pi);				// for the file system selector to use to get our state
+		services.AddDalamudService<IObjectTable>(pi);			// For interfacing with the object table
+		services.AddDalamudService<IPartyFinderGui>(pi);		// For interfacing with the party finder (may remove)
+		services.AddDalamudService<IPluginLog>(pi);				// For interfacing with the plugin logger
+		services.AddDalamudService<ISigScanner>(pi);			// For getting signatures to do stuff in danger files.
+		services.AddDalamudService<ITextureProvider>(pi);		// For interfacing with the texture provider
 	}
-
-	/// <summary>
-	/// Adds services to the service collection.
-	/// <list type="bullet">
-	/// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
-	/// </list> </summary>
-	public void AddServices(IServiceCollection services) {
-		// Adds a singleton service of the type specified in serviceType with an implementation of the type specified in
-		services.AddSingleton(GameInteropProvider);
-		services.AddSingleton(DalamudPluginInterface);
-		services.AddSingleton(DalamudPluginInterface.UiBuilder);
-		services.AddSingleton(PluginLog);
-		services.AddSingleton(ChatGui);
-		services.AddSingleton(ClientState);
-		services.AddSingleton(CommandManager);
-		services.AddSingleton(DataManager);
-		services.AddSingleton(Framework);
-		services.AddSingleton(KeyState);
-		services.AddSingleton(ObjectTable);
-		services.AddSingleton(PartyFinderGui);
-		services.AddSingleton(SigScanner);
-		services.AddSingleton(this);
-	}
-	[PluginService] public IGameInteropProvider GameInteropProvider { get; private set; } = null!; // helps with detouring the chat input for our plugin
-	[PluginService] public DalamudPluginInterface DalamudPluginInterface { get; private set; } = null!; // for interfacing w/ plugin.
-	[PluginService] public IChatGui ChatGui { get; private set; } = null!; // For interfacing with the chat
-	[PluginService] public IClientState ClientState { get; private set; } = null!; // For interfacing with the client state, getting player info, etc.
-	[PluginService] public ICommandManager CommandManager { get; private set; } = null!; // For interfacing with commands
-	[PluginService] public IDataManager DataManager { get; set; } = null!; // for parsing object data
-	[PluginService] public IFramework Framework { get; private set; } = null!; // For interfacing with the framework [Dalamud Plugin Service type]
-	[PluginService] public IKeyState KeyState { get; private set; } = null!; // for the file system selector to use to get our state
-	[PluginService] public IObjectTable ObjectTable { get; private set; } = null!; // For interfacing with the object table
-	[PluginService] public IPartyFinderGui PartyFinderGui { get; private set; } = null!; // For interfacing with the party finder (may remove)
-	[PluginService] public IPluginLog PluginLog { get; private set; } = null!; // For interfacing with the plugin logger
-	[PluginService] public ISigScanner SigScanner { get; private set; } = null!; // For getting our signatures to perform the operations in our danger files.
 }

@@ -47,7 +47,6 @@ public class ChatManager
         // Begin our OnChatMessage Detection
         _clientChat.CheckMessageHandled += Chat_OnCheckMessageHandled;
         _clientChat.ChatMessage += Chat_OnChatMessage;
-        GagSpeak.Log.Debug("[Chat Manager] Constructor Finished Initializing & Subscribed to all Events");
     }
 
     /// <summary> This is the disposer for the ChatManager class. </summary>

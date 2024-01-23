@@ -15,14 +15,26 @@ using GagSpeak.Garbler.Translator;
 using GagSpeak.Interop;
 using GagSpeak.UI;                              // Contains classes for the UI of the GagSpeak plugin
 using GagSpeak.UI.Tabs.HelpPageTab;             // Contains classes for the help page tab in the GagSpeak plugin
-using GagSpeak.UI.GagListings;                  // Contains classes for the gag listings in the GagSpeak plugin
+using GagSpeak.UI.ComboListings;                  // Contains classes for the gag listings in the GagSpeak plugin
 using GagSpeak.UI.Tabs.GeneralTab;              // Contains classes for the general tab in the GagSpeak plugin
 using GagSpeak.UI.Tabs.WhitelistTab;            // Contains classes for the whitelist tab in the GagSpeak plugin
 using GagSpeak.UI.Tabs.ConfigSettingsTab;       // Contains classes for the config settings tab in the GagSpeak plugin
 using GagSpeak.UI.UserProfile;
+using GagSpeak.UI.Tabs.WardrobeTab;
+
+using GagSpeak.Services;
+using System;
+using Dalamud.IoC;
+using System.Reflection;
+using OtterGui.Services;
+using System.Linq;
+using System.Collections;
+using Penumbra.GameData.Structs;
+using Penumbra.GameData.Enums;
 
 // following namespace naming convention
 namespace GagSpeak.Services;
+
 
 /// <summary> This class is used to handle the services for the GagSpeak plugin. </summary>
 public static class ServiceHandler
@@ -33,13 +45,11 @@ public static class ServiceHandler
     /// <item><c>log</c><param name="log"> - The logger instance.</param></item>
     /// </list> </summary>
     /// <returns>The created service provider.</returns>
-    public static ServiceProvider CreateProvider(DalamudPluginInterface pi, Logger log) {
+    public static ServiceManager CreateProvider(DalamudPluginInterface pi, Logger log) {
         // introduce the logger to log any debug messages.
-        EventWrapper.ChangeLogger(log);
-        // Create a service collection (see Dalamud.cs, if confused about AddDalamud, that is what AddDalamud(pi) pulls from)
-        var services = new ServiceCollection()
-            .AddSingleton(log)
-            .AddDalamud(pi)
+        EventWrapperBase.ChangeLogger(log);
+        var services = new ServiceManager(log)
+            .AddExistingService(log)
             .AddChat()
             .AddData()
             .AddEvent()
@@ -48,17 +58,12 @@ public static class ServiceHandler
             .AddServiceClasses()
             .AddUi()
             .AddApi();
-        // return the built services provider in the form of a instanced service collection
-        return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
-    }
-
-    /// <summary> Adds the Dalamud services to the service collection.
-    /// <list type="bullet">
-    /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
-    /// <item><c>pi</c><param name="pi"> - The Dalamud plugin interface.</param></item> </list> </summary>
-    private static IServiceCollection AddDalamud(this IServiceCollection services, DalamudPluginInterface pi) {
-        // Add the dalamudservices to the service collection
-        new DalamudServices(pi).AddServices(services);
+        DalamudServices.AddServices(services, pi);
+        services.AddIServices(typeof(EquipItem).Assembly);
+        services.AddIServices(typeof(EquipSlot).Assembly);
+        services.AddIServices(typeof(GagSpeak).Assembly);
+        services.AddIServices(typeof(EquipFlag).Assembly);
+        services.CreateProvider();
         return services;
     }
 
@@ -66,7 +71,7 @@ public static class ServiceHandler
     /// <list type="bullet">
     /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
     /// </list> </summary>
-    private static IServiceCollection AddChat(this IServiceCollection services)
+    private static ServiceManager AddChat(this ServiceManager services)
         => services.AddSingleton<ChatManager>()
              .AddSingleton<ChatInputProcessor>(_ => {
                 // this shit is all a bit wild but its nessisary to handle our danger file stuff correctly.
@@ -90,7 +95,7 @@ public static class ServiceHandler
     /// <list type="bullet">
     /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
     /// </list> </summary>
-    private static IServiceCollection AddData(this IServiceCollection services)
+    private static ServiceManager AddData(this ServiceManager services)
         => services.AddSingleton<GagSpeakConfig>()
             .AddSingleton<PadlockIdentifier>();
 
@@ -98,16 +103,17 @@ public static class ServiceHandler
     /// <list type="bullet">
     /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
     /// </list> </summary>
-    private static IServiceCollection AddEvent(this IServiceCollection services)
+    private static ServiceManager AddEvent(this ServiceManager services)
         => services.AddSingleton<SafewordUsedEvent>()
                 .AddSingleton<InfoRequestEvent>()
-                .AddSingleton<LanguageChangedEvent>(); // idkwhy but this works fine without observable list event
+                .AddSingleton<LanguageChangedEvent>()
+                .AddSingleton<ItemAutoEquipEvent>();
 
     /// <summary> Adds the classes related to the core of the gagspeak garbler to the service collection
     /// <list type="bullet">
     /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
     /// </list> </summary>
-    private static IServiceCollection AddGarbleCore(this IServiceCollection services)
+    private static ServiceManager AddGarbleCore(this ServiceManager services)
         => services.AddSingleton<IpaParserEN_FR_JP_SP>()
                 .AddSingleton<IpaParserCantonese>()
                 .AddSingleton<IpaParserMandarian>()
@@ -115,13 +121,14 @@ public static class ServiceHandler
                 .AddSingleton<GagManager>();
 
 
-    private static IServiceCollection AddInterop(this IServiceCollection services)
-        => services.AddSingleton<GlamourerInterop>();
+    private static ServiceManager AddInterop(this ServiceManager services)
+        => services.AddSingleton<GlamourerInterop>()
+                .AddSingleton<GlamourerIpcFuncs>();
     /// <summary> Adds the classes identified as self-made services for the overarching service collection.
     /// <list type="bullet">
     /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
     /// </list> </summary>
-    private static IServiceCollection AddServiceClasses(this IServiceCollection services)
+    private static ServiceManager AddServiceClasses(this ServiceManager services)
         => services.AddSingleton<FrameworkManager>()
                 .AddSingleton<GagAndLockManager>()
                 .AddSingleton<MessageService>()
@@ -133,18 +140,20 @@ public static class ServiceHandler
                 .AddSingleton<HistoryService>()
                 .AddSingleton<InfoRequestService>()
                 .AddSingleton<SaveService>()
-                .AddSingleton<TimerService>();
+                .AddSingleton<TimerService>()
+                .AddSingleton<TextureService>();
 
     /// <summary> Adds the UI related classes to the service collection.
     /// <list type="bullet">
     /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
     /// </list> </summary>
-    private static IServiceCollection AddUi(this IServiceCollection services)
+    private static ServiceManager AddUi(this ServiceManager services)
         => services.AddSingleton<GagSpeakWindowManager>()
             .AddSingleton<GeneralTab>()
             .AddSingleton<WhitelistTab>()
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HelpPageTab>()
+            .AddSingleton<WardrobeTab>()
             .AddSingleton<MainWindow>()
             .AddSingleton<HistoryWindow>()
             .AddSingleton<UserProfileWindow>()
@@ -156,6 +165,6 @@ public static class ServiceHandler
     /// <list type="bullet">
     /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>
     /// </list> </summary>
-    private static IServiceCollection AddApi(this IServiceCollection services)
+    private static ServiceManager AddApi(this ServiceManager services)
         => services.AddSingleton<CommandManager>();
 }

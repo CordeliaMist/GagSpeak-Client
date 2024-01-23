@@ -11,8 +11,7 @@ public class BackupService
     private readonly DirectoryInfo           _configDirectory;
     private readonly IReadOnlyList<FileInfo> _fileNames;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BackupService"/> class.
+    /// <summary> Initializes a new instance of the <see cref="BackupService"/> class.
     /// <list type="bullet">
     /// <item><c>logger</c><param name="logger"> - The logger instance.</param></item>
     /// <item><c>fileNames</c><param name="fileNames"> - The file names service.</param></item>
@@ -23,8 +22,6 @@ public class BackupService
         _configDirectory = new DirectoryInfo(fileNames.ConfigDirectory);
         // Create the backup directory if it does not exist
         Backup.CreateAutomaticBackup(logger, _configDirectory, _fileNames);
-
-        GagSpeak.Log.Debug("[BackupService] SERVICE CONSUTRCTOR INITIALIZED");
     }
 
     /// <summary> Create a permanent backup with a given name for migrations. </summary>

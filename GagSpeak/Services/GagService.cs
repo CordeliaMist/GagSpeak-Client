@@ -55,8 +55,6 @@ public class GagService : IDisposable
 
         // invoke it to make sure debug shows correct data (idk how else to better do this at the moment)
         _languageChanged.Invoke();
-
-        GagSpeak.Log.Debug("[GagService] SERVICE CONSUTRCTOR INITIALIZED");
     }
 
     /// <summary> Unsubscribes from our subscribed event upon disposal </summary>

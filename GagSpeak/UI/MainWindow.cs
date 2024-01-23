@@ -10,6 +10,7 @@ using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.UI.Tabs.WhitelistTab;
 using GagSpeak.UI.Tabs.ConfigSettingsTab;
 using GagSpeak.UI.Tabs.HelpPageTab;
+using GagSpeak.UI.Tabs.WardrobeTab;
 
 namespace GagSpeak.UI;
 /// <summary> This class is used to handle the main window. </summary>
@@ -20,7 +21,8 @@ public class MainWindow : Window
         General         = 0,    // Where you select your gags and safewords and lock types. Put into own tab for future proofing beauty spam
         Whitelist       = 1,    // Where you can append peoples names to a whitelist, which is used to account for permissions on command usage.
         ConfigSettings  = 2,    // Where you can change the plugin settings, such as debug mode, and other things.
-        HelpPage        = 3     // Where you can find information on how to use the plugin, and how to get support.
+        Wardrobe        = 3,    // Where you can set what equips when what is worn & config automatic bind & lock options.
+        HelpPage        = 4     // Where you can find information on how to use the plugin, and how to get support.
     }
     private readonly    GagSpeakConfig      _config;
     private readonly    GagSpeakChangelog   _changelog;
@@ -28,6 +30,7 @@ public class MainWindow : Window
     public readonly     GeneralTab          General;
     public readonly     WhitelistTab        Whitelist;
     public readonly     ConfigSettingsTab   ConfigSettings;
+    public readonly     WardrobeTab         Wardrobe;
     public readonly     HelpPageTab         HelpPage;
     public              TabType             SelectTab = TabType.None;
 
@@ -43,14 +46,14 @@ public class MainWindow : Window
     /// <item><c>helpPageTab</c><param name="helpPageTab"> - The help page tab.</param></item>
     /// </list> </summary>
     public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general, GagSpeakChangelog changelog,
-    WhitelistTab whitelist, ConfigSettingsTab configsettings, HelpPageTab helpPageTab): base(GetLabel()) {
+    WhitelistTab whitelist, ConfigSettingsTab configsettings, HelpPageTab helpPageTab, WardrobeTab wardrobeTab): base(GetLabel()) {
         // let the user know if their direct chat garlber is still enabled upon launch
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
 
         // Next let's set the size of the window
         SizeConstraints = new WindowSizeConstraints() {
-            MinimumSize = new Vector2(500, 540),     // Minimum size of the window
+            MinimumSize = new Vector2(500, 525),     // Minimum size of the window
             MaximumSize = new Vector2(550, 1000)     // Maximum size of the window
         };
 
@@ -58,7 +61,9 @@ public class MainWindow : Window
         General = general;
         Whitelist = whitelist;
         ConfigSettings = configsettings;
+        Wardrobe = wardrobeTab;
         HelpPage = helpPageTab;
+
         
         // Below are the stuff besides the tabs that are passed through
         //_event     = @event;
@@ -70,6 +75,7 @@ public class MainWindow : Window
             general,
             whitelist,
             configsettings,
+            wardrobeTab,
             helpPageTab
         };
     }
@@ -84,7 +90,7 @@ public class MainWindow : Window
             _config.Save(); // FIND OUT HOW TO USE SaveConfig(); ACROSS CLASSES LATER.
         }
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 9f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 7.8f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
         ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
@@ -97,7 +103,7 @@ public class MainWindow : Window
         // In that same line...
         ImGui.SameLine();
         // And now have that button be for the Ko-Fi Link
-        if (ImGui.Button("Toss Cordy a thanks!")) {
+        if (ImGui.Button("Toss me a tip ♥")) {
             ImGui.SetTooltip( "Only if you want to though!");
             Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
         }
@@ -122,6 +128,7 @@ public class MainWindow : Window
             TabType.General         => General.Label,
             TabType.Whitelist       => Whitelist.Label,
             TabType.ConfigSettings  => ConfigSettings.Label,
+            TabType.Wardrobe        => Wardrobe.Label,
             TabType.HelpPage        => HelpPage.Label,
             _                       => ReadOnlySpan<byte>.Empty, // This label confuses me a bit. I think it is just a blank label?
         };
@@ -137,6 +144,7 @@ public class MainWindow : Window
         if (label == General.Label)         return TabType.General;
         if (label == Whitelist.Label)       return TabType.Whitelist;
         if (label == ConfigSettings.Label)  return TabType.ConfigSettings;
+        if (label == Wardrobe.Label)        return TabType.Wardrobe;
         if (label == HelpPage.Label)        return TabType.HelpPage;
         // @formatter:on
         return TabType.None;

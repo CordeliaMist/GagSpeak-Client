@@ -14,7 +14,7 @@ using OtterGui;
 using OtterGui.Classes;
 using GagSpeak.Data;
 using GagSpeak.UI.Helpers;
-using GagSpeak.UI.GagListings;
+using GagSpeak.UI.ComboListings;
 using GagSpeak.Chat;
 using GagSpeak.Chat.MsgEncoder;
 using GagSpeak.Services;
@@ -423,7 +423,7 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.Columns(2,"Password Divider", false);
             ImGui.SetColumnWidth(0, tempwidth);
             Enum.TryParse(_lockLabel, out GagPadlocks parsedLockType);
-            if(_config._whitelistPadlockIdentifier.DisplayPasswordField(parsedLockType)) {
+            if(_config.whitelistPadlockIdentifier.DisplayPasswordField(parsedLockType)) {
                 // display the password field
             } else {
                 ImGui.NewLine();

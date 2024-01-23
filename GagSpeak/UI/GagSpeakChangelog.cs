@@ -19,10 +19,10 @@ public class GagSpeakChangelog
         _config   = config; // initialize the config in our constructor
         Changelog = new Changelog("GagSpeak Changelog", ConfigData, Save); // initialize the changelog
         // what displays inside the change log
-        Add1_0_1_3(Changelog);
-        Add0_9_9_10(Changelog); 
-        Add0_9_9_0(Changelog); 
         Add0_9_7_0(Changelog);
+        Add0_9_9_0(Changelog); 
+        Add0_9_9_10(Changelog); 
+        Add1_0_1_3(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>

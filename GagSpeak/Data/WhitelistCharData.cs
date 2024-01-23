@@ -23,13 +23,7 @@ public class WhitelistCharData {
     public List<DateTimeOffset>         selectedGagPadlocksTimer { get; set; }    // stores the timespan left until unlock of the player.
     public List<string>                 selectedGagPadlocksAssigner { get; set; } // who assigned the padlocks, if any
     
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WhitelistCharData"/> class.
-    /// <list type="bullet">
-    /// <item><c>_name</c><param name="_name"> - The name of the character.</param></item>
-    /// <item><c>_homeworld</c><param name="_homeworld"> - The homeworld of the character.</param></item>
-    /// <item><c>_relationshipStatus</c><param name="_relationshipStatus"> - The relationship status of the character.</param></item>
-    /// </list> </summary>
+    /// <summary> Initializes a new instance of the <see cref="WhitelistCharData"/> class. </summary>
     public WhitelistCharData(string _name, string _homeworld, string _relationshipStatus)
     {
         this.name = _name;

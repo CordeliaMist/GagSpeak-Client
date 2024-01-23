@@ -13,7 +13,7 @@ using GagSpeak.Services;
 using GagSpeak.UI.Helpers;
 using GagSpeak.Data;
 
-namespace GagSpeak.UI.GagListings;
+namespace GagSpeak.UI.ComboListings;
 /// <summary> This class is used to draw the gag listings. </summary>
 public class GagListingsDrawer : IDisposable
 {
@@ -24,6 +24,7 @@ public class GagListingsDrawer : IDisposable
     private             GagService              _gagService;                    // used to get the gag service
     private             TimerService            _timerService;                  // used to get the timer service
     private readonly    GagSpeakConfig          _config;                        // used to get the config
+    private readonly    ItemAutoEquipEvent      _itemAutoEquipEvent;            // used to get the item auto equip event
     private             float                   _requiredComboWidthUnscaled;    // used to determine the required width of the combo
     private             float                   _requiredComboWidth;            // used to determine the width of the combo
     private             string                  _buttonLabel = "";              // used to display the button label
@@ -40,13 +41,14 @@ public class GagListingsDrawer : IDisposable
     /// <item><c>lockManager</c><param name="lockManager"> - The lock manager.</param></item>
     /// </list> </summary>
     public GagListingsDrawer(GagSpeakConfig config, DalamudPluginInterface dalamudPluginInterface, 
-    TimerService timerService, GagAndLockManager lockManager, GagService gagService)
+    TimerService timerService, GagAndLockManager lockManager, GagService gagService, ItemAutoEquipEvent itemAutoEquipEvent)
     {
         _config = config;
         _pluginInterface = dalamudPluginInterface;
         _timerService = timerService;
         _lockManager = lockManager;
         _gagService = gagService;
+        _itemAutoEquipEvent = itemAutoEquipEvent;
         // draw textures for the gag and padlock listings //
         textureWrap1 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.selectedGagTypes[0]}.png"));
         textureWrap2 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.selectedGagTypes[1]}.png"));
@@ -93,7 +95,7 @@ public class GagListingsDrawer : IDisposable
     public void DrawGagAndLockListing(int ID, GagSpeakConfig config, GagTypeFilterCombo _gagTypeFilterCombo, GagLockFilterCombo _gagLockFilterCombo,
     int layerIndex, string displayLabel, int width) {
         // if we are locked, set the locked to true
-        if(_config._isLocked[layerIndex]) {
+        if(_config.isLocked[layerIndex]) {
             ImGui.BeginDisabled();
         }
         // push our styles
@@ -130,30 +132,30 @@ public class GagListingsDrawer : IDisposable
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + ImGui.GetFrameHeight() / 1.4f);
             }
             // Draw the combos
-            if (DrawGagTypeItemCombo(ID, config, layerIndex, _config._isLocked[layerIndex], width, _gagTypeFilterCombo)) {}
+            if (DrawGagTypeItemCombo(ID, config, layerIndex, _config.isLocked[layerIndex], width, _gagTypeFilterCombo)) {}
             // Adjust the width of the padlock dropdown to 3/4 of the original width
             int newWidth = (int)(width * 0.75f);
-            if (DrawGagLockItemCombo(ID, config, layerIndex, _config._isLocked[layerIndex], newWidth, _gagLockFilterCombo)) {}
+            if (DrawGagLockItemCombo(ID, config, layerIndex, _config.isLocked[layerIndex], newWidth, _gagLockFilterCombo)) {}
             // end our disabled fields, if any, here
-            if(_config._isLocked[layerIndex]) { ImGui.EndDisabled(); } // end the disabled part here, if it was disabled
+            if(_config.isLocked[layerIndex]) { ImGui.EndDisabled(); } // end the disabled part here, if it was disabled
             
             // get the type of button label that will display
-            _buttonLabel = _config._isLocked[layerIndex] ? "Unlock" : "Lock"; // we want to display unlock button if we are currently locked
+            _buttonLabel = _config.isLocked[layerIndex] ? "Unlock" : "Lock"; // we want to display unlock button if we are currently locked
             ImGui.SameLine();
             if (ImGui.Button(_buttonLabel, new Vector2(-1, 0))) {
                 _lockManager.ToggleLock(layerIndex);
             }
             // Display the password fields based on the selected padlock type
-            if(_config._padlockIdentifier[layerIndex].DisplayPasswordField(_config._padlockIdentifier[layerIndex]._padlockType)) {
+            if(_config.padlockIdentifier[layerIndex].DisplayPasswordField(_config.padlockIdentifier[layerIndex]._padlockType)) {
                 _adjustDisp[layerIndex] = true;
             } else {
                 _adjustDisp[layerIndex] = false;
             }
             // display the remaining time if we have a timer for this and we are locked
-            if(_config._isLocked[layerIndex] && 
-            (_config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
-            _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock ||
-            _config._padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock)) {
+            if(_config.isLocked[layerIndex] && 
+            (_config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
+            _config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock ||
+            _config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock)) {
                 _config.displaytext[layerIndex] = _timerService.GetRemainingTimeForPadlock(layerIndex);
             }
         }
@@ -202,7 +204,13 @@ public class GagListingsDrawer : IDisposable
         using var disabled = ImRaii.Disabled(locked);
         // draw the thing
         var dummy = "Dummy"; // used as filler for combos that dont need labels
+        var prevItem = config.selectedGagTypes[layerIndex]; // get the previous item
         combo.Draw(ID, ref dummy, config.selectedGagTypes, layerIndex, width);
+        
+        if(prevItem != config.selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
+            GagSpeak.Log.Debug($"[GagListingsDrawer]: Personal GagType Changed, firing itemAuto-Equip event for gag {config.selectedGagTypes[layerIndex]}");
+            _itemAutoEquipEvent.Invoke(_config.selectedGagTypes[layerIndex]);
+        }
 
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {

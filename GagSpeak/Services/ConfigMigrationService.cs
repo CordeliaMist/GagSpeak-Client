@@ -11,24 +11,16 @@ public class ConfigMigrationService
     private             GagSpeakConfig  _config = null!; // Configuration for the GagSpeak application
     private             JObject         _data   = null!; // Data for the GagSpeak application
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ConfigMigrationService"/> class.
-    /// <list type="bullet">
-    /// <item><c>saveService</c><param name="saveService"> - The save service.</param></item>
-    /// <item><c>backupService</c><param name="backupService"> - The backup service.</param></item>
-    /// </list> </summary>
+    /// <summary> Initializes a new instance of the <see cref="ConfigMigrationService"/> class. </summary>
     public ConfigMigrationService(SaveService saveService, BackupService backupService) {
         _saveService         = saveService;
         _backupService       = backupService;
-        GagSpeak.Log.Debug("[ConfigMigrationService] SERVICE CONSUTRCTOR INITIALIZED");
     }
 
-    /// <summary>
-    /// Migrate the config.
+    /// <summary> Migrate the config.
     /// <list type="bullet">
     /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
     /// </list> </summary>
-    /// <returns>The migrated config.</returns>
     public void Migrate(GagSpeakConfig config)
     {
         // Set the config to the provided config
@@ -43,10 +35,7 @@ public class ConfigMigrationService
         MigrateV2To4();
     }
 
-    /// <summary>
-    /// Migration from v1 to v2.
-    /// </summary>
-    /// <returns>The migrated config.</returns>
+    /// <summary> Migration from v1 to v2. </summary>
     private void MigrateV1To2() {
         // Migrate from v1 to v2 if version is more than 1
         if (_config.Version > 1)
@@ -57,10 +46,7 @@ public class ConfigMigrationService
         _config.Version = 2;
     }
 
-    /// <summary>
-    /// Migration from v2 to v4.
-    /// </summary>
-    /// <returns>The migrated config.</returns>
+    /// <summary> Migration from v2 to v4. </summary>
     private void MigrateV2To4() {
         // Migrate from v2 to v4 if version is more than 4
         if (_config.Version > 4)

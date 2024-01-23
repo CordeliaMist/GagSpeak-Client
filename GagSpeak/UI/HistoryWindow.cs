@@ -5,7 +5,7 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using GagSpeak.Services;
-using GagSpeak.UI.GagListings;
+using GagSpeak.UI.ComboListings;
 
 namespace GagSpeak.UI;
 /// <summary> This class is used to handle the history window. </summary>

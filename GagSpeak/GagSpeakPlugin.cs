@@ -1,11 +1,11 @@
 ﻿using System.Reflection;  // Without this, the Version string will not be able to fetch from the assembly class
 using Dalamud.Plugin;     // Used for the IDalamudPlugin interface
-using Microsoft.Extensions.DependencyInjection; // Used in the creation of our service collection, and so must be included when we call to get our services
 using OtterGui.Classes;   // For the messageService, which is used to display the changelog
 using OtterGui.Log;       // for our plugin logger
 using GagSpeak.UI;        // REQUIRED for our plugins GagSpeakWindowManager requiredservices to be fetched
 using GagSpeak.Services;  // REQUIRED for our plugins CommandManager requiredservices to be fetched
 using GagSpeak.Chat;      // REQUIRED for our plugins ChatManager requiredservices to be fetched
+using GagSpeak.Interop;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
 
 // The main namespace for the plugin, aka the same name of our plugin, the highest level
 namespace GagSpeak;
@@ -25,13 +25,9 @@ public class GagSpeak : IDalamudPlugin
   public static MessageService Messager { get; private set; } = null!; // initialize the messager service, part of otterGui services.
   
   /// <summary> the service provider for the plugin </summary>
-  private readonly ServiceProvider _services; 
+  private readonly ServiceManager _services; 
 
-  /// <summary>
-  /// Initializes a new instance of the <see cref="GagSpeak"/> class.
-  /// <list type="bullet">
-  /// <item><c>pluginInt</c><param name="pluginInt"> - The Dalamud plugin interface.</param></item>
-  /// </list> </summary>
+  /// <summary> The primary plugin constructor
   public GagSpeak(DalamudPluginInterface pluginInt)
   {
       // Initialize the services in the large Service collection. (see ServiceHandler.cs)
@@ -39,7 +35,7 @@ public class GagSpeak : IDalamudPlugin
       try
       {
           _services = ServiceHandler.CreateProvider(pluginInt, Log); // Initialize the services in the large Service collection. (see ServiceHandler.cs)
-          Messager = _services.GetRequiredService<MessageService>(); // Initialize messager service here
+          Messager = _services.GetService<MessageService>(); // Initialize messager service here
 
           /* Big Knowledge Info Time:
            The services we initialize here, are the classes that are not called upon by any other class in our Gagspeak plugin.
@@ -49,11 +45,12 @@ public class GagSpeak : IDalamudPlugin
            As for why it invokes the safewordcommand used and not the info request event, idk, im still figuring that out.
            All I know is that if you have a class struggling to initialize, you can call it here.
           */ 
-          _services.GetRequiredService<GagSpeakWindowManager>(); // Initialize the UI
-          _services.GetRequiredService<CommandManager>(); // Initialize the command manager
-          _services.GetRequiredService<ChatManager>(); // Initialize the OnChatMessage
-          _services.GetRequiredService<ChatInputProcessor>(); // Initialize the chat message detour
-          _services.GetRequiredService<InfoRequestService>(); // Because the info request service is being a stubborn bitch and needs to subscribe to events and not be lazy.
+          _services.GetService<GagSpeakWindowManager>(); // Initialize the UI
+          _services.GetService<CommandManager>(); // Initialize the command manager
+          _services.GetService<ChatManager>(); // Initialize the OnChatMessage
+          _services.GetService<ChatInputProcessor>(); // Initialize the chat message detour
+          _services.GetService<InfoRequestService>(); // Because the info request service is being a stubborn bitch and needs to subscribe to events and not be lazy.
+          _services.GetService<GlamourerIpcFuncs>();  // force loading here because nhothing else loads it so it is initialized as lazy
           Log.Information($"GagSpeak v{Version} loaded successfully."); // Log the version to the /xllog menu
       }
       catch

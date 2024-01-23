@@ -8,6 +8,10 @@ using OtterGui;
 using OtterGui.Raii;
 using Dalamud.Plugin.Services;
 using Dalamud.Interface.Colors;
+using Penumbra.GameData.Enums;
+using Penumbra.GameData.Structs;
+using GagSpeak.Services;
+using Dalamud.Interface.Utility;
 
 namespace GagSpeak.UI.Helpers;
 
@@ -27,6 +31,29 @@ public static class UIHelpers
         using var pushedFont = ImRaii.PushFont(font);
         // using var pushedColor = ImRaii.PushColor(ImGuiCol.Text, Color(color ?? new Vector4(1, 1, 1, 1)), color != null);
         ImGui.TextWrapped(text);
+    }
+
+
+    public static void DrawIcon(this EquipItem item, TextureService textures, Vector2 size, EquipSlot slot)
+    {
+        var isEmpty = item.PrimaryId.Id == 0;
+        var (ptr, textureSize, empty) = textures.GetIcon(item, slot);
+        if (empty)
+        {
+            var (bgColor, tint) = isEmpty
+                ? (ImGui.GetColorU32(ImGuiCol.FrameBg), new Vector4(0.1f,       0.1f, 0.1f, 0.5f))
+                : (ImGui.GetColorU32(ImGuiCol.FrameBgActive), new Vector4(0.3f, 0.3f, 0.3f, 0.8f));
+            var pos = ImGui.GetCursorScreenPos();
+            ImGui.GetWindowDrawList().AddRectFilled(pos, pos + size, bgColor, 5 * ImGuiHelpers.GlobalScale);
+            if (ptr != nint.Zero)
+                ImGui.Image(ptr, size, Vector2.Zero, Vector2.One, tint);
+            else
+                ImGui.Dummy(size);
+        }
+        else
+        {
+            ImGuiUtil.HoverIcon(ptr, textureSize, size);
+        }
     }
 
 

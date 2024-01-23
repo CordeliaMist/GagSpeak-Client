@@ -34,8 +34,6 @@ public class HistoryService {
         _processTranslationsTimer.Elapsed += this.ProcessTranslationsTimerOnElapsed;
         // start the timer
         _processTranslationsTimer.Start();
-
-        GagSpeak.Log.Debug("[HistoryService] SERVICE CONSUTRCTOR INITIALIZED");
     }
 
     /// <summary>

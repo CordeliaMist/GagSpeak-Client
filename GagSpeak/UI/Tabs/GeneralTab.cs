@@ -6,7 +6,7 @@ using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 using OtterGui;
 using OtterGui.Widgets;
-using GagSpeak.UI.GagListings;
+using GagSpeak.UI.ComboListings;
 using GagSpeak.Services;
 using GagSpeak.Data;
 

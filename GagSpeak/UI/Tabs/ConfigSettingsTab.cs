@@ -10,7 +10,7 @@ using Dalamud.Interface.Internal;
 using GagSpeak.Data;
 using GagSpeak.Services;
 using GagSpeak.UI.Helpers;
-using GagSpeak.UI.GagListings;
+using GagSpeak.UI.ComboListings;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -73,8 +73,7 @@ public class ConfigSettingsTab : ITab
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         ImGui.Columns(2,"ConfigColumns", false);
-        // See "setpanel.cs" for other UIHelpers.Checkbox options that base off the above ^^
-        ImGui.Text("GagSpeak Configuration:");
+        ImGui.SetColumnWidth(0, ImGui.GetWindowWidth() / 2 - 10);
         // UIHelpers.Checkbox will dictate if only players from their friend list are allowed to use /gag (target) commands on them.
         UIHelpers.Checkbox("Only Friends", "Only processes process /gag (target) commands from others if they are on your friend list.\n" +
             "(Does NOT need to be enabled for you to use /gag (target) commands on them)", _config.friendsOnly, v => _config.friendsOnly = v, _config);
@@ -86,12 +85,23 @@ public class ConfigSettingsTab : ITab
             "(Does NOT need to be enabled for you to use /gag (target) commands on them)", _config.whitelistOnly, v => _config.whitelistOnly = v, _config);
         // only allow UIHelpers.Checkbox interaction iif _config.LockDirectChatGarbler is false
         if(_config.LockDirectChatGarbler == true) {ImGui.BeginDisabled();}
-        UIHelpers.Checkbox("DirectChatGarblerMode", "Automatically translate chat messages in all enabled channels to gagspeak automatically. (WITHOUT commands).\n" +
-            "This does make use of chat to server interception. Even though now it is ensured safe, always turn this OFF after any patch or game update, until the plug curator says it's safe",
-            _config.DirectChatGarbler, v => _config.DirectChatGarbler = v, _config);
+        UIHelpers.Checkbox("Direct Chat Garbler", "Automatically translate chat messages in all enabled channels to gagspeak automatically. "+
+            "(WITHOUT commands).\nThis does make use of chat to server interception. Even though now it is ensured safe, always turn this OFF "+
+            "after any patch or game update, until the plug curator says it's safe", _config.DirectChatGarbler, v => _config.DirectChatGarbler = v, _config);
         if(_config.LockDirectChatGarbler == true) {ImGui.EndDisabled();}
-        UIHelpers.Checkbox("Wardrobe Control [WIP]", "Allows plugin to force gear onto you via glamourer when certain gags are equipped.\n[Glamourer currently does"+
-        "not allow this and thus it is a placeholder for the future]", _config.GrantWardrobeControl, v => _config.GrantWardrobeControl = v, _config);
+        // UiHelpers.Checkbox will dictate if any of the wardrobe component of gagspeak is enabled or not.
+        UIHelpers.Checkbox("Enable Wardrobe", "Allows GagSpeak to execute any components of the plugin that interact with "+
+            "glamourer. Including Restraint locking & Item Auto-Equip.\n PLEASE NOTE: Even if enabled, only someone who you have a pet "+
+            "or slave relation to can use these features on you.", _config.enableWardrobe, v => _config.enableWardrobe = v, _config);
+        // UiHelpers.Checkbox will dictate if Item Auto-Equip has permission to activate (will likely render enableWardrobe absolete).
+        UIHelpers.Checkbox("Allow Item Auto-Equip", "Overrides all wardrobe gag items Auto-Equip setting, Acting as an Override for a fast "+
+        "and quick disable for your privacy needs.", _config.allowItemAutoEquip, v => _config.allowItemAutoEquip = v, _config);
+        // UiHelpers.Checkbox will dictate if Anyone who is your Mistress that you are a slave to, will have access to lock any of your restraint sets on.
+        UIHelpers.Checkbox("Allow Restraint Locking [WIP]", "Anyone who is your Mistress that you are a slave to, will have access to lock your "+
+            "restraint set on you.", _config.allowRestraintLocking, v => _config.allowRestraintLocking = v, _config);
+        // UiHelpers.Checkbox will dictate if Anyone who is your Mistress that you are a slave to, will have full control over your restraint sets & locking/unlocking
+        UIHelpers.Checkbox("Allow Restraint Control [WIP]", "Anyone who is your Mistress that you are a slave to, will have full control over your "+
+            "restraint sets & locking/unlocking.", _config.surrenderRestraintControl, v => _config.surrenderRestraintControl = v, _config);
         
         // Create the language dropdown
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
@@ -116,10 +126,9 @@ public class ConfigSettingsTab : ITab
             SetConfigDialectFromDialect(_activeDialect);
             _config.Save();
         }
-        ImGui.SameLine(); ImGui.Text("Language");
-
+        ImGui.SameLine(); 
         // Create the dialect dropdown
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X-25);
         string[] dialects = _languages[_config.language];
         string prevDialect = _activeDialect; // to only execute code to update data once it is changed
         if (ImGui.BeginCombo("##Dialect", _activeDialect)) {
@@ -139,7 +148,6 @@ public class ConfigSettingsTab : ITab
             SetConfigDialectFromDialect(_activeDialect);
             _config.Save();
         }
-        ImGui.SameLine(); ImGui.Text("Dialect");
 
         // channel listings
         ImGui.NextColumn();

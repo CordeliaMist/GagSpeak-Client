@@ -32,8 +32,6 @@ public class InfoRequestService : IDisposable
         _infoRequestEvent = infoRequestEvent;
         // subscribe to the event
         _infoRequestEvent.InfoRequest += SendInformationPartOne;
-        
-        GagSpeak.Log.Debug("[InfoRequestService] SERVICE CONSUTRCTOR INITIALIZED");
     }
 
     public void Dispose() {
@@ -44,13 +42,13 @@ public class InfoRequestService : IDisposable
     private void SendInformationPartOne(object sender, InfoRequestEventArgs e) {
         GagSpeak.Log.Debug("[Whitelist]: Received Player Info Request, Verifying if player is in your whitelist and we are accepting info requests at the moment...");
         // check if the player is in your whitelist
-        string senderName = _config.SendInfoName.Substring(0, _config.SendInfoName.IndexOf('@'));
+        string senderName = _config.sendInfoName.Substring(0, _config.sendInfoName.IndexOf('@'));
         if (_config.Whitelist.Any(x => x.name == senderName)) {
             //_config.acceptingInfoRequests = false;
             GagSpeak.Log.Debug("[Whitelist]: Player is in your whitelist, sending info...");
         } else {
             GagSpeak.Log.Debug("[Whitelist]: Player is not in your whitelist, ignoring request...");
-            _config.SendInfoName = "";
+            _config.sendInfoName = "";
             _config.acceptingInfoRequests = true;
             return;
         }
@@ -64,7 +62,7 @@ public class InfoRequestService : IDisposable
         // send the second half
         GagButtonHelpers.SendInfoToPlayer2(_config, _chatManager, _gagMessages, _clientState, _chatGui);
         // can set it back to blank after we do the sendinfoplayer2
-        _config.SendInfoName = "";
+        _config.sendInfoName = "";
         // set up a timer that triggers the second half when expired
         _timerService.StartTimer("InfoRequestTimer", "4s", 1000, () => { _config.acceptingInfoRequests = true; });
     }

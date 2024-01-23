@@ -83,7 +83,6 @@ public class CommandManager : IDisposable // Our main command list manager
         if (_config.DirectChatGarbler) {
             _chat.PrintError("Direct Chat Garbler is still enabled. If you don't want this on, remember to disable it!");
         }
-        GagSpeak.Log.Debug("[Command Manager] Constructor Finished Initializing");
     }
 
     // Dispose of the command manager
@@ -117,6 +116,12 @@ public class CommandManager : IDisposable // Our main command list manager
                 return;
             case "debug":
                 _debugWindow.Toggle();     // when [/gagspeak debug] is typed
+                return;
+            case "startdebugging":
+                _debugWindow.Toggle();
+                _mainWindow.Toggle();
+                _realChatInteraction.SendMessage("/glamourer");
+                _realChatInteraction.SendMessage("/xllog");
                 return;
             case "":
                 _mainWindow.Toggle(); // when [/gagspeak] is typed
@@ -607,6 +612,7 @@ public class CommandManager : IDisposable // Our main command list manager
         _chat.Print(new SeStringBuilder().AddCommand("showlist", "Displays the list of padlocks or gags. Use without arguments for help.").BuiltString);
         _chat.Print(new SeStringBuilder().AddCommand("setmode", "Sets plugin mode to domme or sub. Has Cooldown time. Use without arguments for help.").BuiltString);
         _chat.Print(new SeStringBuilder().AddCommand("history", "Displays the history window.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddCommand("startdebugging", "Opens everything for debugging.").BuiltString);
         return true;
     }
 

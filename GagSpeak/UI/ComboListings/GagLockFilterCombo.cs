@@ -5,7 +5,7 @@ using System.Linq;
 using GagSpeak.Data;
 using GagSpeak.Events;
 
-namespace GagSpeak.UI.GagListings;
+namespace GagSpeak.UI.ComboListings;
 
 /// <summary> This class is used to handle the gag lock filter combo box. </summary>
 public sealed class GagLockFilterCombo
@@ -71,7 +71,7 @@ public sealed class GagLockFilterCombo
         try
         {
             ImGui.SetNextItemWidth(width);
-            using( var gagLockCombo = ImRaii.Combo($"##{ID}_Enum",  _config._padlockIdentifier[layerIndex]._padlockType.ToString(), 
+            using( var gagLockCombo = ImRaii.Combo($"##{ID}_Enum",  _config.padlockIdentifier[layerIndex]._padlockType.ToString(), 
             ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) {
                 if( gagLockCombo ) { // Assign it an ID if combo is sucessful.
                     // add the popup state
@@ -80,7 +80,7 @@ public sealed class GagLockFilterCombo
 
                     foreach (var item in Enum.GetValues(typeof(GagPadlocks)).Cast<GagPadlocks>()) {
                         if (ImGui.Selectable(item.ToString(), listing[layerIndex] == item)) {
-                            _config._padlockIdentifier[layerIndex]._padlockType = item; // update the padlock identifier label
+                            _config.padlockIdentifier[layerIndex]._padlockType = item; // update the padlock identifier label
                             _comboSearchText = string.Empty;
                             ImGui.CloseCurrentPopup();
                             _config.Save();

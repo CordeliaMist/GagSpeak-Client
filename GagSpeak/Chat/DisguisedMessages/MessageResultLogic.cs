@@ -6,7 +6,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using OtterGui.Classes;
 using GagSpeak.Data;
-using GagSpeak.UI.GagListings;
+using GagSpeak.UI.ComboListings;
 using GagSpeak.UI.Helpers;
 using GagSpeak.Services;
 
@@ -143,7 +143,7 @@ public class MessageResultLogic
             string[] nameParts = decodedMessage[4].Split(' ');
             decodedMessage[4] = nameParts[0] + " " + nameParts[1];
             // if the lock type is a mistress padlock, make sure the assigner is a mistress
-            _config._padlockIdentifier[layer-1].SetType(parsedLockType); // set the type of the padlock
+            _config.padlockIdentifier[layer-1].SetType(parsedLockType); // set the type of the padlock
             _lockManager.Lock((layer-1), decodedMessage[4], decodedMessage[3], decodedMessage[5], playerPayload.PlayerName);
             // if we reached this point, it means we sucessfully locked the layer
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{decodedMessage[4]} locked your " +
@@ -448,7 +448,7 @@ public class MessageResultLogic
             // see if they exist
             if(playerInWhitelist != null) {
                 // they are in our whitelist, so set our information sender to the players name.
-                _config.SendInfoName = playerName + "@" + world;
+                _config.sendInfoName = playerName + "@" + world;
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is requesting an update on your info for the profile viewer." +
                 "Providing Over the next 3 Seconds.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");

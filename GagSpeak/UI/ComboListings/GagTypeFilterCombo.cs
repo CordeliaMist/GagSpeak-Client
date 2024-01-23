@@ -9,7 +9,7 @@ using GagSpeak.Events;
 using GagSpeak.Data;
 using GagSpeak.Services;
 
-namespace GagSpeak.UI.GagListings;
+namespace GagSpeak.UI.ComboListings;
 
 /// <summary> This class is used to handle the gag type filter combo box. </summary>
 public sealed class GagTypeFilterCombo 
@@ -72,7 +72,9 @@ public sealed class GagTypeFilterCombo
                     // draw list
                     foreach( var item in _gagTypes ) { // We will draw out one selectable for each item.
                         if( ImGui.Selectable( item._gagName, item._gagName == listing[layerIndex] ) ) { // If our item is selected, set it and break
-                            if(isDummy) { listing[layerIndex] = item._gagName; } // update data (if for generaltab)
+                            if(isDummy) { 
+                                listing[layerIndex] = item._gagName;
+                            } // update data (if for generaltab)
                             label = item._gagName; // update label
                             _comboSearchText = string.Empty;
                             _gagTypes = _gagService._gagTypes;
