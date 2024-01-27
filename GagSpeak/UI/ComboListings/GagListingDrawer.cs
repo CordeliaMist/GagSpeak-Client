@@ -209,12 +209,18 @@ public class GagListingsDrawer : IDisposable
         
         if(prevItem != config.selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
             GagSpeak.Log.Debug($"[GagListingsDrawer]: Personal GagType Changed, firing itemAuto-Equip event for gag {config.selectedGagTypes[layerIndex]}");
-            _itemAutoEquipEvent.Invoke(_config.selectedGagTypes[layerIndex]);
+            _itemAutoEquipEvent.Invoke(_config.selectedGagTypes[layerIndex], "self");
         }
 
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                config.selectedGagTypes[layerIndex] = _gagService._gagTypes.First()._gagName; // to the first option, none
+                // get gagtype before clear
+                var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == config.selectedGagTypes[layerIndex]);
+                // clear the gag item from the selectedGagTypes list, resetting it to none
+                config.selectedGagTypes[layerIndex] = _gagService._gagTypes.First()._gagName;
+                // reset the _wasEquippedBy to empty
+                config.gagEquipData[gagType]._wasEquippedBy = "";
+                // save config
                 _config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");

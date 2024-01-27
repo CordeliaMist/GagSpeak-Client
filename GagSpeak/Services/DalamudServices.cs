@@ -18,6 +18,7 @@ public class DalamudServices {
 		services.AddDalamudService<IChatGui>(pi);				// For interfacing with the chat
 		services.AddDalamudService<IClientState>(pi);			// For interfacing with the client state, getting player info, etc.
 		services.AddDalamudService<ICommandManager>(pi);		// For interfacing with commands
+		services.AddDalamudService<ICondition>(pi);		// For interfacing with the plugin configuration
 		services.AddDalamudService<IDataManager>(pi);			// for parsing object data
 		services.AddDalamudService<IFramework>(pi);				// For interfacing with the dalamud framework (scheduler, timings, etc.)
 		services.AddDalamudService<IGameInteropProvider>(pi);	// helps with detouring the chat input for our plugin

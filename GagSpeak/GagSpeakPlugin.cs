@@ -5,7 +5,8 @@ using OtterGui.Log;       // for our plugin logger
 using GagSpeak.UI;        // REQUIRED for our plugins GagSpeakWindowManager requiredservices to be fetched
 using GagSpeak.Services;  // REQUIRED for our plugins CommandManager requiredservices to be fetched
 using GagSpeak.Chat;      // REQUIRED for our plugins ChatManager requiredservices to be fetched
-using GagSpeak.Interop;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
+using GagSpeak.Interop;
+using GagSpeak.Utility;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
 
 // The main namespace for the plugin, aka the same name of our plugin, the highest level
 namespace GagSpeak;
@@ -51,6 +52,7 @@ public class GagSpeak : IDalamudPlugin
           _services.GetService<ChatInputProcessor>(); // Initialize the chat message detour
           _services.GetService<InfoRequestService>(); // Because the info request service is being a stubborn bitch and needs to subscribe to events and not be lazy.
           _services.GetService<GlamourerIpcFuncs>();  // force loading here because nhothing else loads it so it is initialized as lazy
+          _services.GetService<CharaDataHelpers>(); // get the charahandler
           Log.Information($"GagSpeak v{Version} loaded successfully."); // Log the version to the /xllog menu
       }
       catch

@@ -149,6 +149,8 @@ public class CommandManager : IDisposable // Our main command list manager
                 _config.selectedGagPadlocks.IsSafewordCommandExecuting = true;
                 // remove all data
                 for (int layerIndex = 0; layerIndex < _config.selectedGagTypes.Count; layerIndex++) {
+                    var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _config.selectedGagTypes[layerIndex]);
+                    _config.gagEquipData[gagType]._wasEquippedBy = "";
                     _config.selectedGagTypes[layerIndex] = "None";
                     _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None;
                     _config.selectedGagPadlocksPassword[layerIndex] = "";
@@ -187,7 +189,7 @@ public class CommandManager : IDisposable // Our main command list manager
             foreach (var padlock in padlockTypes) { _chat.Print(new SeStringBuilder().AddBlue($"    》{padlock}").BuiltString); }
             return true;
         } else if (subCommand == "gags") {
-            _chat.Print("Displaying gaglist will come soon! Need to make sure it is safe to print that much text first!");
+            _chat.Print("List of Gags is very long, to view them easily, view the list in the Wardrobe Gag Storage Compartment!");
             return true;
         } else {
             _chat.Print("Invalid argument. Usage: /gagspeak showlist [padlocks/gags]"); return false;

@@ -170,7 +170,7 @@ public class GeneralTab : ITab, IDisposable
                 ImGui.EndDisabled();
                 ImGui.Text($"[{(_config.InDomMode? "Dom" : "Sub")}] Swap Cooldown: {_timerService.remainingTimes.GetValueOrDefault("RoleSwitchCooldown", "N/A")}");
             }
-        } // end our table
+        } 
         // if we used our safeword
         if(_config.SafewordUsed) {
             ImGui.SameLine();
@@ -180,6 +180,7 @@ public class GeneralTab : ITab, IDisposable
 
         // disable this interactability if our safeword is on cooldown
         if(_config.SafewordUsed) { ImGui.BeginDisabled(); }
+        
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
         int width2 = (int)(ImGui.GetContentRegionAvail().X / 2);

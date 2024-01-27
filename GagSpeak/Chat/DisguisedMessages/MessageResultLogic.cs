@@ -260,7 +260,7 @@ public class MessageResultLogic
         if (!_gagService._gagTypes.Any(gag => gag._gagName == gagName) && _config.selectedGagTypes[layer-1] != "None") {
             isHandled = true; return LogError("[MsgResultLogic]: Invalid gag type.");}
         // if we make it here, apply the gag
-        _lockManager.ApplyGag(layer-1, decodedMessage[2]);
+        _lockManager.ApplyGag(layer-1, decodedMessage[2], decodedMessage[4]);
         // send sucessful message to chat
         string playerNameWorld = decodedMessage[4];
         string[] parts = playerNameWorld.Split(' ');

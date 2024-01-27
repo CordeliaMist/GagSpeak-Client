@@ -47,6 +47,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          int                                         ProcessTranslationInterval { get; set; } = 300000;      // current process intervals for the history
     public          int                                         TranslationHistoryMax { get; set; } = 30;               // Gets or sets max number of translations stored in history
     public          MainWindow.TabType                          SelectedTab { get; set; } = MainWindow.TabType.General; // Default to the general tab
+    public          bool                                        viewingRestraintCompartment { get; set; } = false;            // Is viewing the restraint shelf tab in wardrobe?
     private         List<WhitelistCharData>                     whitelist = new List<WhitelistCharData>();              // appears to be baseline for whitelist
     public          List<WhitelistCharData>                     Whitelist { get=>whitelist; set=>whitelist = value; }   // Note sure why, document later
     public          string                                      sendInfoName = "";                                      // Name of the person you are sending info to

@@ -21,7 +21,7 @@ using GagSpeak.UI.Tabs.WhitelistTab;            // Contains classes for the whit
 using GagSpeak.UI.Tabs.ConfigSettingsTab;       // Contains classes for the config settings tab in the GagSpeak plugin
 using GagSpeak.UI.UserProfile;
 using GagSpeak.UI.Tabs.WardrobeTab;
-
+using GagSpeak.Utility;
 using GagSpeak.Services;
 using System;
 using Dalamud.IoC;
@@ -107,6 +107,7 @@ public static class ServiceHandler
         => services.AddSingleton<SafewordUsedEvent>()
                 .AddSingleton<InfoRequestEvent>()
                 .AddSingleton<LanguageChangedEvent>()
+                .AddSingleton<JobChangedEvent>()
                 .AddSingleton<ItemAutoEquipEvent>();
 
     /// <summary> Adds the classes related to the core of the gagspeak garbler to the service collection
@@ -123,6 +124,7 @@ public static class ServiceHandler
 
     private static ServiceManager AddInterop(this ServiceManager services)
         => services.AddSingleton<GlamourerInterop>()
+                .AddSingleton<CharaDataHelpers>()
                 .AddSingleton<GlamourerIpcFuncs>();
     /// <summary> Adds the classes identified as self-made services for the overarching service collection.
     /// <list type="bullet">
@@ -154,6 +156,8 @@ public static class ServiceHandler
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HelpPageTab>()
             .AddSingleton<WardrobeTab>()
+            .AddSingleton<WardrobeGagCompartment>()
+            .AddSingleton<WardrobeRestraintCompartment>()
             .AddSingleton<MainWindow>()
             .AddSingleton<HistoryWindow>()
             .AddSingleton<UserProfileWindow>()

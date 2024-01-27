@@ -3,20 +3,20 @@ using System;
 namespace GagSpeak.Data {
     /// <summary> Purely for acting as a helper when printing debug information for cachedCharacterCustomization </summary>
     public enum EquipmentSlotNameByEnum {
-    MainHand,
-    OffHand,
-    Head,
-    Body,
-    Hands,
-    Belt,
-    Legs,
-    Feet,
-    Ears,
-    Neck,
-    Wrists,
-    RFinger,
-    BothHand,
-    LFinger,
+        MainHand,
+        OffHand,
+        Head,
+        Body,
+        Hands,
+        Belt,
+        Legs,
+        Feet,
+        Ears,
+        Neck,
+        Wrists,
+        RFinger,
+        BothHand,
+        LFinger,
     }
 
     /// <summary> the type of statechange provided by glamourerIPC </summary>
@@ -35,14 +35,14 @@ namespace GagSpeak.Data {
     }
 
     /// <summary>
-    ///  Might delete, came from glamourerIPC
+    ///  Draw condition of our object character in the scene
     /// </summary>
-    public enum Source : byte {
-        Game,
-        Manual,
-        Fixed,
-        Ipc,
-        Pending,
+    public enum DrawCondition {
+        None,
+        DrawObjectZero,
+        RenderFlags,
+        ModelInSlotLoaded,
+        ModelFilesInSlotLoaded
     }
 
     /// <summary>

@@ -9,12 +9,10 @@ public class ItemAutoEquipEvent
     public bool IsItemAutoEquipEventExecuting { get; set; }                                     // indicate if the event is being executed
 
     /// <summary> Manually triggered event invoker </summary>
-    public void Invoke(string gagType) {
-        GagSpeak.Log.Debug("[GagItemEquippedEventHandler] ========================================================");
-        GagSpeak.Log.Debug("[GagItemEquippedEventHandler] Invoked with gagtype: " + gagType);
+    public void Invoke(string gagType, string assignerName) {
+        GagSpeak.Log.Debug("[GagItemEquippedEventHandler] Invoked with gagtype: " + gagType + " from " + assignerName);
         IsItemAutoEquipEventExecuting = true;
-        GagSpeak.Log.Debug($"[GlamourerInterop]: ITEMAUTOEQUIPEVENTEXECUTING IS NOW TRUE");
-        GagItemEquipped?.Invoke(this, new ItemAutoEquipEventArgs(gagType));
+        GagItemEquipped?.Invoke(this, new ItemAutoEquipEventArgs(gagType, assignerName));
     }
 }
 
@@ -24,7 +22,9 @@ public class ItemAutoEquipEvent
 public class ItemAutoEquipEventArgs : EventArgs
 {
     public string GagType { get; }
-    public ItemAutoEquipEventArgs(string gagType) {
+    public string AssignerName { get; }
+    public ItemAutoEquipEventArgs(string gagType, string assignerName) {
         GagType = gagType;
+        AssignerName = assignerName;
     }
 }

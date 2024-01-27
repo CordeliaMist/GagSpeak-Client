@@ -32,7 +32,6 @@ public class GagManager : IDisposable
 
     public void Dispose() {
         _config.selectedGagTypes.ItemChanged -= OnSelectedTypesChanged;
-        //_config.phoneticSymbolList.ItemChanged -= OnPhoneticSymbolListChanged
     }
 
 

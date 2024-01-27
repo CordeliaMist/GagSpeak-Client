@@ -7,7 +7,8 @@ using GagSpeak.UI.Helpers;                          // Contains chat classes use
 using Dalamud.Plugin.Services;                      // Contains service classes provided by the Dalamud plugin framework
 using Dalamud.Game.Text.SeStringHandling.Payloads;  // Contains classes for handling special encoded (SeString) payloads in the Dalamud game
 using Dalamud.Game.Text.SeStringHandling;           // Contains classes for handling special encoded (SeString) strings in the Dalamud game
-using OtterGui.Classes;                             // Contains classes for managing the OtterGui framework
+using OtterGui.Classes;
+using System.Linq;                             // Contains classes for managing the OtterGui framework
 
 namespace GagSpeak;
 
@@ -45,13 +46,14 @@ public class GagAndLockManager : IDisposable
     /// <list type="bullet">
     /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
     /// <item><c>gagType</c><param name="gagType"> - The gag type.</param></item>
+    /// <item><c>assignerName</c><param name="assignerName"> - The assigner name, if any.</param></item>
     /// </list> </summary>
-    public void ApplyGag(int layerIndex, string gagType) {
+    public void ApplyGag(int layerIndex, string gagType, string assignerName = "self") {
         // apply the gag information to anywhere where it should be applied to within our code
         _config.selectedGagTypes[layerIndex] = gagType;
         
         // Trigger the event letting our wardrobe manager know a gag is equipped
-        _gagItemEquippedEvent.Invoke(gagType);
+        _gagItemEquippedEvent.Invoke(gagType, assignerName);
     }
 
     /// <summary> This method is used to handle individual gag removing command and UI presses
@@ -59,7 +61,10 @@ public class GagAndLockManager : IDisposable
     /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
     /// </list> </summary>
     public void RemoveGag(int layerIndex) {
+        // get gagtype before clear
+        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _config.selectedGagTypes[layerIndex]);
         // remove the gag information from anywhere where it should be removed from within our code
+        _config.gagEquipData[gagType]._wasEquippedBy = "";
         _config.selectedGagTypes[layerIndex] = "None";
         _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None;
         _config.selectedGagPadlocksPassword[layerIndex] = string.Empty;

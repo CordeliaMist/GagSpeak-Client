@@ -5,7 +5,7 @@ namespace GagSpeak;
 // had to make this to get a workaround for the fact that the json readwrite doesnt read from private readonly structs, and equipItem is a private readonly struct
 public class EquipItemSurrogate
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public CustomItemId Id { get; set; }
     public IconId IconId { get; set; }
     public PrimaryId PrimaryId { get; set; }
