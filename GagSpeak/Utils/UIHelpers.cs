@@ -12,6 +12,9 @@ using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 using GagSpeak.Services;
 using Dalamud.Interface.Utility;
+using GagSpeak.Data;
+using GagSpeak.UI.ComboListings;
+using Penumbra.GameData.DataContainers;
 
 namespace GagSpeak.UI.Helpers;
 
@@ -198,8 +201,78 @@ public static class UIHelpers
         }
     }
 
-    /// <summary>
-    /// This method gets the string equal of the enum listing.
-    /// </summary>
-    /// <returns>The string equal of the enum listing.</returns>
+    /// <summary> Draws the equipment combo for the icon, item combo, and stain combo to the wardrobe tab.
+    /// <list type="bullet">
+    /// <item><c>EquipDrawData</c><paramref name="equipDrawData"> The equip data to draw.</paramref></item>
+    /// </list> </summary>
+    public static void DrawEquip(EquipDrawData equipDrawData, float width, GameItemCombo[] _gameItemCombo, 
+    StainColorCombo _stainCombo, DictStain _stainData, GagSpeakConfig _config) {
+        using var id      = ImRaii.PushId((int)equipDrawData._slot);
+        var       spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemSpacing.Y };
+        using var style   = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
+
+        var right = ImGui.IsItemClicked(ImGuiMouseButton.Right);
+        var left  = ImGui.IsItemClicked(ImGuiMouseButton.Left);
+
+        width = ImGui.GetContentRegionAvail().X; // update length
+        using var group = ImRaii.Group();
+        DrawItem(equipDrawData, out var label, right, left, width, _gameItemCombo, _config);
+        DrawStain(equipDrawData, width, _stainCombo, _stainData, _config);
+    }
+
+    /// <summary> Draws the item combo dropdown for our equipDrawData.
+    /// <list type="bullet">
+    /// <item><c>EquipDrawData</c><paramref name="data"> The equip data to draw.</paramref></item>
+    /// <item><c>string</c><paramref name="label"> The label for the combo.</paramref></item>
+    /// <item><c>bool</c><paramref name="clear"> Whether or not to clear the item.</paramref></item>
+    /// <item><c>bool</c><paramref name="open"> Whether or not to open the combo.</paramref></item>
+    /// </list> </summary>
+    private static void DrawItem(in EquipDrawData data, out string label,bool clear, bool open, float width, 
+    GameItemCombo[] _gameItemCombo, GagSpeakConfig _config) {
+        // begin making the item combo.
+        var combo = _gameItemCombo[data._slot.ToIndex()];
+        label = combo.Label;
+        if (!data._locked && open) {
+            UIHelpers.OpenCombo($"##{combo.Label}");
+            GagSpeak.Log.Debug($"{combo.Label}");
+        }
+        // draw the combo
+        using var disabled = ImRaii.Disabled(data._locked);
+        var change = combo.Draw(data._gameItem.Name, data._gameItem.ItemId, width, width);
+        // conditionals to detect for changes in the combo's
+        if (change && !data._gameItem.Equals(combo.CurrentSelection)) {
+            data.SetGameItem(combo.CurrentSelection);
+            _config.Save();
+        }
+        if (clear || ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
+            data.ResetGameItem();
+            GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, item reverted to none!");
+        }
+    }
+
+    /// <summary> Draws the stain combo dropdown for our equipDrawData.
+    /// <list type="bullet">
+    /// <item><c>EquipDrawData</c><paramref name="data"> The equip data to draw.</paramref></item>
+    /// </list> </summary>
+    private static void DrawStain(in EquipDrawData data, float width, StainColorCombo _stainCombo, DictStain _stainData, GagSpeakConfig _config) {
+        var       found    = _stainData.TryGetValue(data._gameStain, out var stain);
+        using var disabled = ImRaii.Disabled(data._locked);
+        // draw the stain combo
+        if (_stainCombo.Draw($"##stain{data._slot}", stain.RgbaColor, stain.Name, found, stain.Gloss, width)) {
+            if (_stainData.TryGetValue(_stainCombo.CurrentSelection.Key, out stain)) {
+                data.SetGameStain(stain.RowIndex);
+                GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: {stain.RowIndex}");
+                _config.Save();
+            }
+            else if (_stainCombo.CurrentSelection.Key == Stain.None.RowIndex) {
+                //data.StainSetter(Stain.None.RowIndex);
+                GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: None");
+            }
+        }
+        // conditionals to detect for changes in the combo's via reset
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
+            data.ResetGameStain();
+            GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, stain reverted to none!");
+        }
+    }
 }

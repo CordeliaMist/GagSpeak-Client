@@ -13,6 +13,7 @@ using GagSpeak.Data;
 using GagSpeak.UI;
 using GagSpeak.Services;
 using GagSpeak.Events;
+using GagSpeak.Wardrobe;
 using GagSpeak.Garbler.PhonemeData;
 
 namespace GagSpeak;
@@ -36,7 +37,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                        partyOnly { get; set; } = false;                        // Is party only enabled?
     public          bool                                        whitelistOnly { get; set; } = false;                    // Is whitelist only enabled?
     public          bool                                        DebugMode { get; set; } = false;                        // Is debug mode enabled?
-    public          int                                         GarbleLevel { get; set; } = 0;                          // Current Garble Level (0-20)        
+    public          int                                         GarbleLevel { get; set; } = 0;                          // DEPRICATED, BUT NESSISARY FOR MESSAGE TRANSFER STILL
     public          ObservableList<string>                      selectedGagTypes { get; set; }                          // What gag types are selected?
     public          ObservableList<GagPadlocks>                 selectedGagPadlocks { get; set; }                       // which padlocks are equipped currently?
     public          List<string>                                selectedGagPadlocksPassword { get; set; }               // password lock on padlocks, if any
@@ -47,7 +48,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          int                                         ProcessTranslationInterval { get; set; } = 300000;      // current process intervals for the history
     public          int                                         TranslationHistoryMax { get; set; } = 30;               // Gets or sets max number of translations stored in history
     public          MainWindow.TabType                          SelectedTab { get; set; } = MainWindow.TabType.General; // Default to the general tab
-    public          bool                                        viewingRestraintCompartment { get; set; } = false;            // Is viewing the restraint shelf tab in wardrobe?
+    public          bool                                        viewingRestraintCompartment { get; set; } = false;      // Is viewing the restraint shelf tab in wardrobe?
     private         List<WhitelistCharData>                     whitelist = new List<WhitelistCharData>();              // appears to be baseline for whitelist
     public          List<WhitelistCharData>                     Whitelist { get=>whitelist; set=>whitelist = value; }   // Note sure why, document later
     public          string                                      sendInfoName = "";                                      // Name of the person you are sending info to
@@ -60,6 +61,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          PadlockIdentifier                           whitelistPadlockIdentifier {get; set; }                 // stores the padlock identifier for the whitelist
     // stuff for the wardrobemanager
     public          Dictionary<GagList.GagType, EquipDrawData>  gagEquipData { get; set; }                              // almighty wardrobe dictionary. Stores everything? (expand upon for multiple gags)
+    public          List<RestraintSet>                          restraintSets { get; set; }                             // stores the restraint sets for the plugin
     public          bool                                        enableWardrobe { get; set; } = false;                   // enables / disables all wardrobe actions
     public          bool                                        allowItemAutoEquip { get; set; } = false;               // allows the item auto equip event to fire
     public          bool                                        allowRestraintLocking { get; set; } = false;            // allows restraint locking at all in any capacity from others besides you

@@ -46,10 +46,9 @@ public class GlamourerIpcFuncs : IDisposable
     private readonly    CharaDataHelpers                _charaDataHelpers;      // character data updates/helpers (framework based)
     public              IObjectTable                    _objectTable;           // the object table for defining gameobject types
     private             Action<int, nint, Lazy<string>> _ChangedDelegate;       // delgate for  GlamourChanged, so it is subscribed and disposed properly
-    private             ElapsedEventHandler             _throttleTimerHandler;  // to handle the throttletimer BS fuckery
-    private             System.Timers.Timer?            _throttleTimer;         // Timer to check if the throttle duration has passed
     private             bool                            _disableGlamChangeEvent;// disable the glamour changed event
     private             string?                         _lastCustomizationData; // store the last customization data
+    private             CancellationTokenSource         _cts;
 
     public GlamourerIpcFuncs(GagSpeakConfig gagSpeakConfig, IClientState clientState, IObjectTable objectTable,
     CharaDataHelpers charaDataHelpers, GlamourerInterop glamourerInterop, ItemAutoEquipEvent itemAutoEquipEvent,
@@ -65,12 +64,14 @@ public class GlamourerIpcFuncs : IDisposable
         _jobChangedEvent = jobChangedEvent;
         // initialize delegate for the glamourer changed event
         _ChangedDelegate = (type, address, customize) => GlamourerChanged(type, address);
-        _throttleTimerHandler = (sender, e) => { var _ = ThrottleTimerElapsed(e); };
+        // _throttleTimerHandler = (sender, e) => ThrottleTimerElapsed(e);
 
         _disableGlamChangeEvent = false;
         _lastCustomizationData = "";
+        _cts = new CancellationTokenSource(); // for handling gearset changes
         
         //_Interop._StateChangedSubscriber.Subscribe(_ChangedDelegate);   // to know when glamourer state changes
+        _Interop._StateChangedSubscriber.Subscribe(_ChangedDelegate);   // to know when glamourer state changes
         _itemAutoEquipEvent.GagItemEquipped += OnGagEquippedEvent;      // common sense
         _jobChangedEvent.JobChanged += SwitchedJobsEvent;                  // to know when the model is finished drawing
     
@@ -83,13 +84,7 @@ public class GlamourerIpcFuncs : IDisposable
         _Interop._StateChangedSubscriber.Unsubscribe(_ChangedDelegate);
         _itemAutoEquipEvent.GagItemEquipped -= OnGagEquippedEvent;
         _jobChangedEvent.JobChanged -= SwitchedJobsEvent;
-        // unsub & dump our throttle timer if it is active or subscribed still
-        if (_throttleTimer != null) {
-            _throttleTimer.Stop();
-            _throttleTimer.Elapsed -= _throttleTimerHandler;
-            _throttleTimer.Dispose();
-            _throttleTimer = null;
-        }
+
     }
 
     private async Task WaitForPlayerToLoad() {
@@ -107,12 +102,10 @@ public class GlamourerIpcFuncs : IDisposable
 
 
     // we must account for certain situations, and perform an early exit return or access those functions if they are true.
-   private async void GlamourerChanged(int type, nint address) {
+   private void GlamourerChanged(int type, nint address) {
         // Will be unessisary until after glamourer does its stateChanged update and more inclusion with IPC
-
-
         // CONDITION ONE: Make sure it is from the local player, and not another player
-        if (address != (await Task.Run(() => _charaDataHelpers.GetPlayerPointerAsync()))) {
+        if (address != (_charaDataHelpers.Address)) {
             GagSpeak.Log.Debug($"[GlamourerChanged]: Change not from Character, IGNORING");
             return;
         }
@@ -123,7 +116,7 @@ public class GlamourerIpcFuncs : IDisposable
         }
         // CONDITION THREE: we were just executing an ItemAuto-Equip event, so we dont need to worry about it
         if(_itemAutoEquipEvent.IsItemAutoEquipEventExecuting == true || _disableGlamChangeEvent == true) {
-            GagSpeak.Log.Debug($"[GlamourerChanged]: Currently Processing an Item Auto-Equip, or using Apply Glamourer IPC IGNORING");
+            GagSpeak.Log.Debug($"[GlamourerChanged]: Blocked due to request variables");
             return;
         }
         // CONDITION FOUR: The StateChangeType is a design. Meaning the player changed to a different look via glamourer
@@ -131,42 +124,55 @@ public class GlamourerIpcFuncs : IDisposable
             GagSpeak.Log.Debug($"[GlamourerChanged]: StateChangeType is Design, Re-Applying any Gags or restraint sets configured if conditions are satisfied");
             // process the latest glamourerData and append our alterations
             try {
-                await _charaDataHelpers.RunOnFrameworkThread(ProcessLastGlamourData).ConfigureAwait(false);
+                // Cancel the previous task
+                _cts.Cancel();
+                GagSpeak.Log.Debug($"============================ [ GLAMOUR CHANGED RESULT: DESIGN ] ============================");
+                ProcessLastGlamourData();
                 return;
             } catch (Exception ex) {
                 GagSpeak.Log.Error($"[GlamourerChanged]: Error processing last glamour data: {ex}");
-            } finally {
-                // make sure we set this off once we are done.
-                _disableGlamChangeEvent = false;
             }
         }
         // CONDITION FIVE: The StateChangeType is an equip or Stain, meaning that the player changed classes in game, or gearsets, causing multiple events to trigger
         if(type == (int)StateChangeType.Equip || type == (int)StateChangeType.Stain || type == (int)StateChangeType.Weapon) {
-            GagSpeak.Log.Debug($"[GlamourerChanged]: StateChangeType is {type}");
-            // // Start or restart the throttle timer
-            // if (_throttleTimer == null) {
-            //     _throttleTimer = new System.Timers.Timer(200); // Set the interval to 200 ms
-            //     _throttleTimer.Elapsed += _throttleTimerHandler; // Hook up the Elapsed event for the timer
-            //     _throttleTimer.AutoReset = false; // Prevent the timer from restarting automatically
-            // }
-            // _throttleTimer.Stop();
-            // _throttleTimer.Start();
-            // return;
+            var enumType = (StateChangeType)type;  
+            GagSpeak.Log.Debug($"[GlamourerChanged]: StateChangeType is {enumType}");
+
+            // Cancel the previous task
+            _cts.Cancel();
+            _cts = new CancellationTokenSource();
+
+            // Start a new task with a delay
+            Task.Run(async () => {
+                try {
+                    await Task.Delay(200, _cts.Token); // Wait for 200 ms
+                    GagSpeak.Log.Debug($"============================ [ GLAMOUR CHANGED RESULT: GEARSET CHANGE / {enumType} CHANGE ] ============================");
+                    ProcessLastGlamourData();
+                } catch (TaskCanceledException) {
+                    // Task was cancelled, do nothing
+                }
+            }, _cts.Token);
         } else {
             var enumType = (StateChangeType)type;  
             GagSpeak.Log.Debug($"[GlamourerChanged]: GlamourerChangedEvent was not equipmenttype, stain, or weapon; but rather {enumType}");
         }
     }
     
-    private async Task ThrottleTimerElapsed(ElapsedEventArgs e) => await _charaDataHelpers.RunOnFrameworkThread(ProcessLastGlamourData);
+    private void ProcessLastGlamourDataTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e) {
+        GagSpeak.Log.Debug($"[ThrottleTimerElapsed]: Throttle timer elapsed, processing last glamour data!");
+        Task.Run(() => _charaDataHelpers.RunOnFrameworkThread(ProcessLastGlamourData));
+    }
 
     private async void SwitchedJobsEvent(object sender, JobChangedEventArgs e) {
-        await _Interop.GlamourerRevertCharacter(await _charaDataHelpers.GetPlayerPointerAsync());
-        await _Interop.GlamourerRevertCharacterToAutomation(await _charaDataHelpers.GetPlayerPointerAsync());
-        GagSpeak.Log.Debug($"[SwitchedJobsEvent]: Switched jobs, glamourer reverted and reapplied any potential automations!");
-        await _charaDataHelpers.WaitWhileCharacterIsDrawing();
+        // Supossedly, all glamourchanged events will process before this fires, so we should be good.
+        //await _charaDataHelpers.WaitWhileCharacterIsDrawing();
         GagSpeak.Log.Debug($"[SwitchedJobsEvent]: Character finished drawing, applying gag updates!");
-        ProcessLastGlamourData();
+        // will work for now because glamourer IPC is not updated
+        _cts.Cancel();
+        _disableGlamChangeEvent = true;
+        GagSpeak.Log.Debug($"============================ [ GLAMOUR CHANGED RESULT: JOB CHANGE ] ============================");
+        await UpdateCachedCharacterData(_lastCustomizationData);
+        _disableGlamChangeEvent = false;
     }
 
 
@@ -174,18 +180,15 @@ public class GlamourerIpcFuncs : IDisposable
     private async void ProcessLastGlamourData() {
         // set the item auto-equip to true, so we dont get stuck in a loop
         try {
-            _charaDataHelpers._canCheckForDrawing = false;
-            string _lastCustomizationData = await _Interop.GetCharacterCustomizationAsync(await _charaDataHelpers.GetPlayerPointerAsync());
+            _disableGlamChangeEvent = true;
+            string _lastCustomizationData = await _Interop.GetCharacterCustomizationAsync(_charaDataHelpers.Address);
             GagSpeak.Log.Debug($"[GlamourerChanged]:  from GetAllCustomization: {_lastCustomizationData}");
             // deserialize the customization data
             await Task.Run(() => DeserializeCustomizationData(_lastCustomizationData));      
-            GagSpeak.Log.Debug($"======================== DESERIALIZATION COMPLETE =======================");
             // update the customization with our info
-            await Task.Run(() => UpdateCachedCharacterData(_lastCustomizationData));
-            GagSpeak.Log.Debug($"======================== UPDATE COMPLETE =======================");
+            await UpdateCachedCharacterData(_lastCustomizationData);
             // serialize and send back off the data
-            await Task.Run(() => SerilizationAndApplyCustomizationData());
-            GagSpeak.Log.Debug($"======================== SERILIZATION COMPLETE =======================");
+            // await Task.Run(() => SerilizationAndApplyCustomizationData());
         } catch (Exception ex) {
             GagSpeak.Log.Error($"[ProcessLastGlamourData]: Error processing last glamour data: {ex}");
         } finally {
@@ -193,7 +196,8 @@ public class GlamourerIpcFuncs : IDisposable
             await Task.Run(() => {
                 // sleep this task for a bit so we dont cause a loop
                 Thread.Sleep(1000);
-                _charaDataHelpers._canCheckForDrawing = true;
+                GagSpeak.Log.Debug($"[GlamourerChanged]: re-allowing GlamourChangedEvent");
+                _disableGlamChangeEvent = false;
             });
         }
     }
@@ -221,7 +225,7 @@ public class GlamourerIpcFuncs : IDisposable
     /// <list type="bullet">
     /// <item><c>customizationData</c><param name="customizationData">String containing base64 info of customization data</param></item>
     /// </list> </summary>
-    public async void UpdateCachedCharacterData(string? customizationData) {
+    public async Task UpdateCachedCharacterData(string? customizationData) {
         // for privacy reasons, we must first make sure that our options for allowing such things are enabled.
         if(_config.allowItemAutoEquip) {
             await ApplyGagItemsToCachedCharacterData();
@@ -230,7 +234,7 @@ public class GlamourerIpcFuncs : IDisposable
         }
         // next, see if we are allowed to apply restraint sets
         if(_config.allowRestraintLocking) {
-            await ApplyRestrainSetToCachedCharacterData(); // switch to await when new glamourer updates happen.
+            await ApplyRestrainSetToCachedCharacterData();
         } else {
             GagSpeak.Log.Debug($"[GlamourerChanged]: Restraint Sets are disabled, IGNORING");
         }
@@ -247,7 +251,7 @@ public class GlamourerIpcFuncs : IDisposable
             GagSpeak.Log.Debug($"[GlamourerChanged]: Sending back off the data: {base64}");
             
             Task.Run(async () => {
-                await _Interop.ApplyAllToCharacterAsync(base64, (await Task.Run(() => _charaDataHelpers.GetPlayerPointerAsync())));
+                await _Interop.ApplyAllToCharacterAsync(base64, _charaDataHelpers.Address);
             });
         }
         catch (Exception ex) {
@@ -257,19 +261,17 @@ public class GlamourerIpcFuncs : IDisposable
 
     /// <summary> Applies the gag items to the cached character data. </summary>
     public async Task ApplyGagItemsToCachedCharacterData() {
-        await Task.Run(() => GagSpeak.Log.Debug($"[ApplyGagItems]: Applying Gag Items to Cached Character Data"));
-
+        GagSpeak.Log.Debug($"[ApplyGagItems]: Applying Gag Items to Cached Character Data");
+        
         // temporary code until glamourer update's its IPC changes
         await EquipWithSetItem(_config.selectedGagTypes[0], "self");
         await EquipWithSetItem(_config.selectedGagTypes[1], "self");
         await EquipWithSetItem(_config.selectedGagTypes[2], "self");
-    /*
-        ================
-        This code is useless until glamourer does proper updates to its IPC changes
-        ===============
+        
+    /*      UNTIL GLAMOURER IPC CAN TAKE GRABBING CUSTOMIZATION CORRECTLY, USE THE FORMAT ABOVE
 
         // Iterate over each selected gag type
-        int i = 1;
+        var i = 1;
         foreach (var gagName in _config.selectedGagTypes) {
             // skip if the gag is none (aka no gag
             if(gagName == "None") {
@@ -345,7 +347,7 @@ public class GlamourerIpcFuncs : IDisposable
     }
 
     public async Task ApplyRestrainSetToCachedCharacterData() { // dummy placeholder line
-        await Task.Run(() => GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: Applying Restraint Set to Cached Character Data"));
+        GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: Applying Restraint Set to Cached Character Data");
     }
 
     public async void OnGagEquippedEvent(object sender, ItemAutoEquipEventArgs e) {
@@ -355,6 +357,7 @@ public class GlamourerIpcFuncs : IDisposable
                 GagSpeak.Log.Debug($"[OnGagEquippedEvent]: ItemAutoEquip Permissions not granted. Not setting item.");
                 return;
             }
+            // otherwise, equip the set item
             await EquipWithSetItem(e.GagType, e.AssignerName);
         }
         catch (Exception ex) {
@@ -387,8 +390,7 @@ public class GlamourerIpcFuncs : IDisposable
             // see if assigner is valid
             if(ValidGagAssignerUser(gagName, equipDrawData)) {
                 try {
-                    IntPtr playerPtr = await Task.Run(() => _charaDataHelpers.GetPlayerPointerAsync());
-                    await _Interop.SetItemToCharacterAsync(playerPtr, Convert.ToByte(equipDrawData._slot), equipDrawData._gameItem.Id.Id, equipDrawData._gameStain.Id, 0 );
+                    await _Interop.SetItemToCharacterAsync(_charaDataHelpers.Address, Convert.ToByte(equipDrawData._slot), equipDrawData._gameItem.Id.Id, equipDrawData._gameStain.Id, 0 );
                     GagSpeak.Log.Debug($"[OnGagEquippedEvent]: Set item {equipDrawData._gameItem} to slot {equipDrawData._slot} for gag {gagName}");
                 }
                 catch (TargetInvocationException ex) {

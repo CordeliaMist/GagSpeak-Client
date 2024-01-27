@@ -137,7 +137,7 @@ public class CharaDataHelpers : IDisposable
     /// <summary> Waits for us to finish drawing. Note that this may cause crashes, so be sure to remove it if it does </summary>
     public async Task WaitWhileCharacterIsDrawing(int timeOut = 5000, CancellationToken? ct = null) {
         if (!_clientState.IsLoggedIn) return;
-        GagSpeak.Log.Debug($"[CharaDataHelper] [{this}] Waiting for character to finish drawing");
+        GagSpeak.Log.Debug($"[CharaDataHelper]  Waiting for character to finish drawing");
         const int tick = 250;   // framework thread tick rate
         int curWaitTime = 0;    // current time since redraw began
         try {
@@ -145,13 +145,13 @@ public class CharaDataHelpers : IDisposable
             while ((!ct?.IsCancellationRequested ?? true)
             && curWaitTime < timeOut
             && await IsBeingDrawnRunOnFrameworkAsync().ConfigureAwait(false)) {
-                GagSpeak.Log.Debug($"[CharaDataHelper] [{this}] Waiting for character to finish drawing");
+                GagSpeak.Log.Debug($"[CharaDataHelper]  Waiting for character to finish drawing");
                 // add 250 to the current wait time
                 curWaitTime += tick;
                 await Task.Delay(tick).ConfigureAwait(true);
             }
             // log that we finished drawing
-            GagSpeak.Log.Debug($"[CharaDataHelper] [{this}] Finished drawing after {curWaitTime}ms");
+            GagSpeak.Log.Debug($"[CharaDataHelper]  Finished drawing after {curWaitTime}ms");
         } catch (NullReferenceException ex) {
             GagSpeak.Log.Warning($"[CharaDataHelper] Error accessing player pointer, they do not exist anymore {ex}");
         } catch (AccessViolationException ex) {
@@ -309,9 +309,9 @@ public class CharaDataHelpers : IDisposable
 #region ObjectChangeChecks
     /// <summary> Clear the player object data after a delay </summary>
     private async Task ClearAsync(CancellationToken token) {
-        GagSpeak.Log.Debug($"[Clear Async] [{this}] Running Clear Task");
+        GagSpeak.Log.Debug($"[Clear Async]  Running Clear Task");
         await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(false);
-        GagSpeak.Log.Debug($"[Clear Async] [{this}] Sending ClearCachedForObjectMessage");
+        GagSpeak.Log.Debug($"[Clear Async]  Sending ClearCachedForObjectMessage");
         // null the cancellation token source
         _clearCts = null;
     }
@@ -377,7 +377,7 @@ public class CharaDataHelpers : IDisposable
             var data = Marshal.ReadByte((IntPtr)customizeData, i);
             // if the data is different than the data stored, then we have a change
             if (CustomizeData[i] != data) {
-                GagSpeak.Log.Debug($"[CompareAndUpdateCustomize] [{this}] has changes! {EquipSlotData[i]} to {data}");
+                GagSpeak.Log.Debug($"[CompareAndUpdateCustomize]  has changes! {EquipSlotData[i]} to {data}");
                 EquipSlotData[i] = data;
                 CustomizeData[i] = data;
                 hasChanges = true;
@@ -404,7 +404,7 @@ public class CharaDataHelpers : IDisposable
         for (int i = 0; i < EquipSlotData.Length; i++) {
             var data = Marshal.ReadByte((IntPtr)equipSlotData, i);
             if (EquipSlotData[i] != data) {
-                GagSpeak.Log.Debug($"[CompareAndUpdateEquip] [{this}] has changes! {EquipSlotData[i]} to {data}");
+                GagSpeak.Log.Debug($"[CompareAndUpdateEquip]  has changes! {EquipSlotData[i]} to {data}");
                 EquipSlotData[i] = data;
                 hasChanges = true;
             }
@@ -423,7 +423,7 @@ public class CharaDataHelpers : IDisposable
         hasChanges |= weapon->SecondaryId != MainHandData[2];
         MainHandData[2] = weapon->SecondaryId;
         if(hasChanges) {
-            GagSpeak.Log.Debug($"[CompareAndUpdateMainHand] [{this}] || Changed from modelsetid: "+
+            GagSpeak.Log.Debug($"[CompareAndUpdateMainHand]  || Changed from modelsetid: "+
             $"{weapon->ModelSetId} to {MainHandData[0]} || variant: {weapon->Variant} to "+
             $"{MainHandData[1]} || secondaryid: {weapon->SecondaryId} to {MainHandData[2]}");
         }
@@ -441,7 +441,7 @@ public class CharaDataHelpers : IDisposable
         hasChanges |= weapon->SecondaryId != OffHandData[2];
         OffHandData[2] = weapon->SecondaryId;
         if(hasChanges) {
-            GagSpeak.Log.Debug($"[CompareAndUpdateOffHand] [{this}] || Changed from modelsetid: "+
+            GagSpeak.Log.Debug($"[CompareAndUpdateOffHand]  || Changed from modelsetid: "+
             $"{weapon->ModelSetId} to {MainHandData[0]} || variant: {weapon->Variant} to "+
             $"{MainHandData[1]} || secondaryid: {weapon->SecondaryId} to {MainHandData[2]}");
         }
@@ -512,6 +512,9 @@ private unsafe void CheckAndUpdateObject() {
                 } else {
                     _jobChanged = false;
                 }
+            }
+        }
+        /*          This is not nessisary unless glamourer's IPC can fix
 
                 // compare and update the equip byte data at the drawObject address for the head slot spesifically. (idk why?)
                 equipDiff = CompareAndUpdateEquipByteData((byte*)&((Human*)DrawObjectAddress)->Head);
@@ -525,7 +528,7 @@ private unsafe void CheckAndUpdateObject() {
             else {
                 equipDiff = CompareAndUpdateEquipByteData((byte*)&chara->DrawData.Head);
                 if (equipDiff)
-                    GagSpeak.Log.Information($"[CheckAndUpdateObject] checking [{this}] equip data as game draw obj, result: {equipDiff}");
+                    GagSpeak.Log.Information($"[CheckAndUpdateObject] checking  equip data as game draw obj, result: {equipDiff}");
             }
 
             // assume there is no difference in the customization data (not that it matters for us anyways)
@@ -550,13 +553,14 @@ private unsafe void CheckAndUpdateObject() {
                 customizeDiff = CompareAndUpdateCustomizeData(chara->DrawData.CustomizeData.Data);
                 // if there was any customization data difference, log it
                 if (customizeDiff)
-                   GagSpeak.Log.Information($"[CheckAndUpdateObject] Checking [{this}] customize data from game obj, result: {equipDiff}");
+                   GagSpeak.Log.Information($"[CheckAndUpdateObject] Checking  customize data from game obj, result: {equipDiff}");
             }
             // if we had any different of any type, let the log know
             if (addrDiff || drawObjDiff || equipDiff || customizeDiff || nameChange) {
-                GagSpeak.Log.Information($"[CheckAndUpdateObject] [{this}] At least onne object changed this framework tick");
+                GagSpeak.Log.Information($"[CheckAndUpdateObject]  At least onne object changed this framework tick");
             }
         }
+        */
         // otherwise, if either of our addresses were different, we will need to clear and generate a new cancellation token
         else if (addrDiff || drawObjDiff) {
             _clearCts?.Cancel();
@@ -572,7 +576,7 @@ private unsafe void CheckAndUpdateObject() {
     /// <summary> Lets us know that our character is beginning to draw new changes, whenver our drawobject address updates </summary>
     private unsafe void CheckCharacterForDrawing() {
         // if we are not logged in, return
-        if (!_clientState.IsLoggedIn) return;
+        if (!_clientState.IsLoggedIn || _clientState.LocalPlayer == null) return;
         // if we arent the player character, dont bother checking
         PlayerCharacter p = _clientState.LocalPlayer ?? throw new NullReferenceException("LocalPlayer is null");
         // if we are currently marked as not drawing anything, then look to see if we are.

@@ -102,9 +102,6 @@ public sealed class GlamourerInterop
         // If our customization is empty, glamourer is not enabled, or we are zoning, do not process this request.
         if (!CheckGlamourerApi() || string.IsNullOrEmpty(customization)) return;
         try {
-            GagSpeak.Log.Debug("[ApplyAllAsyncIntrop] Waiting for character to stop drawing");
-            await _charaDataHelpers.WaitWhileCharacterIsDrawing();
-            GagSpeak.Log.Debug("[ApplyAllAsyncIntrop] Character is no longer drawing");
             await _charaDataHelpers.RunOnFrameworkThread(() => {
                 // set the game object to the character
                 var gameObj = _charaDataHelpers.CreateGameObject(character);
