@@ -1,5 +1,7 @@
+using Newtonsoft.Json.Linq;
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
+using Newtonsoft.Json;
 
 namespace GagSpeak.Data;
 public class EquipDrawData
@@ -22,18 +24,33 @@ public class EquipDrawData
         _activeSlotListIdx = 0; // make active slot indexlist 0 aka helmet.
     }
 
+    /// <summary> Sets the IsEnabled for EquipDrawData.
+    public void SetDrawDataIsEnabled(bool isEnabled) {
+        _isEnabled = isEnabled;
+    }
+
+    /// <summary> Sets the WasEquippedBy for EquipDrawData.
+    public void SetDrawDataEquippedBy(string drawDataEquippedBy) {
+        _wasEquippedBy = drawDataEquippedBy;
+    }
+
+    /// <summary> Sets the Locked for EquipDrawData.
+    public void SetDrawDataLocked(bool locked) {
+        _locked = locked;
+    }
+
     /// <summary> Sets the EquipSlot for EquipDrawData.
     /// <list type="bullet">
     /// <item><c>slot</c><param name="slot"> The slot to equip.</param></item>
     /// </list> </summary>
-    public void SetSlot(EquipSlot slot) {
+    public void SetDrawDataSlot(EquipSlot slot) {
         _slot = slot;
     }
     /// <summary> Sets the EquipItem for EquipDrawData.
     /// <list type="bullet">
     /// <item><c>gameItem</c><param name="gameItem"> The item to equip.</param></item>
     /// </list> </summary>
-    public void SetGameItem(EquipItem gameItem) {
+    public void SetDrawDataGameItem(EquipItem gameItem) {
         GagSpeak.Log.Debug($"[EquipDrawData] Changing equipment from {_gameItem} to {gameItem}");
         _gameItem = gameItem;
     }
@@ -42,7 +59,7 @@ public class EquipDrawData
     /// <list type="bullet">
     /// <item><c>gameStain</c><param name="gameStain"> The stain to equip.</param></item>
     /// </list> </summary>
-    public void SetGameStain(StainId gameStain) {
+    public void SetDrawDataGameStain(StainId gameStain) {
         _gameStain = gameStain;
     }
 
@@ -54,5 +71,26 @@ public class EquipDrawData
     /// <summary> Resets the gameStain to nothing. </summary>
     public void ResetGameStain() {
         _gameStain = 0;
+    }
+
+    // In EquipDrawData
+    public JObject Serialize() {
+        // Create a JsonSerializer with the EquipItemConverter
+        var serializer = new JsonSerializer();
+        serializer.Converters.Add(new EquipItemConverter());
+        // Serialize _gameItem and _gameStain as JObjects
+        JObject gameItemObj = JObject.FromObject(_gameItem, serializer);
+        JObject gameStainObj = JObject.FromObject(_gameStain, serializer);
+
+        // Include gameItemObj and gameStainObj in the serialized object
+        return new JObject() {
+            ["IsEnabled"] = _isEnabled,
+            ["WasEquippedBy"] = _wasEquippedBy,
+            ["Locked"] = _locked,
+            ["ActiveSlotListIdx"] = _activeSlotListIdx,
+            ["Slot"] = _slot.ToString(),
+            ["GameItem"] = gameItemObj,
+            ["GameStain"] = gameStainObj
+        };
     }
 }

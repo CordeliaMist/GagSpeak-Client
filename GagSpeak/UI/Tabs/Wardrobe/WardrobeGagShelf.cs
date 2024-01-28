@@ -36,6 +36,9 @@ public class WardrobeGagCompartment
     private readonly    IDataManager                    _gameData;              // for getting the game data
     private readonly    TextureService                  _textures;              // for getting the textures
     private readonly    FontService                     _fonts;                 // for getting the fonts
+    private readonly    ISavable                        _saveService;           // for getting the save service
+    private readonly    FilenameService                 _filenameService;       // for getting the filename service
+    private readonly    GagStorageManager               _gagStorageManager;     // for getting the gag storage manager
     private             Vector2                         _iconSize;              // for setting the icon size
     private             float                           _comboLength;           // for setting the combo length
     // stuff for gag selection and equip 
@@ -48,9 +51,9 @@ public class WardrobeGagCompartment
     private readonly    ItemData                        _itemData;              // for getting the item data
 
     /// <summary> Initializes a new instance wardrobe tab"/> class. <summary>
-    public WardrobeGagCompartment(GagSpeakConfig config, DalamudPluginInterface pluginInterface,
-    GlamourerInterop glamourerInterop, IClientState clientState, TextureService textures,
-    DictStain stainData, IDataManager gameData, ItemData itemData, FontService fonts) {
+    public WardrobeGagCompartment(GagSpeakConfig config, DalamudPluginInterface pluginInterface, GlamourerInterop glamourerInterop,
+    IClientState clientState, TextureService textures, DictStain stainData, IDataManager gameData, ItemData itemData,
+    FontService fonts, ISavable saveService, FilenameService filenameService, GagStorageManager gagStorageManager) {
         _config = config;
         _Interop = glamourerInterop;
         _clientState = clientState;
@@ -59,6 +62,10 @@ public class WardrobeGagCompartment
         _stainData = stainData;
         _itemData = itemData;
         _fonts = fonts;
+        _saveService = saveService;
+        _filenameService = filenameService;
+        _gagStorageManager = gagStorageManager;
+
         // set the gaglisting names
         _gagNames = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().Select(gag => gag.GetGagAlias()).ToArray();
         _gagNameSelected = 0;
@@ -147,7 +154,7 @@ public class WardrobeGagCompartment
             }
             // down below, have a listing for the equipment drawer
             _comboLength = ImGui.GetContentRegionAvail().X;
-            UIHelpers.DrawEquip(_config.gagEquipData[selectedGag], _comboLength, _gameItemCombo, _stainCombo, _stainData, _config);
+            UIHelpers.DrawEquip(_config.gagEquipData[selectedGag], _comboLength, _gameItemCombo, _stainCombo, _stainData, _config, _gagStorageManager, _filenameService);
             style.Pop();
 
             // If true, draw enable auto-equip as green and disabled, and bottom button as default color and pressable.

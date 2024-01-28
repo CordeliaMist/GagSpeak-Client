@@ -9,6 +9,7 @@ using OtterGui.Widgets;
 using GagSpeak.UI.ComboListings;
 using GagSpeak.Services;
 using GagSpeak.Data;
+using GagSpeak.Wardrobe;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>

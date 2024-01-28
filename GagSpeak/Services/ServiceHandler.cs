@@ -1,10 +1,4 @@
 using Dalamud.Plugin;                           // Contains interfaces and classes for creating Dalamud plugins
-using XivCommon.Functions;                      // Contains classes for common functions in the Xiv game
-using Dalamud.Game;                             // Contains classes for interacting with the game
-using Dalamud.Plugin.Services;                  // Contains classes for Dalamud plugin services
-using Microsoft.Extensions.DependencyInjection; // Provides classes for dependency injection
-using OtterGui.Classes;                         // Contains classes for the OtterGui library
-using OtterGui.Log;                             // Contains classes for logging in the OtterGui library
 using GagSpeak.Chat;                            // Contains classes for handling chat in the GagSpeak plugin
 using GagSpeak.Chat.MsgDecoder;                 // Contains classes for decoding chat messages in the GagSpeak plugin
 using GagSpeak.Chat.MsgEncoder;                 // Contains classes for encoding chat messages in the GagSpeak plugin
@@ -22,10 +16,13 @@ using GagSpeak.UI.Tabs.ConfigSettingsTab;       // Contains classes for the conf
 using GagSpeak.UI.UserProfile;
 using GagSpeak.UI.Tabs.WardrobeTab;
 using GagSpeak.Utility;
-using GagSpeak.Services;
-using System;
-using Dalamud.IoC;
-using System.Reflection;
+using GagSpeak.Wardrobe;
+using XivCommon.Functions;                      // Contains classes for common functions in the Xiv game
+using Dalamud.Game;                             // Contains classes for interacting with the game
+using Dalamud.Plugin.Services;                  // Contains classes for Dalamud plugin services
+using Microsoft.Extensions.DependencyInjection; // Provides classes for dependency injection
+using OtterGui.Classes;                         // Contains classes for the OtterGui library
+using OtterGui.Log;  
 using OtterGui.Services;
 using System.Linq;
 using System.Collections;
@@ -50,12 +47,12 @@ public static class ServiceHandler
         EventWrapperBase.ChangeLogger(log);
         var services = new ServiceManager(log)
             .AddExistingService(log)
+            .AddServiceClasses()
             .AddChat()
             .AddData()
             .AddEvent()
             .AddGarbleCore()
             .AddInterop()
-            .AddServiceClasses()
             .AddUi()
             .AddApi();
         DalamudServices.AddServices(services, pi);
@@ -97,7 +94,9 @@ public static class ServiceHandler
     /// </list> </summary>
     private static ServiceManager AddData(this ServiceManager services)
         => services.AddSingleton<GagSpeakConfig>()
-            .AddSingleton<PadlockIdentifier>();
+            .AddSingleton<PadlockIdentifier>()
+            .AddSingleton<GagStorageManager>()
+            .AddSingleton<RestraintSetManager>();
 
     /// <summary> Adds the event related classes to the service collection
     /// <list type="bullet">
@@ -155,14 +154,15 @@ public static class ServiceHandler
             .AddSingleton<WhitelistTab>()
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HelpPageTab>()
-            .AddSingleton<WardrobeTab>()
-            .AddSingleton<WardrobeGagCompartment>()
-            .AddSingleton<WardrobeRestraintCompartment>()
             .AddSingleton<MainWindow>()
             .AddSingleton<HistoryWindow>()
             .AddSingleton<UserProfileWindow>()
             .AddSingleton<DebugWindow>()
             .AddSingleton<GagListingsDrawer>()
+            .AddSingleton<WardrobeTab>()
+            .AddSingleton<WardrobeGagCompartment>()
+            .AddSingleton<WardrobeRestraintCompartment>()
+            .AddSingleton<RestraintSetManager>()
             .AddSingleton<GagSpeakChangelog>();
 
     /// <summary> Adds the API services to the API service collection. (just command manager for now but oh well)

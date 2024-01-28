@@ -15,6 +15,8 @@ using Dalamud.Interface.Utility;
 using GagSpeak.Data;
 using GagSpeak.UI.ComboListings;
 using Penumbra.GameData.DataContainers;
+using Lumina.Excel.GeneratedSheets;
+using System.IO;
 
 namespace GagSpeak.UI.Helpers;
 
@@ -201,12 +203,50 @@ public static class UIHelpers
         }
     }
 
+
+    /// <summary>
+    /// This helper function is used to create a text field that when right clicked can be modified and changed.
+    /// <list type="Bullet">
+    /// <item><c>popupId</c><param name="popupId"> - The id of the popup</param></item>
+    /// <item><c>text</c><param name="text"> - The text to display</param></item>
+    /// <item><c>maxLength</c><param name="maxLength"> - The max length of the text</param></item>
+    /// <item><c>helpText</c><param name="helpText"> - The help text to display</param></item>
+    /// <item><c>tooltip</c><param name="tooltip"> - The tooltip to display</param></item>
+    /// </list> </summary>
+    public static void EditableTextFieldWithPopup(string popupId, ref string text, uint maxLength, string helpText, string tooltip) {
+        ImGui.TextWrapped(text);
+        if (ImGui.IsItemHovered() && ImGui.IsItemClicked(ImGuiMouseButton.Right))
+            ImGui.OpenPopup(popupId); // Open the context menu
+        // open the popup if we satisfy that criteria
+        if (ImGui.BeginPopup(popupId)) {
+            // store our text from when we open it
+            string currentText = text;
+            var oldText = currentText;
+            // set keyboard focus to the text box
+            if (ImGui.IsWindowAppearing()) { ImGui.SetKeyboardFocusHere(0); }
+            // pompt the user to enter a new name
+            ImGui.TextUnformatted(helpText);
+            if (ImGui.InputText("##Rename", ref currentText, maxLength, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                // if our text is updated, send the updated text to the output result as an action string
+                if (currentText != oldText)
+                    text = currentText;
+                // close the popup
+                ImGui.CloseCurrentPopup();
+            }
+            ImGuiUtil.HoverTooltip(tooltip);
+            ImGui.EndPopup();
+        }
+    }
+
+
+
+
     /// <summary> Draws the equipment combo for the icon, item combo, and stain combo to the wardrobe tab.
     /// <list type="bullet">
     /// <item><c>EquipDrawData</c><paramref name="equipDrawData"> The equip data to draw.</paramref></item>
     /// </list> </summary>
     public static void DrawEquip(EquipDrawData equipDrawData, float width, GameItemCombo[] _gameItemCombo, 
-    StainColorCombo _stainCombo, DictStain _stainData, GagSpeakConfig _config) {
+    StainColorCombo _stainCombo, DictStain _stainData, GagSpeakConfig _config, ISavable savable, FilenameService filenameService) {
         using var id      = ImRaii.PushId((int)equipDrawData._slot);
         var       spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemSpacing.Y };
         using var style   = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
@@ -216,8 +256,8 @@ public static class UIHelpers
 
         width = ImGui.GetContentRegionAvail().X; // update length
         using var group = ImRaii.Group();
-        DrawItem(equipDrawData, out var label, right, left, width, _gameItemCombo, _config);
-        DrawStain(equipDrawData, width, _stainCombo, _stainData, _config);
+        DrawItem(equipDrawData, out var label, right, left, width, _gameItemCombo, _config, savable, filenameService);
+        DrawStain(equipDrawData, width, _stainCombo, _stainData, _config, savable, filenameService);
     }
 
     /// <summary> Draws the item combo dropdown for our equipDrawData.
@@ -228,8 +268,10 @@ public static class UIHelpers
     /// <item><c>bool</c><paramref name="open"> Whether or not to open the combo.</paramref></item>
     /// </list> </summary>
     private static void DrawItem(in EquipDrawData data, out string label,bool clear, bool open, float width, 
-    GameItemCombo[] _gameItemCombo, GagSpeakConfig _config) {
-        // begin making the item combo.
+    GameItemCombo[] _gameItemCombo, GagSpeakConfig _config, ISavable savable, FilenameService filenameService) {
+        // fetch the correct path to save our updates to, and draw the item combo.
+        string filePath = savable.ToFilename(filenameService);
+
         var combo = _gameItemCombo[data._slot.ToIndex()];
         label = combo.Label;
         if (!data._locked && open) {
@@ -241,11 +283,14 @@ public static class UIHelpers
         var change = combo.Draw(data._gameItem.Name, data._gameItem.ItemId, width, width);
         // conditionals to detect for changes in the combo's
         if (change && !data._gameItem.Equals(combo.CurrentSelection)) {
-            data.SetGameItem(combo.CurrentSelection);
-            _config.Save();
+            data.SetDrawDataGameItem(combo.CurrentSelection);
+            // save the correct config
+            using (StreamWriter writer = new StreamWriter(filePath)) { savable.Save(writer); }
         }
         if (clear || ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
             data.ResetGameItem();
+            // save the correct config
+            using (StreamWriter writer = new StreamWriter(filePath)) { savable.Save(writer); }
             GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, item reverted to none!");
         }
     }
@@ -254,17 +299,22 @@ public static class UIHelpers
     /// <list type="bullet">
     /// <item><c>EquipDrawData</c><paramref name="data"> The equip data to draw.</paramref></item>
     /// </list> </summary>
-    private static void DrawStain(in EquipDrawData data, float width, StainColorCombo _stainCombo, DictStain _stainData, GagSpeakConfig _config) {
+    private static void DrawStain(in EquipDrawData data, float width, StainColorCombo _stainCombo,
+    DictStain _stainData, GagSpeakConfig _config, ISavable savable, FilenameService filenameService) {
+        // fetch the correct path to save our updates to, and draw the stain combo.
+        string filePath = savable.ToFilename(filenameService);
+        // fetch the correct stain from the stain data
         var       found    = _stainData.TryGetValue(data._gameStain, out var stain);
         using var disabled = ImRaii.Disabled(data._locked);
         // draw the stain combo
         if (_stainCombo.Draw($"##stain{data._slot}", stain.RgbaColor, stain.Name, found, stain.Gloss, width)) {
             if (_stainData.TryGetValue(_stainCombo.CurrentSelection.Key, out stain)) {
-                data.SetGameStain(stain.RowIndex);
+                data.SetDrawDataGameStain(stain.RowIndex);
                 GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: {stain.RowIndex}");
-                _config.Save();
+                // save the correct config
+                using (StreamWriter writer = new StreamWriter(filePath)) { savable.Save(writer); }
             }
-            else if (_stainCombo.CurrentSelection.Key == Stain.None.RowIndex) {
+            else if (_stainCombo.CurrentSelection.Key == Penumbra.GameData.Structs.Stain.None.RowIndex) {
                 //data.StainSetter(Stain.None.RowIndex);
                 GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: None");
             }
@@ -272,6 +322,8 @@ public static class UIHelpers
         // conditionals to detect for changes in the combo's via reset
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
             data.ResetGameStain();
+            // save the correct config
+            using (StreamWriter writer = new StreamWriter(filePath)) { savable.Save(writer); }
             GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, stain reverted to none!");
         }
     }

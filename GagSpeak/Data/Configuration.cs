@@ -61,7 +61,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          PadlockIdentifier                           whitelistPadlockIdentifier {get; set; }                 // stores the padlock identifier for the whitelist
     // stuff for the wardrobemanager
     public          Dictionary<GagList.GagType, EquipDrawData>  gagEquipData { get; set; }                              // almighty wardrobe dictionary. Stores everything? (expand upon for multiple gags)
-    public          List<RestraintSet>                          restraintSets { get; set; }                             // stores the restraint sets for the plugin
     public          bool                                        enableWardrobe { get; set; } = false;                   // enables / disables all wardrobe actions
     public          bool                                        allowItemAutoEquip { get; set; } = false;               // allows the item auto equip event to fire
     public          bool                                        allowRestraintLocking { get; set; } = false;            // allows restraint locking at all in any capacity from others besides you
@@ -73,6 +72,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          string                                      languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
     public          List<string>                                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
     // variables involved with saving and updating the config
+    
+    [JsonIgnore]
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
 
     /// <summary> Gets or sets the colors used within our UI </summary>

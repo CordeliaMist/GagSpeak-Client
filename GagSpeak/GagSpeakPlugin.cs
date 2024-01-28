@@ -1,12 +1,14 @@
-﻿using System.Reflection;  // Without this, the Version string will not be able to fetch from the assembly class
-using Dalamud.Plugin;     // Used for the IDalamudPlugin interface
+﻿using Dalamud.Plugin;     // Used for the IDalamudPlugin interface
 using OtterGui.Classes;   // For the messageService, which is used to display the changelog
 using OtterGui.Log;       // for our plugin logger
+using OtterGui.Services;  // REQUIRES FOR THE SERVICE MANAGER CLASS
 using GagSpeak.UI;        // REQUIRED for our plugins GagSpeakWindowManager requiredservices to be fetched
 using GagSpeak.Services;  // REQUIRED for our plugins CommandManager requiredservices to be fetched
 using GagSpeak.Chat;      // REQUIRED for our plugins ChatManager requiredservices to be fetched
 using GagSpeak.Interop;
-using GagSpeak.Utility;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
+using GagSpeak.Utility;
+using System.Reflection;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
+
 
 // The main namespace for the plugin, aka the same name of our plugin, the highest level
 namespace GagSpeak;
@@ -37,6 +39,7 @@ public class GagSpeak : IDalamudPlugin
       {
           _services = ServiceHandler.CreateProvider(pluginInt, Log); // Initialize the services in the large Service collection. (see ServiceHandler.cs)
           Messager = _services.GetService<MessageService>(); // Initialize messager service here
+          _services.EnsureRequiredServices();
 
           /* Big Knowledge Info Time:
            The services we initialize here, are the classes that are not called upon by any other class in our Gagspeak plugin.
