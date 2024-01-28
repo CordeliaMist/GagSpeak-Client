@@ -37,9 +37,9 @@ public class WardrobeRestraintCompartment
     private readonly    IDataManager                    _gameData;              // for getting the game data
     private readonly    TextureService                  _textures;              // for getting the textures
     private readonly    TimerService                    _timerService;          // for getting the timer service
-    private readonly    ISavable                        _saveService;           // for getting the save service
     private readonly    FilenameService                 _filenameService;       // for getting the filename service
     private readonly    RestraintSetManager             _restraintSetManager;   // for getting the restraint set manager
+    public              string                          _filename;              // for getting the filename
     // variables
     private readonly    Vector2                         _iconSize;              // size of icons that can display
     private readonly    float                           _comboLength;           // length of combo boxes
@@ -56,7 +56,7 @@ public class WardrobeRestraintCompartment
     /// <summary> Initializes a new instance wardrobe tab"/> class. <summary>
     public WardrobeRestraintCompartment(GagSpeakConfig config, FontService fontService, IDataManager gameData, TextureService textures,
     ItemData itemData, DictStain stainData, DalamudPluginInterface pluginInterface, UiBuilder uiBuilder, TimerService timerService,
-    ISavable saveService, FilenameService filenameService, RestraintSetManager restraintSetManager) {
+    FilenameService filenameService, RestraintSetManager restraintSetManager) {
         _config = config;
         _fontService = fontService;
         _uiBuilder = uiBuilder;
@@ -66,7 +66,6 @@ public class WardrobeRestraintCompartment
         _stainData = stainData;
         _config = config;
         _timerService = timerService;
-        _saveService = saveService;
         _filenameService = filenameService;
         _restraintSetManager = restraintSetManager;
 
@@ -75,6 +74,7 @@ public class WardrobeRestraintCompartment
         _listLength = 5;
         _restraintSetSelected = 0;
         _inputTimer = "";
+        _filename = _filenameService.RestraintSetsFile;
 
         // create a new gameItemCombo for each equipment piece type, then store them into the array.
         _gameItemCombo = EquipSlotExtensions.EqdpSlots.Select(e => new GameItemCombo(_gameData, e, _itemData, GagSpeak.Log)).ToArray();
@@ -129,7 +129,14 @@ public class WardrobeRestraintCompartment
             ImGui.SameLine();
             // remove button
             if (ImGui.Button("Remove Set", new Vector2(buttonwidth, 25.0f * ImGuiHelpers.GlobalScale))) {
-                _restraintSetManager.DeleteRestraintSet(_restraintSetSelected);
+                // if the set only has one item, just replace it with a blank template
+                if (_restraintSetManager._restraintSets.Count == 1) {
+                    _restraintSetManager._restraintSets[0] = new RestraintSet();
+                    _restraintSetSelected = 0;
+                } else {
+                    _restraintSetManager.DeleteRestraintSet(_restraintSetSelected);
+                    _restraintSetSelected = 0;
+                }
             }
             // re-enable the options
             if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked)
@@ -196,6 +203,18 @@ public class WardrobeRestraintCompartment
                 // in the same line, place a button that enables the lock for the spesified time
                 if (ImGui.Button("Lock", new Vector2(0, 22.0f * ImGuiHelpers.GlobalScale))) {
                     // parse the input timer
+                    _restraintSetManager.Load();
+                    try {
+                    GagSpeak.Log.Debug($"[RestraintSetDetails] : {_restraintSetManager._restraintSets[_restraintSetSelected]._name} | "+
+                    $"{_restraintSetManager._restraintSets[_restraintSetSelected]._description} | {_restraintSetManager._restraintSets[_restraintSetSelected]._enabled} | "+
+                    $"{_restraintSetManager._restraintSets[_restraintSetSelected]._locked} | {_restraintSetManager._restraintSets[_restraintSetSelected]._lockedTimer}\n");
+                    foreach(var slot in _restraintSetManager._restraintSets[_restraintSetSelected]._drawData) {
+                        GagSpeak.Log.Debug($"[RestraintSetDetails] : {slot.Key}:\n{slot.Value._isEnabled} | {slot.Value._wasEquippedBy} | {slot.Value._locked} | {slot.Value._activeSlotListIdx}\n"+
+                        $"{slot.Value._gameItem} | {slot.Value._gameStain}\n");
+                    }
+                    } catch (Exception e) {
+                        GagSpeak.Log.Error($"[RestraintSetDetails] : {e.Message}\n{e.StackTrace}");
+                    }
                     int currentIndex = _restraintSetSelected; // Capture the current index by value
                     _restraintSetManager.ChangeRestraintSetNewLockEndTime(currentIndex, UIHelpers.GetEndTime(_inputTimer));
                     _restraintSetManager.ChangeRestraintSetLocked(currentIndex, true);
@@ -218,23 +237,28 @@ public class WardrobeRestraintCompartment
             var width = ImGui.GetContentRegionAvail().X/2;
             ImGui.TableSetupColumn("EquipmentSlots", ImGuiTableColumnFlags.WidthFixed, width);
             ImGui.TableSetupColumn("AccessorySlots", ImGuiTableColumnFlags.WidthStretch);
-        
+            // disable the options
+            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked)
+                ImGui.BeginDisabled();
+
             // draw out the equipment slots
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             foreach(var slot in EquipSlotExtensions.EquipmentSlots) {
-                var curentDrawData = _restraintSetManager._restraintSets[_restraintSetSelected]._drawData[slot];
-                curentDrawData._gameItem.DrawIcon(_textures, _iconSize, curentDrawData._slot);  ImGui.SameLine();
-                UIHelpers.DrawEquip(curentDrawData, _comboLength, _gameItemCombo, _stainCombo, _stainData,
-                _config, _restraintSetManager, _filenameService);
+                _restraintSetManager._restraintSets[_restraintSetSelected]._drawData[slot]._gameItem.DrawIcon(_textures, _iconSize, slot);
+                ImGui.SameLine();
+                DrawEquip(_restraintSetSelected, slot, _comboLength, _gameItemCombo, _stainCombo, _stainData);
             }
             ImGui.TableNextColumn();
             // draw out the accessory slots
             foreach(var slot in EquipSlotExtensions.AccessorySlots) {
-                var curentDrawData = _restraintSetManager._restraintSets[_restraintSetSelected]._drawData[slot];
-                curentDrawData._gameItem.DrawIcon(_textures, _iconSize, curentDrawData._slot);  ImGui.SameLine();
-                UIHelpers.DrawEquip(curentDrawData, _comboLength, _gameItemCombo, _stainCombo, _stainData,
-                _config, _restraintSetManager, _filenameService);
+                _restraintSetManager._restraintSets[_restraintSetSelected]._drawData[slot]._gameItem.DrawIcon(_textures, _iconSize, slot);
+                ImGui.SameLine();
+                DrawEquip(_restraintSetSelected, slot, _comboLength, _gameItemCombo, _stainCombo, _stainData);
             }
+
+            // re-enable the options
+            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked)
+                ImGui.EndDisabled();
         } // end of table
     }
 
@@ -246,6 +270,88 @@ public class WardrobeRestraintCompartment
                 _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Days} Days, "+
                 $"{remainingTime.Hours} Hours, {remainingTime.Minutes} Minutes, {remainingTime.Seconds} Seconds";
             }
+        }
+    }
+
+    /// <summary> Draws the equipment combo for the icon, item combo, and stain combo to the wardrobe tab. </summary>
+    public void DrawEquip(int SetIndex, EquipSlot slot, float width, GameItemCombo[] _gameItemCombo, 
+    StainColorCombo _stainCombo, DictStain _stainData) {
+        var uniqueId = $"{SetIndex}_{(int)slot}";
+        using var id      = ImRaii.PushId(uniqueId);
+        var       spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemSpacing.Y };
+        using var style   = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
+
+        var right = ImGui.IsItemClicked(ImGuiMouseButton.Right);
+        var left  = ImGui.IsItemClicked(ImGuiMouseButton.Left);
+        if (SetIndex >= 0 && SetIndex < _gameItemCombo.Length) {
+            width = ImGui.GetContentRegionAvail().X; // update length
+            using var group = ImRaii.Group();
+            DrawItem(SetIndex, slot, out var label, right, left, width, _gameItemCombo);
+            DrawStain(SetIndex, slot, width, _stainCombo, _stainData);
+        } else {
+            // Handle the error, e.g., log a message or throw an exception
+            Console.WriteLine($"Invalid SetIndex: {SetIndex}. Must be between 0 and {_gameItemCombo.Length - 1}.");
+        }
+    }
+
+    /// <summary> Draws the item combo dropdown for our equipDrawData.
+    /// <list type="bullet">
+    /// <item><c>EquipDrawData</c><paramref name="data"> The equip data to draw.</paramref></item>
+    /// <item><c>string</c><paramref name="label"> The label for the combo.</paramref></item>
+    /// <item><c>bool</c><paramref name="clear"> Whether or not to clear the item.</paramref></item>
+    /// <item><c>bool</c><paramref name="open"> Whether or not to open the combo.</paramref></item>
+    /// </list> </summary>
+    private void DrawItem(int SetIndex, EquipSlot slot, out string label,bool clear, bool open, float width, 
+    GameItemCombo[] _gameItemCombo) {
+        // draw the item combo
+        var combo = _gameItemCombo[_restraintSetManager._restraintSets[SetIndex]._drawData[slot]._activeSlotListIdx];
+        label = combo.Label;
+        if (!_restraintSetManager._restraintSets[SetIndex]._drawData[slot]._locked && open) {
+            UIHelpers.OpenCombo($"##RestraintShelf{_restraintSetManager._restraintSets[SetIndex]._name}{combo.Label}");
+            GagSpeak.Log.Debug($"{combo.Label}");
+        }
+        // draw the combo
+        using var disabled = ImRaii.Disabled(_restraintSetManager._restraintSets[SetIndex]._drawData[slot]._locked);
+        var change = combo.Draw(_restraintSetManager._restraintSets[SetIndex]._drawData[slot]._gameItem.Name,
+                                _restraintSetManager._restraintSets[SetIndex]._drawData[slot]._gameItem.ItemId,
+                                width, width);
+        // conditionals to detect for changes in the combo's
+        if (change && !_restraintSetManager._restraintSets[SetIndex]._drawData[slot]._gameItem.Equals(combo.CurrentSelection)) {
+            _restraintSetManager.ChangeSetDrawDataGameItem(SetIndex, slot, combo.CurrentSelection);
+            using (StreamWriter writer = new StreamWriter(_filename)) { _restraintSetManager.Save(writer); }
+        }
+        if (clear || ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
+            _restraintSetManager.ResetSetDrawDataGameItem(SetIndex, slot);
+            using (StreamWriter writer = new StreamWriter(_filename)) { _restraintSetManager.Save(writer); }
+            GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, item reverted to none!");
+        }
+    }
+
+    /// <summary> Draws the stain combo dropdown for our equipDrawData.
+    /// <list type="bullet">
+    /// <item><c>EquipDrawData</c><paramref name="data"> The equip data to draw.</paramref></item>
+    /// </list> </summary>
+    private void DrawStain(int SetIndex, EquipSlot slot, float width, StainColorCombo _stainCombo, DictStain _stainData) {
+        // fetch the correct stain from the stain data
+        var       found    = _stainData.TryGetValue(_restraintSetManager._restraintSets[SetIndex]._drawData[slot]._gameStain, out var stain);
+        using var disabled = ImRaii.Disabled(_restraintSetManager._restraintSets[SetIndex]._drawData[slot]._locked);
+        // draw the stain combo
+        if (_stainCombo.Draw($"##GagShelfStain{_restraintSetManager._restraintSets[SetIndex]._name}{slot}", stain.RgbaColor, stain.Name, found, stain.Gloss, width)) {
+            if (_stainData.TryGetValue(_stainCombo.CurrentSelection.Key, out stain)) {
+                _restraintSetManager.ChangeSetDrawDataGameStain(SetIndex, slot, stain.RowIndex);
+                GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: {stain.RowIndex}");
+                using (StreamWriter writer = new StreamWriter(_filename)) { _restraintSetManager.Save(writer); }
+            }
+            else if (_stainCombo.CurrentSelection.Key == Penumbra.GameData.Structs.Stain.None.RowIndex) {
+                //data.StainSetter(Stain.None.RowIndex);
+                GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: None");
+            }
+        }
+        // conditionals to detect for changes in the combo's via reset
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
+            _restraintSetManager.ResetSetDrawDataGameStain(SetIndex, slot);
+            using (StreamWriter writer = new StreamWriter(_filename)) { _restraintSetManager.Save(writer); }
+            GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, stain reverted to none!");
         }
     }
 }

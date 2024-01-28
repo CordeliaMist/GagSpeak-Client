@@ -12,6 +12,7 @@ using GagSpeak.Events;
 using GagSpeak.Services;
 using GagSpeak.UI.Helpers;
 using GagSpeak.Data;
+using GagSpeak.Wardrobe;
 
 namespace GagSpeak.UI.ComboListings;
 /// <summary> This class is used to draw the gag listings. </summary>
@@ -21,6 +22,7 @@ public class GagListingsDrawer : IDisposable
     IDalamudTextureWrap textureWrap4; IDalamudTextureWrap textureWrap5; IDalamudTextureWrap textureWrap6; // for image display
     private             DalamudPluginInterface  _pluginInterface;               // used to get the plugin interface
     private             GagAndLockManager       _lockManager;                   // used to get the lock manager
+    private readonly    GagStorageManager       _gagStorageManager;             // used to get the gag storage manager
     private             GagService              _gagService;                    // used to get the gag service
     private             TimerService            _timerService;                  // used to get the timer service
     private readonly    GagSpeakConfig          _config;                        // used to get the config
@@ -40,7 +42,7 @@ public class GagListingsDrawer : IDisposable
     /// <item><c>timerService</c><param name="timerService"> - The timer service.</param></item>
     /// <item><c>lockManager</c><param name="lockManager"> - The lock manager.</param></item>
     /// </list> </summary>
-    public GagListingsDrawer(GagSpeakConfig config, DalamudPluginInterface dalamudPluginInterface, 
+    public GagListingsDrawer(GagSpeakConfig config, DalamudPluginInterface dalamudPluginInterface, GagStorageManager gagStorageManager,
     TimerService timerService, GagAndLockManager lockManager, GagService gagService, ItemAutoEquipEvent itemAutoEquipEvent)
     {
         _config = config;
@@ -49,6 +51,7 @@ public class GagListingsDrawer : IDisposable
         _lockManager = lockManager;
         _gagService = gagService;
         _itemAutoEquipEvent = itemAutoEquipEvent;
+        _gagStorageManager = gagStorageManager;
         // draw textures for the gag and padlock listings //
         textureWrap1 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.selectedGagTypes[0]}.png"));
         textureWrap2 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.selectedGagTypes[1]}.png"));
@@ -219,7 +222,7 @@ public class GagListingsDrawer : IDisposable
                 // clear the gag item from the selectedGagTypes list, resetting it to none
                 config.selectedGagTypes[layerIndex] = _gagService._gagTypes.First()._gagName;
                 // reset the _wasEquippedBy to empty
-                config.gagEquipData[gagType]._wasEquippedBy = "";
+                _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
                 // save config
                 _config.Save();
             }

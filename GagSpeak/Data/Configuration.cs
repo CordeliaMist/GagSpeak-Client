@@ -60,7 +60,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          List<PadlockIdentifier>                     padlockIdentifier { get; set; }                         // stores the padlock identifier for each gaglisting
     public          PadlockIdentifier                           whitelistPadlockIdentifier {get; set; }                 // stores the padlock identifier for the whitelist
     // stuff for the wardrobemanager
-    public          Dictionary<GagList.GagType, EquipDrawData>  gagEquipData { get; set; }                              // almighty wardrobe dictionary. Stores everything? (expand upon for multiple gags)
     public          bool                                        enableWardrobe { get; set; } = false;                   // enables / disables all wardrobe actions
     public          bool                                        allowItemAutoEquip { get; set; } = false;               // allows the item auto equip event to fire
     public          bool                                        allowRestraintLocking { get; set; } = false;            // allows restraint locking at all in any capacity from others besides you
@@ -133,12 +132,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         if (this.phoneticSymbolList == null || !this.phoneticSymbolList.Any()) {
             GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
             this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
-        // set default values for the gagEquipData
-        if (this.gagEquipData == null || !this.gagEquipData.Any()) {
-            GagSpeak.Log.Debug($"[Config]: gagEquipData is null, creating new list");
-            this.gagEquipData = Enum.GetValues(typeof(GagList.GagType))             // create the data for a new Dictionary                 
-                .Cast<GagList.GagType>()                                            // get the enum gaglist        
-                .ToDictionary(gagType => gagType, gagType => new EquipDrawData(ItemIdVars.NothingItem(EquipSlot.Head)));} // & create new entry in dictionary for each one!
+        // & create new entry in dictionary for each one!
         // set default class for GlamourerCharacterData if none exists already. Will be removed later, used for debug purposes now.
         // if (this.cachedCharacterData == null) {
         //     GagSpeak.Log.Debug($"[Config]: cachedCharacterData is null, creating new list");

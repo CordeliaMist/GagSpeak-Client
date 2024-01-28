@@ -14,6 +14,7 @@ using GagSpeak.Data;
 using GagSpeak.Events;
 using GagSpeak.UI;
 using GagSpeak.UI.Helpers;
+using GagSpeak.Wardrobe;
 
 namespace GagSpeak.Services;
 
@@ -40,12 +41,13 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly    TimerService        _timerService;
     private readonly    GagService          _gagService;
     private readonly    GagManager          _gagManager;
+    private readonly    GagStorageManager   _gagStorageManager;
     private readonly    SafewordUsedEvent   _safewordCommandEvent;
 
     // Constructor for the command manager
     public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow, HistoryService historyService, DebugWindow debugWindow,
     IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, IFramework framework, GagService gagService, GagManager gagManager, 
-    RealChatInteraction realchatinteraction, TimerService timerService, SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder)
+    RealChatInteraction realchatinteraction, TimerService timerService, SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder, GagStorageManager gagStorageManager)
     {
         // set the private readonly's to the passed in data of the respective names
         _commands = command;
@@ -64,6 +66,7 @@ public class CommandManager : IDisposable // Our main command list manager
         _historyService = historyService;
         _timerService = timerService;
         _safewordCommandEvent = safewordCommandEvent;
+        _gagStorageManager = gagStorageManager;
 
         // Add handlers to the main commands
         _commands.AddHandler(MainCommandString, new CommandInfo(OnGagSpeak) {
@@ -150,7 +153,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 // remove all data
                 for (int layerIndex = 0; layerIndex < _config.selectedGagTypes.Count; layerIndex++) {
                     var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _config.selectedGagTypes[layerIndex]);
-                    _config.gagEquipData[gagType]._wasEquippedBy = "";
+                    _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
                     _config.selectedGagTypes[layerIndex] = "None";
                     _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None;
                     _config.selectedGagPadlocksPassword[layerIndex] = "";

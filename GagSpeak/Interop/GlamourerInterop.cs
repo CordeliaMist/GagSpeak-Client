@@ -107,7 +107,7 @@ public sealed class GlamourerInterop
                 var gameObj = _charaDataHelpers.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
-                    GagSpeak.Log.Debug("[ApplyAllAsyncIntrop] Calling on IPC: GlamourerApplyAll");
+                    GagSpeak.Log.Verbose("[ApplyAllAsyncIntrop] Calling on IPC: GlamourerApplyAll");
                     _ApplyOnlyEquipmentToCharacter!.InvokeAction(customization, c); // can modify to be the lock later.
                 }
             }).ConfigureAwait(false);
@@ -127,7 +127,7 @@ public sealed class GlamourerInterop
                 var gameObj = _charaDataHelpers.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
-                    GagSpeak.Log.Debug("[GetCharacterCustomizationAsync] Calling on IPC: GlamourerGetAllCustomizationFromCharacter");
+                    GagSpeak.Log.Verbose("[GetCharacterCustomizationAsync] Calling on IPC: GlamourerGetAllCustomizationFromCharacter");
                     return _GetAllCustomizationFromCharacter!.InvokeFunc(c);
                 }
                 // otherwise, just return an empty string.
@@ -149,7 +149,7 @@ public sealed class GlamourerInterop
                 var gameObj = _charaDataHelpers.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
-                    GagSpeak.Log.Debug("[GetCharacterCustomizationAsync] Calling on IPC: GlamourSetItemToCharacter");
+                    GagSpeak.Log.Verbose("[GetCharacterCustomizationAsync] Calling on IPC: GlamourSetItemToCharacter");
                     _SetItem!.InvokeFunc(c, slot, item, dye, variant);
                 }
                 // otherwise, just return an empty string.

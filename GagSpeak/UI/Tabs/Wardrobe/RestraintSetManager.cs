@@ -15,17 +15,22 @@ namespace GagSpeak.Wardrobe;
 
 public class RestraintSetManager : ISavable
 {
+    public List<RestraintSet> _restraintSets = []; // stores the restraint sets
+
+    [JsonIgnore]
     private readonly SaveService _saveService;
-    public List<RestraintSet> _restraintSets; // stores the restraint sets
 
     public RestraintSetManager(SaveService saveService) {
         _saveService = saveService;
-
-        // create the new dictionaries (replace with loading a list later)
-        _restraintSets = new List<RestraintSet>();
-        AddNewRestraintSet(); // append new restraint set with default values
+        
         // load the information from our storage file
-
+        Load();
+        // correctly account for any non-updated timed locked sets
+        foreach (var set in _restraintSets) {
+            if (set._locked && set._lockedTimer < DateTimeOffset.Now) {
+                set._locked = false;
+            }
+        }
     }
     
     #region Manager Methods
@@ -73,18 +78,37 @@ public class RestraintSetManager : ISavable
 
     /// <summary> Sets the IsEnabled for a restraint set spesified by index if it exists. </summary>
     public void ChangeRestraintSetEnabled(int restraintSetIdx, bool isEnabled) {
-        _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled);
+        if (isEnabled) {
+            for (int i = 0; i < _restraintSets.Count; i++) {
+                if (i != restraintSetIdx) {
+                    _restraintSets[i]._enabled = false;
+                }
+            }
+        }
+        // make sure its the only one left enabled
+        _restraintSets[restraintSetIdx]._enabled = true;
         Save();
     }
 
     /// <summary> Toggles the enabled state of a restraint set spesified by index if it exists. </summary>
     public void ToggleRestraintSetEnabled(int restraintSetIdx) {
         _restraintSets[restraintSetIdx].SetIsEnabled(!_restraintSets[restraintSetIdx]._enabled);
+        if (_restraintSets[restraintSetIdx]._enabled == true) {
+            for (int i = 0; i < _restraintSets.Count; i++) {
+                if (i != restraintSetIdx) {
+                    _restraintSets[i]._enabled = false;
+                }
+            }
+        }
+        _restraintSets[restraintSetIdx]._enabled = true;
         Save();
     }
 
     public void ChangeRestraintSetLocked(int restraintSetIdx, bool isLocked) {
         _restraintSets[restraintSetIdx].SetIsLocked(isLocked);
+        // make sure to enable it as well
+        ChangeRestraintSetEnabled(restraintSetIdx, true); // may potentially cause race condition, we will see.
+        // this will indirectly disable the rest
         Save();
     }
 
@@ -123,6 +147,16 @@ public class RestraintSetManager : ISavable
         Save();
     }
 
+    public void ResetSetDrawDataGameItem(int restraintSetIdx, EquipSlot DrawDataSlot) {
+        _restraintSets[restraintSetIdx]._drawData[DrawDataSlot].ResetDrawDataGameItem();
+        Save();
+    }
+
+    public void ResetSetDrawDataGameStain(int restraintSetIdx, EquipSlot DrawDataSlot) {
+        _restraintSets[restraintSetIdx]._drawData[DrawDataSlot].ResetDrawDataGameStain();
+        Save();
+    }
+
 
     #endregion Manager Methods
 
@@ -152,23 +186,28 @@ public class RestraintSetManager : ISavable
         };
     }
 
-    private void Load() {
+    public void Load() {
+        #pragma warning disable CS8604, CS8602 // Possible null reference argument.
         var file = _saveService.FileNames.RestraintSetsFile;
-        // if we have information to process, then we should empty our restraint sets
         _restraintSets.Clear();
-        // if the file doesnt exist, then we shouldnt try to load it
         if (!File.Exists(file)) {
             return;
         }
-        // but if it does, then we should try to parse it out and load it
         try {
-            // get all the text
-            var text    = File.ReadAllText(file);
-            // parse it into a fat object
-            var obj     = JObject.Parse(text);
+            var text = File.ReadAllText(file);
+            var jsonObject = JObject.Parse(text);
+            var restraintSetsArray = jsonObject["RestraintSets"]?.Value<JArray>();
+            foreach (var item in restraintSetsArray) {
+                var restraintSet = new RestraintSet();
+                restraintSet.Deserialize(item.Value<JObject>());
+                _restraintSets.Add(restraintSet);
+            }
         } catch (Exception ex) {
             GagSpeak.Log.Error($"Failure to load automated designs: Error during parsing. {ex}");
+        } finally {
+            GagSpeak.Log.Debug($"[GagStorageManager] RestraintSets.json loaded! Loaded {_restraintSets.Count} restraint sets.");
         }
+        #pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }
 }
 #endregion Json ISavable & Loads

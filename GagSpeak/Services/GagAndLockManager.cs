@@ -8,7 +8,8 @@ using Dalamud.Plugin.Services;                      // Contains service classes 
 using Dalamud.Game.Text.SeStringHandling.Payloads;  // Contains classes for handling special encoded (SeString) payloads in the Dalamud game
 using Dalamud.Game.Text.SeStringHandling;           // Contains classes for handling special encoded (SeString) strings in the Dalamud game
 using OtterGui.Classes;
-using System.Linq;                             // Contains classes for managing the OtterGui framework
+using System.Linq;
+using GagSpeak.Wardrobe;                             // Contains classes for managing the OtterGui framework
 
 namespace GagSpeak;
 
@@ -18,6 +19,7 @@ namespace GagSpeak;
 public class GagAndLockManager : IDisposable
 {
     private readonly GagSpeakConfig     _config;            // for config options
+    private readonly GagStorageManager  _gagStorageManager; // for gag storage
     private readonly IChatGui           _clientChat;        // for chat messages
     private readonly IClientState       _clientState;       // for player payload
     private readonly TimerService       _timerService;      // for timers
@@ -25,7 +27,7 @@ public class GagAndLockManager : IDisposable
     private readonly ItemAutoEquipEvent _gagItemEquippedEvent; // for gag item equipped event
 
     /// <summary> Initializes a new instance of the <see cref="GagAndLockManager"/> class. </summary>
-    public GagAndLockManager(GagSpeakConfig config, IChatGui clientChat, TimerService timerService,
+    public GagAndLockManager(GagSpeakConfig config, IChatGui clientChat, TimerService timerService, GagStorageManager gagStorageManager,
     IClientState clientState, SafewordUsedEvent safewordUsedEvent, ItemAutoEquipEvent _itemAutoEquipEvent) {
         _config = config;
         _clientChat = clientChat;
@@ -33,6 +35,7 @@ public class GagAndLockManager : IDisposable
         _timerService = timerService;
         _safewordUsedEvent = safewordUsedEvent;
         _gagItemEquippedEvent = _itemAutoEquipEvent;
+        _gagStorageManager = gagStorageManager;
         // subscribe to the safeword event
         _safewordUsedEvent.SafewordCommand += CleanupVariables;
     }
@@ -64,7 +67,7 @@ public class GagAndLockManager : IDisposable
         // get gagtype before clear
         var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _config.selectedGagTypes[layerIndex]);
         // remove the gag information from anywhere where it should be removed from within our code
-        _config.gagEquipData[gagType]._wasEquippedBy = "";
+        _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
         _config.selectedGagTypes[layerIndex] = "None";
         _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None;
         _config.selectedGagPadlocksPassword[layerIndex] = string.Empty;

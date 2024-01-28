@@ -59,6 +59,9 @@ public class CharaDataHelpers : IDisposable
     private DateTime _delayedFrameworkUpdateCheck = DateTime.Now; // keeps track of how delayed our framework update is
     private string _lastGlobalBlockPlayer = string.Empty; // player name of the last global block
     private string _lastGlobalBlockReason = string.Empty; // reason for the last global block
+    private bool _sentBetweenAreas = false; // if we sent a between areas message
+    private ushort _lastZone = 0;
+    public bool IsZoning => _condition[ConditionFlag.BetweenAreas] || _condition[ConditionFlag.BetweenAreas51]; // if we are zoning
     public Lazy<Dictionary<ushort, string>> WorldData { get; private set; } // contains world data if we ever need it at any point
 
     public CharaDataHelpers(IClientState clientState, IObjectTable objectTable, IFramework framework,
@@ -96,14 +99,37 @@ public class CharaDataHelpers : IDisposable
         // if we are not logged in, or are dead, return
         if (_clientState.LocalPlayer?.IsDead ?? false) return;
         
+        // If we are zoning, then we need to halt processing
+        if (_condition[ConditionFlag.BetweenAreas] || _condition[ConditionFlag.BetweenAreas51]) {
+            // log the zone
+            var zone = _clientState.TerritoryType;
+            // if it is different from our last zone, then we need to send a zone switch start message
+            if (_lastZone != zone) {
+                // set the last zone to the current zone
+                _lastZone = zone;
+                // if we are not already sent between area's then make sure we set it
+                if (!_sentBetweenAreas) {
+                    GagSpeak.Log.Debug($"[ZoneSwitch]  Zone switch/Gpose start");
+                    _sentBetweenAreas = true;
+                }
+            }
+            // early escape
+            return;
+        }
+
+
+        // if we are between areas, but made it to this point, then it means we are back in the game
+        if (_sentBetweenAreas) {
+            GagSpeak.Log.Debug($"[ZoneSwitch]  Zone switch/Gpose end");
+            _sentBetweenAreas = false;
+        }
+
+
         // Otherwise, reset the IsAnythingDrawing bool for the next framework update
         IsAnythingDrawing = false;
-        
         // if we can check for drawing, check for drawing
         if(_canCheckForDrawing)
             CheckCharacterForDrawing();
-
-
         // check and update our object data
         try {
             CheckAndUpdateObject();
@@ -111,6 +137,7 @@ public class CharaDataHelpers : IDisposable
             GagSpeak.Log.Error($"[FrameworkUpdate] Error during framework update of {ex}");
         }  
         
+
         // if we are not drawing anything and we have a global block player, reset the global block player (not sure what this does yet)
         if (!IsAnythingDrawing && !string.IsNullOrEmpty(_lastGlobalBlockPlayer)) {
             GagSpeak.Log.Debug($"Global draw block: END => {_lastGlobalBlockPlayer}");
@@ -118,14 +145,15 @@ public class CharaDataHelpers : IDisposable
             _lastGlobalBlockReason = string.Empty; 
         }
 
+
         // if our job is changed, invoke a redraw
         if (_jobChanged) {
             _jobChangedEvent.Invoke();
         }
         
+
         // if the current time is less than the delayed framework update check + 1 second, return
         if (DateTime.Now < _delayedFrameworkUpdateCheck.AddSeconds(1)) return;
-        
         // update the delayed framework update check to the current time
         _delayedFrameworkUpdateCheck = DateTime.Now;
     }

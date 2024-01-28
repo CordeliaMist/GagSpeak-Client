@@ -70,4 +70,30 @@ public class RestraintSet //: IDisposable
             ["DrawData"] = drawDataArray
         };
     }
+
+    public void Deserialize(JObject jsonObject) {
+        #pragma warning disable CS8604, CS8602 // Possible null reference argument.
+        _name = jsonObject["Name"]?.Value<string>() ?? string.Empty;
+        _description = jsonObject["Description"]?.Value<string>() ?? string.Empty;
+        _enabled = jsonObject["IsEnabled"]?.Value<bool>() ?? false;
+        _locked = jsonObject["Locked"]?.Value<bool>() ?? false;
+        _lockedTimer = jsonObject["LockedTimer"] != null ? DateTimeOffset.Parse(jsonObject["LockedTimer"].Value<string>()) : default;
+
+        _drawData.Clear();
+        var drawDataArray = jsonObject["DrawData"]?.Value<JArray>();
+        if (drawDataArray != null) {
+            foreach (var item in drawDataArray) {
+                var itemObject = item.Value<JObject>();
+                if (itemObject != null) {
+                    var equipmentSlot = (EquipSlot)Enum.Parse(typeof(EquipSlot), itemObject["EquipmentSlot"]?.Value<string>() ?? string.Empty);
+                    var drawData = new EquipDrawData(ItemIdVars.NothingItem(equipmentSlot));
+                    drawData.Deserialize(itemObject["DrawData"]?.Value<JObject>());
+                    _drawData.Add(equipmentSlot, drawData);
+                }
+            }
+        }
+        #pragma warning restore CS8604, CS8602 // Possible null reference argument.
+    }
+
+
 }

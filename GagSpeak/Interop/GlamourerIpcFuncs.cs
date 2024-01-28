@@ -29,6 +29,7 @@ using Penumbra.Api.Enums;
 using Character = FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 using Penumbra.GameData.Structs;
 using System.Timers;
+using GagSpeak.Wardrobe;
 
 namespace GagSpeak.Interop;
 
@@ -38,6 +39,8 @@ namespace GagSpeak.Interop;
 public class GlamourerIpcFuncs : IDisposable
 {
     private readonly    GagSpeakConfig                  _config;                // the plugin interface
+    private readonly    GagStorageManager               _gagStorageManager;     // the gag storage manager
+    private readonly    RestraintSetManager             _restraintSetManager;   // the restraint set manager
     private readonly    IClientState                    _clientState;           // the client state to get player character
     private readonly    GlamourerInterop                _Interop;               // the glamourer interop class
     private readonly    ItemAutoEquipEvent              _itemAutoEquipEvent;    // the item auto equip event class
@@ -50,9 +53,9 @@ public class GlamourerIpcFuncs : IDisposable
     private             string?                         _lastCustomizationData; // store the last customization data
     private             CancellationTokenSource         _cts;
 
-    public GlamourerIpcFuncs(GagSpeakConfig gagSpeakConfig, IClientState clientState, IObjectTable objectTable,
+    public GlamourerIpcFuncs(GagSpeakConfig gagSpeakConfig, IClientState clientState, IObjectTable objectTable, RestraintSetManager restraintSetManager,
     CharaDataHelpers charaDataHelpers, GlamourerInterop glamourerInterop, ItemAutoEquipEvent itemAutoEquipEvent,
-    DalamudPluginInterface pluginInterface, JobChangedEvent jobChangedEvent) {
+    DalamudPluginInterface pluginInterface, JobChangedEvent jobChangedEvent, GagStorageManager gagStorageManager) {
         // initialize the glamourer interop class
         _config = gagSpeakConfig;
         _clientState = clientState;
@@ -62,6 +65,8 @@ public class GlamourerIpcFuncs : IDisposable
         _objectTable = objectTable;
         _charaDataHelpers = charaDataHelpers;
         _jobChangedEvent = jobChangedEvent;
+        _gagStorageManager = gagStorageManager;
+        _restraintSetManager = restraintSetManager;
         // initialize delegate for the glamourer changed event
         _ChangedDelegate = (type, address, customize) => GlamourerChanged(type, address);
         // _throttleTimerHandler = (sender, e) => ThrottleTimerElapsed(e);
@@ -94,6 +99,10 @@ public class GlamourerIpcFuncs : IDisposable
             }
             // player is loaded, so we can now get the player object
             GagSpeak.Log.Debug($"[CLIENTSTATE-LOGIN EVENT]: Character logged in! Caching data!");
+            string _lastCustomizationData = await _Interop.GetCharacterCustomizationAsync(_charaDataHelpers.Address);
+            GagSpeak.Log.Debug($"[GlamourerChanged]:  from GetAllCustomization: {_lastCustomizationData}");
+            // deserialize the customization data
+            await Task.Run(() => DeserializeCustomizationData(_lastCustomizationData));
         }
         catch (Exception ex) {
             GagSpeak.Log.Error($"[WaitForPlayerToLoad]: Error waiting for player to load: {ex}");
@@ -105,8 +114,8 @@ public class GlamourerIpcFuncs : IDisposable
    private void GlamourerChanged(int type, nint address) {
         // Will be unessisary until after glamourer does its stateChanged update and more inclusion with IPC
         // CONDITION ONE: Make sure it is from the local player, and not another player
-        if (address != (_charaDataHelpers.Address)) {
-            GagSpeak.Log.Debug($"[GlamourerChanged]: Change not from Character, IGNORING");
+        if (address != (_charaDataHelpers.Address) || _config.InDomMode) {
+            GagSpeak.Log.Verbose($"[GlamourerChanged]: Change not from Character / In Dom Mode, IGNORING");
             return;
         }
         // CONDITION TWO: _config.EnableWardrobe is false, meaning we shouldnt process any of these
@@ -116,7 +125,7 @@ public class GlamourerIpcFuncs : IDisposable
         }
         // CONDITION THREE: we were just executing an ItemAuto-Equip event, so we dont need to worry about it
         if(_itemAutoEquipEvent.IsItemAutoEquipEventExecuting == true || _disableGlamChangeEvent == true) {
-            GagSpeak.Log.Debug($"[GlamourerChanged]: Blocked due to request variables");
+            GagSpeak.Log.Verbose($"[GlamourerChanged]: Blocked due to request variables");
             return;
         }
         // CONDITION FOUR: The StateChangeType is a design. Meaning the player changed to a different look via glamourer
@@ -136,7 +145,7 @@ public class GlamourerIpcFuncs : IDisposable
         // CONDITION FIVE: The StateChangeType is an equip or Stain, meaning that the player changed classes in game, or gearsets, causing multiple events to trigger
         if(type == (int)StateChangeType.Equip || type == (int)StateChangeType.Stain || type == (int)StateChangeType.Weapon) {
             var enumType = (StateChangeType)type;  
-            GagSpeak.Log.Debug($"[GlamourerChanged]: StateChangeType is {enumType}");
+            GagSpeak.Log.Verbose($"[GlamourerChanged]: StateChangeType is {enumType}");
 
             // Cancel the previous task
             _cts.Cancel();
@@ -154,7 +163,7 @@ public class GlamourerIpcFuncs : IDisposable
             }, _cts.Token);
         } else {
             var enumType = (StateChangeType)type;  
-            GagSpeak.Log.Debug($"[GlamourerChanged]: GlamourerChangedEvent was not equipmenttype, stain, or weapon; but rather {enumType}");
+            GagSpeak.Log.Verbose($"[GlamourerChanged]: GlamourerChangedEvent was not equipmenttype, stain, or weapon; but rather {enumType}");
         }
     }
     
@@ -226,17 +235,14 @@ public class GlamourerIpcFuncs : IDisposable
     /// <item><c>customizationData</c><param name="customizationData">String containing base64 info of customization data</param></item>
     /// </list> </summary>
     public async Task UpdateCachedCharacterData(string? customizationData) {
+        // next, see if we are allowed to apply restraint sets
+        await ApplyRestrainSetToCachedCharacterData();
+        
         // for privacy reasons, we must first make sure that our options for allowing such things are enabled.
         if(_config.allowItemAutoEquip) {
             await ApplyGagItemsToCachedCharacterData();
         } else {
             GagSpeak.Log.Debug($"[GlamourerChanged]: Item Auto-Equip is disabled, IGNORING");
-        }
-        // next, see if we are allowed to apply restraint sets
-        if(_config.allowRestraintLocking) {
-            await ApplyRestrainSetToCachedCharacterData();
-        } else {
-            GagSpeak.Log.Debug($"[GlamourerChanged]: Restraint Sets are disabled, IGNORING");
         }
     }
 
@@ -346,14 +352,39 @@ public class GlamourerIpcFuncs : IDisposable
     */
     }
 
+    /// <summary> Applies the only enabled restraint set to your character on update trigger. </summary>
     public async Task ApplyRestrainSetToCachedCharacterData() { // dummy placeholder line
         GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: Applying Restraint Set to Cached Character Data");
+        // Find the restraint set with the matching name
+        foreach (var restraintSet in _restraintSetManager._restraintSets) {
+            // If the restraint set is enabled
+            if (restraintSet._enabled) {
+                // Iterate over each EquipDrawData in the restraint set
+                foreach (var pair in restraintSet._drawData) {
+                    // If the EquipDrawData is not a nothing item
+                    if (!pair.Value._gameItem.Equals(ItemIdVars.NothingItem(pair.Value._slot))) {
+                        // Apply the EquipDrawData
+                        await _Interop.SetItemToCharacterAsync(
+                            _charaDataHelpers.Address, 
+                            Convert.ToByte(pair.Key), // the key (EquipSlot)
+                            pair.Value._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
+                            pair.Value._gameStain.Id, // The _drawData._gameStain.Id
+                            0);
+                    } else {
+                        GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: EquipDrawData for {pair.Key} is a nothing item, skipping!");
+                    }
+                }
+                // early exit, we only want to apply one restraint set
+                return;
+            }
+        }
+        GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: No restraint sets are enabled, skipping!");
     }
 
     public async void OnGagEquippedEvent(object sender, ItemAutoEquipEventArgs e) {
         try {
             // know if we can even do anything anyways
-            if(_config.enableWardrobe && _config.allowItemAutoEquip) {
+            if(!(_config.enableWardrobe && _config.allowItemAutoEquip)) {
                 GagSpeak.Log.Debug($"[OnGagEquippedEvent]: ItemAutoEquip Permissions not granted. Not setting item.");
                 return;
             }
@@ -378,29 +409,30 @@ public class GlamourerIpcFuncs : IDisposable
         // Get the gagtype (enum) where it's alias matches the gagName
         var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(g => g.GetGagAlias() == gagName);
         // See if the GagType is in our dictionary & that the gagName is not "None" (because .FirstOrDefault() would make gagType==BallGag when gagName==None)
-        if(_config.gagEquipData.TryGetValue(gagType, out var equipDrawData)) {
-            if(equipDrawData._isEnabled == false) {
-                GagSpeak.Log.Debug($"[OnGagEquippedEvent]: GagType {gagName} is not enabled, so not setting item.");
-                return;
-            }
-            // otherwise let's do the rest of the stuff
-            if(assignerName == "self") equipDrawData._wasEquippedBy = "self";
-            if(assignerName != "self") equipDrawData._wasEquippedBy = assignerName;
+        if(_gagStorageManager._gagEquipData[gagType]._isEnabled == false) {
+            GagSpeak.Log.Debug($"[OnGagEquippedEvent]: GagType {gagName} is not enabled, so not setting item.");
+            return;
+        }
+        // otherwise let's do the rest of the stuff
+        if(assignerName == "self") _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "self");
+        if(assignerName != "self") _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, assignerName); 
 
-            // see if assigner is valid
-            if(ValidGagAssignerUser(gagName, equipDrawData)) {
-                try {
-                    await _Interop.SetItemToCharacterAsync(_charaDataHelpers.Address, Convert.ToByte(equipDrawData._slot), equipDrawData._gameItem.Id.Id, equipDrawData._gameStain.Id, 0 );
-                    GagSpeak.Log.Debug($"[OnGagEquippedEvent]: Set item {equipDrawData._gameItem} to slot {equipDrawData._slot} for gag {gagName}");
-                }
-                catch (TargetInvocationException ex) {
-                    GagSpeak.Log.Error($"[OnGagEquippedEvent]: Error setting item: {ex.InnerException}");
-                } 
-            } else {
-                GagSpeak.Log.Debug($"[OnGagEquippedEvent]: Assigner {assignerName} is not valid, so not setting item.");
+        // see if assigner is valid
+        if(ValidGagAssignerUser(gagName, _gagStorageManager._gagEquipData[gagType])) {
+            try {
+                await _Interop.SetItemToCharacterAsync(_charaDataHelpers.Address, 
+                                                       Convert.ToByte(_gagStorageManager._gagEquipData[gagType]._slot),
+                                                       _gagStorageManager._gagEquipData[gagType]._gameItem.Id.Id,
+                                                       _gagStorageManager._gagEquipData[gagType]._gameStain.Id,
+                                                       0
+                );
+                GagSpeak.Log.Debug($"[OnGagEquippedEvent]: Set item {_gagStorageManager._gagEquipData[gagType]._gameItem} to slot {_gagStorageManager._gagEquipData[gagType]._slot} for gag {gagName}");
             }
+            catch (TargetInvocationException ex) {
+                GagSpeak.Log.Error($"[OnGagEquippedEvent]: Error setting item: {ex.InnerException}");
+            } 
         } else {
-            GagSpeak.Log.Error($"[OnGagEquippedEvent]: GagType {gagName} does not exist in the dictionary!");
+            GagSpeak.Log.Debug($"[OnGagEquippedEvent]: Assigner {assignerName} is not valid, so not setting item.");
         }
     }
 

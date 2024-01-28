@@ -36,9 +36,9 @@ public class WardrobeGagCompartment
     private readonly    IDataManager                    _gameData;              // for getting the game data
     private readonly    TextureService                  _textures;              // for getting the textures
     private readonly    FontService                     _fonts;                 // for getting the fonts
-    private readonly    ISavable                        _saveService;           // for getting the save service
     private readonly    FilenameService                 _filenameService;       // for getting the filename service
     private readonly    GagStorageManager               _gagStorageManager;     // for getting the gag storage manager
+    public              string                          _filename;
     private             Vector2                         _iconSize;              // for setting the icon size
     private             float                           _comboLength;           // for setting the combo length
     // stuff for gag selection and equip 
@@ -53,7 +53,7 @@ public class WardrobeGagCompartment
     /// <summary> Initializes a new instance wardrobe tab"/> class. <summary>
     public WardrobeGagCompartment(GagSpeakConfig config, DalamudPluginInterface pluginInterface, GlamourerInterop glamourerInterop,
     IClientState clientState, TextureService textures, DictStain stainData, IDataManager gameData, ItemData itemData,
-    FontService fonts, ISavable saveService, FilenameService filenameService, GagStorageManager gagStorageManager) {
+    FontService fonts, FilenameService filenameService, GagStorageManager gagStorageManager) {
         _config = config;
         _Interop = glamourerInterop;
         _clientState = clientState;
@@ -62,13 +62,13 @@ public class WardrobeGagCompartment
         _stainData = stainData;
         _itemData = itemData;
         _fonts = fonts;
-        _saveService = saveService;
         _filenameService = filenameService;
         _gagStorageManager = gagStorageManager;
 
         // set the gaglisting names
         _gagNames = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().Select(gag => gag.GetGagAlias()).ToArray();
         _gagNameSelected = 0;
+        _filename = _gagStorageManager.ToFilename(_filenameService);
 
         // create a new gameItemCombo for each equipment piece type, then store them into the array.
         _gameItemCombo = EquipSlotExtensions.EqdpSlots.Select(e => new GameItemCombo(_gameData, e, _itemData, GagSpeak.Log)).ToArray();
@@ -116,7 +116,6 @@ public class WardrobeGagCompartment
                     selectedGag = _gagNameSelected >= 0 && _gagNameSelected < Enum.GetValues(typeof(GagList.GagType)).Length 
                         ? (GagList.GagType)Enum.GetValues(typeof(GagList.GagType)).GetValue(_gagNameSelected)! 
                         : GagList.GagType.BallGag;
-                    _config.Save(); // maybe remove if too agressive
                 }
             }
             catch (Exception e) {
@@ -135,7 +134,7 @@ public class WardrobeGagCompartment
                 ImGui.TableSetupColumn("Header Text", ImGuiTableColumnFlags.WidthFixed, 230);
                 // draw then icon
                 ImGui.TableNextRow(); ImGui.TableNextColumn();
-                _config.gagEquipData[selectedGag]._gameItem.DrawIcon(_textures, _iconSize, _config.gagEquipData[selectedGag]._slot);
+                _gagStorageManager._gagEquipData[selectedGag]._gameItem.DrawIcon(_textures, _iconSize, _gagStorageManager._gagEquipData[selectedGag]._slot);
                 // now draw out the customization header and dropdown.
                 ImGui.TableNextColumn();
                 // draw out the title
@@ -145,20 +144,21 @@ public class WardrobeGagCompartment
                 
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
                 // display the wardrobe slot for this gag
-                if(ImGui.Combo("Equipment Slot##WardrobeEquipSlot", ref _config.gagEquipData[selectedGag]._activeSlotListIdx,
+                if(ImGui.Combo("Equipment Slot##WardrobeEquipSlot", ref _gagStorageManager._gagEquipData[selectedGag]._activeSlotListIdx,
                 EquipSlotExtensions.EqdpSlots.Select(slot => slot.ToName()).ToArray(), EquipSlotExtensions.EqdpSlots.Count)) {
                     // Update the selected slot when the combo box selection changes
-                    _config.gagEquipData[selectedGag]._slot = EquipSlotExtensions.EqdpSlots[_config.gagEquipData[selectedGag]._activeSlotListIdx];
+                    _gagStorageManager.ChangeGagDrawDataSlot(selectedGag, EquipSlotExtensions.EqdpSlots[_gagStorageManager._gagEquipData[selectedGag]._activeSlotListIdx]);
+                    _gagStorageManager.ResetGagDrawDataGameItem(selectedGag);
                 }
                 // end the table
             }
             // down below, have a listing for the equipment drawer
             _comboLength = ImGui.GetContentRegionAvail().X;
-            UIHelpers.DrawEquip(_config.gagEquipData[selectedGag], _comboLength, _gameItemCombo, _stainCombo, _stainData, _config, _gagStorageManager, _filenameService);
+            DrawEquip(selectedGag, _comboLength, _gameItemCombo, _stainCombo, _stainData);
             style.Pop();
 
             // If true, draw enable auto-equip as green and disabled, and bottom button as default color and pressable.
-            if(_config.gagEquipData[selectedGag]._isEnabled) {
+            if(_gagStorageManager._gagEquipData[selectedGag]._isEnabled) {
                 ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x0080FF40); // Slightly more Green
                 ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x0080FF40); // Slightly more Green
                 ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x0080FF40); // Slightly more Green
@@ -172,7 +172,7 @@ public class WardrobeGagCompartment
                 // and draw the interactable button
                 if(ImGui.Button("Disable Item Auto-Equip", new Vector2(ImGui.GetContentRegionAvail().X, 50))) {
                     // do something when the button is clicked
-                    _config.gagEquipData[selectedGag]._isEnabled = false;
+                    _gagStorageManager.ChangeGagDrawDataIsEnabled(selectedGag, false);
                     GagSpeak.Log.Debug($"[WardrobeTab] Disable Gag Drawer Button Clicked!");
                 }
                 ImGui.PopStyleColor(3);
@@ -182,7 +182,7 @@ public class WardrobeGagCompartment
                 ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0xFF / 255f, 0x61 / 255f, 0xD9 / 255f, 0xEF / 255f)); // #FF61D9EF
                 ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0xFF / 255f, 0xAF / 255f, 0xEC / 255f, 0xEF / 255f)); // #FFAFECEF
                 if(ImGui.Button("Enable Item Auto-Equip", new Vector2(ImGui.GetContentRegionAvail().X, 50))) {
-                    _config.gagEquipData[selectedGag]._isEnabled = true;
+                    _gagStorageManager.ChangeGagDrawDataIsEnabled(selectedGag, true);
                     GagSpeak.Log.Debug($"[WardrobeTab] Enable Gag Drawer Button Clicked!");
                 }
                 ImGui.PopStyleColor(3);
@@ -198,13 +198,94 @@ public class WardrobeGagCompartment
             // draw debug metrics
             ImGui.NewLine();
             ImGui.Text($"Gag Name: {selectedGag.GetGagAlias()}");
-            ImGui.Text($"IsEnabled: {_config.gagEquipData[selectedGag]._isEnabled}");
-            ImGui.Text($"WasEquippedBy: {_config.gagEquipData[selectedGag]._wasEquippedBy}");
-            ImGui.Text($"Locked: {_config.gagEquipData[selectedGag]._locked}");
-            ImGui.Text($"ActiveSlotListIdx: {_config.gagEquipData[selectedGag]._activeSlotListIdx}");
-            ImGui.Text($"Slot: {_config.gagEquipData[selectedGag]._slot}");
-            ImGui.Text($"GameItem: {_config.gagEquipData[selectedGag]._gameItem}");
-            ImGui.Text($"GameStain: {_config.gagEquipData[selectedGag]._gameStain}");
+            ImGui.Text($"IsEnabled: {_gagStorageManager._gagEquipData[selectedGag]._isEnabled}");
+            ImGui.Text($"WasEquippedBy: {_gagStorageManager._gagEquipData[selectedGag]._wasEquippedBy}");
+            ImGui.Text($"Locked: {_gagStorageManager._gagEquipData[selectedGag]._locked}");
+            ImGui.Text($"ActiveSlotListIdx: {_gagStorageManager._gagEquipData[selectedGag]._activeSlotListIdx}");
+            ImGui.Text($"Slot: {_gagStorageManager._gagEquipData[selectedGag]._slot}");
+            ImGui.Text($"GameItem: {_gagStorageManager._gagEquipData[selectedGag]._gameItem}");
+            ImGui.Text($"GameStain: {_gagStorageManager._gagEquipData[selectedGag]._gameStain}");
         } // end of table
+    }
+
+
+    /// <summary> Draws the equipment combo for the icon, item combo, and stain combo to the wardrobe tab.
+    /// <list type="bullet">
+    /// <item><c>EquipDrawData</c><paramref name="equipDrawData"> The equip data to draw.</paramref></item>
+    /// </list> </summary>
+    public void DrawEquip(GagList.GagType gagType, float width, GameItemCombo[] _gameItemCombo, 
+    StainColorCombo _stainCombo, DictStain _stainData) {
+        using var id      = ImRaii.PushId((int)_gagStorageManager._gagEquipData[gagType]._slot);
+        var       spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemSpacing.Y };
+        using var style   = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
+
+        var right = ImGui.IsItemClicked(ImGuiMouseButton.Right);
+        var left  = ImGui.IsItemClicked(ImGuiMouseButton.Left);
+
+        width = ImGui.GetContentRegionAvail().X; // update length
+        using var group = ImRaii.Group();
+        DrawItem(gagType, out var label, right, left, width, _gameItemCombo);
+        DrawStain(gagType, width, _stainCombo, _stainData);
+    }
+
+    /// <summary> Draws the item combo dropdown for our equipDrawData.
+    /// <list type="bullet">
+    /// <item><c>EquipDrawData</c><paramref name="data"> The equip data to draw.</paramref></item>
+    /// <item><c>string</c><paramref name="label"> The label for the combo.</paramref></item>
+    /// <item><c>bool</c><paramref name="clear"> Whether or not to clear the item.</paramref></item>
+    /// <item><c>bool</c><paramref name="open"> Whether or not to open the combo.</paramref></item>
+    /// </list> </summary>
+    private void DrawItem(GagList.GagType gagType, out string label,bool clear, bool open, float width, 
+    GameItemCombo[] _gameItemCombo) {
+        // draw the item combo.
+        var combo = _gameItemCombo[_gagStorageManager._gagEquipData[gagType]._slot.ToIndex()];
+        label = combo.Label;
+        if (!_gagStorageManager._gagEquipData[gagType]._locked && open) {
+            UIHelpers.OpenCombo($"##GagShelfItem{gagType}{combo.Label}");
+            GagSpeak.Log.Debug($"{combo.Label}");
+        }
+        // draw the combo
+        using var disabled = ImRaii.Disabled(_gagStorageManager._gagEquipData[gagType]._locked);
+        var change = combo.Draw(_gagStorageManager._gagEquipData[gagType]._gameItem.Name, _gagStorageManager._gagEquipData[gagType]._gameItem.ItemId, width, width);
+        // conditionals to detect for changes in the combo's
+        if (change && !_gagStorageManager._gagEquipData[gagType]._gameItem.Equals(combo.CurrentSelection)) {
+            _gagStorageManager.ChangeGagDrawDataGameItem(gagType, combo.CurrentSelection);
+            // save the correct config
+            using (StreamWriter writer = new StreamWriter(_filename)) { _gagStorageManager.Save(writer); }
+        }
+        if (clear || ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
+            _gagStorageManager.ResetGagDrawDataGameItem(gagType);
+            // save the correct config
+            using (StreamWriter writer = new StreamWriter(_filename)) { _gagStorageManager.Save(writer); }
+            GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, item reverted to none!");
+        }
+    }
+
+    /// <summary> Draws the stain combo dropdown for our equipDrawData.
+    /// <list type="bullet">
+    /// <item><c>EquipDrawData</c><paramref name="data"> The equip data to draw.</paramref></item>
+    /// </list> </summary>
+    private void DrawStain(GagList.GagType gagType, float width, StainColorCombo _stainCombo, DictStain _stainData) {
+        // fetch the correct stain from the stain data
+        var       found    = _stainData.TryGetValue(_gagStorageManager._gagEquipData[gagType]._gameStain, out var stain);
+        using var disabled = ImRaii.Disabled(_gagStorageManager._gagEquipData[gagType]._locked);
+        // draw the stain combo
+        if (_stainCombo.Draw($"##GagShelfStain{gagType}{_gagStorageManager._gagEquipData[gagType]._slot}", stain.RgbaColor, stain.Name, found, stain.Gloss, width)) {
+            if (_stainData.TryGetValue(_stainCombo.CurrentSelection.Key, out stain)) {
+                _gagStorageManager.ChangeGagDrawDataGameStain(gagType, stain.RowIndex);
+                GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: {stain.RowIndex}");
+                using (StreamWriter writer = new StreamWriter(_filename)) { _gagStorageManager.Save(writer); }
+            }
+            else if (_stainCombo.CurrentSelection.Key == Penumbra.GameData.Structs.Stain.None.RowIndex) {
+                //data.StainSetter(Stain.None.RowIndex);
+                GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: None");
+            }
+        }
+        // conditionals to detect for changes in the combo's via reset
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
+            _gagStorageManager.ResetGagDrawDataGameStain(gagType);
+            using (StreamWriter writer = new StreamWriter(_filename)) { _gagStorageManager.Save(writer); }
+            GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, stain reverted to none!");
+        }
     }
 }
