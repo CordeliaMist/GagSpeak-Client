@@ -102,7 +102,6 @@ public class DebugWindow : Window //, IDisposable
         // DISPLAYS THE OUTPUT STRING 
         ImGui.Text("Output Message: "); ImGui.SameLine();
         UIHelpers.FontText($"{_translatedMessageOutput}", _fontService.UidFont);
-
         // DISPLAYS THE UNIQUE SYMBOLS FOR CURRENT LANGUAGE DIALECT
         string uniqueSymbolsString = _translatorLanguage.uniqueSymbolsString;
         ImGui.PushFont(_fontService.UidFont);
@@ -146,10 +145,10 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Separator();
         ImGui.Text($"Total Gag List Count: {_gagService._gagTypes.Count}");
         ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _config.selectedGagTypes) { ImGui.SameLine(); ImGui.Text($"{gagType} ||"); };
-        ImGui.Text("Selected GagPadlocks: ||"); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} ||");};
-        ImGui.Text("Selected GagPadlocks Passwords: ||"); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} ||"); };
+        ImGui.Text("Selected LockableType: ||"); ImGui.SameLine(); foreach (LockableType gagPadlock in _config.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} ||");};
+        ImGui.Text("Selected LockableType Passwords: ||"); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} ||"); };
         ImGui.Text("Selected GagPadlock Timers: ||"); ImGui.SameLine(); foreach (var gagPadlockTimer in _config.selectedGagPadLockTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} ||"); };
-        ImGui.Text("Selected GagPadlocks Assigners: ||"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} ||"); };
+        ImGui.Text("Selected LockableType Assigners: ||"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} ||"); };
     }
 
     public void DrawDebugInformationWhitelistAndLocks() {
@@ -166,10 +165,10 @@ public class DebugWindow : Window //, IDisposable
             ImGui.Text($"Pending Relationship Request From You: {whitelistPlayerData.PendingRelationRequestFromYou}");
             ImGui.Text($"Pending Relationship Request: {whitelistPlayerData.PendingRelationRequestFromPlayer}");
             ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in whitelistPlayerData.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-            ImGui.Text($"Selected GagPadlocks: || "); ImGui.SameLine(); foreach (GagPadlocks gagPadlock in whitelistPlayerData.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
-            ImGui.Text($"Selected GagPadlocks Passwords: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in whitelistPlayerData.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };
-            ImGui.Text($"Selected GagPadlocks Timers: || "); ImGui.SameLine(); foreach (var gagPadlockTimer in whitelistPlayerData.selectedGagPadlocksTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} || "); };
-            ImGui.Text($"Selected GagPadlocks Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in whitelistPlayerData.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
+            ImGui.Text($"Selected LockableType: || "); ImGui.SameLine(); foreach (LockableType gagPadlock in whitelistPlayerData.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
+            ImGui.Text($"Selected LockableType Passwords: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in whitelistPlayerData.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };
+            ImGui.Text($"Selected LockableType Timers: || "); ImGui.SameLine(); foreach (var gagPadlockTimer in whitelistPlayerData.selectedGagPadlocksTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} || "); };
+            ImGui.Text($"Selected LockableType Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in whitelistPlayerData.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
             ImGui.Unindent();
         }
         ImGui.Unindent();
@@ -228,12 +227,10 @@ public class DebugWindow : Window //, IDisposable
                 ImGui.TableSetupColumn("Symbol", ImGuiTableColumnFlags.WidthFixed, width/4);
                 ImGui.TableSetupColumn("Strength", ImGuiTableColumnFlags.WidthFixed, width/3);
                 ImGui.TableSetupColumn("Sound", ImGuiTableColumnFlags.WidthFixed, width/4);
-            
                 ImGui.TableNextRow(); ImGui.TableNextColumn();
                 ImGui.Text("Symbol"); ImGui.TableNextColumn();
                 ImGui.Text("Strength"); ImGui.TableNextColumn();
                 ImGui.Text("Sound"); ImGui.TableNextColumn();
-            
                 foreach (var phoneme in gag._muffleStrOnPhoneme){
                     ImGui.Text($"{phoneme.Key}"); ImGui.TableNextColumn();
                     ImGui.Text($"{phoneme.Value}"); ImGui.TableNextColumn();
@@ -257,31 +254,10 @@ public class DebugWindow : Window //, IDisposable
     /// </summary>
     public void DrawCachedCharacterInformation() {
         if(!ImGui.CollapsingHeader("Cached Character Information")) { return; }
-
         // draw all the design data we need to know
         using var table = ImRaii.Table("##equip", 6, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit);
         if (!table) { return; }
-        // start drawing it out
-        // ImGuiUtil.DrawTableColumn("Name");
-        // ImGuiUtil.DrawTableColumn(_config.cachedCharacterData.Name);
-        // ImGuiUtil.DrawTableColumn($"DummyColumn");
-        // ImGui.TableNextColumn();
-        // ImGui.TextUnformatted("Description");
-        // ImGuiUtil.HoverTooltip(_config.cachedCharacterData.Description);
-        // ImGui.TableNextRow();
-        // ImGuiUtil.DrawTableColumn("Identifier");
-        // ImGuiUtil.DrawTableColumn(_config.cachedCharacterData.Identifier.ToString());
-        // ImGui.TableNextRow();
-        // ImGuiUtil.DrawTableColumn("CreationDate");
-        // ImGuiUtil.DrawTableColumn(_config.cachedCharacterData.CreationDate.ToString());
-        // ImGui.TableNextRow();
-        // ImGuiUtil.DrawTableColumn("LastEdit");
-        // ImGuiUtil.DrawTableColumn(_config.cachedCharacterData.LastEdit.ToString());
-        // ImGui.TableNextRow();
-        // ImGuiUtil.DrawTableColumn("Tags");
-        // ImGuiUtil.DrawTableColumn(string.Join(", ", _config.cachedCharacterData.Tags));
         ImGui.TableNextRow();
-
         // temp creation for equipment class
         var properties = typeof(Equipment).GetProperties().Where(p => p.Name != "Hat" && p.Name != "Visor" && p.Name != "Weapon").ToArray();
         // display equipment slots:
@@ -291,15 +267,14 @@ public class DebugWindow : Window //, IDisposable
                 // get our property
                 var property = properties[i];
                 // get the value of the property
-                dynamic slot = property.GetValue(_config.cachedCharacterData.Equipment);
+                dynamic? slot = property.GetValue(_config.cachedCharacterData.Equipment);
                 // get rest of the objects values
                 EquipSlot equipslot = equipSlots.ElementAt(i);
-                CustomItemId itemId = slot.ItemId;
-                int stain = slot.Stain;
-                bool apply = slot.Apply;
-                bool applyStain = slot.ApplyStain;
+                CustomItemId itemId = slot?.ItemId;
+                int stain = slot?.Stain;
+                bool apply = slot?.Apply;
+                bool applyStain = slot?.ApplyStain;
                 EquipItem temp = Resolve(equipslot, itemId);
-
                 // draw them outttt
                 ImGuiUtil.DrawTableColumn(((EquipmentSlotNameByEnum)i).ToString()); // the slot name
                 ImGuiUtil.DrawTableColumn(temp.Name); // the item name
@@ -321,8 +296,8 @@ public class DebugWindow : Window //, IDisposable
         ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Visor.Apply}");
         ImGui.TableNextRow();
         ImGuiUtil.DrawTableColumn("Weapon Visible");
-        // ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Weapon.Show}");
-        // ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Weapon.Apply}");
+        ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Weapon.Show}");
+        ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Weapon.Apply}");
         ImGui.TableNextRow();
         // customization
         ImGuiUtil.DrawTableColumn("Model ID");
@@ -333,10 +308,10 @@ public class DebugWindow : Window //, IDisposable
         {
             if (index.ToString() == "ModelId") continue; // Skip ModelId
 
-             var property = typeof(Customize).GetProperty(index.ToString());
-            dynamic value = property.GetValue(_config.cachedCharacterData.Customize);
-            int valueInt = value.Value;
-            bool apply = value.Apply;
+            var property = typeof(Customize).GetProperty(index.ToString());
+            dynamic? value = property?.GetValue(_config.cachedCharacterData.Customize);
+            int valueInt = value?.Value;
+            bool apply = value?.Apply;
 
             ImGuiUtil.DrawTableColumn(index.ToString());
             ImGuiUtil.DrawTableColumn(valueInt.ToString());

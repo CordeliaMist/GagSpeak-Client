@@ -14,6 +14,10 @@ using GagSpeak.Data;
 using GagSpeak.Events;
 using GagSpeak.UI;
 using GagSpeak.UI.Helpers;
+using GagSpeak.Wardrobe;
+using System.Data;
+using GagSpeak.Interop;
+using System.Threading.Tasks;
 
 namespace GagSpeak.Services;
 
@@ -25,6 +29,7 @@ public class CommandManager : IDisposable // Our main command list manager
     private const string MainCommandString = "/gagspeak"; // The primary command used for & displays
     private const string ActionsCommandString = "/gag"; // subcommand for more in-depth actions.
     private const string TranslateCommandString = "/gsm"; // convient subcommand for translating messages
+    private const string WardrobeCommandString = "/restraintset"; // subcommand for more in-depth actions.
     private readonly    MessageEncoder      _gagMessages;
     private readonly    ICommandManager     _commands;
     private readonly    MainWindow          _mainWindow;
@@ -40,12 +45,17 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly    TimerService        _timerService;
     private readonly    GagService          _gagService;
     private readonly    GagManager          _gagManager;
+    private readonly    GagStorageManager   _gagStorageManager;
+    private readonly    RestraintSetManager _restriantSetManager;
+    private readonly    GlamourerInterop    _glamourerInterop;
     private readonly    SafewordUsedEvent   _safewordCommandEvent;
 
     // Constructor for the command manager
-    public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow, HistoryService historyService, DebugWindow debugWindow,
-    IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, IFramework framework, GagService gagService, GagManager gagManager, 
-    RealChatInteraction realchatinteraction, TimerService timerService, SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder)
+    public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow,
+    HistoryService historyService, DebugWindow debugWindow, RestraintSetManager restraintSetManager,
+    IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, GlamourerInterop glamourerInterop,
+    IFramework framework, GagService gagService, GagManager gagManager, RealChatInteraction realchatinteraction,
+    TimerService timerService, SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder, GagStorageManager gagStorageManager)
     {
         // set the private readonly's to the passed in data of the respective names
         _commands = command;
@@ -64,6 +74,9 @@ public class CommandManager : IDisposable // Our main command list manager
         _historyService = historyService;
         _timerService = timerService;
         _safewordCommandEvent = safewordCommandEvent;
+        _gagStorageManager = gagStorageManager;
+        _restriantSetManager = restraintSetManager;
+        _glamourerInterop = glamourerInterop;
 
         // Add handlers to the main commands
         _commands.AddHandler(MainCommandString, new CommandInfo(OnGagSpeak) {
@@ -79,6 +92,11 @@ public class CommandManager : IDisposable // Our main command list manager
             HelpMessage = "Translates everything after /gsm into GagSpeak into currently selected chat type in the chat box.",
             ShowInHelp = true
         });
+
+        _commands.AddHandler(WardrobeCommandString, new CommandInfo(OnRestraintSet) {
+            HelpMessage = "Interacts with the wardrobes command functionality. Use with 'help' or '?' for extended info.",
+            ShowInHelp = true
+        });
         // let user know on launch of their direct chat garbler is still enabled
         if (_config.DirectChatGarbler) {
             _chat.PrintError("Direct Chat Garbler is still enabled. If you don't want this on, remember to disable it!");
@@ -92,8 +110,10 @@ public class CommandManager : IDisposable // Our main command list manager
         _commands.RemoveHandler(MainCommandString);
         _commands.RemoveHandler(ActionsCommandString);
         _commands.RemoveHandler(TranslateCommandString);
+        _commands.RemoveHandler(WardrobeCommandString);
     }
 
+#region GagSpeak Help
     // Handler for the main gagspeak command
     private void OnGagSpeak(string command, string arguments)
     {
@@ -150,9 +170,19 @@ public class CommandManager : IDisposable // Our main command list manager
                 // remove all data
                 for (int layerIndex = 0; layerIndex < _config.selectedGagTypes.Count; layerIndex++) {
                     _config.selectedGagTypes[layerIndex] = "None";
-                    _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None;
+                    _config.selectedGagPadlocks[layerIndex] = LockableType.None;
                     _config.selectedGagPadlocksPassword[layerIndex] = "";
                     _config.selectedGagPadlocksAssigner[layerIndex] = "";
+                }
+                _gagStorageManager.ResetEverythingDueToSafeword();
+                _restriantSetManager.ResetEverythingDueToSafeword();
+                _timerService.ClearRestraintSetTimer();
+                try{
+                    IntPtr playerAddress = _clientState.LocalPlayer!.Address;
+                    Task.Run(async () => await _glamourerInterop.GlamourerRevertCharacterToAutomation(playerAddress));
+                } catch (Exception e) {
+                    GagSpeak.Log.Error($"Error reverting glamourer to automation: {e.Message}");
+                    _chat.PrintError($"Error reverting glamourer to automation upon safeword usage: {e.Message}");
                 }
                 // Re-enable the ObserveList
                 _config.selectedGagTypes.IsSafewordCommandExecuting = false;
@@ -162,7 +192,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 _safewordCommandEvent.Invoke();
                 // fire the safewordUsed bool to true so that we set the cooldown
                 _config.SafewordUsed = true;
-                _timerService.StartTimer("SafewordUsed", "15s", 1000, () => _config.SafewordUsed = false);
+                _timerService.StartTimer("SafewordUsed", "15m", 1000, () => _config.SafewordUsed = false);
             }
             // otherwise inform the user that the cooldown for safeword being used is still present
             else {
@@ -183,11 +213,11 @@ public class CommandManager : IDisposable // Our main command list manager
         var subCommand = argument.ToLower(); // set what we typed to lowercases to match checks
         if (subCommand == "padlocks") { // if we typed padlocks, show the padlocks list
             _chat.Print(new SeStringBuilder().AddYellow("Displaying the list of padlocks...").BuiltString);
-            var padlockTypes = Enum.GetNames(typeof(GagPadlocks));
+            var padlockTypes = Enum.GetNames(typeof(LockableType));
             foreach (var padlock in padlockTypes) { _chat.Print(new SeStringBuilder().AddBlue($"    》{padlock}").BuiltString); }
             return true;
         } else if (subCommand == "gags") {
-            _chat.Print("Displaying gaglist will come soon! Need to make sure it is safe to print that much text first!");
+            _chat.Print("List of Gags is very long, to view them easily, view the list in the Wardrobe Gag Storage Compartment!");
             return true;
         } else {
             _chat.Print("Invalid argument. Usage: /gagspeak showlist [padlocks/gags]"); return false;
@@ -206,7 +236,9 @@ public class CommandManager : IDisposable // Our main command list manager
             _chat.Print("Invalid mode. Usage: /gagspeak setmode [dom/sub]"); return false;
         }
     }
+#endregion GagSpeak Help
 
+#region GagHelp
     // On the gag command
     private void OnGag(string command, string arguments) {
         var argumentList = arguments.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -325,7 +357,7 @@ public class CommandManager : IDisposable // Our main command list manager
 
         // if our arguments are not valid, display help information
         if (IsInvalidPassword(locktype, password, playerPayload.PlayerName, timer) ||
-        !(Enum.IsDefined(typeof(GagPadlocks), locktype) && (layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
+        !(Enum.IsDefined(typeof(LockableType), locktype) && (layer == "1" || layer == "2" || layer == "3") && targetplayer.Contains("@")) )
         {   // One of our parameters WAS invalid, so display to them the help.
             _chat.Print(new SeStringBuilder().AddRed("Invalid format/arguements. Format can be any of the following:").BuiltString);
             _chat.Print(new SeStringBuilder().AddText("  /gag lock ").AddYellow("layer ").AddGreen("locktype").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
@@ -498,7 +530,98 @@ public class CommandManager : IDisposable // Our main command list manager
         }
         return true; // sucessful!
     }
+#endregion GagHelp
 
+#region Wardrobe Help
+    // Handles: /restraintset lock [Restraint Set Name] | [Timer] | [player target] 
+    private bool RestraintSetLock(string argument) { // arguement at this point = setname | timer | player targetlayer locktype | player target
+        if(argument == string.Empty) { // if the argument is empty, display help information
+            RestraintSetLockHelpText();
+            return false;
+        }
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
+        // step 1, split by " | " to get the components into the parts we need.
+        string[] parts = argument.Split(" | ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        // get the parts
+        string restraintSetName = parts[0].Trim();
+        string timer = parts[1].Trim();
+        string targetPlayer = parts[2].Trim();
+
+        // if our arguments are not valid, display help information
+        if (IsInvalidPassword("RestraintSetPadlock", timer, playerPayload.PlayerName, "") || parts.Length != 3) {
+            RestraintSetLockHelpText();
+            return false;
+        }
+
+        // we have passed in the correct arguments, so begin applying the logic.
+        try{ // try to store the information about the player to the payload, if we fail, throw an exception
+            // If sucessful, print our debug messages so we make sure we are sending the correct information
+            GagSpeak.Log.Debug($"[Command Manager]: /restraintset lock command sucessful, sending off to Message Encoder.");  
+            _chatManager.SendRealMessage(_gagMessages.GagEncodedRestraintSetLockMessage(playerPayload, restraintSetName, timer, targetPlayer));
+        } catch (Exception e) {
+            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
+            _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
+            return false;
+        }
+        return true; // sucessful!
+    }
+
+    private void RestraintSetLockHelpText() {
+        _chat.Print(new SeStringBuilder().AddRed("Invalid format / arguements for locking restraint set. Correct Format is:").BuiltString);
+        _chat.Print(new SeStringBuilder().AddText("  /restraintset lock ").AddYellow("restraint Set Name ").AddText(" | ").AddGreen("timer duration").AddText(" | ").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
+        _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
+            "restraint set name must be a valid restraint set name in the target players restraint list.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
+            "timer duration must be a valid timer format").BuiltString);
+        _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
+            "Player must have format: ").AddYellow("FirstName LastName@World.").BuiltString);
+    }
+
+
+    // Handles: /restraintset unlock [Restraint Set Name] | [player target] 
+    private bool RestraintSetUnlock(string argument) { // arguement at this point = setname | timer | player targetlayer locktype | player target
+        // if the arguement string is not empty, proceed
+        if (string.IsNullOrWhiteSpace(argument)) {
+            RestraintSetUnlockHelpText();
+            return false;
+        }
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
+        // step 1, split by " | " to get the components into the parts we need.
+        string[] parts = argument.Split(" | ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        // get the parts
+        string restraintSetName = parts[0].Trim();
+        string targetPlayer = parts[1].Trim();
+
+        // if our arguments are not valid, display help information
+        if (!ValidateWhitelistedPlayer(playerPayload.PlayerName) || parts.Length != 2) {
+            RestraintSetUnlockHelpText();
+            return false;
+        }
+        try{ 
+            GagSpeak.Log.Debug($"[Command Manager]: /restraintset unlock command now sending off to Message Encoder.");  
+            _chatManager.SendRealMessage(_gagMessages.GagEncodedRestraintSetUnlockMessage(playerPayload, restraintSetName, targetPlayer));
+        } catch (Exception e) {
+            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
+            _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
+            return false;
+        }
+        return true; // sucessful!
+    }
+
+    private void RestraintSetUnlockHelpText() {
+        _chat.Print(new SeStringBuilder().AddRed("Invalid command format or player name. Correct Format is:").BuiltString);
+        _chat.Print(new SeStringBuilder().AddText("  /restraintset unlock ").AddYellow("restraint Set Name").AddText(" | ").AddBlue("player name@homeworld").BuiltString);
+        _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
+            "restraint set name must be a valid restraint set name in the target players restraint list.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddBlue("    》").AddText(
+            "Player must have format: ").AddYellow("FirstName LastName@World.").BuiltString);
+    }
+
+#endregion Wardrobe Help
+
+#region Helper Functions
     /// <summary>
     /// Verifies that the password is valid for the locktype.
     /// </summary>
@@ -507,30 +630,33 @@ public class CommandManager : IDisposable // Our main command list manager
     /// <returns></returns>
     private bool IsInvalidPassword(string _locktype, string _password, string playername, string _password2) { // will return false if it password does not pass all condition checks
         bool ret = false;
-        if (Enum.TryParse(typeof(GagPadlocks), _locktype, out object? parsedEnum)) {
+        if (Enum.TryParse(typeof(LockableType), _locktype, out object? parsedEnum)) {
             switch (parsedEnum) {
-                case GagPadlocks.None:
+                case LockableType.None:
                     return false;
-                case GagPadlocks.MetalPadlock:
+                case LockableType.MetalPadlock:
                     ret = !(_password == string.Empty && _password2 == string.Empty);
                     return ret;
-                case GagPadlocks.CombinationPadlock:
+                case LockableType.CombinationPadlock:
                     ret = !(ValidateCombination(_password) && _password2 == string.Empty && _password != string.Empty);
                     return ret;
-                case GagPadlocks.PasswordPadlock:
+                case LockableType.PasswordPadlock:
                     ret = !(ValidatePassword(_password) && _password2 == string.Empty && _password != string.Empty);
                     return ret;
-                case GagPadlocks.FiveMinutesPadlock:
+                case LockableType.FiveMinutesPadlock:
                     ret = !(_password2 == string.Empty && _password == string.Empty);
                     return ret;
-                case GagPadlocks.TimerPasswordPadlock:
+                case LockableType.TimerPasswordPadlock:
                     ret = !(ValidatePassword(_password) && ValidateTimer(_password2));
                     return ret;
-                case GagPadlocks.MistressPadlock:
+                case LockableType.MistressPadlock:
                     ret = !(ValidateMistress(playername) && _password == string.Empty && _password2 == string.Empty);
                     return ret;
-                case GagPadlocks.MistressTimerPadlock:
+                case LockableType.MistressTimerPadlock:
                     ret = !(ValidateMistress(playername) && ValidateTimer(_password) && _password2 == string.Empty);
+                    return ret;
+                case LockableType.RestraintSetPadlock:
+                    ret = !(ValidateWhitelistedPlayer(playername) && ValidateTimer(_password) && _password2 == string.Empty);
                     return ret;
                 default:
                     return true;
@@ -564,6 +690,23 @@ public class CommandManager : IDisposable // Our main command list manager
         var match = Regex.Match(_inputTimer, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
         return match.Success;
     }
+
+    private bool ValidateWhitelistedPlayer(string playerName) {
+        PlayerPayload playerPayload; // get the current player info
+        if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
+        else { throw new Exception("Player is null!");}
+        if (playerName == playerPayload.PlayerName) { 
+            GagSpeak.Log.Debug("[Command Manager]: Player is self, returning true");
+            return true;
+        }
+        if (_config.Whitelist.Any(w => playerName.Contains(w.name))) { 
+            GagSpeak.Log.Debug("[Command Manager]: Player is whitelisted, returning true");
+            return true;
+        }
+        GagSpeak.Log.Debug("[Command Manager]: Player is not whitelisted, returning false");
+        return false;
+        
+    }
     private bool ValidateMistress(string playerName) {
         PlayerPayload playerPayload; // get the current player info
         if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
@@ -572,7 +715,7 @@ public class CommandManager : IDisposable // Our main command list manager
         if (_config.Whitelist.Any(w => playerName.Contains(w.name) && w.relationshipStatus == "Mistress")) { return true;}
         return false;
     }
-
+#endregion Helper Functions
     // On the gsm command
     private void OnGSM(string command, string arguments) {
         var argumentList = arguments.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -598,6 +741,27 @@ public class CommandManager : IDisposable // Our main command list manager
             _chat.Print(new SeStringBuilder().AddText("[GagSpeak] The channel the message was sent to is not enabled in configuration options! Aborting Message ♥").BuiltString);
             return;
         }
+    }
+
+    private void OnRestraintSet(string command, string arguments)
+    {
+        var argumentList = arguments.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (argumentList.Length < 1) {
+            PrintHelpWardrobe("?");
+            return;
+        }
+        var argument = argumentList.Length == 2 ? argumentList[1] : string.Empty; // Make arguement be everything after command
+        switch(argumentList[0].ToLowerInvariant()) {
+            case "lock":
+                RestraintSetLock(argument);        // when [/gagspeak safeword] is typed
+                return;
+            case "unlock":
+                RestraintSetUnlock(argument);        // when [/gagspeak showlist] is typed
+                return;
+            default:
+                PrintHelpWardrobe("help");// when no arguements are passed.
+                return;
+        };
     }
 
     private bool PrintHelpGagSpeak(string argument) { // Primary help command
@@ -649,6 +813,18 @@ public class CommandManager : IDisposable // Our main command list manager
         _chat.Print(new SeStringBuilder().AddText("/gsm ").AddBlue("message").BuiltString);
         _chat.Print(new SeStringBuilder().AddText("    》").AddBlue("message").AddText(" - contains everything after /gsm as a message. The message will be printed" +
             "out to the chat box in it's gagspoken format under the channel your chatbox is currently set to, if enabled in config.").BuiltString);
+        return true;
+    }
+
+    // print the same help format but for /gs
+    private bool PrintHelpWardrobe(string argument) {
+        // if we didn't type help or ?, print the error
+        if (!string.Equals(argument, "help", StringComparison.OrdinalIgnoreCase) && argument != "?")
+            _chat.Print(new SeStringBuilder().AddText("The given argument [ ").AddRed(argument, true).AddText(" ] is not valid.").BuiltString);
+        // print command help
+        _chat.Print(new SeStringBuilder().AddYellow(" -- Default /restraintset Usage --").BuiltString);
+        _chat.Print(new SeStringBuilder().AddCommand("/restraintset lock", "Locks a restraintset on target. Use alone for help.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddCommand("/restraintset unlock", "Unlocks a restraintset on target. Use alone for help.").BuiltString);
         return true;
     }
 }

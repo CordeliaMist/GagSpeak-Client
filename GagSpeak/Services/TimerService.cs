@@ -56,7 +56,7 @@ public class TimerService : IDisposable
    /// <item><c>padlockTimerList</c><param name="padlockTimerList"> - The list of padlock timers to update.</param></item>
    /// <item><c>index</c><param name="index"> - The index of the padlock timer list to update.</param></item>
    /// </list> </summary>
-   public void StartTimer(string timerName, string input,  int elapsedMilliSecPeriod, Action onElapsed,
+   public void StartTimer(string timerName, string input, int elapsedMilliSecPeriod, Action onElapsed,
    List<DateTimeOffset> padlockTimerList, int index) {
       // If the new timer's name contains "_Identifier{index}"
       if (timerName.Contains($"_Identifier{index}")) {
@@ -237,6 +237,8 @@ public class TimerService : IDisposable
          timersToRestore.Add((pair.Key, remainingTime));
       }
 
+      // ADD EXTRA TIMERS HERE FOR THE RESTRAINT SET MANAGER LATER
+
       // Restore the timers from the list
       foreach (var (timerName, remainingTime) in timersToRestore) {
          // Create a new timer with the same name and remaining time, only need to care about identifiers
@@ -318,6 +320,25 @@ public class TimerService : IDisposable
          timers[key].Timer.Dispose(); // Dispose the timer before removing it
          timers.Remove(key);
       }
+   }
+
+   /// <summary>
+   /// Clear restraint set timers.
+   /// </summary>
+   public void ClearRestraintSetTimer() {
+      // Get a list of keys that contain "RestraintSet_"
+      var keysToRemove = new List<string>();
+      foreach (var key in timers.Keys) {
+         if (key.Contains("RestraintSet_")) {
+               keysToRemove.Add(key);
+         }
+      }
+      // Remove the timers with the keys in keysToRemove
+      foreach (var key in keysToRemove) {
+         timers[key].Timer.Dispose(); // Dispose the timer before removing it
+         timers.Remove(key);
+      }
+      GagSpeak.Log.Debug($"[Timer Service Timer Cleaner]: Restraint Set Timers Cleared!");
    }
 
    /// <summary>

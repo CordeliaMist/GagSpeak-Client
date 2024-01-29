@@ -46,6 +46,8 @@ public class WhitelistTab : ITab, IDisposable
     private             bool                        enableInteractions = false; // determines if we can interact with with whitelist buttons or not (for safety to prevent accidental tells)
     private             bool                        interactionButtonPressed;   // determines if we have pressed a button that communicates or not
     private             bool                        sendNext;
+    private             string                      restraintSetNameToApply;
+    private             string                      restraintSetLockTimer;
     private             Dictionary<string, string>  remainingTimes = new Dictionary<string, string>();
 
     // Constructor for the whitelist tab
@@ -66,6 +68,8 @@ public class WhitelistTab : ITab, IDisposable
         _lockLabel = "None";
         _layer = 0;
         sendNext = false;
+        restraintSetNameToApply = "";
+        restraintSetLockTimer = "";
 
         // draw out our gagtype filter combo listings
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
@@ -107,11 +111,12 @@ public class WhitelistTab : ITab, IDisposable
 
     private void DrawHeader() // Draw our header
         => WindowHeader.Draw("Whitelist Manager", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
-        
+
+#region Whitelist Draw
     // draw the actual whitelist
     private void DrawWhitelist() {
         // lets first draw in the child
-        using var child = ImRaii.Child("WhitelistPanel", -Vector2.One, true);
+        using var child = ImRaii.Child("WhitelistPanel", -Vector2.One, true, ImGuiWindowFlags.NoScrollbar);
         
         // Now we can begin by creating an array of strings that store the whitelist of appended character names
         List<WhitelistCharData> whitelist = _config.Whitelist;
@@ -355,9 +360,15 @@ public class WhitelistTab : ITab, IDisposable
                 GagSpeak.Log.Debug($"[Whitelist]: Declining {whitelist[_currentWhitelistItem].name}'s relation request");
             }
         }
-
         // create a collapsing header for this.
-        if(!ImGui.CollapsingHeader($"Interactions to use on {whitelist[_currentWhitelistItem].name}")) { return; }
+        DrawGagInteractions();
+        // create a collapsing header for this.
+        DrawWardrobeInteractions();
+    }
+#endregion Whitelist Draw
+#region Gag Related Interactions
+    private void DrawGagInteractions() {
+        if(!ImGui.CollapsingHeader($"Gag Related Interactions to use on {_config.Whitelist[_currentWhitelistItem].name}")) { return; }
 
         if(!enableInteractions || interactionButtonPressed) { ImGui.BeginDisabled(); }
         // inform the player how this works
@@ -375,7 +386,8 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.SameLine();
             // create a dropdown for the gag type,
             int width = (int)(ImGui.GetContentRegionAvail().X / 2.5);
-            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, whitelist[_currentWhitelistItem], ref _gagLabel, layer, false, width, _gagTypeFilterCombo[layer]);
+            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, _config.Whitelist[_currentWhitelistItem], ref _gagLabel,
+                                                    layer, false, width, _gagTypeFilterCombo[layer]);
             ImGui.SameLine();
 
             // Create the button for the first row, third column
@@ -392,10 +404,10 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             // set up a temp password storage field here.
             width = (int)(ImGui.GetContentRegionAvail().X / 2.8);
-            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, whitelist[_currentWhitelistItem], ref _lockLabel, layer, false, width, _gagLockFilterCombo[layer]);
+            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, _config.Whitelist[_currentWhitelistItem], ref _lockLabel, layer, false, width, _gagLockFilterCombo[layer]);
             ImGui.SameLine();
             if (ImGui.Button("Lock Gag")) {
-                GagButtonHelpers.LockGagOnPlayer(layer, _lockLabel, _currentWhitelistItem, whitelist[_currentWhitelistItem],
+                GagButtonHelpers.LockGagOnPlayer(layer, _lockLabel, _currentWhitelistItem, _config.Whitelist[_currentWhitelistItem],
                 _config, _chatManager, _gagMessages, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
@@ -404,13 +416,13 @@ public class WhitelistTab : ITab, IDisposable
             ImGui.SameLine();
             if (ImGui.Button("Unlock Gag")) {
                 // if our selected dropdown lock label doesnt match the currently equipped type of the player, send an error message to the chat
-                if(_lockLabel != whitelist[_currentWhitelistItem].selectedGagPadlocks[layer].ToString()) {
-                    GagSpeak.Log.Debug($"[Whitelist]: Selected lock type does not match equipped lock type of that player! ({_lockLabel} != {whitelist[_currentWhitelistItem].selectedGagPadlocks[layer].ToString()})");
+                if(_lockLabel != _config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer].ToString()) {
+                    GagSpeak.Log.Debug($"[Whitelist]: Selected lock type does not match equipped lock type of that player! ({_lockLabel} != {_config.Whitelist[_currentWhitelistItem].selectedGagPadlocks[layer].ToString()})");
                     _chatGui.Print(
                         new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Selected lock type does not match equipped lock type of that player!").AddItalicsOff().BuiltString
                     );
                 } else {
-                    GagButtonHelpers.UnlockGagOnPlayer(layer, _lockLabel, _currentWhitelistItem, whitelist[_currentWhitelistItem],
+                    GagButtonHelpers.UnlockGagOnPlayer(layer, _lockLabel, _currentWhitelistItem, _config.Whitelist[_currentWhitelistItem],
                     _config, _chatManager, _gagMessages, _clientState, _chatGui);
                     // Start a 5-second cooldown timer
                     interactionButtonPressed = true;
@@ -422,7 +434,7 @@ public class WhitelistTab : ITab, IDisposable
             var tempwidth = ImGui.GetContentRegionAvail().X *.675f;
             ImGui.Columns(2,"Password Divider", false);
             ImGui.SetColumnWidth(0, tempwidth);
-            Enum.TryParse(_lockLabel, out GagPadlocks parsedLockType);
+            Enum.TryParse(_lockLabel, out LockableType parsedLockType);
             if(_config.whitelistPadlockIdentifier.DisplayPasswordField(parsedLockType)) {
                 // display the password field
             } else {
@@ -432,7 +444,7 @@ public class WhitelistTab : ITab, IDisposable
             // Gag removal
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             if (ImGui.Button("Remove This Gag")) {
-                GagButtonHelpers.RemoveGagFromPlayer(layer, _gagLabel, _currentWhitelistItem, whitelist[_currentWhitelistItem],
+                GagButtonHelpers.RemoveGagFromPlayer(layer, _gagLabel, _currentWhitelistItem, _config.Whitelist[_currentWhitelistItem],
                 _config, _chatManager, _gagMessages, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
@@ -440,7 +452,7 @@ public class WhitelistTab : ITab, IDisposable
             }
             ImGui.SameLine();
             if (ImGui.Button("Remove All Gags")) {
-                GagButtonHelpers.RemoveAllGagsFromPlayer(_currentWhitelistItem, whitelist[_currentWhitelistItem],
+                GagButtonHelpers.RemoveAllGagsFromPlayer(_currentWhitelistItem, _config.Whitelist[_currentWhitelistItem],
                 _config, _chatManager, _gagMessages, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
                 interactionButtonPressed = true;
@@ -481,6 +493,50 @@ public class WhitelistTab : ITab, IDisposable
         if(!enableInteractions || interactionButtonPressed) { ImGui.EndDisabled(); }
     }
 
+
+
+#endregion Gag Related Interactions
+#region Wardrobe Related Interactions
+    private void DrawWardrobeInteractions() {
+        if(!ImGui.CollapsingHeader($"Wardrobe Related Interactions to use on {_config.Whitelist[_currentWhitelistItem].name}")) { return; }
+        
+        if(!enableInteractions || interactionButtonPressed) { ImGui.BeginDisabled(); }
+
+        // draw out a textfield for a person to enter their restraint set name
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 2/3);
+        if (ImGui.InputTextWithHint("##RestraintSetNameToApply", "Enter a Restraint Set Name...", ref restraintSetNameToApply, 36, ImGuiInputTextFlags.None));
+        string result = restraintSetLockTimer; // get the input timer storage
+        ImGui.SameLine();
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        if (ImGui.InputTextWithHint("##RestraintSetTimer", "Lock Duration: 0h2m7s...", ref result, 24, ImGuiInputTextFlags.None)) {
+            restraintSetLockTimer = result;
+        }
+        // next row
+        ImGui.NextColumn();
+        var width = ImGui.GetContentRegionAvail().X/2;
+        if (ImGui.Button("Lock The Spesified Restraint Set", new Vector2(width, 25))) {
+            // send a message to the player requesting their current info
+            GagSpeak.Log.Debug("[Whitelist]: Sending Request to apply restraint set");
+            GagButtonHelpers.LockRestraintSetToPlayer(_currentWhitelistItem, _config.Whitelist[_currentWhitelistItem], restraintSetNameToApply,
+            restraintSetLockTimer, _config, _chatManager, _gagMessages, _clientState, _chatGui);
+            // Start a 5-second cooldown timer
+            interactionButtonPressed = true;
+            _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
+        }
+        ImGui.SameLine();
+        if (ImGui.Button("Unlock The Spesified Restraint Set", new Vector2(width, 25))) {
+            // send a message to the player requesting their current info
+            GagSpeak.Log.Debug("[Whitelist]: Sending Request to remove restraint set");
+            GagButtonHelpers.UnlockRestraintSetToPlayer(_currentWhitelistItem, _config.Whitelist[_currentWhitelistItem], restraintSetNameToApply,
+            _config, _chatManager, _gagMessages, _clientState, _chatGui);
+            // Start a 5-second cooldown timer
+            interactionButtonPressed = true;
+            _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { interactionButtonPressed = false; });
+        }
+        // Use ImGui.EndDisabled() to end the disabled state
+        if(!enableInteractions || interactionButtonPressed) { ImGui.EndDisabled(); }
+    }
+#endregion Wardrobe Related Interactions
     /// <summary>
     /// This method is used to handle the remaining time changed event.
     /// </summary>

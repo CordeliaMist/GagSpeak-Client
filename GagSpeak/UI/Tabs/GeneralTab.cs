@@ -9,6 +9,7 @@ using OtterGui.Widgets;
 using GagSpeak.UI.ComboListings;
 using GagSpeak.Services;
 using GagSpeak.Data;
+using GagSpeak.Wardrobe;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>
@@ -170,7 +171,7 @@ public class GeneralTab : ITab, IDisposable
                 ImGui.EndDisabled();
                 ImGui.Text($"[{(_config.InDomMode? "Dom" : "Sub")}] Swap Cooldown: {_timerService.remainingTimes.GetValueOrDefault("RoleSwitchCooldown", "N/A")}");
             }
-        } // end our table
+        } 
         // if we used our safeword
         if(_config.SafewordUsed) {
             ImGui.SameLine();
@@ -180,6 +181,7 @@ public class GeneralTab : ITab, IDisposable
 
         // disable this interactability if our safeword is on cooldown
         if(_config.SafewordUsed) { ImGui.BeginDisabled(); }
+        
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
         int width2 = (int)(ImGui.GetContentRegionAvail().X / 2);
@@ -229,11 +231,11 @@ public class GeneralTab : ITab, IDisposable
         }
         // update timer padlocks
         for (int i = 0; i < 3; i++) {
-            if (timerName == $"{GagPadlocks.FiveMinutesPadlock}_Identifier{i}") {
+            if (timerName == $"{LockableType.FiveMinutesPadlock}_Identifier{i}") {
                 _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Minutes} Minutes, {remainingTime.Seconds}Seconds";
-            } else if (timerName == $"{GagPadlocks.TimerPasswordPadlock}_Identifier{i}") {
+            } else if (timerName == $"{LockableType.TimerPasswordPadlock}_Identifier{i}") {
                 _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Hours} Hours, {remainingTime.Minutes} Minutes, {remainingTime.Seconds} Seconds";
-            } else if (timerName == $"{GagPadlocks.MistressTimerPadlock}_Identifier{i}") {
+            } else if (timerName == $"{LockableType.MistressTimerPadlock}_Identifier{i}") {
                 _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Days} Days, {remainingTime.Hours} Hours, {remainingTime.Minutes} Minutes, {remainingTime.Seconds} Seconds";
             }
         }

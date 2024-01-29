@@ -7,6 +7,7 @@ namespace GagSpeak.Data;
 
 /// <summary> A class to hold the data for the whitelist character </summary>
 public class WhitelistCharData {
+    
     public string                       name;                                     // get the character name
     public string                       homeworld;                                // get the characters world (dont know how to get this for now)
     public string                       relationshipStatus;                       // who you are to them
@@ -18,7 +19,7 @@ public class WhitelistCharData {
     public DateTimeOffset               timeOfCommitment;                         // how long has your commitment lasted?
     public bool                         lockedLiveChatGarbler { get; set; }       // is the live chat garbler locked?
     public ObservableList<string>       selectedGagTypes { get; set; }            // What gag types are selected?
-    public ObservableList<GagPadlocks>  selectedGagPadlocks { get; set; }         // which padlocks are equipped currently?
+    public ObservableList<LockableType>  selectedGagPadlocks { get; set; }         // which padlocks are equipped currently?
     public List<string>                 selectedGagPadlocksPassword { get; set; } // password lock on padlocks, if any
     public List<DateTimeOffset>         selectedGagPadlocksTimer { get; set; }    // stores the timespan left until unlock of the player.
     public List<string>                 selectedGagPadlocksAssigner { get; set; } // who assigned the padlocks, if any
@@ -38,7 +39,7 @@ public class WhitelistCharData {
             this.selectedGagTypes = new ObservableList<string> { "None", "None", "None" };}
         // Set default values for selectedGagPadlocks
         if (this.selectedGagPadlocks == null || !this.selectedGagPadlocks.Any() || this.selectedGagPadlocks.Count > 3) {
-            this.selectedGagPadlocks = new ObservableList<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
+            this.selectedGagPadlocks = new ObservableList<LockableType> { LockableType.None, LockableType.None, LockableType.None };}
         // set default values for selectedGagPadlocksPassword
         if (this.selectedGagPadlocksPassword == null || !this.selectedGagPadlocksPassword.Any() || this.selectedGagPadlocksPassword.Count > 3) {
             this.selectedGagPadlocksPassword = new List<string> { "", "", "" };}
@@ -78,9 +79,9 @@ public class WhitelistCharData {
         TimeSpan duration = this.selectedGagPadlocksTimer[index] - DateTimeOffset.Now; // Get the duration
         if (duration < TimeSpan.Zero) {
             // check if the padlock type was a type with a timer, and if so, set the other stuff to none
-            if (this.selectedGagPadlocks[index] == GagPadlocks.FiveMinutesPadlock || this.selectedGagPadlocks[index] == GagPadlocks.MistressTimerPadlock
-            || this.selectedGagPadlocks[index] == GagPadlocks.TimerPasswordPadlock) {
-                this.selectedGagPadlocks[index] = GagPadlocks.None;
+            if (this.selectedGagPadlocks[index] == LockableType.FiveMinutesPadlock || this.selectedGagPadlocks[index] == LockableType.MistressTimerPadlock
+            || this.selectedGagPadlocks[index] == LockableType.TimerPasswordPadlock) {
+                this.selectedGagPadlocks[index] = LockableType.None;
                 this.selectedGagPadlocksPassword[index] = "";
                 this.selectedGagPadlocksAssigner[index] = "";
             }

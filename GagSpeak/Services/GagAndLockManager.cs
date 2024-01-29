@@ -7,7 +7,9 @@ using GagSpeak.UI.Helpers;                          // Contains chat classes use
 using Dalamud.Plugin.Services;                      // Contains service classes provided by the Dalamud plugin framework
 using Dalamud.Game.Text.SeStringHandling.Payloads;  // Contains classes for handling special encoded (SeString) payloads in the Dalamud game
 using Dalamud.Game.Text.SeStringHandling;           // Contains classes for handling special encoded (SeString) strings in the Dalamud game
-using OtterGui.Classes;                             // Contains classes for managing the OtterGui framework
+using OtterGui.Classes;
+using System.Linq;
+using GagSpeak.Wardrobe;                             // Contains classes for managing the OtterGui framework
 
 namespace GagSpeak;
 
@@ -16,22 +18,27 @@ namespace GagSpeak;
 /// </summary>
 public class GagAndLockManager : IDisposable
 {
-    private readonly GagSpeakConfig     _config;            // for config options
-    private readonly IChatGui           _clientChat;        // for chat messages
-    private readonly IClientState       _clientState;       // for player payload
-    private readonly TimerService       _timerService;      // for timers
-    private readonly SafewordUsedEvent  _safewordUsedEvent; // for safeword event
-    private readonly ItemAutoEquipEvent _gagItemEquippedEvent; // for gag item equipped event
+    private readonly GagSpeakConfig         _config;                // for config options
+    private readonly GagStorageManager      _gagStorageManager;     // for gag storage
+    private readonly RestraintSetManager    _restraintSetManager;   // for restraint set management
+    private readonly IChatGui               _clientChat;            // for chat messages
+    private readonly IClientState           _clientState;           // for player payload
+    private readonly TimerService           _timerService;          // for timers
+    private readonly SafewordUsedEvent      _safewordUsedEvent;     // for safeword event
+    private readonly ItemAutoEquipEvent     _gagItemEquippedEvent;  // for gag item equipped event
 
     /// <summary> Initializes a new instance of the <see cref="GagAndLockManager"/> class. </summary>
     public GagAndLockManager(GagSpeakConfig config, IChatGui clientChat, TimerService timerService,
-    IClientState clientState, SafewordUsedEvent safewordUsedEvent, ItemAutoEquipEvent _itemAutoEquipEvent) {
+    GagStorageManager gagStorageManager, IClientState clientState, SafewordUsedEvent safewordUsedEvent,
+    ItemAutoEquipEvent _itemAutoEquipEvent, RestraintSetManager restraintSetManager) {
         _config = config;
         _clientChat = clientChat;
         _clientState = clientState;
         _timerService = timerService;
         _safewordUsedEvent = safewordUsedEvent;
         _gagItemEquippedEvent = _itemAutoEquipEvent;
+        _gagStorageManager = gagStorageManager;
+        _restraintSetManager = restraintSetManager;
         // subscribe to the safeword event
         _safewordUsedEvent.SafewordCommand += CleanupVariables;
     }
@@ -41,17 +48,19 @@ public class GagAndLockManager : IDisposable
         _safewordUsedEvent.SafewordCommand -= CleanupVariables;
     }
 
+#region GeneralGagAndLockFunctions
     /// <summary> This method is used to handle gag applying command and UI presses
     /// <list type="bullet">
     /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
     /// <item><c>gagType</c><param name="gagType"> - The gag type.</param></item>
+    /// <item><c>assignerName</c><param name="assignerName"> - The assigner name, if any.</param></item>
     /// </list> </summary>
-    public void ApplyGag(int layerIndex, string gagType) {
+    public void ApplyGag(int layerIndex, string gagType, string assignerName = "self") {
         // apply the gag information to anywhere where it should be applied to within our code
         _config.selectedGagTypes[layerIndex] = gagType;
         
         // Trigger the event letting our wardrobe manager know a gag is equipped
-        _gagItemEquippedEvent.Invoke(gagType);
+        _gagItemEquippedEvent.Invoke(gagType, assignerName);
     }
 
     /// <summary> This method is used to handle individual gag removing command and UI presses
@@ -59,9 +68,12 @@ public class GagAndLockManager : IDisposable
     /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
     /// </list> </summary>
     public void RemoveGag(int layerIndex) {
+        // get gagtype before clear
+        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _config.selectedGagTypes[layerIndex]);
         // remove the gag information from anywhere where it should be removed from within our code
+        _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
         _config.selectedGagTypes[layerIndex] = "None";
-        _config.selectedGagPadlocks[layerIndex] = GagPadlocks.None;
+        _config.selectedGagPadlocks[layerIndex] = LockableType.None;
         _config.selectedGagPadlocksPassword[layerIndex] = string.Empty;
         _config.selectedGagPadlocksAssigner[layerIndex] = "";
         _config.padlockIdentifier[layerIndex].ClearPasswords();
@@ -205,16 +217,16 @@ public class GagAndLockManager : IDisposable
     private void StartTimerIfNecessary(int layerIndex, GagSpeakConfig _config, TimerService _timerService) {
         GagSpeak.Log.Debug($"[Padlock Manager Service]: Checking if a starttimer is nessisary.");
         // just to double check this is actually a padlock with a timer
-        if(_config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
-        _config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock ||
-        _config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock)
+        if(_config.padlockIdentifier[layerIndex]._padlockType == LockableType.FiveMinutesPadlock ||
+        _config.padlockIdentifier[layerIndex]._padlockType == LockableType.TimerPasswordPadlock ||
+        _config.padlockIdentifier[layerIndex]._padlockType == LockableType.MistressTimerPadlock)
         {   
             // assuming it is, start the timer
             GagSpeak.Log.Debug($"[Padlock Manager Service]: starttimer is nessisary, so setting it.");
             _timerService.StartTimer($"{_config.padlockIdentifier[layerIndex]._padlockType}_Identifier{layerIndex}", _config.padlockIdentifier[layerIndex]._storedTimer, 
             1000, () => { ActionOnTimeElapsed(layerIndex); }, _config.selectedGagPadLockTimer, layerIndex);
-        }   // save the config
-        _config.Save();
+            _config.Save();
+        } 
     }
 
     /// <summary> see if the padlock we have locked contains a timer within it
@@ -226,7 +238,7 @@ public class GagAndLockManager : IDisposable
         var padlockType = _config.padlockIdentifier[slot]._padlockType;
         // if the padlock is locked, and it is a padlock with a timer, return true
         return _config.isLocked[slot] &&
-        (padlockType == GagPadlocks.FiveMinutesPadlock || padlockType == GagPadlocks.TimerPasswordPadlock || padlockType == GagPadlocks.MistressTimerPadlock);
+        (padlockType == LockableType.FiveMinutesPadlock || padlockType == LockableType.TimerPasswordPadlock || padlockType == LockableType.MistressTimerPadlock);
     }
 
     /// <summary> This method is used to handle the timer elapsed event, and is called when a timer elapses / finishes.
@@ -269,4 +281,79 @@ public class GagAndLockManager : IDisposable
         // some dummy code to manually invoke the index change handler because im stupid and idk how to trigger events within an event trigger
         _config.selectedGagTypes[0] = _config.selectedGagTypes[0];
     }
+#endregion GeneralGagAndLockFunctions
+
+#region Wardrobe Functions
+    /// <summary> This method locks the restraint set on your player by assigner name, for a set time, on a spesific set.
+    /// <list type="bullet">
+    /// <item><c>restraintSetName</c><param name="restraintSetName"> - The restraint set name.</param></item>
+    /// <item><c>assignerName</c><param name="assignerName"> - The assigner name.</param></item>
+    /// <item><c>timerDuration</c><param name="timerDuration"> - The timer duration.</param></item>
+    /// <item><c>targetName</c><param name="targetName"> - The target name.</param></item>
+    /// </list> </summary>
+    public bool LockRestraintSet(string restraintSetName, string assignerName, string timerDuration = "", string targetName = "") {
+        // get the restraint set from the list where its name property is equal. Must search with a iterative approach
+        int setIndex = _restraintSetManager._restraintSets.FindIndex(set => set._name == restraintSetName);
+        // if the restraint set is null, we cannot lock it
+        if(setIndex < 0) {
+            GagSpeak.Log.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set does not exist, so we cannot lock it.");
+            return false;
+        }
+        if(_restraintSetManager._restraintSets[setIndex]._enabled == false) {
+            GagSpeak.Log.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set is not enabled, so we cannot lock it.");
+            return false;
+        }
+        // if the restraint set is locked, we cannot lock it
+        if(_restraintSetManager._restraintSets[setIndex]._locked == true) {
+            GagSpeak.Log.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set is already locked, so we cannot lock it.");
+            return false;
+        }
+        // otherwise, we can lock it
+        GagSpeak.Log.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set is not locked, so we can lock it.");
+        // if the timer duration is valid, we can lock it
+        DateTimeOffset endTime = UIHelpers.GetEndTime(timerDuration);
+        _restraintSetManager.ChangeRestraintSetNewLockEndTime(setIndex, endTime);
+        _restraintSetManager.LockRestraintSet(setIndex, assignerName);
+        // start the timer for the lock
+        _timerService.StartTimer($"RestraintSet_{_restraintSetManager._restraintSets[setIndex]._name}",
+            timerDuration, 1000, () =>
+            {
+                _restraintSetManager.TryUnlockRestraintSet(setIndex, assignerName); // attempts to lock it
+            }
+        );
+        return true;
+    }
+
+    /// <summary> This method unlocks the restraint set on your player by assigner name
+    /// <list type="bullet">
+    /// <item><c>restraintSetName</c><param name="restraintSetName"> - The restraint set name.</param></item>
+    /// <item><c>assignerName</c><param name="assignerName"> - The assigner name.</param></item>
+    /// </list> </summary>
+    public bool UnlockRestraintSet(string restraintSetName, string assignerName) {
+        // get the restraint set from the list where its name property is equal. Must search with a iterative approach
+        int setIndex = _restraintSetManager._restraintSets.FindIndex(set => set._name == restraintSetName);
+        // if the restraint set is null, we cannot unlock it
+        if(setIndex < 0) {
+            GagSpeak.Log.Debug($"[Padlock Manager Service]: UnlockRestraintSet -> Restraint set does not exist, so we cannot unlock it.");
+            return false;
+        }
+        // if the restraint set is not locked, we cannot unlock it
+        if(_restraintSetManager._restraintSets[setIndex]._locked == false) {
+            GagSpeak.Log.Debug($"[Padlock Manager Service]: {restraintSetName} is not locked, so we cannot unlock it.");
+            return false;
+        }
+        if(_restraintSetManager._restraintSets[setIndex]._wasLockedBy != assignerName && _restraintSetManager._restraintSets[setIndex]._wasLockedBy != "self") {
+            GagSpeak.Log.Debug($"[Padlock Manager Service]: {restraintSetName} was locked by someone else!");
+            return false;
+        }
+        // otherwise, we can unlock it
+        GagSpeak.Log.Debug($"[Padlock Manager Service]: UnlockRestraintSet -> Restraint set is locked, so we can attempt to unlock it.");
+        // unlock the restraint set
+        if(_restraintSetManager.TryUnlockRestraintSet(setIndex, assignerName)) {
+            _timerService.ClearRestraintSetTimer();
+        }
+        
+        return true;
+    }
+#endregion Wardrobe Functions
 }

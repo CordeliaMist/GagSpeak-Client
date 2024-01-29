@@ -23,6 +23,7 @@ public class GagSpeakChangelog
         Add0_9_9_0(Changelog); 
         Add0_9_9_10(Changelog); 
         Add1_0_1_3(Changelog);
+        Add1_0_2_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -51,8 +52,30 @@ public class GagSpeakChangelog
     }
 
     // all versions are added here, the order doesnt madder, but it should be in order of newest to oldest.
+    private static void Add1_0_2_0(Changelog log)
+        => log.NextVersion("Version 1.0.2.1 Release")
+            .RegisterImportant("A New Wardrobe tab has now been added!")
+            .RegisterEntry("Wardrobe tab introduces the ability to automatically equip preassigned items whenever a gag is worn.")
+            .RegisterEntry("Wardrobe tab now allows you to define spesific restraint sets")
+            .RegisterEntry("    》 NEW CONFIG SETTING ADDED: EnableWardrobe (Dictates if anything in the wardrobe will work)")
+            .RegisterEntry("    》 NEW CONFIG SETTING ADDED: Allow Item Auto-Equip (A universal disable for all gags's in the gag storage)")
+            .RegisterEntry("    》 NEW CONFIG SETTING ADDED: Allow Restraint Locking (Must be enabled for anyone but you to apply and lock restraints to)")
+            .RegisterEntry("    》 NEW CONFIG SETTING ADDED: Surrender Absolute Control (A totally work in progress button that does nothing ATM)")
+            .RegisterHighlight("A new compartment within the GagSpeak Kink Wardrobe has been added: The Gag Storage!")
+            .RegisterEntry("Define an in game item and stain to link to each gag type")
+            .RegisterEntry("When each gagtype is equipped by yourself in the UI, applied via commands, or through whitelist, "+
+            "they will equip the item and stain you have defined for them.")
+            .RegisterHighlight("A new compartment within the GagSpeak Kink Wardrobe has been added: The Restraint Outfits Compartment!")
+            .RegisterEntry("These are outfits you can define composed of gear that you have modded as a restraint set. These are then /overlayed/ ontop of your glamour whenever applied.")
+            .RegisterImportant("GagSpeak Plugin config information is now stored into seperate files, allowing information like restraint set data and gag storage data to be more easily sharable and savable!")
+            .RegisterEntry("Create as many restraint sets as you possibly want!")
+            .RegisterHighlight("A new section was added to the whitelist tab for Wardrobe related interactions!")
+            .RegisterEntry("Whitelist tab now has 2 additional buttons for locking and unlocking whitelisted players for a spesified time!")
+            .RegisterEntry("If someone besides yourself assigns a restraint set onto you, they must be the same person unlocking it for it to work! Truely immersive")
+            .RegisterHighlight("The Live Chat Garbler Lock warning message has now been changed to notify you whenever you switch zones, not just when you login!")
+            .RegisterEntry("Any Enabled wardrobe features will automatically reapply themselves whenever you switch any jobs, items, or stains to gear!");
     private static void Add1_0_1_3(Changelog log)
-        => log.NextVersion("Version 1.0.1.3 Release")
+        => log.NextVersion("Version 1.0.2.1 Release")
             .RegisterImportant("Plugin has been officially released!")
             .RegisterHighlight("Fixed a majority of feedback bugs that made it past all the QA, fixing tons of issues!");
     

@@ -13,6 +13,7 @@ using GagSpeak.Data;
 using GagSpeak.UI;
 using GagSpeak.Services;
 using GagSpeak.Events;
+using GagSpeak.Wardrobe;
 using GagSpeak.Garbler.PhonemeData;
 
 namespace GagSpeak;
@@ -36,9 +37,9 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                        partyOnly { get; set; } = false;                        // Is party only enabled?
     public          bool                                        whitelistOnly { get; set; } = false;                    // Is whitelist only enabled?
     public          bool                                        DebugMode { get; set; } = false;                        // Is debug mode enabled?
-    public          int                                         GarbleLevel { get; set; } = 0;                          // Current Garble Level (0-20)        
+    public          int                                         GarbleLevel { get; set; } = 0;                          // DEPRICATED, BUT NESSISARY FOR MESSAGE TRANSFER STILL
     public          ObservableList<string>                      selectedGagTypes { get; set; }                          // What gag types are selected?
-    public          ObservableList<GagPadlocks>                 selectedGagPadlocks { get; set; }                       // which padlocks are equipped currently?
+    public          ObservableList<LockableType>                 selectedGagPadlocks { get; set; }                       // which padlocks are equipped currently?
     public          List<string>                                selectedGagPadlocksPassword { get; set; }               // password lock on padlocks, if any
     public          List<DateTimeOffset>                        selectedGagPadLockTimer { get; set; }                   // stores time when the padlock will be unlocked.
     public          List<string>                                selectedGagPadlocksAssigner { get; set; }               // name of who assigned the padlocks
@@ -47,6 +48,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          int                                         ProcessTranslationInterval { get; set; } = 300000;      // current process intervals for the history
     public          int                                         TranslationHistoryMax { get; set; } = 30;               // Gets or sets max number of translations stored in history
     public          MainWindow.TabType                          SelectedTab { get; set; } = MainWindow.TabType.General; // Default to the general tab
+    public          bool                                        viewingRestraintCompartment { get; set; } = false;      // Is viewing the restraint shelf tab in wardrobe?
     private         List<WhitelistCharData>                     whitelist = new List<WhitelistCharData>();              // appears to be baseline for whitelist
     public          List<WhitelistCharData>                     Whitelist { get=>whitelist; set=>whitelist = value; }   // Note sure why, document later
     public          string                                      sendInfoName = "";                                      // Name of the person you are sending info to
@@ -58,18 +60,21 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          List<PadlockIdentifier>                     padlockIdentifier { get; set; }                         // stores the padlock identifier for each gaglisting
     public          PadlockIdentifier                           whitelistPadlockIdentifier {get; set; }                 // stores the padlock identifier for the whitelist
     // stuff for the wardrobemanager
-    public          Dictionary<GagList.GagType, EquipDrawData>  gagEquipData { get; set; }                              // almighty wardrobe dictionary. Stores everything? (expand upon for multiple gags)
     public          bool                                        enableWardrobe { get; set; } = false;                   // enables / disables all wardrobe actions
     public          bool                                        allowItemAutoEquip { get; set; } = false;               // allows the item auto equip event to fire
     public          bool                                        allowRestraintLocking { get; set; } = false;            // allows restraint locking at all in any capacity from others besides you
     public          bool                                        surrenderRestraintControl { get; set; } = false;        // only works on slave-mistress relation. Revokes your access to restraint tab, gives mistress full control
-    public          GlamourerCharacterData                      cachedCharacterData { get; set; }                       // stores the cached character data for the plugin
+    public          GlamourerCharacterData                      cachedCharacterData { get; set; }
+    public          bool                                        disableGlamChangeEvent { get; set; } = false;           // disables the glam change event
+    public          bool                                        finishedDrawingGlamChange { get; set; } = false;        // disables the glamourer
 
     // stuff for the garbler
     public          string                                      language { get; set; } = "English";                     // The language dialect to use for the IPA conversion
     public          string                                      languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
     public          List<string>                                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
     // variables involved with saving and updating the config
+    
+    [JsonIgnore]
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
 
     /// <summary> Gets or sets the colors used within our UI </summary>
@@ -92,7 +97,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
             this.selectedGagTypes = new ObservableList<string> { "None", "None", "None" };}
         // Set default values for selectedGagPadlocks
         if (this.selectedGagPadlocks == null || !this.selectedGagPadlocks.Any() || this.selectedGagPadlocks.Count > 3) {
-            this.selectedGagPadlocks = new ObservableList<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
+            this.selectedGagPadlocks = new ObservableList<LockableType> { LockableType.None, LockableType.None, LockableType.None };}
         // set default values for selected channels/
         if (this.Channels == null || !this.Channels.Any()) {
             this.Channels = new List<ChatChannel.ChatChannels>(){ChatChannel.ChatChannels.Say};}
@@ -129,12 +134,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         if (this.phoneticSymbolList == null || !this.phoneticSymbolList.Any()) {
             GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
             this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
-        // set default values for the gagEquipData
-        if (this.gagEquipData == null || !this.gagEquipData.Any()) {
-            GagSpeak.Log.Debug($"[Config]: gagEquipData is null, creating new list");
-            this.gagEquipData = Enum.GetValues(typeof(GagList.GagType))             // create the data for a new Dictionary                 
-                .Cast<GagList.GagType>()                                            // get the enum gaglist        
-                .ToDictionary(gagType => gagType, gagType => new EquipDrawData(ItemIdVars.NothingItem(EquipSlot.Head)));} // & create new entry in dictionary for each one!
+        // & create new entry in dictionary for each one!
         // set default class for GlamourerCharacterData if none exists already. Will be removed later, used for debug purposes now.
         // if (this.cachedCharacterData == null) {
         //     GagSpeak.Log.Debug($"[Config]: cachedCharacterData is null, creating new list");

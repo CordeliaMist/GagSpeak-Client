@@ -3,20 +3,20 @@ using System;
 namespace GagSpeak.Data {
     /// <summary> Purely for acting as a helper when printing debug information for cachedCharacterCustomization </summary>
     public enum EquipmentSlotNameByEnum {
-    MainHand,
-    OffHand,
-    Head,
-    Body,
-    Hands,
-    Belt,
-    Legs,
-    Feet,
-    Ears,
-    Neck,
-    Wrists,
-    RFinger,
-    BothHand,
-    LFinger,
+        MainHand,
+        OffHand,
+        Head,
+        Body,
+        Hands,
+        Belt,
+        Legs,
+        Feet,
+        Ears,
+        Neck,
+        Wrists,
+        RFinger,
+        BothHand,
+        LFinger,
     }
 
     /// <summary> the type of statechange provided by glamourerIPC </summary>
@@ -35,25 +35,18 @@ namespace GagSpeak.Data {
     }
 
     /// <summary>
-    ///  Might delete, came from glamourerIPC
+    ///  Draw condition of our object character in the scene
     /// </summary>
-    public enum Source : byte {
-        Game,
-        Manual,
-        Fixed,
-        Ipc,
-        Pending,
-    }
-
-    /// <summary>
-    /// Might delete, came from glamourerIPC
-    /// </summary>
-    public enum Priority {
-        GlamourerIpc = int.MinValue,
+    public enum DrawCondition {
+        None,
+        DrawObjectZero,
+        RenderFlags,
+        ModelInSlotLoaded,
+        ModelFilesInSlotLoaded
     }
 
     /// <summary> Padlock enum listing </summary>
-    public enum GagPadlocks {
+    public enum LockableType {
         None,                   // No gag
         MetalPadlock,           // Metal Padlock, can be picked
         CombinationPadlock,     // Combination Padlock, must enter 4 digit combo to unlock
@@ -62,6 +55,7 @@ namespace GagSpeak.Data {
         TimerPasswordPadlock,   // Timer Password Padlock, must enter password to unlock, but only after a certain amount of time
         MistressPadlock,        // Mistress Padlock, must ask mistress to unlock
         MistressTimerPadlock,   // Mistress Timer Padlock, must ask mistress to unlock, but only after a certain amount of time
+        RestraintSetPadlock,    // for locking restraint sets
     };
 
 

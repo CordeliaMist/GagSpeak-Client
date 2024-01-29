@@ -12,6 +12,11 @@ using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 using GagSpeak.Services;
 using Dalamud.Interface.Utility;
+using GagSpeak.Data;
+using GagSpeak.UI.ComboListings;
+using Penumbra.GameData.DataContainers;
+using Lumina.Excel.GeneratedSheets;
+using System.IO;
 
 namespace GagSpeak.UI.Helpers;
 
@@ -198,8 +203,38 @@ public static class UIHelpers
         }
     }
 
+
     /// <summary>
-    /// This method gets the string equal of the enum listing.
-    /// </summary>
-    /// <returns>The string equal of the enum listing.</returns>
+    /// This helper function is used to create a text field that when right clicked can be modified and changed.
+    /// <list type="Bullet">
+    /// <item><c>popupId</c><param name="popupId"> - The id of the popup</param></item>
+    /// <item><c>text</c><param name="text"> - The text to display</param></item>
+    /// <item><c>maxLength</c><param name="maxLength"> - The max length of the text</param></item>
+    /// <item><c>helpText</c><param name="helpText"> - The help text to display</param></item>
+    /// <item><c>tooltip</c><param name="tooltip"> - The tooltip to display</param></item>
+    /// </list> </summary>
+    public static void EditableTextFieldWithPopup(string popupId, ref string text, uint maxLength, string helpText, string tooltip) {
+        ImGui.TextWrapped(text);
+        if (ImGui.IsItemHovered() && ImGui.IsItemClicked(ImGuiMouseButton.Right))
+            ImGui.OpenPopup(popupId); // Open the context menu
+        // open the popup if we satisfy that criteria
+        if (ImGui.BeginPopup(popupId)) {
+            // store our text from when we open it
+            string currentText = text;
+            var oldText = currentText;
+            // set keyboard focus to the text box
+            if (ImGui.IsWindowAppearing()) { ImGui.SetKeyboardFocusHere(0); }
+            // pompt the user to enter a new name
+            ImGui.TextUnformatted(helpText);
+            if (ImGui.InputText("##Rename", ref currentText, maxLength, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                // if our text is updated, send the updated text to the output result as an action string
+                if (currentText != oldText)
+                    text = currentText;
+                // close the popup
+                ImGui.CloseCurrentPopup();
+            }
+            ImGuiUtil.HoverTooltip(tooltip);
+            ImGui.EndPopup();
+        }
+    }
 }

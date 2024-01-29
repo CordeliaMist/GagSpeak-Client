@@ -12,6 +12,7 @@ using GagSpeak.Events;
 using GagSpeak.Services;
 using GagSpeak.UI.Helpers;
 using GagSpeak.Data;
+using GagSpeak.Wardrobe;
 
 namespace GagSpeak.UI.ComboListings;
 /// <summary> This class is used to draw the gag listings. </summary>
@@ -21,6 +22,7 @@ public class GagListingsDrawer : IDisposable
     IDalamudTextureWrap textureWrap4; IDalamudTextureWrap textureWrap5; IDalamudTextureWrap textureWrap6; // for image display
     private             DalamudPluginInterface  _pluginInterface;               // used to get the plugin interface
     private             GagAndLockManager       _lockManager;                   // used to get the lock manager
+    private readonly    GagStorageManager       _gagStorageManager;             // used to get the gag storage manager
     private             GagService              _gagService;                    // used to get the gag service
     private             TimerService            _timerService;                  // used to get the timer service
     private readonly    GagSpeakConfig          _config;                        // used to get the config
@@ -40,7 +42,7 @@ public class GagListingsDrawer : IDisposable
     /// <item><c>timerService</c><param name="timerService"> - The timer service.</param></item>
     /// <item><c>lockManager</c><param name="lockManager"> - The lock manager.</param></item>
     /// </list> </summary>
-    public GagListingsDrawer(GagSpeakConfig config, DalamudPluginInterface dalamudPluginInterface, 
+    public GagListingsDrawer(GagSpeakConfig config, DalamudPluginInterface dalamudPluginInterface, GagStorageManager gagStorageManager,
     TimerService timerService, GagAndLockManager lockManager, GagService gagService, ItemAutoEquipEvent itemAutoEquipEvent)
     {
         _config = config;
@@ -49,6 +51,7 @@ public class GagListingsDrawer : IDisposable
         _lockManager = lockManager;
         _gagService = gagService;
         _itemAutoEquipEvent = itemAutoEquipEvent;
+        _gagStorageManager = gagStorageManager;
         // draw textures for the gag and padlock listings //
         textureWrap1 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.selectedGagTypes[0]}.png"));
         textureWrap2 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.selectedGagTypes[1]}.png"));
@@ -153,15 +156,15 @@ public class GagListingsDrawer : IDisposable
             }
             // display the remaining time if we have a timer for this and we are locked
             if(_config.isLocked[layerIndex] && 
-            (_config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
-            _config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock ||
-            _config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock)) {
+            (_config.padlockIdentifier[layerIndex]._padlockType == LockableType.FiveMinutesPadlock ||
+            _config.padlockIdentifier[layerIndex]._padlockType == LockableType.MistressTimerPadlock ||
+            _config.padlockIdentifier[layerIndex]._padlockType == LockableType.TimerPasswordPadlock)) {
                 _config.displaytext[layerIndex] = _timerService.GetRemainingTimeForPadlock(layerIndex);
             }
         }
         ImGui.NextColumn();
         ImGui.SetColumnWidth(2, 80);
-        if(config.selectedGagPadlocks[layerIndex] != GagPadlocks.None) {
+        if(config.selectedGagPadlocks[layerIndex] != LockableType.None) {
             if(layerIndex==0) { ImGui.Image(textureWrap4.ImGuiHandle, new Vector2(80, 80)); }
             if(layerIndex==1) { ImGui.Image(textureWrap5.ImGuiHandle, new Vector2(80, 80)); }
             if(layerIndex==2) { ImGui.Image(textureWrap6.ImGuiHandle, new Vector2(80, 80)); }
@@ -209,12 +212,18 @@ public class GagListingsDrawer : IDisposable
         
         if(prevItem != config.selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
             GagSpeak.Log.Debug($"[GagListingsDrawer]: Personal GagType Changed, firing itemAuto-Equip event for gag {config.selectedGagTypes[layerIndex]}");
-            _itemAutoEquipEvent.Invoke(_config.selectedGagTypes[layerIndex]);
+            _itemAutoEquipEvent.Invoke(_config.selectedGagTypes[layerIndex], "self");
         }
 
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                config.selectedGagTypes[layerIndex] = _gagService._gagTypes.First()._gagName; // to the first option, none
+                // get gagtype before clear
+                var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == config.selectedGagTypes[layerIndex]);
+                // clear the gag item from the selectedGagTypes list, resetting it to none
+                config.selectedGagTypes[layerIndex] = _gagService._gagTypes.First()._gagName;
+                // reset the _wasEquippedBy to empty
+                _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
+                // save config
                 _config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
@@ -244,7 +253,7 @@ public class GagListingsDrawer : IDisposable
         combo.Draw(ID, config.selectedGagPadlocks, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                config.selectedGagPadlocks[layerIndex]= GagPadlocks.None; // to the first option, none
+                config.selectedGagPadlocks[layerIndex]= LockableType.None; // to the first option, none
                 config.selectedGagPadlocksPassword[layerIndex] = "";
                 config.selectedGagPadlocksAssigner[layerIndex] = "";
                 config.Save();

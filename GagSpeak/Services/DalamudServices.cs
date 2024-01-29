@@ -2,7 +2,7 @@ using Dalamud.Game;				// Provides service classes for interacting with the game
 using Dalamud.IoC; 				// Provides service classes for dependency injection
 using Dalamud.Plugin; 			// Provides interfaces and service classes for creating Dalamud plugins
 using Dalamud.Plugin.Services; 	// Provides service classes for plugin services
-using Microsoft.Extensions.DependencyInjection; // Provides the dependency injection
+using OtterGui.Services; // Provides the dependency injection
 
 // Because we need this to be part of our GagSpeak Namespace, but it is part of the services group, we name our namespace this:
 namespace GagSpeak.Services;
@@ -18,6 +18,7 @@ public class DalamudServices {
 		services.AddDalamudService<IChatGui>(pi);				// For interfacing with the chat
 		services.AddDalamudService<IClientState>(pi);			// For interfacing with the client state, getting player info, etc.
 		services.AddDalamudService<ICommandManager>(pi);		// For interfacing with commands
+		services.AddDalamudService<ICondition>(pi);		// For interfacing with the plugin configuration
 		services.AddDalamudService<IDataManager>(pi);			// for parsing object data
 		services.AddDalamudService<IFramework>(pi);				// For interfacing with the dalamud framework (scheduler, timings, etc.)
 		services.AddDalamudService<IGameInteropProvider>(pi);	// helps with detouring the chat input for our plugin

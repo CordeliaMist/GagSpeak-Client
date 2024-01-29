@@ -20,8 +20,8 @@ public class MainWindow : Window
         None            = -1,   // No tab selected
         General         = 0,    // Where you select your gags and safewords and lock types. Put into own tab for future proofing beauty spam
         Whitelist       = 1,    // Where you can append peoples names to a whitelist, which is used to account for permissions on command usage.
-        ConfigSettings  = 2,    // Where you can change the plugin settings, such as debug mode, and other things.
-        Wardrobe        = 3,    // Where you can set what equips when what is worn & config automatic bind & lock options.
+        Wardrobe        = 2,    // Where you can set what equips when what is worn & config automatic bind & lock options.
+        ConfigSettings  = 3,    // Where you can change the plugin settings, such as debug mode, and other things.
         HelpPage        = 4     // Where you can find information on how to use the plugin, and how to get support.
     }
     private readonly    GagSpeakConfig      _config;
@@ -34,23 +34,14 @@ public class MainWindow : Window
     public readonly     HelpPageTab         HelpPage;
     public              TabType             SelectTab = TabType.None;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MainWindow"/> class.
-    /// <list type="bullet">
-    /// <item><c>pluginInt</c><param name="pluginInt"> - The DalamudPluginInterface.</param></item>
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// <item><c>general</c><param name="general"> - The general tab.</param></item>
-    /// <item><c>changelog</c><param name="changelog"> - The changelog.</param></item>
-    /// <item><c>whitelist</c><param name="whitelist"> - The whitelist tab.</param></item>
-    /// <item><c>configsettings</c><param name="configsettings"> - The config settings tab.</param></item>
-    /// <item><c>helpPageTab</c><param name="helpPageTab"> - The help page tab.</param></item>
-    /// </list> </summary>
+    /// <summary> Constructs the primary 'MainWindow'. Hosts the space for the other windows to fit in.
+    /// <para> Note: The 'MainWindow' is the window space hosting the UI when you type /gagspeak, not any independant tab.
+    /// </para> </summary>
     public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general, GagSpeakChangelog changelog,
     WhitelistTab whitelist, ConfigSettingsTab configsettings, HelpPageTab helpPageTab, WardrobeTab wardrobeTab): base(GetLabel()) {
         // let the user know if their direct chat garlber is still enabled upon launch
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
-
         // Next let's set the size of the window
         SizeConstraints = new WindowSizeConstraints() {
             MinimumSize = new Vector2(500, 525),     // Minimum size of the window
@@ -60,13 +51,11 @@ public class MainWindow : Window
         // set the private readonly's to the passed in data of the respective names
         General = general;
         Whitelist = whitelist;
-        ConfigSettings = configsettings;
         Wardrobe = wardrobeTab;
+        ConfigSettings = configsettings;
         HelpPage = helpPageTab;
 
-        
         // Below are the stuff besides the tabs that are passed through
-        //_event     = @event;
         _config    = config;
         _changelog = changelog;
         // the tabs to be displayed
@@ -74,8 +63,8 @@ public class MainWindow : Window
         {
             general,
             whitelist,
-            configsettings,
             wardrobeTab,
+            configsettings,
             helpPageTab
         };
     }
@@ -90,7 +79,7 @@ public class MainWindow : Window
             _config.Save(); // FIND OUT HOW TO USE SaveConfig(); ACROSS CLASSES LATER.
         }
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 7.8f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 9f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
         ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
@@ -103,7 +92,7 @@ public class MainWindow : Window
         // In that same line...
         ImGui.SameLine();
         // And now have that button be for the Ko-Fi Link
-        if (ImGui.Button("Toss me a tip ♥")) {
+        if (ImGui.Button("Toss Cordy a Thanks♥")) {
             ImGui.SetTooltip( "Only if you want to though!");
             Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
         }
