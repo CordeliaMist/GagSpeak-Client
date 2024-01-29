@@ -92,16 +92,20 @@ public class RestraintSetManager : ISavable
 
     /// <summary> Toggles the enabled state of a restraint set spesified by index if it exists. </summary>
     public void ToggleRestraintSetEnabled(int restraintSetIdx) {
+        // if we are trying to disable the restraint set
         if (_restraintSets[restraintSetIdx]._enabled) {
-            // If the restraint set is currently enabled, disable it
+            // disable it
             _restraintSets[restraintSetIdx].SetIsEnabled(false);
-        } else {
-            // If the restraint set is currently disabled, disable all other restraint sets and enable it
+        } // otherwise, if we are trying to enable the restraint set 
+        else {
+            // iterate through every single set
             for (int i = 0; i < _restraintSets.Count; i++) {
+                // if the set is not our current set, disable it
                 if (i != restraintSetIdx) {
                     _restraintSets[i].SetIsEnabled(false);
                 }
             }
+            // then enable the current set
             _restraintSets[restraintSetIdx].SetIsEnabled(true);
         }
         Save();

@@ -64,7 +64,9 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                        allowItemAutoEquip { get; set; } = false;               // allows the item auto equip event to fire
     public          bool                                        allowRestraintLocking { get; set; } = false;            // allows restraint locking at all in any capacity from others besides you
     public          bool                                        surrenderRestraintControl { get; set; } = false;        // only works on slave-mistress relation. Revokes your access to restraint tab, gives mistress full control
-    public          GlamourerCharacterData                      cachedCharacterData { get; set; }                       // stores the cached character data for the plugin
+    public          GlamourerCharacterData                      cachedCharacterData { get; set; }
+    public          bool                                        disableGlamChangeEvent { get; set; } = false;           // disables the glam change event
+    public          bool                                        finishedDrawingGlamChange { get; set; } = false;        // disables the glamourer
 
     // stuff for the garbler
     public          string                                      language { get; set; } = "English";                     // The language dialect to use for the IPA conversion

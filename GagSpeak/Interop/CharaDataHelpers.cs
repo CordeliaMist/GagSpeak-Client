@@ -63,6 +63,7 @@ public class CharaDataHelpers : IDisposable
     private string _lastGlobalBlockReason = string.Empty; // reason for the last global block
     private bool _sentBetweenAreas = false; // if we sent a between areas message
     private ushort _lastZone = 0;
+    private DateTime _lastLoggedTime = DateTime.Now; // last time we logged a message
     public bool IsZoning => _condition[ConditionFlag.BetweenAreas] || _condition[ConditionFlag.BetweenAreas51]; // if we are zoning
     public Lazy<Dictionary<ushort, string>> WorldData { get; private set; } // contains world data if we ever need it at any point
 
@@ -150,7 +151,26 @@ public class CharaDataHelpers : IDisposable
         if (!IsAnythingDrawing && !string.IsNullOrEmpty(_lastGlobalBlockPlayer)) {
             GagSpeak.Log.Debug($"Global draw block: END => {_lastGlobalBlockPlayer}");
             _lastGlobalBlockPlayer = string.Empty;
-            _lastGlobalBlockReason = string.Empty; 
+            _lastGlobalBlockReason = string.Empty;
+            // if we have finished redrawing, then we can check for drawing again
+            if(_config.finishedDrawingGlamChange){
+                GagSpeak.Log.Debug($"[FrameworkUpdate] GagSpeak Glamour Updates Finished");
+                if(_config.disableGlamChangeEvent) {
+                    GagSpeak.Log.Debug($"[FrameworkUpdate] Disabling Glamour Change Event");
+                    var lastLoggedOccurance = DateTime.Now;
+                    if ((lastLoggedOccurance - _lastLoggedTime).TotalMilliseconds < 100) {
+                        GagSpeak.Log.Debug($"[FrameworkUpdate] Last logged occurance was less than 100ms ago, returning");
+                        _lastLoggedTime = lastLoggedOccurance;
+                        _config.finishedDrawingGlamChange = false;
+                        _config.disableGlamChangeEvent = false;
+                        _jobChangedEvent.Invoke();
+                    } else {
+                        _lastLoggedTime = lastLoggedOccurance;
+                        _config.finishedDrawingGlamChange = false;
+                        _config.disableGlamChangeEvent = false;
+                    }
+                }
+            } 
         }
 
 

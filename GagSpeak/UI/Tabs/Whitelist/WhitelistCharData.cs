@@ -7,6 +7,7 @@ namespace GagSpeak.Data;
 
 /// <summary> A class to hold the data for the whitelist character </summary>
 public class WhitelistCharData {
+    
     public string                       name;                                     // get the character name
     public string                       homeworld;                                // get the characters world (dont know how to get this for now)
     public string                       relationshipStatus;                       // who you are to them
