@@ -9,6 +9,8 @@ using GagSpeak.Data;
 using GagSpeak.UI.ComboListings;
 using GagSpeak.UI.Helpers;
 using GagSpeak.Services;
+using System.Runtime.CompilerServices;
+using GagSpeak.Wardrobe;
 
 namespace GagSpeak.Chat.MsgResultLogic;
 
@@ -17,13 +19,15 @@ namespace GagSpeak.Chat.MsgResultLogic;
 /// </summary>
 public class MessageResultLogic
 {    
-    private          GagListingsDrawer _gagListingsDrawer; // used to draw the gag listings
-    private readonly IChatGui           _clientChat;       // used to print messages to the chat
-    private readonly GagSpeakConfig     _config;           // used to get the config
-    private readonly IClientState       _clientState;      // used to get the client state
-    private readonly GagAndLockManager  _lockManager;      // used to get the lock manager
-    private readonly GagService         _gagService;       // used to get the gag service
-    private readonly TimerService       _timerService;     // used to get the timer service
+    private          GagListingsDrawer      _gagListingsDrawer;     // used to draw the gag listings
+    private readonly IChatGui               _clientChat;            // used to print messages to the chat
+    private readonly GagSpeakConfig         _config;                // used to get the config
+    private readonly GagStorageManager      _gagStorageManager;     // used to get the gag storage
+    private readonly RestraintSetManager    _restraintSetManager;   // used to get the restraint set manager
+    private readonly IClientState           _clientState;           // used to get the client state
+    private readonly GagAndLockManager      _lockManager;           // used to get the lock manager
+    private readonly GagService             _gagService;            // used to get the gag service
+    private readonly TimerService           _timerService;          // used to get the timer service
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageResultLogic"/> class.
@@ -35,7 +39,8 @@ public class MessageResultLogic
     /// <item><c>lockManager</c><param name="lockManager"> - The GagAndLockManager.</param></item>
     /// </list> </summary>
     public MessageResultLogic(GagListingsDrawer gagListingsDrawer, IChatGui clientChat, GagSpeakConfig config,
-    IClientState clientState, GagAndLockManager lockManager, GagService gagService, TimerService timerService) {
+    IClientState clientState, GagAndLockManager lockManager, GagService gagService, TimerService timerService,
+    GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager) {
         _gagListingsDrawer = gagListingsDrawer;
         _clientChat = clientChat;
         _config = config;
@@ -43,6 +48,8 @@ public class MessageResultLogic
         _lockManager = lockManager;
         _gagService = gagService;
         _timerService = timerService;
+        _gagStorageManager = gagStorageManager;
+        _restraintSetManager = restraintSetManager;
     }
     
     /// <summary>
@@ -104,6 +111,8 @@ public class MessageResultLogic
             "declineslaverelation"    => HandleDeclineSlaveMessage(ref decodedMessage, ref isHandled, config), 
             "provideinfo"             => HandleProvideInfoMessage(ref decodedMessage, ref isHandled, config),
             "provideinfo2"            => HandleProvideInfo2Message(ref decodedMessage, ref isHandled, config),
+            "restraintsetlock"        => HandleRestraintSetLockMessage(ref decodedMessage, ref isHandled, config),
+            "restraintsetunlock"      => HandleRestraintSetUnlockMessage(ref decodedMessage, ref isHandled, config),
             _                         => LogError("Invalid Whitelist message parse, If you see this report it to cordy ASAP.")
         };
         return true;
@@ -116,6 +125,7 @@ public class MessageResultLogic
         return false;
     }
 
+#region GagSpeak Gag Command Logic
     /// <summary>
     /// handle the lock message [commandtype, layer, gagtype/locktype, password, player, password2]
     /// <list type="bullet">
@@ -133,10 +143,10 @@ public class MessageResultLogic
         if (_config.selectedGagTypes[layer-1] == "None") {
             isHandled = true; return LogError($"[MsgResultLogic]: No gag applied for layer {layer}, cannot apply lock!");}
         // third, make sure we dont already have a lock here
-        if (_config.selectedGagPadlocks[layer-1] != GagPadlocks.None) {
+        if (_config.selectedGagPadlocks[layer-1] != LockableType.None) {
             isHandled = true; return LogError($"[MsgResultLogic]: Already a lock applied to gag layer {layer}!");}
         // all preconditions met, so now we can try to lock it.
-        if (Enum.TryParse(decodedMessage[2], out GagPadlocks parsedLockType)) {
+        if (Enum.TryParse(decodedMessage[2], out LockableType parsedLockType)) {
             // get our payload
             PlayerPayload playerPayload; // get player payload
             UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
@@ -169,7 +179,7 @@ public class MessageResultLogic
         if (!int.TryParse(decodedMessage[1], out int layer)) { 
             isHandled = true; return LogError("[MsgResultLogic]: Invalid layer value.");}
         // second, make sure we have a lock on
-        if (_config.selectedGagPadlocks[layer-1] == GagPadlocks.None) {
+        if (_config.selectedGagPadlocks[layer-1] == LockableType.None) {
             isHandled = true; return LogError($"[MsgResultLogic]: No lock applied for layer {layer}, cannot remove lock!");}
         // if we made it here, we can try to unlock it.
         PlayerPayload playerPayload; // get player payload
@@ -177,16 +187,16 @@ public class MessageResultLogic
         string[] nameParts = decodedMessage[4].Split(' ');
         decodedMessage[4] = nameParts[0] + " " + nameParts[1];
         // try to unlock it
-        if(_config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressPadlock || _config.selectedGagPadlocks[layer-1] == GagPadlocks.MistressTimerPadlock) {
+        if(_config.selectedGagPadlocks[layer-1] == LockableType.MistressPadlock || _config.selectedGagPadlocks[layer-1] == LockableType.MistressTimerPadlock) {
             if(decodedMessage[4] != _config.selectedGagPadlocksAssigner[layer-1]) {
                 isHandled = true; return LogError($"[MsgResultLogic]: {decodedMessage[4]} is not the assigner of the lock on layer {layer}!");
             }
         }
 
-        GagPadlocks tempPadlock = _config.selectedGagPadlocks[layer-1]; // store the padlock
+        LockableType tempPadlock = _config.selectedGagPadlocks[layer-1]; // store the padlock
         _lockManager.Unlock((layer-1), decodedMessage[4], decodedMessage[3], playerPayload.PlayerName, playerPayload.PlayerName); // attempt to unlock
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{decodedMessage[4]} " +
-        $"sucessfully unlocked the {Enum.GetName(typeof(GagPadlocks), tempPadlock)} from your {_config.selectedGagTypes[layer-1]}.").AddItalicsOff().BuiltString);        
+        $"sucessfully unlocked the {Enum.GetName(typeof(LockableType), tempPadlock)} from your {_config.selectedGagTypes[layer-1]}.").AddItalicsOff().BuiltString);        
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag unlock");
         return true; // sucessful parse
     }
@@ -208,7 +218,7 @@ public class MessageResultLogic
         if (_config.selectedGagTypes[layer-1] == "None") {
             isHandled = true; return LogError($"[MsgResultLogic]: There is no gag applied for gag layer {layer}, so no gag can be removed.");}
         // third, make sure there is no lock on that gags layer
-        if (_config.selectedGagPadlocks[layer-1] != GagPadlocks.None) {
+        if (_config.selectedGagPadlocks[layer-1] != LockableType.None) {
             isHandled = true; return LogError($"[MsgResultLogic]: There is a lock applied for gag layer {layer}, cannot remove gag!");}
         // finally, if we made it here, we can remove the gag
         string playerNameWorld = decodedMessage[4];
@@ -230,7 +240,7 @@ public class MessageResultLogic
     /// <returns> Whether or not the message has been handled, along with the updated decoded message list.</returns>
     private bool HandleRemoveAllMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         // make sure all of our gagpadlocks are none, if they are not, throw exception
-        if (_config.selectedGagPadlocks.Any(padlock => padlock != GagPadlocks.None)) {
+        if (_config.selectedGagPadlocks.Any(padlock => padlock != LockableType.None)) {
             isHandled = true; return LogError("[MsgResultLogic]: Cannot remove all gags while locks are on any of them.");}
         // if we made it here, we can remove them all
         string playerNameWorld = decodedMessage[4]; 
@@ -269,7 +279,9 @@ public class MessageResultLogic
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag apply");
         return true; // sucessful parse
     }
+#endregion GagSpeak Gag Command Logic
 
+#region GagSpeak Whitelist Command Logic
     /// <summary>
     /// handle the request mistress message
     /// <list type="bullet">
@@ -650,8 +662,8 @@ public class MessageResultLogic
                 playerInWhitelist.garbleLevel = int.Parse(decodedMessage[3]);
                 playerInWhitelist.selectedGagTypes[0] = decodedMessage[6];
                 playerInWhitelist.selectedGagTypes[1] = decodedMessage[7];
-                playerInWhitelist.selectedGagPadlocks[0] = (GagPadlocks)Enum.Parse(typeof(GagPadlocks), decodedMessage[9]);
-                playerInWhitelist.selectedGagPadlocks[1] = (GagPadlocks)Enum.Parse(typeof(GagPadlocks), decodedMessage[10]);
+                playerInWhitelist.selectedGagPadlocks[0] = (LockableType)Enum.Parse(typeof(LockableType), decodedMessage[9]);
+                playerInWhitelist.selectedGagPadlocks[1] = (LockableType)Enum.Parse(typeof(LockableType), decodedMessage[10]);
                 playerInWhitelist.selectedGagPadlocksAssigner[0] = decodedMessage[12];
                 playerInWhitelist.selectedGagPadlocksAssigner[1] = decodedMessage[13];
                 playerInWhitelist.selectedGagPadlocksTimer[0] = UIHelpers.GetEndTime(decodedMessage[15]);
@@ -685,7 +697,7 @@ public class MessageResultLogic
                 playerInWhitelist.lockedLiveChatGarbler = decodedMessage[2] == "True" ? true : false;
                 //playerInWhitelist.relationshipStatus = decodedMessage[5];
                 playerInWhitelist.selectedGagTypes[2] = decodedMessage[8];
-                playerInWhitelist.selectedGagPadlocks[2] = (GagPadlocks)Enum.Parse(typeof(GagPadlocks), decodedMessage[11]);
+                playerInWhitelist.selectedGagPadlocks[2] = (LockableType)Enum.Parse(typeof(LockableType), decodedMessage[11]);
                 playerInWhitelist.selectedGagPadlocksAssigner[2] = decodedMessage[14];
                 playerInWhitelist.selectedGagPadlocksTimer[2] = UIHelpers.GetEndTime(decodedMessage[17]);
                 
@@ -697,4 +709,84 @@ public class MessageResultLogic
         }     
         return true;
     }
+#endregion GagSpeak Whitelist Command Logic
+
+#region GagSpeak Wardrobe Command Logic
+    /// <summary>
+    /// Locks the defined restraint set if it exists and player is in your whitelist
+    /// { [0] = "restraintSetLock", [1] = restraint set name, [2] = timer in formatted string, [4] = "playerName world" }
+    /// </summary>
+    private bool HandleRestraintSetLockMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
+        try {
+            if(_config.InDomMode) {
+                isHandled = true;
+                return LogError($"[MsgResultLogic]: You cannot lock a restraint set while in Dom Mode.");
+            }
+            PlayerPayload playerPayload; // get player payload
+            UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
+            // first, see if our restraint set exists
+            string restraintSetName = decodedMessage[1];
+            if (!_restraintSetManager._restraintSets.Any(restraintSet => restraintSet._name == restraintSetName)) {
+                isHandled = true; return LogError($"[MsgResultLogic]: Restraint Set Name {restraintSetName} was attempted to be applied to you, but the set does not exist!");}
+            // secondly, see if our player is in our whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string AssignerPlayerName = string.Join(" ", parts.Take(parts.Length - 1));
+            // if we make it here, the timer was already validated upon sending it, so it will be valid here, and we can set it.
+            if(_lockManager.LockRestraintSet(restraintSetName, AssignerPlayerName, decodedMessage[2], playerPayload.PlayerName)) {
+                // send sucessful message to chat
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{AssignerPlayerName} locked {playerPayload.PlayerName}'s "+
+                $"{restraintSetName} restraint set for {decodedMessage[2]}.").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /restraintset lock");
+                return true; // sucessful parse
+            } else {
+                isHandled = true;
+                return false;
+            }
+        } catch {
+            return LogError($"ERROR, Invalid restraintSetLock message parse.");
+        }
+    }
+
+    /// <summary>
+    /// Unlocks the defined restraint set if it exists and player is in your whitelist
+    /// { [0] = "restraintSetUnlock", [1] = restraint set name, [4] = "playerName world ASSIGNER" }
+    /// </summary>
+    private bool HandleRestraintSetUnlockMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
+        try {
+            if(_config.InDomMode) {
+                isHandled = true;
+                return LogError($"[MsgResultLogic]: You cannot lock a restraint set while in Dom Mode.");
+            }
+            PlayerPayload playerPayload; // get player payload
+            UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
+            // first, see if our restraint set exists
+            string restraintSetName = decodedMessage[1];
+            if (!_restraintSetManager._restraintSets.Any(restraintSet => restraintSet._name == restraintSetName)) {
+                isHandled = true; return LogError($"[MsgResultLogic]: Restraint Set Name {restraintSetName} was attempted to be applied to you, but the set does not exist!");}
+            // secondly, see if our player is in our whitelist
+            string playerNameWorld = decodedMessage[4];
+            string[] parts = playerNameWorld.Split(' ');
+            string AssignerPlayerName = string.Join(" ", parts.Take(parts.Length - 1));
+            if (!_config.Whitelist.Any(player => player.name == AssignerPlayerName)) {
+                if(AssignerPlayerName != playerPayload.PlayerName){
+                    isHandled = true;
+                    return LogError("[MsgResultLogic]: Player is not in your whitelist.");
+                }
+            }
+            // if we make it here, the timer was already validated upon sending it, so it will be valid here, and we can set it.
+            if(_lockManager.UnlockRestraintSet(restraintSetName, AssignerPlayerName)) {
+                // send sucessful message to chat
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{AssignerPlayerName} unlocked {playerPayload.PlayerName}'s {restraintSetName} restraint set.").AddItalicsOff().BuiltString);
+                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /restraintset unlock");
+                return true; // sucessful parse
+            } else {
+                isHandled = true;
+                return false;
+            }
+        } catch {
+            return LogError($"ERROR, Invalid restraintSetUnlock message parse.");
+        }
+    }
+#endregion GagSpeak Wardrobe Command Logic
 }

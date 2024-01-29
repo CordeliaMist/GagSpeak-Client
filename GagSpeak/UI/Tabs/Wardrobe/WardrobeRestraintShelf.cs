@@ -39,6 +39,7 @@ public class WardrobeRestraintCompartment
     private readonly    TimerService                    _timerService;          // for getting the timer service
     private readonly    FilenameService                 _filenameService;       // for getting the filename service
     private readonly    RestraintSetManager             _restraintSetManager;   // for getting the restraint set manager
+    private readonly    GagAndLockManager               _gagAndLockManager;     // for getting the gag and lock manager
     public              string                          _filename;              // for getting the filename
     // variables
     private readonly    Vector2                         _iconSize;              // size of icons that can display
@@ -51,12 +52,13 @@ public class WardrobeRestraintCompartment
     private readonly    DictStain                       _stainData;             // for getting the stain data
     private readonly    ItemData                        _itemData;              // for getting the item data
     private             string                          _inputTimer;            // for getting the input timer
+    private             bool                            _isWindowLocked;        // for getting the window lock
 
 
     /// <summary> Initializes a new instance wardrobe tab"/> class. <summary>
     public WardrobeRestraintCompartment(GagSpeakConfig config, FontService fontService, IDataManager gameData, TextureService textures,
     ItemData itemData, DictStain stainData, DalamudPluginInterface pluginInterface, UiBuilder uiBuilder, TimerService timerService,
-    FilenameService filenameService, RestraintSetManager restraintSetManager) {
+    FilenameService filenameService, RestraintSetManager restraintSetManager, GagAndLockManager gagAndLockManager) {
         _config = config;
         _fontService = fontService;
         _uiBuilder = uiBuilder;
@@ -68,6 +70,7 @@ public class WardrobeRestraintCompartment
         _timerService = timerService;
         _filenameService = filenameService;
         _restraintSetManager = restraintSetManager;
+        _gagAndLockManager = gagAndLockManager;
 
         _iconSize = new Vector2(48, 48);
         _comboLength = (ImGuiHelpers.GlobalScale * 350);
@@ -115,8 +118,9 @@ public class WardrobeRestraintCompartment
             string[] restraintSetNames = _restraintSetManager._restraintSets.Select(set => set._name?? "ERROR").ToArray();
             ImGui.SetNextItemWidth(ImGui.GetContentRegionMax().X-5);
             // Incase locked, disabled the options
-            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked)
+            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked) {
                 ImGui.BeginDisabled();
+            }
             // draw out the list box
             ImGui.SetCursorPosY(ImGui.GetCursorPosY()+5);
             ImGui.ListBox("##RestraintSetListbox", ref _restraintSetSelected, restraintSetNames, restraintSetNames.Length, 5);
@@ -139,14 +143,13 @@ public class WardrobeRestraintCompartment
                 }
             }
             // re-enable the options
-            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked)
+            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked) {
                 ImGui.EndDisabled();
+            }
 
             // now we need to draw information about that restraint set and some button options
             ImGui.TableNextColumn();
 
-            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked)
-                ImGui.EndDisabled();
             // draw out the options
             var optionsTableWidth = ImGui.GetContentRegionAvail().X-5;
             using (var table2 = ImRaii.Table("RestraintSetOptions", 1, ImGuiTableFlags.RowBg, new Vector2(optionsTableWidth, 90))) {
@@ -179,16 +182,26 @@ public class WardrobeRestraintCompartment
                 ImGui.TableSetupColumn("RestraintSetApplier", ImGuiTableColumnFlags.WidthStretch);
                 ImGui.TableNextRow(); ImGui.TableNextColumn();
 
-                if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked)
+                if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked) {
                     ImGui.BeginDisabled();
+                }
                 // draw out the options
                 string lambdaText = _restraintSetManager._restraintSets[_restraintSetSelected]._enabled ? "ACTIVE" : "INACTIVE";
                 ImGui.AlignTextToFramePadding();
                 ImGui.Text($"Set is {lambdaText}");
                 ImGui.TableNextColumn();
-                if (ImGui.Button("Toggle State", new Vector2(0, 22.0f * ImGuiHelpers.GlobalScale))) {
+                if (ImGui.Button("Toggle", new Vector2(0, 22.0f * ImGuiHelpers.GlobalScale))) {
                     _restraintSetManager.ToggleRestraintSetEnabled(_restraintSetSelected);
                 }
+                // Draw remaining time if locked
+                // if it is locked, display the remaining time
+                if (_restraintSetManager._restraintSets[_restraintSetSelected]._locked) {
+                    if(_timerService.remainingTimes.ContainsKey($"RestraintSet_{_restraintSetManager._restraintSets[_restraintSetSelected]._name}")) {
+                        ImGui.SameLine();
+                        ImGui.Text($"{_timerService.remainingTimes[$"RestraintSet_{_restraintSetManager._restraintSets[_restraintSetSelected]._name}"]}");
+                    }
+                }
+
                 // now draw lock button
                 ImGui.TableNextRow(); ImGui.TableNextColumn();
                 ImGui.AlignTextToFramePadding();
@@ -202,28 +215,24 @@ public class WardrobeRestraintCompartment
                 ImGui.SameLine();
                 // in the same line, place a button that enables the lock for the spesified time
                 if (ImGui.Button("Lock", new Vector2(0, 22.0f * ImGuiHelpers.GlobalScale))) {
-                    // parse the input timer
-                    _restraintSetManager.Load();
-                    try {
-                    GagSpeak.Log.Debug($"[RestraintSetDetails] : {_restraintSetManager._restraintSets[_restraintSetSelected]._name} | "+
-                    $"{_restraintSetManager._restraintSets[_restraintSetSelected]._description} | {_restraintSetManager._restraintSets[_restraintSetSelected]._enabled} | "+
-                    $"{_restraintSetManager._restraintSets[_restraintSetSelected]._locked} | {_restraintSetManager._restraintSets[_restraintSetSelected]._lockedTimer}\n");
-                    foreach(var slot in _restraintSetManager._restraintSets[_restraintSetSelected]._drawData) {
-                        GagSpeak.Log.Debug($"[RestraintSetDetails] : {slot.Key}:\n{slot.Value._isEnabled} | {slot.Value._wasEquippedBy} | {slot.Value._locked} | {slot.Value._activeSlotListIdx}\n"+
-                        $"{slot.Value._gameItem} | {slot.Value._gameStain}\n");
-                    }
-                    } catch (Exception e) {
-                        GagSpeak.Log.Error($"[RestraintSetDetails] : {e.Message}\n{e.StackTrace}");
-                    }
                     int currentIndex = _restraintSetSelected; // Capture the current index by value
                     _restraintSetManager.ChangeRestraintSetNewLockEndTime(currentIndex, UIHelpers.GetEndTime(_inputTimer));
-                    _restraintSetManager.ChangeRestraintSetLocked(currentIndex, true);
-                    _timerService.StartTimer($"RestraintSet {_restraintSetManager._restraintSets[currentIndex]._name}",
-                        _inputTimer, 1000, () => { _restraintSetManager._restraintSets[currentIndex]._locked = false; });
+                    _restraintSetManager.LockRestraintSet(currentIndex, "self");
+                    _timerService.StartTimer($"RestraintSet_{_restraintSetManager._restraintSets[currentIndex]._name}",
+                        _inputTimer, 1000, () =>
+                        {
+                            _restraintSetManager.TryUnlockRestraintSet(currentIndex, "self"); // attempts to lock it
+                            _timerService.ClearRestraintSetTimer();
+                        });
+                }
+                if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked) {
+                    ImGui.SameLine();
+                    ImGui.Text($"{_restraintSetManager._restraintSets[_restraintSetSelected]._wasLockedBy}");
                 }
                 // re-enable the options
-                if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked)
+                if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked) {
                     ImGui.EndDisabled();
+                }
             }
         } // end of table
 
@@ -238,8 +247,9 @@ public class WardrobeRestraintCompartment
             ImGui.TableSetupColumn("EquipmentSlots", ImGuiTableColumnFlags.WidthFixed, width);
             ImGui.TableSetupColumn("AccessorySlots", ImGuiTableColumnFlags.WidthStretch);
             // disable the options
-            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked)
+            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked) {
                 ImGui.BeginDisabled();
+            }
 
             // draw out the equipment slots
             ImGui.TableNextRow(); ImGui.TableNextColumn();
@@ -257,8 +267,9 @@ public class WardrobeRestraintCompartment
             }
 
             // re-enable the options
-            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked)
+            if(_restraintSetManager._restraintSets[_restraintSetSelected]._locked) {
                 ImGui.EndDisabled();
+            }
         } // end of table
     }
 
@@ -266,9 +277,9 @@ public class WardrobeRestraintCompartment
     private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime) {
         // only display our restraints timer
         foreach(var restraintset in _restraintSetManager._restraintSets) {
-            if(timerName == $"RestraintSet {restraintset._name}") {
-                _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Days} Days, "+
-                $"{remainingTime.Hours} Hours, {remainingTime.Minutes} Minutes, {remainingTime.Seconds} Seconds";
+            if(timerName == $"RestraintSet_{restraintset._name}") {
+                _timerService.remainingTimes[timerName] = $"Locked: {remainingTime.Days}d, "+
+                $"{remainingTime.Hours}h, {remainingTime.Minutes}m, {remainingTime.Seconds}s";
             }
         }
     }

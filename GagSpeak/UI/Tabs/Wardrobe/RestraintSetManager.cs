@@ -78,38 +78,67 @@ public class RestraintSetManager : ISavable
 
     /// <summary> Sets the IsEnabled for a restraint set spesified by index if it exists. </summary>
     public void ChangeRestraintSetEnabled(int restraintSetIdx, bool isEnabled) {
-        if (isEnabled) {
-            for (int i = 0; i < _restraintSets.Count; i++) {
-                if (i != restraintSetIdx) {
-                    _restraintSets[i]._enabled = false;
-                }
+        bool anyOtherEnabled = false;
+        for (int i = 0; i < _restraintSets.Count; i++) {
+            if (i != restraintSetIdx) {
+                _restraintSets[i]._enabled = false;
+                anyOtherEnabled = anyOtherEnabled || _restraintSets[i]._enabled;
             }
         }
         // make sure its the only one left enabled
-        _restraintSets[restraintSetIdx]._enabled = true;
+        _restraintSets[restraintSetIdx]._enabled = isEnabled && anyOtherEnabled;
         Save();
     }
 
     /// <summary> Toggles the enabled state of a restraint set spesified by index if it exists. </summary>
     public void ToggleRestraintSetEnabled(int restraintSetIdx) {
-        _restraintSets[restraintSetIdx].SetIsEnabled(!_restraintSets[restraintSetIdx]._enabled);
-        if (_restraintSets[restraintSetIdx]._enabled == true) {
+        if (_restraintSets[restraintSetIdx]._enabled) {
+            // If the restraint set is currently enabled, disable it
+            _restraintSets[restraintSetIdx].SetIsEnabled(false);
+        } else {
+            // If the restraint set is currently disabled, disable all other restraint sets and enable it
             for (int i = 0; i < _restraintSets.Count; i++) {
                 if (i != restraintSetIdx) {
-                    _restraintSets[i]._enabled = false;
+                    _restraintSets[i].SetIsEnabled(false);
                 }
             }
+            _restraintSets[restraintSetIdx].SetIsEnabled(true);
         }
-        _restraintSets[restraintSetIdx]._enabled = true;
         Save();
     }
 
-    public void ChangeRestraintSetLocked(int restraintSetIdx, bool isLocked) {
-        _restraintSets[restraintSetIdx].SetIsLocked(isLocked);
-        // make sure to enable it as well
-        ChangeRestraintSetEnabled(restraintSetIdx, true); // may potentially cause race condition, we will see.
-        // this will indirectly disable the rest
+    public void LockRestraintSet(int restraintSetIdx, string wasLockedBy = "") {
+        // if the set is not enabled, then you cant lock it
+        if (!_restraintSets[restraintSetIdx]._enabled) {
+            GagSpeak.Log.Debug($"[RestraintSetManager] Cannot lock a disabled set!");
+            return;
+        }
+        _restraintSets[restraintSetIdx].SetIsLocked(true, wasLockedBy);
         Save();
+    }
+
+    public bool TryUnlockRestraintSet(int restraintSetIdx, string UnlockerName = "") {
+        // if the set is not locked, then you cant unlock it
+        if (!_restraintSets[restraintSetIdx]._locked) {
+            GagSpeak.Log.Debug($"[RestraintSetManager] Cannot unlock an unlocked set!");
+            return false;
+        }
+        // if the set is not enabled, then you cant unlock it
+        if (!_restraintSets[restraintSetIdx]._enabled) {
+            GagSpeak.Log.Debug($"[RestraintSetManager] Cannot unlock a disabled set!");
+            return false;
+        }
+        // if the set is locked by someone else, then you cant unlock it
+        if (_restraintSets[restraintSetIdx]._wasLockedBy != UnlockerName
+        && _restraintSets[restraintSetIdx]._wasLockedBy != "self"
+        && _restraintSets[restraintSetIdx]._wasLockedBy != "")
+        {
+            GagSpeak.Log.Debug($"[RestraintSetManager] Cannot unlock a set locked by someone else!");
+            return false;
+        }
+        _restraintSets[restraintSetIdx].SetIsLocked(false);
+        Save();
+        return true;
     }
 
     public void ChangeRestraintSetNewLockEndTime(int restraintSetIdx, DateTimeOffset newEndTime) {
@@ -157,6 +186,16 @@ public class RestraintSetManager : ISavable
         Save();
     }
 
+    public void ResetEverythingDueToSafeword() {
+        foreach (var set in _restraintSets) {
+            set._enabled = false;
+            set._locked = false;
+            set._wasLockedBy = "";
+            set._lockedTimer = DateTimeOffset.Now; 
+        }
+        GagSpeak.Log.Debug($"[RestraintSetManager] Reset all restraint sets due to safeword!");
+        Save();
+    }
 
     #endregion Manager Methods
 

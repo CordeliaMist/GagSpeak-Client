@@ -18,8 +18,8 @@
             "RP"
         ],
         "InternalName": "GagSpeak",
-        "AssemblyVersion": "1.0.1.3",
-        "TestingAssemblyVersion": "1.0.1.3",
+        "AssemblyVersion": "1.0.2.0",
+        "TestingAssemblyVersion": "1.0.2.0",
         "RepoUrl": "https://github.com/CordeliaMist/Dalamud-GagSpeak",
         "ApplicableVersion": "any",
         "DalamudApiLevel": 9,

@@ -12,12 +12,14 @@ namespace GagSpeak.UI.Tabs.HelpPageTab;
 public enum HelpTabType {
     General,
     Whitelist,
+    Wardrobe,
     Settings,
     Commands,
     Precautions,
     Padlocks,
     Gags
 }
+#region ClassPreperations
 /// <summary>
 /// This class is used to handle the help page tab.
 /// </summary>
@@ -100,7 +102,7 @@ public class HelpPageTab : Window, ITab
         // draw the content help tabs
         DrawHelpTabs();
     }
-
+#endregion ClassPreperations
     /// <summary>
     /// Draw the help tabs
     /// </summary>
@@ -115,6 +117,10 @@ public class HelpPageTab : Window, ITab
         }
         if (ImGui.BeginTabItem("Whitelist")) {
             SelectedHelpTab = HelpTabType.Whitelist;
+            ImGui.EndTabItem();
+        }
+        if (ImGui.BeginTabItem("Wardrobe")) {
+            SelectedHelpTab = HelpTabType.Wardrobe;
             ImGui.EndTabItem();
         }
         if (ImGui.BeginTabItem("Settings")) {
@@ -141,6 +147,9 @@ public class HelpPageTab : Window, ITab
             case HelpTabType.Whitelist:
                 DrawWhitelistTab();
                 break;
+            case HelpTabType.Wardrobe:
+                DrawWardrobeTab();
+                break;
             case HelpTabType.Settings:
                 DrawSettingsTab();
                 break;
@@ -155,7 +164,7 @@ public class HelpPageTab : Window, ITab
                 break;
         }
     }
-
+#region General Tab
     void DrawGeneralTab() {
         ImGui.BeginChild("##generalTabInfo");
         {
@@ -232,6 +241,8 @@ public class HelpPageTab : Window, ITab
         }
         ImGui.EndChild(); // debugTabScrollRegion
     }
+#endregion General Tab
+#region Whitelist Tab
     // listing for the whitelist tab
     private void DrawWhitelistTab() {
         ImGui.BeginChild("##whitelistTabInfo");
@@ -344,6 +355,18 @@ public class HelpPageTab : Window, ITab
         }
         ImGui.EndChild();
     }
+#endregion Whitelist Tab
+#region Wardrobe Tab
+    private void DrawWardrobeTab() {
+        // this table will be formatted much like the one in generaltabinfo, however this will go over the following title topics of gag configuration, directchargarblermode option, debug display, and the enabled channels       
+        ImGui.BeginChild("##wardrobeTabInfo2");
+        {
+            ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f),"COMING SOON");
+        }
+        ImGui.EndChild();
+    }
+#endregion Wardrobe Tab
+#region Settings Tab
     // listing for the settings tab
     private void DrawSettingsTab() {
         // this table will be formatted much like the one in generaltabinfo, however this will go over the following title topics of gag configuration, directchargarblermode option, debug display, and the enabled channels       
@@ -404,6 +427,8 @@ public class HelpPageTab : Window, ITab
         }
         ImGui.EndChild();
     }
+#endregion Settings Tab
+#region Commands Tab
     // listing for the commands tab
     private void DrawCommandsTab() {
         // this section is going to be formatted in mix of how the whitelist and general tab are formatted. I will begin by explaining how the commands work, mentioning how to bring up the help displays in client chat. Following that, I'll create a table that outlines the keywords used in the commands, and the spesifics of each. After that table, I will outline each general command, what it does, and give a list of all possible sub command formats and provide an example for each
@@ -581,7 +606,8 @@ public class HelpPageTab : Window, ITab
         ImGui.EndChild();
     }
     // listing for the padlocks tab
-
+#endregion Commands Tab
+#region Padlocks Tab
     private void DrawPadlocksTab() {
         ImGui.BeginChild("##padlocksTabInfo");
         {
@@ -653,7 +679,8 @@ public class HelpPageTab : Window, ITab
         }
         ImGui.EndChild();
     }
-
+#endregion Padlocks Tab
+#region Precautions Tab
     // listing for the precautions tab
     private void DrawTransparencyTab() {
         ImGui.BeginChild("##precautionsTabInfo");
@@ -748,6 +775,7 @@ public class HelpPageTab : Window, ITab
         }
         ImGui.EndChild();
     }
+#endregion Precautions Tab
 
     private WindowHeader.Button OpenPopupButton() {
         return new() {

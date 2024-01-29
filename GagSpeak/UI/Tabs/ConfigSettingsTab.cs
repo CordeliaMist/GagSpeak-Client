@@ -71,7 +71,7 @@ public class ConfigSettingsTab : ITab
     /// <summary> This Function draws the content for the ConfigSettings Tab </summary>
     private void DrawConfigSettings() {
         // Lets start by drawing the child.
-        using var child = ImRaii.Child("##SettingsPanel", -Vector2.One, true);
+        using var child = ImRaii.Child("##SettingsPanel", -Vector2.One, true, ImGuiWindowFlags.NoScrollbar);
         // define our spacing
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
@@ -110,9 +110,9 @@ public class ConfigSettingsTab : ITab
             ">> Only auto-equips on gag equip if done by someone in your whitelist that you're a pet or slave to.",
             _config.allowItemAutoEquip, v => _config.allowItemAutoEquip = v, _config);
 
-        UIHelpers.Checkbox("Allow Restraint Locking [WIP]",
-            "[REQUIREMENT] : Only people on your WHITELIST defined as your MISTRESS can lock restraints when enabled.\n"+
-            "[REQUIREMENT] : You Must have a relation of SLAVE to your Mistress for them to have access.\n"+
+        UIHelpers.Checkbox("Allow Restraint Locking",
+            "[REQUIREMENT] : Only people on your WHITELIST can lock restraints when enabled.\n"+
+            "[REQUIREMENT] : This will be allows for ANYONE in your whitelist, so ONLY enable if you trust them to!\n"+
             ">> Allows any person meeting the requirements above to lock/unlock any of your restraint sets on you.",
             _config.allowRestraintLocking, v => _config.allowRestraintLocking = v, _config);
 

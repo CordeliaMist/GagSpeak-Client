@@ -45,15 +45,8 @@ namespace GagSpeak.Data {
         ModelFilesInSlotLoaded
     }
 
-    /// <summary>
-    /// Might delete, came from glamourerIPC
-    /// </summary>
-    public enum Priority {
-        GlamourerIpc = int.MinValue,
-    }
-
     /// <summary> Padlock enum listing </summary>
-    public enum GagPadlocks {
+    public enum LockableType {
         None,                   // No gag
         MetalPadlock,           // Metal Padlock, can be picked
         CombinationPadlock,     // Combination Padlock, must enter 4 digit combo to unlock
@@ -62,6 +55,7 @@ namespace GagSpeak.Data {
         TimerPasswordPadlock,   // Timer Password Padlock, must enter password to unlock, but only after a certain amount of time
         MistressPadlock,        // Mistress Padlock, must ask mistress to unlock
         MistressTimerPadlock,   // Mistress Timer Padlock, must ask mistress to unlock, but only after a certain amount of time
+        RestraintSetPadlock,    // for locking restraint sets
     };
 
 

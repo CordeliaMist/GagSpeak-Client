@@ -32,6 +32,8 @@ namespace GagSpeak.Utility;
 public class CharaDataHelpers : IDisposable
 {
     //============== Basic Class Assignment ===================//
+    private readonly GagSpeakConfig _config;
+    private readonly IChatGui _chat;
     private readonly IClientState _clientState;
     private readonly ICondition _condition;
     private readonly IFramework _framework;
@@ -64,13 +66,15 @@ public class CharaDataHelpers : IDisposable
     public bool IsZoning => _condition[ConditionFlag.BetweenAreas] || _condition[ConditionFlag.BetweenAreas51]; // if we are zoning
     public Lazy<Dictionary<ushort, string>> WorldData { get; private set; } // contains world data if we ever need it at any point
 
-    public CharaDataHelpers(IClientState clientState, IObjectTable objectTable, IFramework framework,
-    ICondition condition, IDataManager gameData, JobChangedEvent jobChangedEvent) {
+    public CharaDataHelpers(IClientState clientState, IObjectTable objectTable, IFramework framework, IChatGui chat,
+    ICondition condition, IDataManager gameData, JobChangedEvent jobChangedEvent, GagSpeakConfig config) {
         _clientState = clientState;
         _objectTable = objectTable;
         _framework = framework;
         _condition = condition;
         _jobChangedEvent = jobChangedEvent;
+        _config = config;
+        _chat = chat;
         // set variables that are unassigned
         Address = GetPlayerPointerAsync().GetAwaiter().GetResult();
         WorldData = new(() => {
@@ -121,6 +125,10 @@ public class CharaDataHelpers : IDisposable
         // if we are between areas, but made it to this point, then it means we are back in the game
         if (_sentBetweenAreas) {
             GagSpeak.Log.Debug($"[ZoneSwitch]  Zone switch/Gpose end");
+            // let user know on launch of their direct chat garbler is still enabled
+            if (_config.DirectChatGarbler)
+                _chat.PrintError("[Notice] Direct Chat Garbler is still enabled. A Friendly reminder encase you forgot <3");
+            // update the between areas to false
             _sentBetweenAreas = false;
         }
 

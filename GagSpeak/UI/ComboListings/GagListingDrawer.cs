@@ -156,15 +156,15 @@ public class GagListingsDrawer : IDisposable
             }
             // display the remaining time if we have a timer for this and we are locked
             if(_config.isLocked[layerIndex] && 
-            (_config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.FiveMinutesPadlock ||
-            _config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.MistressTimerPadlock ||
-            _config.padlockIdentifier[layerIndex]._padlockType == GagPadlocks.TimerPasswordPadlock)) {
+            (_config.padlockIdentifier[layerIndex]._padlockType == LockableType.FiveMinutesPadlock ||
+            _config.padlockIdentifier[layerIndex]._padlockType == LockableType.MistressTimerPadlock ||
+            _config.padlockIdentifier[layerIndex]._padlockType == LockableType.TimerPasswordPadlock)) {
                 _config.displaytext[layerIndex] = _timerService.GetRemainingTimeForPadlock(layerIndex);
             }
         }
         ImGui.NextColumn();
         ImGui.SetColumnWidth(2, 80);
-        if(config.selectedGagPadlocks[layerIndex] != GagPadlocks.None) {
+        if(config.selectedGagPadlocks[layerIndex] != LockableType.None) {
             if(layerIndex==0) { ImGui.Image(textureWrap4.ImGuiHandle, new Vector2(80, 80)); }
             if(layerIndex==1) { ImGui.Image(textureWrap5.ImGuiHandle, new Vector2(80, 80)); }
             if(layerIndex==2) { ImGui.Image(textureWrap6.ImGuiHandle, new Vector2(80, 80)); }
@@ -253,7 +253,7 @@ public class GagListingsDrawer : IDisposable
         combo.Draw(ID, config.selectedGagPadlocks, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                config.selectedGagPadlocks[layerIndex]= GagPadlocks.None; // to the first option, none
+                config.selectedGagPadlocks[layerIndex]= LockableType.None; // to the first option, none
                 config.selectedGagPadlocksPassword[layerIndex] = "";
                 config.selectedGagPadlocksAssigner[layerIndex] = "";
                 config.Save();

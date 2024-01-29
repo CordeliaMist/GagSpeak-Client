@@ -51,7 +51,6 @@ public class GagStorageManager : ISavable
         _gagEquipData[gagType].SetDrawDataSlot(slot);
         Save();
     }
-
     public void ChangeGagDrawDataGameItem(GagList.GagType gagType, EquipItem gameItem) {
         _gagEquipData[gagType].SetDrawDataGameItem(gameItem);
         Save();
@@ -69,6 +68,17 @@ public class GagStorageManager : ISavable
 
     public void ResetGagDrawDataGameStain(GagList.GagType gagType) {
         _gagEquipData[gagType].ResetDrawDataGameStain();
+        Save();
+    }
+
+    public void ResetEverythingDueToSafeword() {
+        foreach (var drawDataForGag in _gagEquipData.Values)
+        {
+            drawDataForGag.SetDrawDataEquippedBy("");
+            drawDataForGag.SetDrawDataLocked(false);
+            drawDataForGag.SetDrawDataIsEnabled(false);
+        }
+        GagSpeak.Log.Debug($"[GagStorageManager] Reset all gagdata's auto equip values sets due to safeword!");
         Save();
     }
 

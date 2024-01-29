@@ -39,7 +39,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                        DebugMode { get; set; } = false;                        // Is debug mode enabled?
     public          int                                         GarbleLevel { get; set; } = 0;                          // DEPRICATED, BUT NESSISARY FOR MESSAGE TRANSFER STILL
     public          ObservableList<string>                      selectedGagTypes { get; set; }                          // What gag types are selected?
-    public          ObservableList<GagPadlocks>                 selectedGagPadlocks { get; set; }                       // which padlocks are equipped currently?
+    public          ObservableList<LockableType>                 selectedGagPadlocks { get; set; }                       // which padlocks are equipped currently?
     public          List<string>                                selectedGagPadlocksPassword { get; set; }               // password lock on padlocks, if any
     public          List<DateTimeOffset>                        selectedGagPadLockTimer { get; set; }                   // stores time when the padlock will be unlocked.
     public          List<string>                                selectedGagPadlocksAssigner { get; set; }               // name of who assigned the padlocks
@@ -95,7 +95,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
             this.selectedGagTypes = new ObservableList<string> { "None", "None", "None" };}
         // Set default values for selectedGagPadlocks
         if (this.selectedGagPadlocks == null || !this.selectedGagPadlocks.Any() || this.selectedGagPadlocks.Count > 3) {
-            this.selectedGagPadlocks = new ObservableList<GagPadlocks> { GagPadlocks.None, GagPadlocks.None, GagPadlocks.None };}
+            this.selectedGagPadlocks = new ObservableList<LockableType> { LockableType.None, LockableType.None, LockableType.None };}
         // set default values for selected channels/
         if (this.Channels == null || !this.Channels.Any()) {
             this.Channels = new List<ChatChannel.ChatChannels>(){ChatChannel.ChatChannels.Say};}

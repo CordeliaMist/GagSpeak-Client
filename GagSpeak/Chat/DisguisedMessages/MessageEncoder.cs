@@ -233,8 +233,9 @@ public class MessageEncoder
     /// </list> </summary>
     /// <returns> The disguised encoded message. </returns>
     public string OrderGarblerLockEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
-        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down sternly at looks down sternly at the property they owned below them. They firmly slapped their " +
-        "companion across the cheek and held onto her chin firmly.* \"You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.\"";
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down sternly at looks down sternly at the property they owned "+
+        "below them. They firmly slapped their companion across the cheek and held onto her chin firmly.* \"You Belong to me, bitch. If i order you to stop pushing your "+
+        "gag out, you keep your gag in until i give you permission to take it out. Now do as I say.\"";
     }
     
     /// <summary>
@@ -245,7 +246,8 @@ public class MessageEncoder
     /// </list> </summary>
     /// <returns> The disguised encoded message. </returns>
     public string RequestInfoEncodedMessage(PlayerPayload playerPayload, string targetPlayer) {
-        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down upon you with a smile,* \"I'd love to hear you describe your situation to me my dear, I want hear all about how you feel right now";
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} looks down upon you with a smile,* \"I'd love to hear you describe your situation "+
+        "to me my dear, I want hear all about how you feel right now";
     }
 
     /// <summary>
@@ -264,7 +266,7 @@ public class MessageEncoder
     /// </list> </summary>
     /// <returns> The disguised encoded message. </returns>
     public string ProvideInfoEncodedMessage(PlayerPayload playerPayload, string targetPlayer, bool _inDomMode, bool _directChatGarbler, int _garbleLevel, List<string> _selectedGagTypes,
-    List<GagPadlocks> _selectedGagPadlocks, List<string> _selectedGagPadlocksAssigner, List<DateTimeOffset> _selectedGagPadlocksTimer, string relationship) {
+    List<LockableType> _selectedGagPadlocks, List<string> _selectedGagPadlocksAssigner, List<DateTimeOffset> _selectedGagPadlocksTimer, string relationship) {
         // we need to start applying some logic here, first create a base string
         string baseString = $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} ";
         // now we need to append our next part of the message, the relationship to that player.
@@ -281,7 +283,7 @@ public class MessageEncoder
             } else {
                 baseString += $"Their {layerTerm} sealed off by a {_selectedGagTypes[i]}";
             }
-            if (_selectedGagPadlocks[i] != GagPadlocks.None) { // describe the lock, if any
+            if (_selectedGagPadlocks[i] != LockableType.None) { // describe the lock, if any
                 baseString += $", a {_selectedGagPadlocks[i]} securing it";
                 //describe timer, if any
                 if((_selectedGagPadlocksTimer[i] - DateTimeOffset.Now ) > TimeSpan.Zero) {
@@ -313,14 +315,14 @@ public class MessageEncoder
     /// </list> </summary>
     /// <returns> The disguised encoded message. </returns>
     public string ProvideInfoEncodedMessage2(PlayerPayload playerPayload, string targetPlayer, bool _inDomMode, bool _directChatGarbler, int _garbleLevel, List<string> _selectedGagTypes,
-    List<GagPadlocks> _selectedGagPadlocks, List<string> _selectedGagPadlocksAssigner, List<DateTimeOffset> _selectedGagPadlocksTimer, string relationship) {
+    List<LockableType> _selectedGagPadlocks, List<string> _selectedGagPadlocksAssigner, List<DateTimeOffset> _selectedGagPadlocksTimer, string relationship) {
         string baseString = $"/tell {targetPlayer} || ";
         if (_selectedGagTypes[2] == "None") { 
             baseString += $"Finally, their topmostlayer had nothing on it"; // continuing on to describe the 2nd layer
         } else {
             baseString += $"Finally, their topmostlayer was covered with a {_selectedGagTypes[2]}";
         }
-        if (_selectedGagPadlocks[2] != GagPadlocks.None) { // describe the lock, if any
+        if (_selectedGagPadlocks[2] != LockableType.None) { // describe the lock, if any
             baseString += $", a {_selectedGagPadlocks[2]} sealing it";
             //describe timer, if any
             if(true) {
@@ -337,5 +339,33 @@ public class MessageEncoder
             baseString += ".*";
         }
         return baseString; 
+    }
+
+
+    /// <summary>
+    /// Lock a players restraint set for a spesified ammount of time provided a valid restraint set name
+    /// <list type="bullet">
+    /// <item><c>playerPayload</c><param name="playerPayload"> - The player who is locking the restraint set.</param></item>
+    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the target player that will recieve your info.</param></item>
+    /// <item><c>restraintSetName</c><param name="restraintSetName"> - the name of the restraint set you are locking.</param></item>
+    /// <item><c>timer</c><param name="timer"> - the timer of the lock you are using.</param></item>
+    /// </list> </summary>
+    /// <returns> The disguised encoded message. </returns>
+    public string GagEncodedRestraintSetLockMessage(PlayerPayload playerPayload, string restraintSetName, string timer, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} opens up the compartment of restraints from their wardrobe, taking out "+
+        $"the {restraintSetName}. Bringing it over to their companion, they help secure them inside it, deciding to leave it in them for the next {timer}*";    
+    }
+
+    /// <summary>
+    /// Unlock a players restraint set provided a valid restraint set name
+    /// <list type="bullet">
+    /// <item><c>playerPayload</c><param name="playerPayload"> - The player who is unlocking the restraint set.</param></item>
+    /// <item><c>targetPlayer</c><param name="targetPlayer"> - The name of the target player that will recieve your info.</param></item>
+    /// <item><c>restraintSetName</c><param name="restraintSetName"> - the name of the restraint set you are unlocking.</param></item>
+    /// </list> </summary>
+    /// <returns> The disguised encoded message. </returns>
+    public string GagEncodedRestraintSetUnlockMessage(PlayerPayload playerPayload, string restraintSetName, string targetPlayer) {
+        return $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name} decided they wanted to use their companion for other things now, unlocking "+
+        $"the {restraintSetName} from their partner and allowing them to feel a little more free, for now~*";    
     }
 }

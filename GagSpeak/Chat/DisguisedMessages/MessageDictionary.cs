@@ -197,8 +197,21 @@ public static class MessageDictionary {
             encodedMsgIndex = 22;
             return true;
         }
+        // LOCK RESTRAINT SET INFORMATION
+        else if (textVal.Contains("from") && textVal.Contains("opens up the compartment of restraints from their wardrobe, taking out the") &&
+                textVal.Contains("Bringing it over to their companion, they help secure them inside it, deciding to leave it in them for the next")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /restraintset lock command");
+            encodedMsgIndex = 23; // or whatever the next index is in your system
+            return true;
+        }
+        // UNLOCK RESTRAINT SET INFORMATION 
+        else if (textVal.Contains("from") && textVal.Contains("decided they wanted to use their companion for other things now, unlocking the") &&
+                textVal.Contains("from their partner and allowing them to feel a little more free, for now~*")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /restraintset unlock command");
+            encodedMsgIndex = 24; // or whatever the next index is in your system
+            return true;
+        }
 
-        // Not encoded message
         return false;
     }
 }

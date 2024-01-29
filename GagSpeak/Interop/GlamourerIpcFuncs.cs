@@ -236,8 +236,9 @@ public class GlamourerIpcFuncs : IDisposable
     /// </list> </summary>
     public async Task UpdateCachedCharacterData(string? customizationData) {
         // next, see if we are allowed to apply restraint sets
-        await ApplyRestrainSetToCachedCharacterData();
-        
+        if(_config.allowRestraintLocking) {
+            await ApplyRestrainSetToCachedCharacterData();
+        } 
         // for privacy reasons, we must first make sure that our options for allowing such things are enabled.
         if(_config.allowItemAutoEquip) {
             await ApplyGagItemsToCachedCharacterData();

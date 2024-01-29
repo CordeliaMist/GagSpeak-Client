@@ -317,7 +317,8 @@ public class MessageDecoder {
                           " " + messageParts[1].Trim(); // we found player
             GagSpeak.Log.Debug($"[Message Decoder]: request info (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
             return decodedMessage;
-        }        
+        }
+
         // decoder for sharing info about player
         else if (encodedMsgIndex == 21) {
             decodedMessage[0] = "provideInfo";      // we found commandtype
@@ -465,6 +466,43 @@ public class MessageDecoder {
             }
             return decodedMessage;
         }
+
+        // LOCK RESTRAINT SET INFORMATION
+        else if (encodedMsgIndex == 23) {
+            decodedMessage[0] = "restraintSetLock";     // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            string[] messageParts = recievedMessage.Split(". Bringing it over to their companion, they help secure them inside it, deciding to leave it in them for the next");
+            string trimmedMessage = string.Empty;
+            decodedMessage[2] = messageParts[1].Trim(); // found the timer
+            
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split(" opens up the compartment of restraints from their wardrobe, taking out the");
+            decodedMessage[1] = messageParts[1].Trim(); // we restraint set name
+
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("from");
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"[Message Decoder]: /restraintset lock: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} ||(2) {decodedMessage[2]} ||(3) {decodedMessage[3]} ||(4) {decodedMessage[4]}");
+            return decodedMessage;
+        }
+
+        // UNLOCK RESTRAINT SET INFORMATION
+        else if (encodedMsgIndex == 24) {
+            decodedMessage[0] = "restraintSetUnlock";     // we found commandtype
+            recievedMessage = recievedMessage.Trim('*');
+            recievedMessage = recievedMessage.Replace("from their partner and allowing them to feel a little more free, for now~","");
+            string trimmedMessage = string.Empty;
+            string[] messageParts = recievedMessage.Split(" decided they wanted to use their companion for other things now, unlocking the");
+            decodedMessage[1] = messageParts[1].Trim(); // we restraint set name
+            trimmedMessage = messageParts[0].Trim();
+            messageParts = trimmedMessage.Split("from");
+            decodedMessage[4] = messageParts[0].Trim() + 
+                          " " + messageParts[1].Trim(); // we found player
+            GagSpeak.Log.Debug($"[Message Decoder]: /restraintset unlock: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} ||(2) {decodedMessage[2]} ||(3) {decodedMessage[3]} ||(4) {decodedMessage[4]}");
+            return decodedMessage;
+        }
+
         // its not something meant to be decoded
         else {
             // should return a list of empty strings, letting us know it isnt any of the filters.

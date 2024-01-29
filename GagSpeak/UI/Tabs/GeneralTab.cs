@@ -231,11 +231,11 @@ public class GeneralTab : ITab, IDisposable
         }
         // update timer padlocks
         for (int i = 0; i < 3; i++) {
-            if (timerName == $"{GagPadlocks.FiveMinutesPadlock}_Identifier{i}") {
+            if (timerName == $"{LockableType.FiveMinutesPadlock}_Identifier{i}") {
                 _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Minutes} Minutes, {remainingTime.Seconds}Seconds";
-            } else if (timerName == $"{GagPadlocks.TimerPasswordPadlock}_Identifier{i}") {
+            } else if (timerName == $"{LockableType.TimerPasswordPadlock}_Identifier{i}") {
                 _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Hours} Hours, {remainingTime.Minutes} Minutes, {remainingTime.Seconds} Seconds";
-            } else if (timerName == $"{GagPadlocks.MistressTimerPadlock}_Identifier{i}") {
+            } else if (timerName == $"{LockableType.MistressTimerPadlock}_Identifier{i}") {
                 _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Days} Days, {remainingTime.Hours} Hours, {remainingTime.Minutes} Minutes, {remainingTime.Seconds} Seconds";
             }
         }

@@ -12,6 +12,7 @@ public class RestraintSet //: IDisposable
     public string _description; // lets you define the description of the set
     public bool _enabled; // lets you define if the set is enabled
     public bool _locked; // lets you define if the set is locked
+    public string _wasLockedBy; // lets you define the name of the character that equipped the set
     public DateTimeOffset _lockedTimer { get; set; } // stores the timespan left until unlock of the player.
 
     public Dictionary<EquipSlot, EquipDrawData> _drawData; // stores the equipment draw data for the set
@@ -22,6 +23,7 @@ public class RestraintSet //: IDisposable
         _description = "No Description Provided";
         _enabled = false;
         _locked = false;
+        _wasLockedBy = "";
         _lockedTimer = DateTimeOffset.Now;
         // create the new dictionaries
         _drawData = new Dictionary<EquipSlot, EquipDrawData>();
@@ -43,8 +45,12 @@ public class RestraintSet //: IDisposable
         _enabled = enabled;
     }
 
-    public void SetIsLocked(bool locked) {
+    public void SetIsLocked(bool locked, string wasLockedBy = "") {
         _locked = locked;
+        _wasLockedBy = wasLockedBy;
+        // if this was an unlock, then reset the waslockedBy
+        if (!locked)
+            _wasLockedBy = "";
     }
 
     public void DeclareNewEndTimeForSet(DateTimeOffset lockedTimer) {
@@ -66,6 +72,7 @@ public class RestraintSet //: IDisposable
             ["Description"] = _description,
             ["IsEnabled"] = _enabled,
             ["Locked"] = _locked,
+            ["WasLockedBy"] = _wasLockedBy,
             ["LockedTimer"] = _lockedTimer.ToString(),
             ["DrawData"] = drawDataArray
         };
@@ -77,6 +84,7 @@ public class RestraintSet //: IDisposable
         _description = jsonObject["Description"]?.Value<string>() ?? string.Empty;
         _enabled = jsonObject["IsEnabled"]?.Value<bool>() ?? false;
         _locked = jsonObject["Locked"]?.Value<bool>() ?? false;
+        _wasLockedBy = jsonObject["WasLockedBy"]?.Value<string>() ?? string.Empty;
         _lockedTimer = jsonObject["LockedTimer"] != null ? DateTimeOffset.Parse(jsonObject["LockedTimer"].Value<string>()) : default;
 
         _drawData.Clear();
