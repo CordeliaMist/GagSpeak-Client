@@ -1,0 +1,202 @@
+
+namespace GagSpeak.ChatMessages.MessageTransfer;
+// to quickly scan a message and see if it is one of our listed encoded messages
+public partial static class MessageDictionary {
+    public static bool LookupMsgDictionary(string textVal) {
+        int encodedMsgIndex = -1;
+
+        // look through until we get true
+        return EncodedMsgDictionary(textVal, ref encodedMsgIndex);
+    }
+
+    public static bool EncodedMsgDictionary(string textVal, ref int encodedMsgIndex) {
+        // the gag apply encoded message (1)
+        if (textVal.Contains("from") && textVal.Contains("applies a")
+            && textVal.Contains("over your mouth as the") && textVal.Contains("layer of your concealment*")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing or incoming /gag command");
+            encodedMsgIndex = 1; 
+            return true;
+
+        // the gag lock encoded message and lock password
+        } else if (textVal.Contains("from") && textVal.Contains("takes out a") &&
+              ((textVal.Contains("from her pocket and sets the password to") &&
+                textVal.Contains("locking your") && textVal.Contains("layer gag*")) 
+                || 
+                (textVal.Contains("from her pocket and uses it to lock your") && textVal.Contains("gag*")))) {
+            // see if we set index for password or not
+            if(textVal.Contains("from her pocket and sets the password to") && textVal.Contains("with") && textVal.Contains("left, before locking your")) {
+                GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag lock password password2 command");
+                encodedMsgIndex = 4; // double password lock == 4
+            } else if( textVal.Contains("from her pocket and sets the password to") && textVal.Contains("locking your") && textVal.Contains("layer gag*")) {
+                GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag lock password command");
+                encodedMsgIndex = 3; // password lock == 3
+            } else {
+                GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag lock command");
+                encodedMsgIndex = 2; // normal lock == 2
+            }
+            return true;
+
+        // the gag unlock encoded message and unlock password
+        } else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck") &&
+                 ((textVal.Contains("and sets the password to") && textVal.Contains("on your") &&
+                   textVal.Contains("layer gagstrap, unlocking it.*")) || (
+                   textVal.Contains(", taking off the lock that was keeping your") &&
+                   textVal.Contains("gag layer fastened nice and tight.*")))) {
+            // see if we set index for password or not
+            if(textVal.Contains("and sets the password to") && textVal.Contains("on your") && textVal.Contains("layer gagstrap, unlocking it.*")) {
+                GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag unlock password command");
+                encodedMsgIndex = 6; // password unlock == 5
+            } else {
+                GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag unlock command");
+                encodedMsgIndex = 5; // normal unlock == 4
+            }
+            return true;
+
+        // FOR /gag REMOVE COMMAND
+        } else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck") &&
+                   textVal.Contains("and unfastens the buckle of your") &&
+                   textVal.Contains("gag layer strap, allowing your voice to be a little clearer.*")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag remove command");
+            encodedMsgIndex = 7;
+            return true;
+
+        // FOR /gag REMOVE ALL COMMAND
+        } else if (textVal.Contains("from") && textVal.Contains("reaches behind your neck") &&
+                   textVal.Contains("and unbuckles all of your gagstraps, allowing you to speak freely once more.*")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag remove all command");
+            encodedMsgIndex = 8;
+            return true;
+
+        // REQUEST TO BECOME THEIR MISTRESS
+        } else if (textVal.Contains("from") && textVal.Contains("looks down upon you from above") &&
+                   textVal.Contains("a smirk in her eyes as she sees the pleading look in your own* \"Well now darling, " +
+                   "your actions speak for you well enough, so tell me, do you wish for me to become your mistress?\"")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing request mistress interaction");
+            encodedMsgIndex = 9;
+            return true;
+
+        // REQUEST TO BECOME THEIR PET
+        } else if (textVal.Contains("from") && textVal.Contains("looks up at you") &&
+                   textVal.Contains("her nervous tone clear and cheeks blushing red as she studders out the words.* \"U-um, If it's ok " +
+                   "with you, could I become your pet?\"")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing request pet interaction");
+            encodedMsgIndex = 10;
+            return true;
+
+        // REQUEST TO BECOME THEIR SLAVE
+        } else if (textVal.Contains("from") && textVal.Contains("hears the sound of her leash's chain rattling along the floor") &&
+                   textVal.Contains("as she crawls up to your feet. Stopping, looking up with pleading eyes in an embarassed tone* \"Would it be ok if I became your slave?\"")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing request slave interaction");
+            encodedMsgIndex = 11;
+            return true;
+        }
+
+        // ACCEPT ALLOWING THE PLAYER TO BECOME YOUR MISTRESS
+        else if (textVal.Contains("from") && textVal.Contains("smiles and gracefully and nods in agreement") &&
+                textVal.Contains("Oh yes, most certainly. I would love to have you as my mistress.")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing accept mistress interaction");
+            encodedMsgIndex = 12;
+            return true;
+        }
+
+        // ACCEPT ALLOWING THE PLAYER TO BECOME YOUR PET
+        else if (textVal.Contains("from") && textVal.Contains("smiles upon hearing the request and nods in agreement as their blushed companion had a collar clicked shut around their neck.") &&
+                textVal.Contains("Yes dear, I'd love to make you my pet.")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing accept pet interaction");
+            encodedMsgIndex = 13;
+            return true;
+        }
+
+        // ACCEPT ALLOWING THE PLAYER TO BECOME YOUR SLAVE
+        else if (textVal.Contains("from") && textVal.Contains("glanced back down at her companion who had just crawled up to their legs with the pleading look and smiled.") &&
+                textVal.Contains("Why I would love to make you my slave dearest.")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing accept slave interaction");
+            encodedMsgIndex = 14;
+            return true;
+        }
+
+        // DECLINE ALLOWING THE PLAYER TO BECOME YOUR MISTRESS
+        else if (textVal.Contains("from") && textVal.Contains("smiles gently and shakes their head") &&
+                textVal.Contains("I'm sorry miss, but I dont think I have enough space left in my daily life to commit to such a bond quite yet.")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Letting Whitelisted Player know you Decline allowing them to be your Mistress");
+            encodedMsgIndex = 15;
+            return true;
+        }
+
+        // DECLINE ALLOWING THE PLAYER TO BECOME YOUR PET
+        else if (textVal.Contains("from") && textVal.Contains("shakes their head from side,") &&
+                textVal.Contains("I apologize dear, but I don't think im ready to commit myself to having a pet at the moment.")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Letting Whitelisted Player know you Decline allowing them to be your Pet");
+            encodedMsgIndex = 16;
+            return true;
+        }
+
+        // DECLINE ALLOWING THE PLAYER TO BECOME YOUR SLAVE
+        else if (textVal.Contains("from") && textVal.Contains("takes a step back in surprise,") &&
+                textVal.Contains("Oh, I apologize, I didnt think you wanted a commitment that heavy... I Don't think im ready to have a slave just yet..")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Letting Whitelisted Player know you Decline allowing them to be your Slave");
+            encodedMsgIndex = 17;
+            return true;
+        }
+
+        // RELATION REMOVAL MESSAGE
+        else if (textVal.Contains("from") && textVal.Contains("looks up at you with tears in her eyes") &&
+                   textVal.Contains("She never wanted this moment to come, but also knows due to the circumstances it was enivtable.* \"I'm sorry, but I cant keep our relationship going right now, there is just too much going on\"")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing relation removal");
+            encodedMsgIndex = 18;
+            return true;
+        }
+        
+        // AUTO GARBLED LOCK ENABLER
+        else if (textVal.Contains("from") && textVal.Contains("looks down sternly at looks down sternly at the property they owned below them.") &&
+                   textVal.Contains("They firmly slapped their companion across the cheek and held onto her chin firmly.") && 
+                   textVal.Contains("You Belong to me, bitch. If i order you to stop pushing your gag out, you keep your gag in until i give you permission to take it out. Now do as I say.")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing lock garbler toggle order");
+            encodedMsgIndex = 19;
+            return true;
+        
+        }
+        // REQUEST PLAYER INFORMATION
+        else if (textVal.Contains("from") && textVal.Contains("looks down upon you with a smile,*") &&
+                   textVal.Contains("I'd love to hear you describe your situation to me my dear, I want hear all about how you feel right now")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected a request player info message");
+            encodedMsgIndex = 20;
+            return true;
+        }
+
+        // SHARE INFO
+        else if (textVal.Contains("from") && textVal.Contains("eyes their")
+                && textVal.Contains("in a") && textVal.Contains("state, silenced over") 
+                && textVal.Contains("minutes, already drooling") && textVal.Contains("Their underlayer")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming shareinfo part 1 interaction");
+            
+            encodedMsgIndex = 21;
+            return true;
+        }
+
+        // SHARE INFO PART 2 ELECTRIC BOOGAGLOO
+        else if (textVal.Contains("|| Finally, their topmostlayer ")
+              && (textVal.Contains("had nothing on it") || textVal.Contains("was covered with a"))
+              && (textVal.Contains(".*"))) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming shareinfo part 2 interaction");
+            encodedMsgIndex = 22;
+            return true;
+        }
+        // LOCK RESTRAINT SET INFORMATION
+        else if (textVal.Contains("from") && textVal.Contains("opens up the compartment of restraints from their wardrobe, taking out the") &&
+                textVal.Contains("Bringing it over to their companion, they help secure them inside it, deciding to leave it in them for the next")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /restraintset lock command");
+            encodedMsgIndex = 23; // or whatever the next index is in your system
+            return true;
+        }
+        // UNLOCK RESTRAINT SET INFORMATION 
+        else if (textVal.Contains("from") && textVal.Contains("decided they wanted to use their companion for other things now, unlocking the") &&
+                textVal.Contains("from their partner and allowing them to feel a little more free, for now~*")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /restraintset unlock command");
+            encodedMsgIndex = 24; // or whatever the next index is in your system
+            return true;
+        }
+
+        return false;
+    }
+}

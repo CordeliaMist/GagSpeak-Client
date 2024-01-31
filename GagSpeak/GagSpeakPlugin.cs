@@ -54,8 +54,8 @@ public class GagSpeak : IDalamudPlugin
           _services.GetService<ChatManager>(); // Initialize the OnChatMessage
           _services.GetService<ChatInputProcessor>(); // Initialize the chat message detour
           _services.GetService<InfoRequestService>(); // Because the info request service is being a stubborn bitch and needs to subscribe to events and not be lazy.
-          _services.GetService<GlamourerIpcFuncs>();  // force loading here because nhothing else loads it so it is initialized as lazy
-          _services.GetService<CharaDataHelpers>(); // get the charahandler
+          _services.GetService<GlamourerFunctions>();  // force loading here because nhothing else loads it so it is initialized as lazy
+          _services.GetService<ClientUserInfo>(); // get the charahandler
           Log.Information($"GagSpeak v{Version} loaded successfully."); // Log the version to the /xllog menu
       }
       catch

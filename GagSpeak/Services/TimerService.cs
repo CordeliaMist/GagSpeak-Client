@@ -44,7 +44,7 @@ public class TimerService : IDisposable
    /// <item><c>onElapsed</c><param name="onElapsed"> - The action to invoke when the timer elapses.</param></item>
    /// </list> </summary>
    public void StartTimer(string timerName, string input, int elapsedMilliSecPeriod, Action onElapsed) {
-      StartTimer(timerName, input, elapsedMilliSecPeriod, onElapsed, _config.selectedGagPadLockTimer, -1);}
+      StartTimer(timerName, input, elapsedMilliSecPeriod, onElapsed, _config.playerInfo._selectedGagPadlockTimer, -1);}
    
    /// <summary>
    /// The augmented timer constructor to start a new timer.
@@ -355,7 +355,7 @@ public class TimerService : IDisposable
             timers.Remove(key);
             SaveTimerData(_config);
             // update the selectedGagPadLockTimer list with the new end time. (only if using a list as input)
-            _config.selectedGagPadLockTimer[layerIndex] = DateTimeOffset.Now;
+            _config.playerInfo._selectedGagPadlockTimer[layerIndex] = DateTimeOffset.Now;
          }
       }
    }

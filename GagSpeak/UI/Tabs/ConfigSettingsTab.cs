@@ -22,17 +22,17 @@ public class ConfigSettingsTab : ITab
     private readonly    IDalamudTextureWrap             _dalamudTextureWrap;    // for loading images
     private readonly    GagSpeakConfig                  _config;                // for getting the config
     private readonly    UiBuilder                       _uiBuilder;             // for loading images
-    private readonly    GlamourerIpcFuncs               _glamourerInterop;      // for getting the glamourer interop
+    private readonly    GlamourerFunctions               _glamourerInterop;      // for getting the glamourer interop
     private             Dictionary<string, string[]>    _languages;             // the dictionary of languages & dialects 
     private             string[]                        _currentDialects;       // the array of language names
     private             string                          _activeDialect;         // the dialect selected
 
     /// <summary> Initializes a new instance of the <see cref="ConfigSettingsTab"/> class. <summary>
     public ConfigSettingsTab(GagSpeakConfig config, UiBuilder uiBuilder, DalamudPluginInterface pluginInterface,
-    GagListingsDrawer gagListingsDrawer, GagService gagService, GlamourerIpcFuncs glamourerInterop) {
+    GagListingsDrawer gagListingsDrawer, GagService gagService, GlamourerFunctions GlamourerService) {
         _config = config;
         _uiBuilder = uiBuilder;
-        _glamourerInterop = glamourerInterop;
+        _glamourerInterop = GlamourerService;
         var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "iconUI.png");
         var IconImage = _uiBuilder.LoadImage(imagePath);
         // sets the icon
@@ -80,27 +80,23 @@ public class ConfigSettingsTab : ITab
 
         UIHelpers.Checkbox("Only Friends", 
             "Commands & Interactions from other players are only recieved by GagSpeak if in your Friend List.",
-            _config.friendsOnly, v => _config.friendsOnly = v, _config);
+            _config.playerInfo._doCmdsFromFriends, v => _config.playerInfo._doCmdsFromFriends = v, _config);
 
         UIHelpers.Checkbox("Only Party Members",
             "Commands & Interactions from other players are only recieved by GagSpeak if in the Party List.",
-            _config.partyOnly, v => _config.partyOnly = v, _config);
+            _config.playerInfo._doCmdsFromParty, v => _config.playerInfo._doCmdsFromParty = v, _config);
 
-        UIHelpers.Checkbox("Only Whitelist",
-            "Commands & Interactions from other players are only recieved by GagSpeak if on your GagSpeak Whitelist.",
-            _config.whitelistOnly, v => _config.whitelistOnly = v, _config);
-
-        if(_config.LockDirectChatGarbler) {ImGui.BeginDisabled();}
+        if(_config.playerInfo._directChatGarblerLocked) {ImGui.BeginDisabled();}
         UIHelpers.Checkbox("Direct Chat Garbler",
             "AUTOMATICALLY Translate any NON-COMMAND chat message to gagspeak.\n\n"+
             ">> This will ONLY occur in any of the checked off channels under ENABLED CHANNELS below.\n\n"+
             ">> This is Serverside, just like /gsm.",
-            _config.DirectChatGarbler, v => _config.DirectChatGarbler = v, _config);
-        if(_config.LockDirectChatGarbler) {ImGui.EndDisabled();}
+            _config.playerInfo._directChatGarblerActive, v => _config.playerInfo._directChatGarblerActive = v, _config);
+        if(_config.playerInfo._directChatGarblerLocked) {ImGui.EndDisabled();}
 
         UIHelpers.Checkbox("Enable Wardrobe",
             "Must be enabled for anything in the Kink Wardrobe component of GagSpeak to function.",
-            _config.enableWardrobe, v => _config.enableWardrobe = v, _config);
+            _config.playerInfo._enableWardrobe, v => _config.playerInfo._enableWardrobe = v, _config);
 
         UIHelpers.Checkbox("Allow Item Auto-Equip",
             "[WHEN ON] : Any Gags you have individually enabled for Item Auto-Equip will work again.\n"+
@@ -108,24 +104,13 @@ public class ConfigSettingsTab : ITab
             ">> Acts as an Override for a quick disable across all gags for your privacy needs.<<\n"+
             ">> For any gag to have their Item Auto-Equip work, it must be configured and enabled in wardrobe.\n"+
             ">> Only auto-equips on gag equip if done by someone in your whitelist that you're a pet or slave to.",
-            _config.allowItemAutoEquip, v => _config.allowItemAutoEquip = v, _config);
+            _config.playerInfo._allowItemAutoEquip, v => _config.playerInfo._allowItemAutoEquip = v, _config);
 
-        UIHelpers.Checkbox("Allow Restraint Locking",
+        UIHelpers.Checkbox("Allow Restraint Set Auto-Equip",
             "[REQUIREMENT] : Only people on your WHITELIST can lock restraints when enabled.\n"+
             "[REQUIREMENT] : This will be allows for ANYONE in your whitelist, so ONLY enable if you trust them to!\n"+
             ">> Allows any person meeting the requirements above to lock/unlock any of your restraint sets on you.",
-            _config.allowRestraintLocking, v => _config.allowRestraintLocking = v, _config);
-
-        UIHelpers.Checkbox("Surrender Absolute Control [WIP]",
-            "[REQUIREMENT] : ONLY ENABLE THIS IF ABSOLUTELY SURE YOU TRUST THIS PERSON IN YOUR BDSM DYNAMIC!!!\n"+
-            "[REQUIREMENT] : People who have this access must be your MISTRESS, and you must be their ABSOLUTE SLAVE.\n"+
-            "Both These Roles Currently do not exist, and are WIP...\n"+
-            ">> Surrenders Full Control to your Trusted Mistress. Do NOT give absolute slave relation to anyone. It is powerful.\n"+
-            ">> Trusted Mistress can configure your restraint sets, and replace your existing ones with their own.\n"+
-            ">> Trusted Mistress has control over your Item Auto-Equip, live chat garbler, and Restraint Locking settings.\n"+
-            ">> Trusted Mistress can force you to follow on a leash, or issue humiliating punishments.\n"+
-            ">> Trusted Mistress can force you to execute commands (with evil commands like logout blacklisted)",
-            _config.surrenderRestraintControl, v => _config.surrenderRestraintControl = v, _config);
+            _config.playerInfo._allowRestraintSetAutoEquip, v => _config.playerInfo._allowRestraintSetAutoEquip = v, _config);
         
         // Create the language dropdown
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
@@ -183,12 +168,12 @@ public class ConfigSettingsTab : ITab
         ImGui.Columns(1);
 
         // Show Debug Menu when Debug logging is enabled
-        if(_config.LockDirectChatGarbler == true) {ImGui.BeginDisabled();}
+        if(_config.playerInfo._directChatGarblerLocked == true) {ImGui.BeginDisabled();}
         ImGui.Text("Enabled Channels:"); ImGui.Separator();
         var i = 0;
         foreach (var e in ChatChannel.GetOrderedChannels()) {
             // See if it is already enabled by default
-            var enabled = _config.Channels.Contains(e);
+            var enabled = _config.ChannelsGagSpeak.Contains(e);
             // Create a new line after every 4 columns
             if (i != 0 && (i==5 || i==9 || i==13 || i==17 || i == 21)) {
                 ImGui.NewLine();
@@ -200,8 +185,8 @@ public class ConfigSettingsTab : ITab
 
             if (ImGui.Checkbox($"{e}", ref enabled)) {
                 // See If the UIHelpers.Checkbox is clicked, If not, add to the list of enabled channels, otherwise, remove it.
-                if (enabled) _config.Channels.Add(e);
-                else _config.Channels.Remove(e);
+                if (enabled) _config.ChannelsGagSpeak.Add(e);
+                else _config.ChannelsGagSpeak.Remove(e);
             }
 
             ImGui.SameLine();
@@ -210,7 +195,7 @@ public class ConfigSettingsTab : ITab
         // Set the columns back to 1 now and space over to next section
         ImGui.Columns(1);
         ImGui.PopStyleVar();
-        if(_config.LockDirectChatGarbler == true) {ImGui.EndDisabled();}
+        if(_config.playerInfo._directChatGarblerLocked == true) {ImGui.EndDisabled();}
     }
 
     /// <summary>

@@ -1,9 +1,7 @@
 using Dalamud.Plugin;                           // Contains interfaces and classes for creating Dalamud plugins
 using GagSpeak.Chat;                            // Contains classes for handling chat in the GagSpeak plugin
-using GagSpeak.Chat.MsgDecoder;                 // Contains classes for decoding chat messages in the GagSpeak plugin
-using GagSpeak.Chat.MsgEncoder;                 // Contains classes for encoding chat messages in the GagSpeak plugin
 using GagSpeak.Data;
-using GagSpeak.Chat.MsgResultLogic;             // Contains classes for handling the result of chat messages in the GagSpeak plugin
+using GagSpeak.ChatMessages.MessageTransfer;    // Contains classes for handling message transfer in the GagSpeak plugin
 using GagSpeak.Events;                          // Contains classes for handling events in the GagSpeak plugin
 using GagSpeak.Garbler.Translator;
 using GagSpeak.Interop;
@@ -28,6 +26,7 @@ using System.Linq;
 using System.Collections;
 using Penumbra.GameData.Structs;
 using Penumbra.GameData.Enums;
+using GagSpeak.ChatMessages.ChatControl;
 
 // following namespace naming convention
 namespace GagSpeak.Services;
@@ -78,13 +77,13 @@ public static class ServiceHandler
                 var interop = _.GetRequiredService<IGameInteropProvider>();
                 var config = _.GetRequiredService<GagSpeakConfig>();
                 var historyService = _.GetRequiredService<HistoryService>();
-                var gagManagerService = _.GetRequiredService<GagManager>();
+                var gagManagerService = _.GetRequiredService<GagGarbleManager>();
                 return new ChatInputProcessor(sigService, interop, config, historyService, gagManagerService);})
              .AddSingleton<RealChatInteraction>(_ => {
                 var sigService = _.GetRequiredService<ISigScanner>();
                 return new RealChatInteraction(sigService);})
             // rest of the normal singletons
-             .AddSingleton<MessageResultLogic>()
+             .AddSingleton<ResultLogic>()
              .AddSingleton<MessageEncoder>()
              .AddSingleton<MessageDecoder>();
 
@@ -118,13 +117,13 @@ public static class ServiceHandler
                 .AddSingleton<IpaParserCantonese>()
                 .AddSingleton<IpaParserMandarian>()
                 .AddSingleton<IpaParserPersian>()
-                .AddSingleton<GagManager>();
+                .AddSingleton<GagGarbleManager>();
 
 
     private static ServiceManager AddInterop(this ServiceManager services)
-        => services.AddSingleton<GlamourerInterop>()
-                .AddSingleton<CharaDataHelpers>()
-                .AddSingleton<GlamourerIpcFuncs>();
+        => services.AddSingleton<GlamourerService>()
+                .AddSingleton<ClientUserInfo>()
+                .AddSingleton<GlamourerFunctions>();
     /// <summary> Adds the classes identified as self-made services for the overarching service collection.
     /// <list type="bullet">
     /// <item><c>services</c><param name="services"> The service collection to add services to.</param></item>

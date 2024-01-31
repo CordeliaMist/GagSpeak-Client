@@ -4,9 +4,9 @@ using System;                     // for basic C# types
 namespace GagSpeak.Events;
 
 /// <summary>
-/// ObservableList class extends List to fire an event every time an item in the list is replaced or modified.
+/// WatchList class extends List to fire an event every time an item in the list is replaced or modified.
 /// </summary>
-public class ObservableList<T> : List<T>
+public class WatchList<T> : List<T>
 {
     public delegate void ItemChangedEventHandler(object sender, ItemChangedEventArgs e); // Define the delegate for the ItemChanged event handler
     public event ItemChangedEventHandler?   ItemChanged;                                    // Define the ItemChanged event
