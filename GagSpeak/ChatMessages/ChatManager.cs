@@ -140,33 +140,17 @@ public class ChatManager
             if (senderName == null) { GagSpeak.Log.Error("senderName is null"); return; } // removes the possibly null reference warning
 
             switch (true) {
-                // Logic commented on first case, left out on rest. All cases are the same, just with different conditions.
-                case var _ when _config.playerInfo._doCmdsFromFriends && _config.playerInfo._doCmdsFromParty && _config.whitelistOnly: //  all 3 options are checked
-                    // If a message is from a friend, or a party member, or a whitelisted player, it will become true,
-                    // however, to make sure that we meet a condition that causes this to exit, we put a !() infront, to say
-                    // they were a player outside of these parameters while the parameters were checked.
-                    if (!(IsFriend(senderName)||IsPartyMember(senderName)||IsWhitelistedPlayer(senderName))) { return; } break;
-                
-                case var _ when _config.playerInfo._doCmdsFromFriends && _config.playerInfo._doCmdsFromParty && !_config.whitelistOnly: // When both friend and party are checked
-                    if (!(IsFriend(senderName)||IsPartyMember(senderName))) { return; } break;
-                
-                case var _ when _config.playerInfo._doCmdsFromFriends && _config.whitelistOnly && !_config.playerInfo._doCmdsFromParty: // When both friend and whitelist are checked
-                    if (!(IsFriend(senderName)||IsWhitelistedPlayer(senderName))) { return; } break;
-                
-                case var _ when _config.playerInfo._doCmdsFromParty && _config.whitelistOnly && !_config.playerInfo._doCmdsFromFriends: // When both party and whitelist are checked
-                    if (!(IsPartyMember(senderName)||IsWhitelistedPlayer(senderName))) { return; } break;
+                case var _ when _config.playerInfo._doCmdsFromFriends && _config.playerInfo._doCmdsFromParty: //  both friend and party options are checked
+                    if (!(IsFriend(senderName) || IsPartyMember(senderName) || IsWhitelistedPlayer(senderName))) { return; } break;
 
-                case var _ when _config.playerInfo._doCmdsFromFriends && !_config.playerInfo._doCmdsFromParty && !_config.whitelistOnly: // When only friend is checked
-                    if (!(IsFriend(senderName))) { return; } break;
+                case var _ when _config.playerInfo._doCmdsFromFriends: // When only friend is checked
+                    if (!(IsFriend(senderName) || IsWhitelistedPlayer(senderName))) { return; } break;
 
-                case var _ when _config.playerInfo._doCmdsFromParty && !_config.playerInfo._doCmdsFromFriends && !_config.whitelistOnly: // When only party is checked
-                    if (!(IsPartyMember(senderName))) { return; } break;
-
-                case var _ when _config.whitelistOnly && !_config.playerInfo._doCmdsFromFriends && !_config.playerInfo._doCmdsFromParty: // When only whitelist is checked
-                    if (!(IsWhitelistedPlayer(senderName))) { return; } break;
+                case var _ when _config.playerInfo._doCmdsFromParty: // When only party is checked
+                    if (!(IsPartyMember(senderName) || IsWhitelistedPlayer(senderName))) { return; } break;
 
                 default: // None of the filters were checked, so just accept the message anyways because it works for everyone.
-                    break;
+                    if (!IsWhitelistedPlayer(senderName)) { return; } break;
             }
             
             ////// Once we have reached this point, we know we have recieved a tell, and that it is from one of our filtered players. //////
@@ -256,8 +240,8 @@ public class ChatManager
         foreach (var t in _objectTable) {
             if (!(t is PlayerCharacter pc)) continue;
             if (pc.Name.TextValue == nameInput) {
-                foreach (var whitelistChar in _config.Whitelist) {
-                    if (whitelistChar.name.Contains(nameInput)) {
+                foreach (var whitelistChar in _config.whitelist) {
+                    if (whitelistChar._name.Contains(nameInput)) {
                         return true;
                     }
                 }

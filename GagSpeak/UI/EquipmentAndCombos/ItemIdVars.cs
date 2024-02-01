@@ -22,5 +22,4 @@ public static class ItemIdVars {
 
     public static EquipItem SmallClothesItem(EquipSlot slot) // used
         => new("Smallclothes (NPC)", SmallclothesId(slot), 0, 9903, 0, 1, slot.ToEquipType(), 0, 0, 0);
-
 }

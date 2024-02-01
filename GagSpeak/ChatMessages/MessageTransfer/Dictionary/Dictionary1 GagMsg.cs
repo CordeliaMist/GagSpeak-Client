@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using System.Collections.Generic;
 using System;
 using GagSpeak.Data;
 using GagSpeak.UI.Helpers;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
-public partial class MessageEncoder {
+public partial class MessageDictionary {
     public bool LookupGagSpeakMsg(string textVal, ref int encodedMsgIndex) {
         // The Apply Gag Message [ ID == 1 // apply ]
         if (textVal.Contains("applies a")

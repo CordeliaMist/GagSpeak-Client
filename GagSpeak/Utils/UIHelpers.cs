@@ -18,7 +18,7 @@ using Penumbra.GameData.DataContainers;
 using Lumina.Excel.GeneratedSheets;
 using System.IO;
 
-namespace GagSpeak.UI.Helpers;
+namespace GagSpeak.Utility;
 
 /// <summary> A class for all of the UI helpers, including basic functions for drawing repetative yet unique design elements </summary>
 public static class UIHelpers

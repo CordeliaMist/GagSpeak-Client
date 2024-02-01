@@ -4,10 +4,7 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using OtterGui.Classes;
 using GagSpeak.Data;
 using GagSpeak.Chat;
-using GagSpeak.UI.Helpers;
-using GagSpeak.ChatMessages;
 using Dalamud.Plugin.Services;
-using System.Text;
 using GagSpeak.ChatMessages.MessageTransfer;
 using GagSpeak.CharacterData;
 
@@ -281,234 +278,6 @@ public static class GagButtonHelpers {
         }
     }
 
-	/// <summary>  Controls logic for what to do once the the request mistress relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void RequestMistressToPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
-            $"{selectedPlayer._name}, to see if they would like you to become their Mistress.").AddItalicsOff().BuiltString);
-        //update information and send message
-        selectedPlayer._pendingRelationRequestFromYou = "Mistress";
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        chatManager.SendRealMessage(gagMessages.RequestMistressEncodedMessage(playerPayload, targetPlayer));
-    }
-
-	/// <summary>  Controls logic for what to do once the the request pet relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void RequestPetToPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
-            $"{selectedPlayer._name}, to see if they would like you to become their Pet.").AddItalicsOff().BuiltString);
-        //update information and send message
-        selectedPlayer._pendingRelationRequestFromYou = "Pet";
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        chatManager.SendRealMessage(gagMessages.RequestPetEncodedMessage(playerPayload, targetPlayer));
-    }
-
-	/// <summary>  Controls logic for what to do once the the request slave relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void RequestSlaveToPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
-            $"{selectedPlayer._name}, to see if they would like you to become their Slave.").AddItalicsOff().BuiltString);
-        //update information and send message
-        selectedPlayer._pendingRelationRequestFromYou = "Slave";
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        chatManager.SendRealMessage(gagMessages.RequestSlaveEncodedMessage(playerPayload, targetPlayer));
-    }
-
-	/// <summary>  Controls logic for what to do once the the accept mistress relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void AcceptMistressRequestFromPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted {selectedPlayer._name} as your Mistress. "+
-            "Updating their whitelist information").AddItalicsOff().BuiltString);
-        // updating whitelist with new information and send message
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        // set the relationship status the player has towards you "They are your Mistress" here, because once you hit accept, both sides agree
-        selectedPlayer._theirStatusToYou = selectedPlayer._pendingRelationRequestFromPlayer;
-        if(selectedPlayer._yourStatusToThem != "None") {
-            selectedPlayer.Set_timeOfCommitment(); // set the commitment time if relationship is now two-way!
-        }
-        chatManager.SendRealMessage(gagMessages.AcceptMistressEncodedMessage(playerPayload, targetPlayer));
-    }
-
-
-	/// <summary>  Controls logic for what to do once the the accept pet relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void AcceptPetRequestFromPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted {selectedPlayer._name} as your pet. "+
-            "Updating their whitelist information").AddItalicsOff().BuiltString);
-        // update whitelist with new information and send message
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        // set the relationship status the player has towards you "They are your Pet" here, because once you hit accept, both sides agree
-        selectedPlayer._theirStatusToYou = selectedPlayer._pendingRelationRequestFromPlayer; // set the relationship status
-        if(selectedPlayer._yourStatusToThem != "None") {
-            selectedPlayer.Set_timeOfCommitment(); // set the commitment time if relationship is now two-way!
-        }
-        chatManager.SendRealMessage(gagMessages.AcceptPetEncodedMessage(playerPayload, targetPlayer));
-    }
-
-
-	/// <summary>  Controls logic for what to do once the the accept slave relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void AcceptSlaveRequestFromPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted {selectedPlayer._name} as your slave. "+
-            "Updating their whitelist information").AddItalicsOff().BuiltString);
-        // updating whitelist with new information and send message
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        // set the relationship status the player has towards you "They are your Slave" here, because once you hit accept, both sides agree
-        selectedPlayer._theirStatusToYou = selectedPlayer._pendingRelationRequestFromPlayer; // set the relationship status
-        if(selectedPlayer._yourStatusToThem != "None") {
-            selectedPlayer.Set_timeOfCommitment(); // set the commitment time if relationship is now two-way!
-        }
-        chatManager.SendRealMessage(gagMessages.AcceptSlaveEncodedMessage(playerPayload, targetPlayer));
-    }
-
-
-	/// <summary>  Controls logic for what to do once the the decline mistress relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void DeclineMistressRequestFromPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Declining {selectedPlayer._name}'s request to become your Mistress.").AddItalicsOff().BuiltString);
-        // updating whitelist with new information and send message
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        // clear the pending status and not change the relationship status, rather set it to none, because both sides do not agree.
-        selectedPlayer._theirStatusToYou = "None";
-        selectedPlayer._pendingRelationRequestFromPlayer = "";
-        chatManager.SendRealMessage(gagMessages.DeclineMistressEncodedMessage(playerPayload, targetPlayer));
-    }
-
-	/// <summary>  Controls logic for what to do once the the decline pet relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void DeclinePetRequestFromPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Declining {selectedPlayer._name}'s request to become your Pet.").AddItalicsOff().BuiltString);
-        // updating whitelist with new information and send message
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        // clear the pending status and not change the relationship status, rather set it to none, because both sides do not agree.
-        selectedPlayer._theirStatusToYou = "None";
-        selectedPlayer._pendingRelationRequestFromPlayer = "";
-        chatManager.SendRealMessage(gagMessages.DeclinePetEncodedMessage(playerPayload, targetPlayer));
-    }
-
-	/// <summary>  Controls logic for what to do once the the decline slave relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void DeclineSlaveRequestFromPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Declining {selectedPlayer._name}'s request to become your Slave.").AddItalicsOff().BuiltString);
-        // updating whitelist with new information and send message
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        // clear the pending status and not change the relationship status, rather set it to none, because both sides do not agree.
-        selectedPlayer._theirStatusToYou = "None";
-        selectedPlayer._pendingRelationRequestFromPlayer = "";
-        chatManager.SendRealMessage(gagMessages.DeclineSlaveEncodedMessage(playerPayload, targetPlayer));
-    }
-
-	/// <summary>  Controls logic for what to do once the the remove relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void RequestRelationRemovalToPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Removing Relation Status "+
-            $"with {selectedPlayer._name}.").AddItalicsOff().BuiltString);
-        //update information and send message
-        selectedPlayer._yourStatusToThem = "None";
-        selectedPlayer._theirStatusToYou = "None";
-        selectedPlayer._pendingRelationRequestFromYou = "";
-        selectedPlayer._pendingRelationRequestFromPlayer = "";
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        chatManager.SendRealMessage(gagMessages.RequestRemovalEncodedMessage(playerPayload, targetPlayer));
-    }
-
-	/// <summary>  Controls logic for what to do once the the toggle lock live chat garbler button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void OrderLiveGarbleLockToPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddRed($"[GagSpeak]").AddText($"Forcing silence upon your slave, " +
-            $"hopefully {selectedPlayer._name} will behave herself~").AddItalicsOff().BuiltString);
-        // send the message
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        chatManager.SendRealMessage(gagMessages.OrderGarblerLockEncodedMessage(playerPayload, targetPlayer));
-    }
 
 	/// <summary>  Controls logic for what to do once the request player info button is pressed in the whitelist tab. 
     /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
@@ -525,7 +294,7 @@ public static class GagButtonHelpers {
             $"{selectedPlayer._name}, please wait...").AddItalicsOff().BuiltString);
         // send the message
         string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        chatManager.SendRealMessage(gagMessages.RequestInfoEncodedMessage(playerPayload, targetPlayer));
+        //chatManager.SendRealMessage(gagMessages.RequestInfoEncodedMessage(playerPayload, targetPlayer));
     }
 
 	/// <summary>  Controls logic for sending the first half of your info the player that requested it from you. 
@@ -534,32 +303,32 @@ public static class GagButtonHelpers {
     public static void SendInfoToPlayer(GagSpeakConfig config, ChatManager chatManager,MessageEncoder gagMessages,
     IClientState clientState, IChatGui chatGui)
     {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        // format a secondary string from the configs.sendinfoname's "firstname lastname@homeworld" to "firstname lastname"
-        try {
-            string targetPlayer = config.sendInfoName;
-            string playername = config.sendInfoName.Substring(0, config.sendInfoName.IndexOf('@'));
-            // Also, get your relationship to that player, if any. Search for their name in the whitelist.
-            string relationshipVar = "None";
-            config.whitelist.ForEach(delegate(WhitelistedCharacterInfo entry) {
-                if (config.sendInfoName.Contains(entry._name)) {
-                    relationshipVar = entry._yourStatusToThem; 
-                }
-            });
-            // print to chat that you sent the request
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{targetPlayer}] "+
-                "with your details(1/2)").AddItalicsOff().BuiltString);
-            //send the message
-            chatManager.SendRealMessage(gagMessages.ProvideInfoEncodedMessage(playerPayload, targetPlayer, config.InDomMode,
-                config.DirectChatGarbler, config.GarbleLevel, config.selectedGagTypes, config._selectedGagPadlocks,
-                config._selectedGagPadlockAssigner, config.selectedGagPadLockTimer, relationshipVar));
-        }
-        catch (Exception e) {
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
-        }
+        // PlayerPayload playerPayload; // get player payload
+        // UIHelpers.GetPlayerPayload(clientState, out playerPayload);
+        // // format a secondary string from the configs.sendinfoname's "firstname lastname@homeworld" to "firstname lastname"
+        // try {
+        //     string targetPlayer = config.sendInfoName;
+        //     string playername = config.sendInfoName.Substring(0, config.sendInfoName.IndexOf('@'));
+        //     // Also, get your relationship to that player, if any. Search for their name in the whitelist.
+        //     string relationshipVar = "None";
+        //     config.whitelist.ForEach(delegate(WhitelistedCharacterInfo entry) {
+        //         if (config.sendInfoName.Contains(entry._name)) {
+        //             relationshipVar = entry._yourStatusToThem; 
+        //         }
+        //     });
+        //     // print to chat that you sent the request
+        //     chatGui.Print(
+        //         new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{targetPlayer}] "+
+        //         "with your details(1/2)").AddItalicsOff().BuiltString);
+        //     //send the message
+        //     chatManager.SendRealMessage(gagMessages.ProvideInfoEncodedMessage(playerPayload, targetPlayer, config.InDomMode,
+        //         config.DirectChatGarbler, config.GarbleLevel, config.selectedGagTypes, config._selectedGagPadlocks,
+        //         config._selectedGagPadlockAssigner, config.selectedGagPadLockTimer, relationshipVar));
+        // }
+        // catch (Exception e) {
+        //     chatGui.Print(
+        //         new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
+        // }
     }
 
 	/// <summary>  Controls logic for sending the second half of your info the player that requested it from you. 
@@ -568,68 +337,31 @@ public static class GagButtonHelpers {
     public static void SendInfoToPlayer2(GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages,
     IClientState clientState, IChatGui chatGui)
     {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        // format a secondary string from the configs.sendinfoname's "firstname lastname@homeworld" to "firstname lastname"
-        try {
-            string targetPlayer = config.sendInfoName;
-            string playername = config.sendInfoName.Substring(0, config.sendInfoName.IndexOf('@'));
-            // Also, get your relationship to that player, if any. Search for their name in the whitelist.
-            string relationshipVar = "None";
-            config.whitelist.ForEach(delegate(WhitelistedCharacterInfo entry) {
-                if (config.sendInfoName.Contains(entry._name)) {
-                    relationshipVar = entry._yourStatusToThem; 
-                }
-            });
-            // print to chat that you sent the request
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{targetPlayer}] "+
-                "with your details(2/2)").AddItalicsOff().BuiltString);
-            // send the message
-            chatManager.SendRealMessage(gagMessages.ProvideInfoEncodedMessage2(playerPayload, targetPlayer, config.InDomMode,
-                config.DirectChatGarbler, config.GarbleLevel, config.selectedGagTypes, config._selectedGagPadlocks,
-                config._selectedGagPadlockAssigner, config.selectedGagPadLockTimer, relationshipVar));
-        }
-        catch (Exception e) {
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
-        }
+        // PlayerPayload playerPayload; // get player payload
+        // UIHelpers.GetPlayerPayload(clientState, out playerPayload);
+        // // format a secondary string from the configs.sendinfoname's "firstname lastname@homeworld" to "firstname lastname"
+        // try {
+        //     string targetPlayer = config.sendInfoName;
+        //     string playername = config.sendInfoName.Substring(0, config.sendInfoName.IndexOf('@'));
+        //     // Also, get your relationship to that player, if any. Search for their name in the whitelist.
+        //     string relationshipVar = "None";
+        //     config.whitelist.ForEach(delegate(WhitelistedCharacterInfo entry) {
+        //         if (config.sendInfoName.Contains(entry._name)) {
+        //             relationshipVar = entry._yourStatusToThem; 
+        //         }
+        //     });
+        //     // print to chat that you sent the request
+        //     chatGui.Print(
+        //         new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{targetPlayer}] "+
+        //         "with your details(2/2)").AddItalicsOff().BuiltString);
+        //     // send the message
+        //     chatManager.SendRealMessage(gagMessages.ProvideInfoEncodedMessage2(playerPayload, targetPlayer, config.InDomMode,
+        //         config.DirectChatGarbler, config.GarbleLevel, config.selectedGagTypes, config._selectedGagPadlocks,
+        //         config._selectedGagPadlockAssigner, config.selectedGagPadLockTimer, relationshipVar));
+        // }
+        // catch (Exception e) {
+        //     chatGui.Print(
+        //         new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
+        // }
     }   
-
-
-	/// <summary>  Controls logic for what to do once the the accept slave relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void LockRestraintSetToPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer, string restraintSetNameToApply,
-    string lockTimer, GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload); // THIS IS THE SENDER
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Now attempting to lock {selectedPlayer._name}'s {restraintSetNameToApply} "+
-            $"restraint set for {lockTimer}. Keep in mind if they have this option disabled, it will not apply.").AddItalicsOff().BuiltString);
-        // updating whitelist with new information and send message
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        chatManager.SendRealMessage(gagMessages.GagEncodedRestraintSetLockMessage(playerPayload, restraintSetNameToApply, lockTimer, targetPlayer));
-    }
-
-	/// <summary>  Controls logic for what to do once the the accept slave relation button is pressed in the whitelist tab. 
-    /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
-    /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void UnlockRestraintSetToPlayer(int currentWhitelistItem, WhitelistedCharacterInfo selectedPlayer, string restraintSetNameToApply,
-    GagSpeakConfig config, ChatManager chatManager, MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        PlayerPayload playerPayload; // get player payload
-        UIHelpers.GetPlayerPayload(clientState, out playerPayload); // THIS IS THE SENDER
-        if (currentWhitelistItem < 0 || currentWhitelistItem >= config.whitelist.Count) { return; }
-        // print to chat that you sent the request
-        chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Attempting to unlock {selectedPlayer._name}'s [{restraintSetNameToApply}] "+
-            $"restraint set. Keep in mind if you are not the one who assigned it and they did not do it to themselves, it will not unlock.").AddItalicsOff().BuiltString);
-        // updating whitelist with new information and send message
-        string targetPlayer = selectedPlayer._name + "@" + selectedPlayer._homeworld;
-        chatManager.SendRealMessage(gagMessages.GagEncodedRestraintSetUnlockMessage(playerPayload, restraintSetNameToApply, targetPlayer));
-    }
 }

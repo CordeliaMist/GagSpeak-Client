@@ -10,7 +10,7 @@ using OtterGui;
 using OtterGui.Raii;
 using GagSpeak.Events;
 using GagSpeak.Services;
-using GagSpeak.UI.Helpers;
+using GagSpeak.Utility;
 using GagSpeak.Data;
 using GagSpeak.Wardrobe;
 
@@ -34,14 +34,6 @@ public class GagListingsDrawer : IDisposable
     private             Vector2                 _iconSize;                      // size of the icon
     private             float                   _comboLength;                   // length of the combo
     
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GagListingsDrawer"/> class...
-    /// <list type="bullet">
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// <item><c>dalamudPluginInterface</c><param name="dalamudPluginInterface"> - The Dalamud plugin interface.</param></item>
-    /// <item><c>timerService</c><param name="timerService"> - The timer service.</param></item>
-    /// <item><c>lockManager</c><param name="lockManager"> - The lock manager.</param></item>
-    /// </list> </summary>
     public GagListingsDrawer(GagSpeakConfig config, DalamudPluginInterface dalamudPluginInterface, GagStorageManager gagStorageManager,
     TimerService timerService, GagAndLockManager lockManager, GagService gagService, ItemAutoEquipEvent itemAutoEquipEvent)
     {
@@ -53,12 +45,18 @@ public class GagListingsDrawer : IDisposable
         _itemAutoEquipEvent = itemAutoEquipEvent;
         _gagStorageManager = gagStorageManager;
         // draw textures for the gag and padlock listings //
-        textureWrap1 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.selectedGagTypes[0]}.png"));
-        textureWrap2 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.selectedGagTypes[1]}.png"));
-        textureWrap3 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.selectedGagTypes[2]}.png"));
-        textureWrap4 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks\\{config.selectedGagPadlocks[0].ToString()}.png"));
-        textureWrap5 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks\\{config.selectedGagPadlocks[1].ToString()}.png"));
-        textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks\\{config.selectedGagPadlocks[2].ToString()}.png"));
+        textureWrap1 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.playerInfo._selectedGagTypes[0]}.png"));
+        textureWrap2 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.playerInfo._selectedGagTypes[1]}.png"));
+        textureWrap3 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{config.playerInfo._selectedGagTypes[2]}.png"));
+        textureWrap4 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks\\{config.playerInfo._selectedGagPadlocks[0].ToString()}.png"));
+        textureWrap5 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks\\{config.playerInfo._selectedGagPadlocks[1].ToString()}.png"));
+        textureWrap6 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks\\{config.playerInfo._selectedGagPadlocks[2].ToString()}.png"));
         // initialize the adjust display
         _adjustDisp = new bool[] {false, false, false};
         // Subscribe to the events
@@ -124,7 +122,7 @@ public class GagListingsDrawer : IDisposable
             }
         }
         catch (Exception e) {
-            GagSpeak.Log.Error($"Failed to draw icon for slot {layerIndex} with gag type {config.selectedGagTypes[layerIndex]}");
+            GagSpeak.Log.Error($"Failed to draw icon for slot {layerIndex} with gag type {config.playerInfo._selectedGagTypes[layerIndex]}");
             GagSpeak.Log.Error(e.ToString());
         }
           
@@ -164,7 +162,7 @@ public class GagListingsDrawer : IDisposable
         }
         ImGui.NextColumn();
         ImGui.SetColumnWidth(2, 80);
-        if(config.selectedGagPadlocks[layerIndex] != Padlocks.None) {
+        if(config.playerInfo._selectedGagPadlocks[layerIndex] != Padlocks.None) {
             if(layerIndex==0) { ImGui.Image(textureWrap4.ImGuiHandle, new Vector2(80, 80)); }
             if(layerIndex==1) { ImGui.Image(textureWrap5.ImGuiHandle, new Vector2(80, 80)); }
             if(layerIndex==2) { ImGui.Image(textureWrap6.ImGuiHandle, new Vector2(80, 80)); }
@@ -181,12 +179,18 @@ public class GagListingsDrawer : IDisposable
     /// </list> </summary>
     private void OnSelectedTypesChanged(object sender, ItemChangedEventArgs e) {
         // update the texture wraps
-        textureWrap1 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth/{_config.playerInfo._selectedGagTypes[0]}.png"));
-        textureWrap2 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth/{_config.playerInfo._selectedGagTypes[1]}.png"));
-        textureWrap3 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth/{_config.playerInfo._selectedGagTypes[2]}.png"));
-        textureWrap4 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks/{_config.playerInfo._selectedGagPadlocks[0].ToString()}.png"));
-        textureWrap5 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks/{_config.playerInfo._selectedGagPadlocks[1].ToString()}.png"));
-        textureWrap6 = _pluginInterface.UiBuilder.LoadImage(Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks/{_config.playerInfo._selectedGagPadlocks[2].ToString()}.png"));
+        textureWrap1 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth/{_config.playerInfo._selectedGagTypes[0]}.png"));
+        textureWrap2 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth/{_config.playerInfo._selectedGagTypes[1]}.png"));
+        textureWrap3 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth/{_config.playerInfo._selectedGagTypes[2]}.png"));
+        textureWrap4 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks/{_config.playerInfo._selectedGagPadlocks[0].ToString()}.png"));
+        textureWrap5 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks/{_config.playerInfo._selectedGagPadlocks[1].ToString()}.png"));
+        textureWrap6 = _pluginInterface.UiBuilder.LoadImage(
+            Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks/{_config.playerInfo._selectedGagPadlocks[2].ToString()}.png"));
     }   
 
     /// <summary>
@@ -207,20 +211,20 @@ public class GagListingsDrawer : IDisposable
         using var disabled = ImRaii.Disabled(locked);
         // draw the thing
         var dummy = "Dummy"; // used as filler for combos that dont need labels
-        var prevItem = config.selectedGagTypes[layerIndex]; // get the previous item
-        combo.Draw(ID, ref dummy, config.selectedGagTypes, layerIndex, width);
+        var prevItem = config.playerInfo._selectedGagTypes[layerIndex]; // get the previous item
+        combo.Draw(ID, ref dummy, config.playerInfo._selectedGagTypes, layerIndex, width);
         
-        if(prevItem != config.selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
-            GagSpeak.Log.Debug($"[GagListingsDrawer]: Personal GagType Changed, firing itemAuto-Equip event for gag {config.selectedGagTypes[layerIndex]}");
+        if(prevItem != config.playerInfo._selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
+            GagSpeak.Log.Debug($"[GagListingsDrawer]: Personal GagType Changed, firing itemAuto-Equip event for gag {config.playerInfo._selectedGagTypes[layerIndex]}");
             _itemAutoEquipEvent.Invoke(_config.playerInfo._selectedGagTypes[layerIndex], "self");
         }
 
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
                 // get gagtype before clear
-                var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == config.selectedGagTypes[layerIndex]);
+                var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == config.playerInfo._selectedGagTypes[layerIndex]);
                 // clear the gag item from the selectedGagTypes list, resetting it to none
-                config.selectedGagTypes[layerIndex] = _gagService._gagTypes.First()._gagName;
+                config.playerInfo._selectedGagTypes[layerIndex] = _gagService._gagTypes.First()._gagName;
                 // reset the _wasEquippedBy to empty
                 _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
                 // save config
@@ -250,12 +254,12 @@ public class GagListingsDrawer : IDisposable
         // using the var disabled, disable this if it is locked.
         using var disabled = ImRaii.Disabled(locked);
         // draw the thing
-        combo.Draw(ID, config.selectedGagPadlocks, layerIndex, width);
+        combo.Draw(ID, config.playerInfo._selectedGagPadlocks, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                config.selectedGagPadlocks[layerIndex]= Padlocks.None; // to the first option, none
-                config.selectedGagPadlocksPassword[layerIndex] = "";
-                config.selectedGagPadlocksAssigner[layerIndex] = "";
+                config.playerInfo._selectedGagPadlocks[layerIndex]= Padlocks.None; // to the first option, none
+                config.playerInfo._selectedGagPadlockPassword[layerIndex] = "";
+                config.playerInfo._selectedGagPadlockAssigner[layerIndex] = "";
                 config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
@@ -274,12 +278,12 @@ public class GagListingsDrawer : IDisposable
     /// <item><c>gagtypecombo</c><param name="gagtypecombo"> - The gag type combo.</param></item>
     /// </list> </summary>
     /// <returns> True if it succeeds, false if it fails. </returns>
-    public bool DrawGagTypeItemCombo(int ID,  WhitelistCharData charData, ref string gagLabel, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
+    public bool DrawGagTypeItemCombo(int ID,  int whitelistIdx, ref string gagLabel, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
         var combo = gagtypecombo; // get the combo
         if (ImGui.IsItemClicked() && !locked)
             UIHelpers.OpenCombo($"{ID}_Type");
         using var disabled = ImRaii.Disabled(locked);
-        combo.Draw(ID, ref gagLabel, charData.selectedGagTypes, layerIndex, width);
+        combo.Draw(ID, ref gagLabel, _config.whitelist[whitelistIdx]._selectedGagTypes, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
                 gagLabel = _gagService._gagTypes.First()._gagName;
@@ -301,13 +305,13 @@ public class GagListingsDrawer : IDisposable
     /// <item><c>gaglockcombo</c><param name="gaglockcombo"> - The gag lock combo.</param></item>
     /// </list> </summary>
     /// <returns> True if it succeeds, false if it fails. </returns>
-    public bool DrawGagLockItemCombo(int ID, WhitelistCharData charData, ref string lockLabel, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
+    public bool DrawGagLockItemCombo(int ID, int whitelistIdx, ref string lockLabel, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
         // This code is a shadow copy of the function above, used for accepting WhitelistCharData as a type
         var combo = gaglockcombo;
         if (ImGui.IsItemClicked() && !locked)
             UIHelpers.OpenCombo($"{ID}_Enum");
         using var disabled = ImRaii.Disabled(locked);
-        combo.Draw(ID, ref lockLabel, charData.selectedGagPadlocks, layerIndex, width);
+        combo.Draw(ID, ref lockLabel, _config.whitelist[whitelistIdx]._selectedGagPadlocks, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
                 lockLabel = "None";

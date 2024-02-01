@@ -21,7 +21,6 @@ public class CharacterInfoBase
 {
     //////////////////////////////////////// GENERAL STATUS VISIBILITY  ///////////////////////////////////////
     public  bool                _safewordUsed { get; set; } = false;                // [TIER 0] Has the safeword been used?
-    public  bool                _grantExtendedLockTimes { get; set; } = false;      // [TIER 2] without this enabled, no locked times can exceed 12 hours
     /////////////////////////////////////////// CHAT GARBLER STATES  //////////////////////////////////////////
     public  bool                _directChatGarblerActive { get; set; } = false;     // [TIER 4] Is direct chat garbler enabled?
     public  bool                _directChatGarblerLocked { get; set; } = false;     // [TIER 3] Is live chat garbler enabled?
@@ -37,13 +36,12 @@ public class CharacterInfoBase
     public  bool                _enableRestraintSets { get; set; }= false;          // [TIER 2] allows the dom to enable spesific restraint sets by name
     public  bool                _restraintSetLocking { get; set; } = false;         // [TIER 1] enables / disables all restraint set locking
     //////////////////////////////////////// GAGSPEAK PUPPETEER SETTINGS  //////////////////////////////////////
-    public  string              _triggerPhraseForPuppeteer { get; set; } = "";      // [TIER 0] what is the trigger phrase for puppeteer to use?
     public  bool                _allowSitRequests { get; set; } = false;            // [TIER 1] if granting them access to sit commands
     public  bool                _allowMotionRequests { get; set; } = false;         // [TIER 2] if granting them motion based access
     public  bool                _allowAllCommands { get; set; } = false;            // [TIER 4] if granting them access to all commands (harmful & gagspeak ones)
     /////////////////////////////////////////// TOYBOX MODULE SETTINGS ////////////////////////////////////////
     public  bool                _enableToybox { get; set; } = false;                // [TIER 4] if granting them access to toybox
-    public  bool                _allowToyboxToggle { get; set; } = false;           // [TIER 1] if they can start and stop your toy from vibrating
+    public  bool                _toyActiveState { get; set; } = false;              // [TIER 1] if they can start and stop your toy from vibrating
     public  bool                _allowIntensityControl { get; set; } = false;       // [TIER 0] if they can control the vibes intensity and speed
     public  int                 _intensityLevel { get; set; } = 0;                  // [TIER 2] the current intensity level of the toy [1-10]
     public  bool                _canUseStoredPatterns { get; set; } = false;        // [TIER 2] Access to execute stored patterns for your vibe.
@@ -68,4 +66,6 @@ public class CharacterInfoBase
         if (_selectedGagPadlockAssigner == null || !_selectedGagPadlockAssigner.Any() || _selectedGagPadlockAssigner.Count > 3) {
             _selectedGagPadlockAssigner = new List<string> { "", "", "" };}
     }
+
+    // helper functions for toggling these settings go below:
 }

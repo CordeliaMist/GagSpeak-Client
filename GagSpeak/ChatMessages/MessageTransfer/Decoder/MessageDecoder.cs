@@ -33,7 +33,7 @@ public partial class MessageDecoder {
     /// <item><c>[22]</c> - layer three padlock assigner </item>
     ///
     /// <item><c>[23]</c> - is wardrobe enabled (BOOL) </item>
-    /// <item><c>[24]</c> - can gag storage lock UI on gaglock? (BOOL) </item>
+    /// <item><c>[24]</c> - state of gag storage lock UI on gaglock? (BOOL) </item>
     /// <item><c>[25]</c> - is player allowed to enabled restraint sets? (BOOL) </item>
     /// <item><c>[26]</c> - is player allowed to lock restraint sets? (BOOL) </item>
     ///
@@ -95,5 +95,25 @@ public partial class MessageDecoder {
 
         // we should never reach here, but if we do, then return the empty list
         return decodedMessage;
+    }
+
+    // Helper function for all decoders to get the correct layer out
+    public string GetLayerNumber(string layer) {
+        if (layer == "first")
+        { 
+            return "1";
+        }
+        else if (layer == "second")
+        {
+            return "2";
+        }
+        else if (layer == "third")
+        {
+            return "3";
+        }
+        else
+        {
+            return "Invalid Layer";
+        }
     }
 }

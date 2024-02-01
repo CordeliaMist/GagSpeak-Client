@@ -1,10 +1,4 @@
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using System.Collections.Generic;
-using System;
-using GagSpeak.Data;
-using GagSpeak.UI.Helpers;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
@@ -128,7 +122,7 @@ public partial class MessageEncoder {
     }
 
     // the gag order "toggle Live Chat Garbler lock" Message [ ID == 10 // toggleLiveChatGarblerLock ]
-    public string GagOrderToggleLiveChatGarblerLock(PlayerPayload playerPayload) {
+    public string GagOrderToggleLiveChatGarblerLock(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
         "chuckles in delight of seeing their gagged submissive below them, a smile formed across their lips.* \"Look's like you'll be stuck speaking in muffled moans for some time now~\"";

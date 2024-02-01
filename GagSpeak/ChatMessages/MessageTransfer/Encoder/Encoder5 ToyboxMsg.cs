@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
@@ -23,7 +22,8 @@ public partial class MessageEncoder {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
         "adjusted the slider on the viberators surface, altaring the intensity to a level of "+
-        $"{newIntensityLevel}.";
+        $"{newIntensityLevel}"+
+        ".";
     }
 
     // Encodes msg that lets the whitelisted user execute a stored toy's pattern by its patternName [ ID == 33 ]

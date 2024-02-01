@@ -8,7 +8,7 @@ using OtterGui;
 using GagSpeak.Services;
 using GagSpeak.UI.ComboListings;
 using GagSpeak.Data;
-using GagSpeak.UI.Helpers;
+using GagSpeak.Utility;
 using GagSpeak.Garbler.Translator;
 using GagSpeak.Events;
 using Penumbra.GameData.Enums;
@@ -43,7 +43,7 @@ public class DebugWindow : Window //, IDisposable
     private          string?                _translatedMessageOutput ="";   // stores the translated message for the test translation system
     private readonly FontService            _fontService;                   // for displaying the IPA symbols on the bottom chart
     private readonly GagService             _gagService;                    // for displaying the number of registered gags
-    private readonly GagSpeakConfig         _config;                        // for retrieving the config data to display to the window
+    private          GagSpeakConfig         _config;                        // for retrieving the config data to display to the window
     private readonly ItemAutoEquipEvent     _itemAutoEquipEvent;            // for knowing when a gag is equipped
     private readonly IpaParserEN_FR_JP_SP   _translatorLanguage;            // creates an instance of the EnglishToIPA class
     private readonly GagGarbleManager             _gagManager;                    // for knowing what gags are equipped
@@ -136,8 +136,6 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Text($"Fresh Install?: {_config.FreshInstall}");
         ImGui.Text($"Safeword: {_config.playerInfo._safeword}");
         ImGui.Text($"Has Safeword Been Used?: {_config.playerInfo._safewordUsed}");
-        ImGui.Text($"Process Translation Interval: {_config.ProcessTranslationInterval}");
-        ImGui.Text($"Max Translation History: {_config.TranslationHistoryMax}");
         ImGui.Separator();
         // configuration tab options & details
         ImGui.Text($"Allow Commands from Friends?: {_config.playerInfo._doCmdsFromFriends}");
@@ -152,7 +150,6 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Text($"Ready To Accept sending player information?: {_config.acceptingInfoRequests}");
         ImGui.Separator();
         // wardrobe details
-        _config.playerInfo._selectedGagTypes
         ImGui.Text($"Enable Wardrobe?: {_config.playerInfo._enableWardrobe}");
         ImGui.Text($"Enable Item Auto-Equip?: {_config.playerInfo._allowItemAutoEquip}");
         ImGui.Text($"Allow Restraint Locking?: {_config.playerInfo._allowRestraintSetAutoEquip}");
@@ -170,20 +167,20 @@ public class DebugWindow : Window //, IDisposable
         if(!ImGui.CollapsingHeader("Whitelist & Locks Info")) { return; }
         // Whitelist uder information
         ImGui.Text("Whitelist:"); ImGui.Indent();
-        foreach (var whitelistPlayerData in _config.Whitelist) {
-            ImGui.Text(whitelistPlayerData.name);
+        foreach (var whitelistPlayerData in _config.whitelist) {
+            ImGui.Text(whitelistPlayerData._name);
             ImGui.Indent();
             ImGui.Text($"Relationship to this Player: {whitelistPlayerData._yourStatusToThem}");
             ImGui.Text($"Relationship to You: {whitelistPlayerData._theirStatusToYou}");
             ImGui.Text($"Commitment Duration: {whitelistPlayerData.GetCommitmentDuration()}");
-            ImGui.Text($"Locked Live Chat Garbler: {whitelistPlayerData.lockedLiveChatGarbler}");
+            ImGui.Text($"Locked Live Chat Garbler: {whitelistPlayerData._directChatGarblerLocked}");
             ImGui.Text($"Pending Relationship Request From You: {whitelistPlayerData._pendingRelationRequestFromYou}");
             ImGui.Text($"Pending Relationship Request: {whitelistPlayerData._pendingRelationRequestFromPlayer}");
-            ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in whitelistPlayerData.selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-            ImGui.Text($"Selected Padlocks: || "); ImGui.SameLine(); foreach (Padlocks gagPadlock in whitelistPlayerData.selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
-            ImGui.Text($"Selected Padlocks Passwords: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in whitelistPlayerData.selectedGagPadlocksPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };
-            ImGui.Text($"Selected Padlocks Timers: || "); ImGui.SameLine(); foreach (var gagPadlockTimer in whitelistPlayerData.selectedGagPadlocksTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} || "); };
-            ImGui.Text($"Selected Padlocks Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in whitelistPlayerData.selectedGagPadlocksAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
+            ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in whitelistPlayerData._selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
+            ImGui.Text($"Selected Padlocks: || "); ImGui.SameLine(); foreach (Padlocks gagPadlock in whitelistPlayerData._selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
+            ImGui.Text($"Selected Padlocks Passwords: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in whitelistPlayerData._selectedGagPadlockPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };
+            ImGui.Text($"Selected Padlocks Timers: || "); ImGui.SameLine(); foreach (var gagPadlockTimer in whitelistPlayerData._selectedGagPadlockTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} || "); };
+            ImGui.Text($"Selected Padlocks Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in whitelistPlayerData._selectedGagPadlockAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
             ImGui.Unindent();
         }
         ImGui.Unindent();

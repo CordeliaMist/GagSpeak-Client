@@ -3,27 +3,18 @@ using System.Numerics;
 using System.IO;
 using ImGuiNET;
 using OtterGui.Raii;
-using OtterGui.Widgets;
 using Dalamud.Plugin;
-using Dalamud.Interface;
-using Dalamud.Interface.Internal;
-using System.Collections.Generic;
 using System.Linq;
 using Penumbra.GameData.Enums;
-using Penumbra.GameData.Structs;
 using GagSpeak.Data;
 using GagSpeak.Interop;
 using GagSpeak.Services;
-using GagSpeak.UI.Helpers;
+using GagSpeak.Utility;
 using GagSpeak.UI.ComboListings;
-using System.Runtime.CompilerServices;
 using Dalamud.Plugin.Services;
-using Newtonsoft.Json;
 using Dalamud.Interface.Utility;
 using Penumbra.GameData.DataContainers;
 using Penumbra.GameData.Data;
-using Dalamud.Interface.Internal.Windows.StyleEditor;
-using OtterGui;
 
 namespace GagSpeak.Wardrobe;
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>

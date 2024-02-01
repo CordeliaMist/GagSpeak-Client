@@ -31,9 +31,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     // additonal information below
     public          List<ChatChannel.ChatChannels>              ChannelsGagSpeak { get; set; }                          // Which channels are currently enabled / allowed?
     public          List<ChatChannel.ChatChannels>              ChannelsPuppeteer { get; set; }                         // Which channels are currently enabled / allowed?
-    public          int                                         ProcessTranslationInterval { get; set; } = 300000;      // current process intervals for the history
-    public          int                                         TranslationHistoryMax { get; set; } = 30;               // Gets or sets max number of translations stored in history
-    public          MainWindow.TabType                          SelectedTab { get; set; } = MainWindow.TabType.General; // Default to the general tab
+    public          TabType                                     SelectedTab { get; set; } = TabType.General; // Default to the general tab
     public          bool                                        viewingRestraintCompartment { get; set; } = false;      // Is viewing the restraint shelf tab in wardrobe?
     public          string                                      sendInfoName = "";                                      // Name of the person you are sending info to
     public          bool                                        acceptingInfoRequests = true;                           // Are you accepting info requests? (for cooldowns)//
@@ -52,8 +50,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          string                                      languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
     public          List<string>                                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
     // our main information for player character and whitelist characters
-    public          PlayerCharacterInfo                         playerInfo { get; set; }                       // stores the player character info
-    public          List<WhitelistedCharacterInfo>              whitelist { get; set; }                    // stores the whitelist character info
+    public          PlayerCharacterInfo                         playerInfo { get; set; }                                // stores the player character info
+    public          List<WhitelistedCharacterInfo>              whitelist { get; set; }                                 // stores the whitelist character info
     
     [JsonIgnore]
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin

@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
@@ -25,7 +24,7 @@ public partial class MessageEncoder {
         "looked down at their companion before walking ove to their wardrobe, \"Now you'll be a good slut and not resist any locks I try putting on your restraints, understand?~\"";
     }
         
-    // Encodes a message for locking the restraint set onto the player [ ID == 24 ]
+    // Encodes a message for enabling the restraint set onto the player [ ID == 24 ]
     public string EncodeWardrobeEnableRestraintSet(PlayerPayload playerPayload, string targetPlayer, string restraintSetName) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+

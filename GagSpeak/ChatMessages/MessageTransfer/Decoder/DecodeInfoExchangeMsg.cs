@@ -6,17 +6,23 @@ namespace GagSpeak.ChatMessages.MessageTransfer;
 public partial class MessageDecoder {
     /// <summary> decodes the recieved and sent messages related to the information exchange with the player.
     public void DecodeInfoExchangeMsg(string recievedMessage, int encodedMsgIndex, ref List<string> decodedMessage) {        
-        // decoder for requesting information from whitelisted player.
+        // $"({playerPayload.PlayerName} from {playerPayload.World.Name} would enjoy it if you started our scene together by reminding them of all the various states you were left in, before we took a break from things for awhile~)";
+        // decoder for requesting information from whitelisted player. [ ID == 35 ]
         if (encodedMsgIndex == 35) {
-            decodedMessage[0] = "requestInfo";      // we found commandtype
-            recievedMessage = recievedMessage.Trim('*');
-            recievedMessage = recievedMessage.Replace("looks down upon you with a smile,* \"I'd love to hear you describe your situation to me my dear, I want hear all about how you feel right now","");
-            string[] messageParts = recievedMessage.Split("from");
-            string trimmedMessage = string.Empty;
-            decodedMessage[4] = messageParts[0].Trim() + 
-                          " " + messageParts[1].Trim(); // we found player
-            GagSpeak.Log.Debug($"[Message Decoder]: request info (0) = {decodedMessage[0]} ||(4) {decodedMessage[4]}");
-            return;
+            // define the pattern using regular expressions
+            string pattern = @"^\*(?<playerInfo>.+) would enjoy it if you started our scene together by reminding them of all
+             the various states you were left in, before we took a break from things for awhile~$";
+            // use regex to match the pattern
+            Match match = Regex.Match(recievedMessage, pattern);
+            // check if the match is sucessful
+            if (match.Success) {
+                decodedMessage[0] = "requestInfo"; // assign "requestInfo" to decodedMessage[0]
+                string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
+                decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
+                GagSpeak.Log.Debug($"[Message Decoder]: request info: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]}");
+            } else {
+                GagSpeak.Log.Error($"[Message Decoder]: request info: Failed to decode message: {recievedMessage}");
+            }
         }
 
         // decoder for sharing info about player (part 1)

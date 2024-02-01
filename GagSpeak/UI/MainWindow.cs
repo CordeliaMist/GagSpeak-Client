@@ -13,17 +13,20 @@ using GagSpeak.UI.Tabs.HelpPageTab;
 using GagSpeak.UI.Tabs.WardrobeTab;
 
 namespace GagSpeak.UI;
+
+public enum TabType {
+    None            = -1,   // No tab selected
+    General         = 0,    // Where you select your gags and safewords and lock types. Put into own tab for future proofing beauty spam
+    Whitelist       = 1,    // Where you can append peoples names to a whitelist, which is used to account for permissions on command usage.
+    Wardrobe        = 2,    // Where you can set what equips when what is worn & config automatic bind & lock options.
+    Puppeteer       = 3,    // for controlling others~
+    Toybox          = 4,    // for controlling toys, fun fun~
+    ConfigSettings  = 5,    // Where you can change the plugin settings, such as debug mode, and other things.
+    HelpPage        = 6     // Where you can find information on how to use the plugin, and how to get support.
+}
 /// <summary> This class is used to handle the main window. </summary>
 public class MainWindow : Window
 {
-    public enum TabType {
-        None            = -1,   // No tab selected
-        General         = 0,    // Where you select your gags and safewords and lock types. Put into own tab for future proofing beauty spam
-        Whitelist       = 1,    // Where you can append peoples names to a whitelist, which is used to account for permissions on command usage.
-        Wardrobe        = 2,    // Where you can set what equips when what is worn & config automatic bind & lock options.
-        ConfigSettings  = 3,    // Where you can change the plugin settings, such as debug mode, and other things.
-        HelpPage        = 4     // Where you can find information on how to use the plugin, and how to get support.
-    }
     private readonly    GagSpeakConfig      _config;
     private readonly    GagSpeakChangelog   _changelog;
     private readonly    ITab[]              _tabs;

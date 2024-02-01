@@ -2,16 +2,21 @@ using System;
 using GagSpeak.Data;
 
 namespace GagSpeak.CharacterData;
+
+
 /// <summary> A class to hold the data for the whitelist character </summary>
 public class WhitelistedCharacterInfo : CharacterInfoBase
 {
-    public string           _name { get; set; }                              // get the character name
-    public string           _homeworld { get; set; }                         // get the characters world (dont know how to get this for now)
-    public RoleLean    _yourStatusToThem { get; set; }                  // who you are to them
-    public RoleLean    _theirStatusToYou { get; set; }                  // who they are to you
-    public string           _pendingRelationRequestFromYou { get; set; }     // displays the current dyanmic request sent by you to this player
-    public string           _pendingRelationRequestFromPlayer { get; set; }  // displays the current dynamic request from this player to you
-    public DateTimeOffset   _timeOfCommitment { get; set; }                  // how long has your commitment lasted?
+    public string           _name { get; set; }                             // get the character name
+    public string           _homeworld { get; set; }                        // get the characters world (dont know how to get this for now)
+    public RoleLean         _yourStatusToThem { get; set; }                 // who you are to them
+    public RoleLean         _theirStatusToYou { get; set; }                 // who they are to you
+    public RoleLean         _pendingRelationRequestFromYou { get; set; }    // displays the current dyanmic request sent by you to this player
+    public RoleLean         _pendingRelationRequestFromPlayer { get; set; } // displays the current dynamic request from this player to you
+    public DateTimeOffset   _timeOfCommitment { get; set; }                 // how long has your commitment lasted?
+    ////////////////////////////////////////////////// PROTECTED FIELDS ////////////////////////////////////////////////////
+    public  bool            _grantExtendedLockTimes { get; set; } = false;  // [TIER 2] without this enabled, no locked times can exceed 12 hours
+    public  string          _triggerPhraseForPuppeteer { get; set; } = "";  // [TIER 0] what is this persons trigger phrase for you?
     
     /// <summary> Initializes a new instance of the <see cref="WhitelistCharData"/> class. </summary>
     public WhitelistedCharacterInfo(string name, string homeworld, string relationshipStatus) {
@@ -19,10 +24,15 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         _homeworld = homeworld;
         _yourStatusToThem = (RoleLean) Enum.Parse(typeof(RoleLean), relationshipStatus, true);
         _theirStatusToYou = RoleLean.None;
-        _pendingRelationRequestFromPlayer = "";
-        _pendingRelationRequestFromYou = "";
+        _pendingRelationRequestFromPlayer = RoleLean.None;
+        _pendingRelationRequestFromYou = RoleLean.None;
     }
 #region General Interactions
+    /// <summary> get the string format of the roleleanEnum </summary>
+    public string GetRoleLeanString(RoleLean role) {
+        return role.ToString();
+    }
+
     /// <summary> Sets the time of commitment </summary>
     public void Set_timeOfCommitment() {
         _timeOfCommitment = DateTimeOffset.Now;

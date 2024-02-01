@@ -9,21 +9,18 @@ using OtterGui.Classes;
 using XivCommon.Functions;
 using ChatChannel = GagSpeak.Data.ChatChannel;
 using GagSpeak.Chat;
-using GagSpeak.Chat.MsgEncoder;
 using GagSpeak.Data;
 using GagSpeak.Events;
 using GagSpeak.UI;
-using GagSpeak.UI.Helpers;
+using GagSpeak.Utility;
 using GagSpeak.Wardrobe;
-using System.Data;
 using GagSpeak.Interop;
 using System.Threading.Tasks;
+using GagSpeak.ChatMessages.MessageTransfer;
 
 namespace GagSpeak.Services;
 
-/// <summary>
-/// The command manager for the plugin. Handles all of the commands that are used in the plugin.
-/// </summary>
+/// <summary> Handles all of the commands that are used in the plugin. </summary>
 public class CommandManager : IDisposable // Our main command list manager
 {
     private const string MainCommandString = "/gagspeak"; // The primary command used for & displays
@@ -33,45 +30,39 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly    MessageEncoder      _gagMessages;
     private readonly    ICommandManager     _commands;
     private readonly    MainWindow          _mainWindow;
-    private readonly    HistoryWindow       _historyWindow;
     private readonly    DebugWindow         _debugWindow;
-    private readonly    HistoryService      _historyService;
     private readonly    IChatGui            _chat;
     private readonly    GagSpeakConfig      _config;
     private readonly    ChatManager         _chatManager;
     private readonly    IClientState        _clientState;
     private             RealChatInteraction _realChatInteraction;
-    private readonly    IFramework          _framework; 
     private readonly    TimerService        _timerService;
     private readonly    GagService          _gagService;
-    private readonly    GagGarbleManager          _gagManager;
+    private readonly    GagGarbleManager    _gagManager;
     private readonly    GagStorageManager   _gagStorageManager;
     private readonly    RestraintSetManager _restriantSetManager;
     private readonly    GlamourerService    _glamourerInterop;
     private readonly    SafewordUsedEvent   _safewordCommandEvent;
 
     // Constructor for the command manager
-    public CommandManager(ICommandManager command, MainWindow mainwindow, HistoryWindow historywindow,
-    HistoryService historyService, DebugWindow debugWindow, RestraintSetManager restraintSetManager,
-    IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState, GlamourerService GlamourerService,
-    IFramework framework, GagService gagService, GagGarbleManager GagGarbleManager, RealChatInteraction realchatinteraction,
-    TimerService timerService, SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder, GagStorageManager gagStorageManager)
+    public CommandManager(ICommandManager command, MainWindow mainwindow, DebugWindow debugWindow,
+    RestraintSetManager restraintSetManager, IChatGui chat, GagSpeakConfig config, ChatManager chatManager,
+    IClientState clientState, GlamourerService GlamourerService, GagService gagService,
+    GagGarbleManager GagGarbleManager, RealChatInteraction realchatinteraction, TimerService timerService,
+    SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder, GagStorageManager gagStorageManager)
     {
         // set the private readonly's to the passed in data of the respective names
         _commands = command;
         _mainWindow = mainwindow;
-        _historyWindow = historywindow;
         _debugWindow = debugWindow;
         _chat = chat;
         _realChatInteraction = realchatinteraction;
         _config = config;
         _chatManager = chatManager;
         _clientState = clientState;
-        _framework = framework;
         _gagMessages = messageEncoder;
         _gagService = gagService;
         _gagManager = GagGarbleManager;
-        _historyService = historyService;
         _timerService = timerService;
         _safewordCommandEvent = safewordCommandEvent;
         _gagStorageManager = gagStorageManager;
@@ -128,12 +119,6 @@ public class CommandManager : IDisposable // Our main command list manager
             case "showlist":
                 Showlist(argument);        // when [/gagspeak showlist] is typed
                 return;
-            case "setmode":
-                Setmode(argument);         // when [/gagspeak setmode] is typed
-                return;
-            case "history":
-                _historyWindow.Toggle();   // when [/gagspeak history] is typed
-                return;
             case "debug":
                 _debugWindow.Toggle();     // when [/gagspeak debug] is typed
                 return;
@@ -159,7 +144,7 @@ public class CommandManager : IDisposable // Our main command list manager
         }
 
         // If the safeword is the same as the one we are trying to set and there is no "SafewordUsed" timer
-        if (_config.Safeword == argument) {
+        if (_config.playerInfo._safeword == argument) {
             // see if the safeword is on cooldown
             if (!_timerService.timers.ContainsKey("SafewordUsed")) {
                 GagSpeak.Log.Debug($"[Command Manager]: Safeword matched, and is off cooldown, deactivating all gags and locks");
@@ -191,8 +176,8 @@ public class CommandManager : IDisposable // Our main command list manager
                 GagSpeak.Log.Debug($"[Command Manager]: Firing Invoke from CommandManager");
                 _safewordCommandEvent.Invoke();
                 // fire the safewordUsed bool to true so that we set the cooldown
-                _config.SafewordUsed = true;
-                _timerService.StartTimer("SafewordUsed", "15m", 1000, () => _config.SafewordUsed = false);
+                _config.playerInfo._safewordUsed = true;
+                _timerService.StartTimer("SafewordUsed", "15m", 1000, () => _config.playerInfo._safewordUsed = false);
             }
             // otherwise inform the user that the cooldown for safeword being used is still present
             else {
@@ -221,19 +206,6 @@ public class CommandManager : IDisposable // Our main command list manager
             return true;
         } else {
             _chat.Print("Invalid argument. Usage: /gagspeak showlist [padlocks/gags]"); return false;
-        }
-    }
-
-    private bool Setmode(string argument) { // Handler for the setmode subcommand
-        if (string.IsNullOrWhiteSpace(argument)) { // If no argument is provided, tell them to spesify
-            _chat.Print("Please specify the mode. Usage: /gagspeak setmode [dom/sub]"); return false; }
-        var mode = argument.ToLower(); // set what we typed to lowercases to match checks
-        if (mode == "dom") {
-            _chat.Print(new SeStringBuilder().AddText("Your mode has been set to ").AddRed("Dom.").BuiltString); _config.InDomMode = true; _config.Save(); return true;
-        } else if (mode == "sub") {
-            _chat.Print(new SeStringBuilder().AddText("Your mode has been set to ").AddRed("Sub.").BuiltString); _config.InDomMode = false; _config.Save(); return true;
-        } else {
-            _chat.Print("Invalid mode. Usage: /gagspeak setmode [dom/sub]"); return false;
         }
     }
 #endregion GagSpeak Help
@@ -558,7 +530,7 @@ public class CommandManager : IDisposable // Our main command list manager
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
             // If sucessful, print our debug messages so we make sure we are sending the correct information
             GagSpeak.Log.Debug($"[Command Manager]: /restraintset lock command sucessful, sending off to Message Encoder.");  
-            _chatManager.SendRealMessage(_gagMessages.GagEncodedRestraintSetLockMessage(playerPayload, restraintSetName, timer, targetPlayer));
+            _chatManager.SendRealMessage(_gagMessages.EncodeWardrobeRestraintSetLock(playerPayload, restraintSetName, timer, targetPlayer));
         } catch (Exception e) {
             GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
             _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
