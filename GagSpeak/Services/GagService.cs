@@ -3,9 +3,9 @@ using System.Collections.Generic;                   // Provides classes for defi
 using System.IO;
 using Dalamud.Plugin;
 using Newtonsoft.Json;
-using GagSpeak.Data;                                // Contains data classes used in the GagSpeak application
 using GagSpeak.Events;                              // Contains event classes used in the GagSpeak application
-using GagSpeak.Garbler.PhonemeData;                 // Contains phoneme data used in the GagSpeak application
+using GagSpeak.Garbler.PhonemeData;
+using GagSpeak.Gagsandlocks;                 // Contains phoneme data used in the GagSpeak application
 
 namespace GagSpeak.Services;
 /// <summary> Service for managing the gags. </summary>
@@ -24,7 +24,7 @@ public class GagService : IDisposable
         _gagTypes = new List<Gag>();
 
         // the data file with the gag information
-        string data_file = "GarblerParser\\collectedGagData\\gag_data.json";
+        string data_file = "GarblerCore\\collectedGagData\\gag_data.json";
 		// Try to read the JSON file and deserialize it into the obj dictionary
 		try {
 			// Assuming you have an instance of DalamudPluginInterface named _pluginInterface

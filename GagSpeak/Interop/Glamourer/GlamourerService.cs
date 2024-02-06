@@ -1,20 +1,9 @@
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
-using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
-using Dalamud.Utility;
-using GagSpeak.Data;
-using GagSpeak.Services;
-using Penumbra.Api.Enums;
-using Penumbra.Api.Helpers;
-using GagSpeak.Utility;
 using GagSpeak.CharacterData;
 
 namespace GagSpeak.Interop;

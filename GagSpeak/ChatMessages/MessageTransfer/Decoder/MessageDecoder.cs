@@ -42,14 +42,13 @@ public partial class MessageDecoder {
     /// <item><c>[29]</c> - does messageSender allow motion requests? (BOOL) </item>
     /// <item><c>[30]</c> - does messageSender allow all commands? (BOOL) </item>
     ///
-    /// <item><c>[31]</c> - is messageSenders toybox enabled? (BOOL) </item>
-    /// <item><c>[32]</c> - does messageSender allow you to toggle toybox? (BOOL) </item>
-    /// <item><c>[33]</c> - is active toy in start or stopped state? ((or pending state update)) (BOOL) </item>
-    /// <item><c>[34]</c> - does messageSender allow adjusting intensity of toy? (BOOL) </item>
-    /// <item><c>[35]</c> - current intensity level of active toy ((or new intensity level being sent)) (INT) </item>
-    /// <item><c>[36]</c> - does messageSender allow you to execute storedToyPatterns? (BOOL) </item>
-    /// <item><c>[37]</c> - name of pattern to execute (not given in infoRequests) (STRING) </item>
-    /// <item><c>[38]</c> - does messageSender allow you to lock the toybox UI? (BOOL) </item>
+    /// <item><c>[31]</c> - is messageSenders toybox enabled? [_enableToybox] </item>
+    /// <item><c>[32]</c> - state of active toy? ((or pending state update)) [_allowChangingToyState] </item>
+    /// <item><c>[33]</c> - does messageSender allow adjusting intensity of toy? [_allowIntensityControl] </item>
+    /// <item><c>[34]</c> - current intensity level of active toy ((or new intensity level being sent)) [_intensityLevel] </item>
+    /// <item><c>[35]</c> - does messageSender allow you to execute storedToyPatterns? [_allowUsingPatterns] </item>
+    /// <item><c>[36]</c> - name of pattern to execute (not given in infoRequests) (STRING) </item>
+    /// <item><c>[37]</c> - does messageSender allow you to lock the toybox UI? [_allowToyboxLocking] </item>
     /// </list> </summary>
     /// <returns> The decoded message list. </returns>
     public List<string> DecodeMsgToList(string recievedMessage, int encodedMsgIndex) {

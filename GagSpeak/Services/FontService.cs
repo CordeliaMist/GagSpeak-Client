@@ -13,6 +13,7 @@ public class FontService : IDisposable
     public              bool                    UidFontBuilt { get; private set; }  // whether the font was built successfully
     
     public FontService(DalamudPluginInterface pluginInterface) {
+        #pragma warning disable CS0618 // I dont really care about if it is absolete at the moment
         _pluginInterface = pluginInterface;
         _pluginInterface.UiBuilder.BuildFonts += BuildFont;  // subscribe to the build fonts event
         _pluginInterface.UiBuilder.RebuildFonts();           // rebuild the fonts
@@ -81,6 +82,7 @@ public class FontService : IDisposable
     public void Dispose() {
         GagSpeak.Log.Debug($"[Font] Disposing FontService");
         _pluginInterface.UiBuilder.BuildFonts -= BuildFont;
+        #pragma warning restore CS0618 // I dont really care about if it is absolete at the moment
     }
 }
 /*  ======= Unicode block	Charis SIL support ==========

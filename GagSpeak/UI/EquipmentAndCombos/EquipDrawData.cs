@@ -4,8 +4,9 @@ using Penumbra.GameData.Structs;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
+using GagSpeak.Utility;
 
-namespace GagSpeak.Data;
+namespace GagSpeak.UI.Equipment;
 public class EquipDrawData
 {
     public bool                 _isEnabled;

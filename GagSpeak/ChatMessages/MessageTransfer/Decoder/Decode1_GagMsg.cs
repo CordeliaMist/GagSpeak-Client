@@ -16,11 +16,10 @@ public partial class MessageDecoder {
             // Check if the match is successful
             if (match.Success) {
                 decodedMessage[0] = "apply"; // Assign "apply" to decodedMessage[0]
-                decodedMessage[2] = match.Groups["layer"].Value.Trim(); // Assign the layer to decodedMessage[2]
-                decodedMessage[8] = match.Groups["gagType"].Value.Trim(); // Assign the gagtype to decodedMessage[8]
-                // Split player info into player name and world name
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
+                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Assign the layer to decodedMessage[2]
+                decodedMessage[8] = match.Groups["gagType"].Value.Trim(); // Assign the gagtype to decodedMessage[8]
                 GagSpeak.Log.Debug($"[Message Decoder]: /gag apply: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} ||" +
                                 $"(2) {decodedMessage[2]} ||(8) {decodedMessage[8]}");
             } else {
@@ -29,7 +28,7 @@ public partial class MessageDecoder {
         }
 
         // decode the /gag lock message [ ID == 2 // lock ]
-        // [0] = commandtype, [1] = GagAssigner (who sent it), [2] = layer index, [8] = lockType,
+        // [0] = commandtype, [1] = GagAssigner (who sent it), [2] = layer index, [11] = lockType,
         else if (encodedMsgIndex == 2) {
             // Define the pattern using regular expressions
             string pattern = @"^\*(?<playerInfo>.+) takes out a (?<lockType>.+) from her pocket and uses it to lock
@@ -39,20 +38,19 @@ public partial class MessageDecoder {
             // Check if the match is successful
             if (match.Success) {
                 decodedMessage[0] = "lock";
-                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
-                decodedMessage[8] = match.Groups["lockType"].Value.Trim(); // contains the padlocktype name
-                // Split player info into player name and world name
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
+                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
+                decodedMessage[11] = match.Groups["lockType"].Value.Trim(); // contains the padlocktype name
                 GagSpeak.Log.Debug($"[Message Decoder]: /gag lock: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} ||" +
-                                $"(2) {decodedMessage[2]} ||(8) {decodedMessage[8]}");
+                                $"(2) {decodedMessage[2]} ||(11) {decodedMessage[11]}");
             } else {
                 GagSpeak.Log.Error($"[Message Decoder]: /gag lock: Failed to decode message: {recievedMessage}");
             }
         }
 
         // decode the /gag lock (password) message [ ID == 3 // lockPassword ]
-        // [0] = commandtype, [1] = GagAssigner (who sent the msg), [2] = layerIndex, [8] = lockType, [11] = password/timer
+        // [0] = commandtype, [1] = GagAssigner (who sent the msg), [2] = layerIndex, [11] = lockType, [14] = password/timer
         else if (encodedMsgIndex == 3) {
             // Define the pattern using regular expressions
             string pattern = @"^\*(?<playerInfo>.+) takes out a (?<lockType>.+) from (?<player>.+)'s pocket
@@ -62,14 +60,13 @@ public partial class MessageDecoder {
             // Check if the match is successful
             if (match.Success) {
                 decodedMessage[0] = "lockPassword"; // Assign "lockPassword" to decodedMessage[0]
-                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
-                decodedMessage[8] = match.Groups["lockType"].Value.Trim(); // contains the padlocktype name
-                decodedMessage[11] = match.Groups["password"].Value.Trim(); // contains the password
-                // Split player info into player name and world name
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
+                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
+                decodedMessage[11] = match.Groups["lockType"].Value.Trim(); // contains the padlocktype name
+                decodedMessage[14] = match.Groups["password"].Value.Trim(); // contains the password
                 GagSpeak.Log.Debug($"[Message Decoder]: /gag lock password: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} ||" +
-                $"(2) {decodedMessage[2]} ||(8) {decodedMessage[8]} ||(11) {decodedMessage[11]}");
+                $"(2) {decodedMessage[2]} ||(11) {decodedMessage[11]} ||(14) {decodedMessage[14]}");
             } else {
                 GagSpeak.Log.Error($"[Message Decoder]: /gag lock password: Failed to decode message: {recievedMessage}");
             }
@@ -86,15 +83,14 @@ public partial class MessageDecoder {
             // Check if the match is successful
             if (match.Success) {
                 decodedMessage[0] = "lockTimerPassword"; // Assign "lockTimerPassword" to decodedMessage[0]
-                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
-                decodedMessage[8] = match.Groups["lockType"].Value.Trim(); // contains the padlocktype name
-                decodedMessage[11] = match.Groups["password"].Value.Trim(); // contains the password
-                decodedMessage[14] = match.Groups["timer"].Value.Trim(); // contains the timer
-                // Split player info into player name and world name
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
+                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
+                decodedMessage[11] = match.Groups["lockType"].Value.Trim(); // contains the padlocktype name
+                decodedMessage[14] = match.Groups["password"].Value.Trim(); // contains the password
+                decodedMessage[15] = match.Groups["timer"].Value.Trim(); // contains the timer
                 GagSpeak.Log.Debug($"[Message Decoder]: /gag lock password timer: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} ||" +
-                $"(2) {decodedMessage[2]} ||(8) {decodedMessage[8]} ||(11) {decodedMessage[11]} ||(14) {decodedMessage[14]}");
+                $"(2) {decodedMessage[2]} ||(11) {decodedMessage[11]} ||(14) {decodedMessage[14]} ||(15) {decodedMessage[15]}");
             } else {
                 GagSpeak.Log.Error($"[Message Decoder]: /gag lock password timer: Failed to decode message: {recievedMessage}");
             }
@@ -111,10 +107,9 @@ public partial class MessageDecoder {
             // Check if the match is successful
             if (match.Success) {
                 decodedMessage[0] = "unlock"; // Assign "unlock" to decodedMessage[0]
-                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
-                // Split player info into player name and world name
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
+                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
                 GagSpeak.Log.Debug($"[Message Decoder]: /gag unlock: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} ||" +
                 $"(2) {decodedMessage[2]}");
             } else {
@@ -133,11 +128,10 @@ public partial class MessageDecoder {
             // Check if the match is successful
             if (match.Success) {
                 decodedMessage[0] = "unlockPassword"; // Assign "unlockPassword" to decodedMessage[0]
-                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
-                decodedMessage[14] = match.Groups["password"].Value.Trim(); // contains the password
-                // Split player info into player name and world name
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
+                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
+                decodedMessage[14] = match.Groups["password"].Value.Trim(); // contains the password
                 GagSpeak.Log.Debug($"[Message Decoder]: /gag unlock password: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} ||" +
                 $"(2) {decodedMessage[2]} ||(14) {decodedMessage[14]}");
             } else {
@@ -156,10 +150,9 @@ public partial class MessageDecoder {
             // Check if the match is successful
             if (match.Success) {
                 decodedMessage[0] = "remove"; // Assign "remove" to decodedMessage[0]
-                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
-                // Split player info into player name and world name
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
+                decodedMessage[2] = GetLayerNumber(match.Groups["layer"].Value.Trim()); // Contains the layerindex
                 GagSpeak.Log.Debug($"[Message Decoder]: /gag remove: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} ||" +
                 $"(2) {decodedMessage[2]}");
             } else {
@@ -178,7 +171,6 @@ public partial class MessageDecoder {
             // Check if the match is successful
             if (match.Success) {
                 decodedMessage[0] = "removeall"; // Assign "removeall" to decodedMessage[0]
-                // Split player info into player name and world name
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
                 GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]}");
@@ -198,7 +190,6 @@ public partial class MessageDecoder {
             // Check if the match is successful
             if (match.Success) {
                 decodedMessage[0] = "toggleLiveChatGarbler"; // Assign "toggleLiveChatGarbler" to decodedMessage[0]
-                // Split player info into player name and world name
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
                 GagSpeak.Log.Debug($"[Message Decoder]: /gag toggleLiveChatGarbler: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]}");
@@ -208,6 +199,7 @@ public partial class MessageDecoder {
         }
 
         // decode the toggle for locking live garbler [ ID == 10 // toggleLiveChatGarblerLock ]
+        // [0] = commandtype, [1] = ToggleAssigner
         else if (encodedMsgIndex == 10) {
             // Define the pattern using regular expressions
             string pattern = @"^\*(?<playerInfo>.+) chuckles in delight of seeing their gagged submissive below them, a smile formed across their lips\.*
@@ -217,7 +209,6 @@ public partial class MessageDecoder {
             // Check if the match is successful
             if (match.Success) {
                 decodedMessage[0] = "toggleLiveChatGarblerLock"; // Assign "toggleLiveChatGarblerLock" to decodedMessage[0]
-                // Split player info into player name and world name
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
                 GagSpeak.Log.Debug($"[Message Decoder]: /gag toggleLiveChatGarblerLock: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]}");

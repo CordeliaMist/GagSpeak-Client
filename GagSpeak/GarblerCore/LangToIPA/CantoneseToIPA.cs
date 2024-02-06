@@ -21,7 +21,7 @@ public class IpaParserCantonese
         _config = config;
         _pluginInterface = pluginInterface;
         // Set the path to the JSON file based on the language dialect
-        data_file = "GarblerParser\\jsonFiles\\yue.json";
+        data_file = "GarblerCore\\jsonFiles\\yue.json";
 		// Try to read the JSON file and deserialize it into the obj dictionary
 		try {
 			// Assuming you have an instance of DalamudPluginInterface named _pluginInterface

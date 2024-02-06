@@ -18,8 +18,11 @@ public class EquipItemConverter : Newtonsoft.Json.JsonConverter
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
         //GagSpeak.Log.Information($"[EquipItemConverter] Reading JSON for {objectType}");
-        var surrogate = serializer.Deserialize<EquipItemSurrogate>(reader);
-        return (EquipItem)surrogate;
+        if(objectType == typeof(EquipItem)) {
+            var surrogate = serializer.Deserialize<EquipItemSurrogate>(reader);
+            return (EquipItem)surrogate;
+        }
+        return null!;
     }
 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {

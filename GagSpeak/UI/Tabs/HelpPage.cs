@@ -88,7 +88,7 @@ public class HelpPageTab : Window, ITab
     /// drawing out the header
     /// </summary>
     private void DrawHeader()
-        => WindowHeader.Draw("Plugin Information & Usage", 0, ImGui.GetColorU32(ImGuiCol.FrameBg), OpenPopupButton());
+        => WindowHeader.Draw("Plugin Information & Usage", 0, ImGui.GetColorU32(ImGuiCol.FrameBg), 0, 0, OpenPopupButton());
 
     /// <summary>
     /// Draw the actual help page display. This should be neatly organized and colored

@@ -2,16 +2,16 @@ using System;                                       // Provides fundamental clas
 using System.Collections.Generic;                   // Provides classes for defining generic collections
 using GagSpeak.Services;                            // Contains service classes used in the GagSpeak application
 using GagSpeak.Events;                              // Contains event classes used in the GagSpeak application
-using GagSpeak.Data;                                // Contains data classes used in the GagSpeak application
-using GagSpeak.UI.Helpers;                          // Contains chat classes used in the GagSpeak application
+using GagSpeak.Utility;                             // Contains utility classes used in the GagSpeak application
 using Dalamud.Plugin.Services;                      // Contains service classes provided by the Dalamud plugin framework
 using Dalamud.Game.Text.SeStringHandling.Payloads;  // Contains classes for handling special encoded (SeString) payloads in the Dalamud game
 using Dalamud.Game.Text.SeStringHandling;           // Contains classes for handling special encoded (SeString) strings in the Dalamud game
 using OtterGui.Classes;
 using System.Linq;
-using GagSpeak.Wardrobe;                             // Contains classes for managing the OtterGui framework
+using GagSpeak.Wardrobe;
+using GagSpeak.CharacterData;
 
-namespace GagSpeak;
+namespace GagSpeak.Gagsandlocks;
 
 /// <summary>
 /// This class is used to handle command based lock interactions and UI based lock interactions.
@@ -21,6 +21,7 @@ public class GagAndLockManager : IDisposable
     private readonly GagSpeakConfig         _config;                // for config options
     private readonly GagStorageManager      _gagStorageManager;     // for gag storage
     private readonly RestraintSetManager    _restraintSetManager;   // for restraint set management
+    private readonly CharacterHandler       _characterHandler;      // for character data
     private readonly IChatGui               _clientChat;            // for chat messages
     private readonly IClientState           _clientState;           // for player payload
     private readonly TimerService           _timerService;          // for timers
@@ -28,17 +29,20 @@ public class GagAndLockManager : IDisposable
     private readonly ItemAutoEquipEvent     _gagItemEquippedEvent;  // for gag item equipped event
 
     /// <summary> Initializes a new instance of the <see cref="GagAndLockManager"/> class. </summary>
-    public GagAndLockManager(GagSpeakConfig config, IChatGui clientChat, TimerService timerService,
-    GagStorageManager gagStorageManager, IClientState clientState, SafewordUsedEvent safewordUsedEvent,
-    ItemAutoEquipEvent _itemAutoEquipEvent, RestraintSetManager restraintSetManager) {
+    public GagAndLockManager(GagSpeakConfig config, GagStorageManager gagStorageManager,
+    RestraintSetManager restraintSetManager, CharacterHandler characterHandler, IChatGui clientChat,
+    IClientState clientState, TimerService timerService, SafewordUsedEvent safewordUsedEvent,
+    ItemAutoEquipEvent gagItemEquippedEvent) {
         _config = config;
+        _gagStorageManager = gagStorageManager;
+        _restraintSetManager = restraintSetManager;
+        _characterHandler = characterHandler;
         _clientChat = clientChat;
         _clientState = clientState;
         _timerService = timerService;
         _safewordUsedEvent = safewordUsedEvent;
-        _gagItemEquippedEvent = _itemAutoEquipEvent;
-        _gagStorageManager = gagStorageManager;
-        _restraintSetManager = restraintSetManager;
+        _gagItemEquippedEvent = gagItemEquippedEvent;
+
         // subscribe to the safeword event
         _safewordUsedEvent.SafewordCommand += CleanupVariables;
     }
@@ -49,15 +53,10 @@ public class GagAndLockManager : IDisposable
     }
 
 #region GeneralGagAndLockFunctions
-    /// <summary> This method is used to handle gag applying command and UI presses
-    /// <list type="bullet">
-    /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
-    /// <item><c>gagType</c><param name="gagType"> - The gag type.</param></item>
-    /// <item><c>assignerName</c><param name="assignerName"> - The assigner name, if any.</param></item>
-    /// </list> </summary>
+    /// <summary> This method is used to handle gag applying command and UI presses </summary>
     public void ApplyGag(int layerIndex, string gagType, string assignerName = "self") {
         // apply the gag information to anywhere where it should be applied to within our code
-        _config.playerInfo._selectedGagTypes[layerIndex] = gagType;
+        _characterHandler.playerChar._selectedGagTypes[layerIndex] = gagType;
         
         // Trigger the event letting our wardrobe manager know a gag is equipped
         _gagItemEquippedEvent.Invoke(gagType, assignerName);
@@ -69,15 +68,15 @@ public class GagAndLockManager : IDisposable
     /// </list> </summary>
     public void RemoveGag(int layerIndex) {
         // get gagtype before clear
-        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _config.playerInfo._selectedGagTypes[layerIndex]);
+        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _characterHandler.playerChar._selectedGagTypes[layerIndex]);
         // remove the gag information from anywhere where it should be removed from within our code
         _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
-        _config.playerInfo._selectedGagTypes[layerIndex] = "None";
-        _config.playerInfo._selectedGagPadlocks[layerIndex] = Padlocks.None;
-        _config.playerInfo._selectedGagPadlockPassword[layerIndex] = string.Empty;
-        _config.playerInfo._selectedGagPadlockAssigner[layerIndex] = "";
+        _characterHandler.playerChar._selectedGagTypes[layerIndex] = "None";
+        _characterHandler.playerChar._selectedGagPadlocks[layerIndex] = Padlocks.None;
+        _characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = string.Empty;
+        _characterHandler.playerChar._selectedGagPadlockAssigner[layerIndex] = "";
         _config.padlockIdentifier[layerIndex].ClearPasswords();
-        _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, true, _config);
+        _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, true, _characterHandler);
         // we dont worry about removing timers because if no lock, no timer.
     }
 
@@ -87,7 +86,7 @@ public class GagAndLockManager : IDisposable
     /// </list> </summary>
     public void RemoveAllGags() {
         // remove all the gags from anywhere where it should be removed from within our code
-        for(int i = 0; i < _config.playerInfo._selectedGagTypes.Count; i++) {
+        for(int i = 0; i < _characterHandler.playerChar._selectedGagTypes.Count; i++) {
             RemoveGag(i);
         }
     }
@@ -131,12 +130,12 @@ public class GagAndLockManager : IDisposable
     public void Unlock(int layerIndex, string assignerName, string password = "", string targetName = "", string YourPlayerName = "") { // for the buttons
         GagSpeak.Log.Debug($"[Padlock Manager Service]: We are unlocking our padlock.");
         // if what we use to try and unlock the padlock is valid, we can unlock it
-        if(_config.padlockIdentifier[layerIndex].CheckPassword(_config, assignerName, targetName, password, YourPlayerName))
+        if(_config.padlockIdentifier[layerIndex].CheckPassword(_characterHandler, assignerName, targetName, password, YourPlayerName))
         {
             // unlock the padlock in all locations where we should be updating it as unlocked, clearing any stored lock information
             _config.isLocked[layerIndex] = false;
             _config.padlockIdentifier[layerIndex].ClearPasswords();
-            _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, true, _config);
+            _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, true, _characterHandler);
             _timerService.ClearIdentifierTimer(layerIndex);
             _config.Save();
         } else {
@@ -179,10 +178,10 @@ public class GagAndLockManager : IDisposable
         if(password1 == "" && password2 == "") {
             GagSpeak.Log.Debug($"[Padlock Manager Service]: This Lock Request came from a button!");
             // if the padlock is valid, and has a valid password if it needs one, then we can lock
-            if(_config.padlockIdentifier[layerIndex].ValidatePadlockPasswords(_config.isLocked[layerIndex], _config,  assignerName, targetName, playerPayload.PlayerName)) {
+            if(_config.padlockIdentifier[layerIndex].ValidatePadlockPasswords(_config.isLocked[layerIndex], _characterHandler,  assignerName, targetName, playerPayload.PlayerName)) {
                 // if we reached this point it means our password was valid, so we can lock
                 _config.isLocked[layerIndex] = true;
-                _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, false, _config);
+                _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, false, _characterHandler);
                 StartTimerIfNecessary(layerIndex, _config, _timerService);
                 _config.Save();
             } else {
@@ -194,11 +193,11 @@ public class GagAndLockManager : IDisposable
         else {
             // we will need to setandvalidate, over just validate
             GagSpeak.Log.Debug($"[Padlock Manager Service]: This Lock Request came from a command!");
-            if(_config.padlockIdentifier[layerIndex].SetAndValidate(_config, _config.padlockIdentifier[layerIndex]._padlockType.ToString(),
+            if(_config.padlockIdentifier[layerIndex].SetAndValidate(_characterHandler, _config.padlockIdentifier[layerIndex]._padlockType.ToString(),
             password1, password2, assignerName, targetName)) {
                 // if we reached this point it means our password was valid, so we can lock
                 _config.isLocked[layerIndex] = true;
-                _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, false, _config);
+                _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, false, _characterHandler);
                 StartTimerIfNecessary(layerIndex, _config, _timerService);
                 _config.Save();
             } else {
@@ -224,7 +223,7 @@ public class GagAndLockManager : IDisposable
             // assuming it is, start the timer
             GagSpeak.Log.Debug($"[Padlock Manager Service]: starttimer is nessisary, so setting it.");
             _timerService.StartTimer($"{_config.padlockIdentifier[layerIndex]._padlockType}_Identifier{layerIndex}", _config.padlockIdentifier[layerIndex]._storedTimer, 
-            1000, () => { ActionOnTimeElapsed(layerIndex); }, _config.playerInfo._selectedGagPadlockTimer, layerIndex);
+            1000, () => { ActionOnTimeElapsed(layerIndex); }, _characterHandler.playerChar._selectedGagPadlockTimer, layerIndex);
             _config.Save();
         } 
     }
@@ -249,10 +248,10 @@ public class GagAndLockManager : IDisposable
         GagSpeak.Log.Debug($"[Padlock Manager Service]: Timer elapsed! Unlocking from config, timerservice, and padlock identifers");
         // let the user know the timer elapsed, and unlock it
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Your " +
-        $"{_config.playerInfo._selectedGagPadlocks[layerIndex]}'s expired and was removed!").AddItalicsOff().BuiltString);
+        $"{_characterHandler.playerChar._selectedGagPadlocks[layerIndex]}'s expired and was removed!").AddItalicsOff().BuiltString);
         _config.isLocked[layerIndex] = false; // let the gag layer be accessible again
         _config.padlockIdentifier[layerIndex].ClearPasswords(); // reset all input and stored items to default values.
-        _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, !_config.isLocked[layerIndex], _config);
+        _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, !_config.isLocked[layerIndex], _characterHandler);
     }
 
     /// <summary> If at any point we use /gagspeak safeword OUR_SAFEWORD, to clear all padlock and gag information and make it impossible for others to interact with you
@@ -264,7 +263,7 @@ public class GagAndLockManager : IDisposable
         // clear EVERYTHING
         GagSpeak.Log.Debug("Safeword command invoked, and subscribed function called.");
         _config.isLocked = new List<bool> { false, false, false }; // reset is locked
-        _config.playerInfo._directChatGarblerLocked = false; // reset the garbler lock to be off
+        _characterHandler.playerChar._directChatGarblerLocked = false; // reset the garbler lock to be off
         _config.timerData.Clear(); // reset the timer data
         _timerService.ClearIdentifierTimers(); // and the associated timers timerdata reflected
         _config.padlockIdentifier = new List<PadlockIdentifier> { // new blank padlockidentifiers
@@ -273,13 +272,13 @@ public class GagAndLockManager : IDisposable
             new PadlockIdentifier()
         };
         // reset the timers to current time
-        _config.playerInfo._selectedGagPadlockTimer = new List<DateTimeOffset> {
+        _characterHandler.playerChar._selectedGagPadlockTimer = new List<DateTimeOffset> {
             DateTimeOffset.Now,
             DateTimeOffset.Now,
             DateTimeOffset.Now
         };
         // some dummy code to manually invoke the index change handler because im stupid and idk how to trigger events within an event trigger
-        _config.playerInfo._selectedGagTypes[0] = _config.playerInfo._selectedGagTypes[0];
+        _characterHandler.playerChar._selectedGagTypes[0] = _characterHandler.playerChar._selectedGagTypes[0];
     }
 #endregion GeneralGagAndLockFunctions
 

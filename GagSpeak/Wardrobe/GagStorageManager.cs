@@ -1,20 +1,24 @@
 using System;
 using System.Collections.Generic;
 using Penumbra.GameData.Enums;
-using GagSpeak.Data;
 using System.Linq;
-using OtterGui.Classes;
 using GagSpeak.Services;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using Newtonsoft.Json;
 using Penumbra.GameData.Structs;
+using GagSpeak.Gagsandlocks;
+using GagSpeak.UI.Equipment;
+using GagSpeak.Utility;
 
 namespace GagSpeak.Wardrobe;
 public class GagStorageManager : ISavable
 {
-    private readonly SaveService _saveService;
+    public int _selectedIdx = 0;
     public Dictionary<GagList.GagType, EquipDrawData> _gagEquipData = [];
+    
+    [JsonIgnore]
+    private readonly SaveService _saveService;
 
     public GagStorageManager(SaveService saveService) {
         _saveService = saveService;
@@ -22,53 +26,59 @@ public class GagStorageManager : ISavable
         Load();
         // if the load failed, set default values for first time installs
         if (_gagEquipData == null || !_gagEquipData.Any()) {
-            GagSpeak.Log.Debug($"[Config]: gagEquipData is null, creating new list");
+            GagSpeak.Log.Debug($"[GagStorageManager]: gagEquipData is null, creating new list");
             _gagEquipData = Enum.GetValues(typeof(GagList.GagType))             // create the data for a new Dictionary                 
                 .Cast<GagList.GagType>()                                        // get the enum gaglist        
                 .ToDictionary(gagType => gagType, gagType => new EquipDrawData(ItemIdVars.NothingItem(EquipSlot.Head)));
-        } else {
-            GagSpeak.Log.Debug($"[Config]: File Loading Sucessful! GagStroage Applied!");
         } 
     }
 
-    #region Manager Methods
+#region Manager Methods
+    public int GetSelectedIdx() => _selectedIdx;
+
+    public void SetSelectedIdx(int idx) {
+        _selectedIdx = idx;
+        Save();
+    }
+
+
     public void ChangeGagDrawDataIsEnabled(GagList.GagType gagType, bool isEnabled) {
         _gagEquipData[gagType].SetDrawDataIsEnabled(isEnabled);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ChangeGagDrawDataWasEquippedBy(GagList.GagType gagType, string wasEquippedBy) {
         _gagEquipData[gagType].SetDrawDataEquippedBy(wasEquippedBy);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ChangeGagDrawDataIsLocked(GagList.GagType gagType, bool isLocked) {
         _gagEquipData[gagType].SetDrawDataLocked(isLocked);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ChangeGagDrawDataSlot(GagList.GagType gagType, EquipSlot slot) {
         _gagEquipData[gagType].SetDrawDataSlot(slot);
-        Save();
+        _saveService.QueueSave(this);
     }
     public void ChangeGagDrawDataGameItem(GagList.GagType gagType, EquipItem gameItem) {
         _gagEquipData[gagType].SetDrawDataGameItem(gameItem);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ChangeGagDrawDataGameStain(GagList.GagType gagType, StainId gameStain) {
         _gagEquipData[gagType].SetDrawDataGameStain(gameStain);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ResetGagDrawDataGameItem(GagList.GagType gagType) {
         _gagEquipData[gagType].ResetDrawDataGameItem();
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ResetGagDrawDataGameStain(GagList.GagType gagType) {
         _gagEquipData[gagType].ResetDrawDataGameStain();
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ResetEverythingDueToSafeword() {
@@ -79,12 +89,12 @@ public class GagStorageManager : ISavable
             drawDataForGag.SetDrawDataIsEnabled(false);
         }
         GagSpeak.Log.Debug($"[GagStorageManager] Reset all gagdata's auto equip values sets due to safeword!");
-        Save();
+        _saveService.QueueSave(this);
     }
 
-    #endregion Manager Methods
+#endregion Manager Methods
 
-    #region Json ISavable & Loads
+#region Json ISavable & Loads
     public string ToFilename(FilenameService filenameService)
         => filenameService.GagStorageFile;
 
@@ -99,9 +109,11 @@ public class GagStorageManager : ISavable
 
     public JObject Serialize() {
         var obj = new JObject();
+        // serialize the selectedIdx
         foreach (var pair in _gagEquipData)
             obj[pair.Key.ToString()] = pair.Value.Serialize();
         return new JObject() {
+            ["SelectedIdx"] = _selectedIdx,
             ["GagEquipData"] = obj,
         };
     }
@@ -116,6 +128,7 @@ public class GagStorageManager : ISavable
         try {
             var text = File.ReadAllText(file);
             var jsonObject = JObject.Parse(text);
+            _selectedIdx = jsonObject["SelectedIdx"]?.Value<int>() ?? 0;
             var gagEquipDataToken = jsonObject["GagEquipData"].Value<JObject>();
             if (gagEquipDataToken != null) {
                 foreach (var gagData in gagEquipDataToken) {

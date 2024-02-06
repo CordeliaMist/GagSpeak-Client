@@ -40,12 +40,14 @@ public enum DrawCondition {
 public class ClientUserInfo : IDisposable
 {
     //============== Basic Class Assignment ===================//
-    private readonly GagSpeakConfig _config;
     private readonly IChatGui _chat;
     private readonly IClientState _clientState;
     private readonly ICondition _condition;
+    private readonly IDataManager _gameData;
     private readonly IFramework _framework;
     private readonly IObjectTable _objectTable;
+    private readonly GagSpeakConfig _config;
+    private readonly CharacterHandler _characterDataManager;
     private readonly JobChangedEvent _jobChangedEvent;
     private CancellationTokenSource? _clearCts = new(); // used for clearing the character data
     //============= Personal Variable Assignment =================//
@@ -75,15 +77,18 @@ public class ClientUserInfo : IDisposable
     public bool IsZoning => _condition[ConditionFlag.BetweenAreas] || _condition[ConditionFlag.BetweenAreas51]; // if we are zoning
     public Lazy<Dictionary<ushort, string>> WorldData { get; private set; } // contains world data if we ever need it at any point
 
-    public ClientUserInfo(IClientState clientState, IObjectTable objectTable, IFramework framework, IChatGui chat,
-    ICondition condition, IDataManager gameData, JobChangedEvent jobChangedEvent, GagSpeakConfig config) {
-        _clientState = clientState;
-        _objectTable = objectTable;
-        _framework = framework;
-        _condition = condition;
-        _jobChangedEvent = jobChangedEvent;
-        _config = config;
+    public ClientUserInfo(IChatGui chat, IClientState clientState, ICondition condition, IDataManager gameData,
+    IFramework framework, IObjectTable objectTable, GagSpeakConfig config, CharacterHandler characterDataManager,
+    JobChangedEvent jobChangedEvent) {
         _chat = chat;
+        _clientState = clientState;
+        _condition = condition;
+        _gameData = gameData;
+        _framework = framework;
+        _objectTable = objectTable;
+        _config = config;
+        _characterDataManager = characterDataManager;
+        _jobChangedEvent = jobChangedEvent;
         // set variables that are unassigned
         Address = GetPlayerPointerAsync().GetAwaiter().GetResult();
         WorldData = new(() => {
@@ -135,7 +140,7 @@ public class ClientUserInfo : IDisposable
         if (_sentBetweenAreas) {
             GagSpeak.Log.Debug($"[ZoneSwitch]  Zone switch/Gpose end");
             // let user know on launch of their direct chat garbler is still enabled
-            if (_config.playerInfo._directChatGarblerActive)
+            if (_characterDataManager.playerChar._directChatGarblerActive)
                 _chat.PrintError("[Notice] Direct Chat Garbler is still enabled. A Friendly reminder encase you forgot <3");
             // update the between areas to false
             _sentBetweenAreas = false;

@@ -3,7 +3,7 @@ using System;
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
-namespace GagSpeak.Data;
+namespace GagSpeak.Utility;
 public static class ItemIdVars {
     public static ItemId NothingId(EquipSlot slot) // used
         => uint.MaxValue - 128 - (uint)slot.ToSlot();

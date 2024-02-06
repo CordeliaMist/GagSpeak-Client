@@ -26,11 +26,19 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
+    <Content Include="..\images\arrows-spin.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    <Content Include="..\images\circle-dot.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
     <Content Include="..\Assets\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
-    <Content Include=".\GarblerParser\**\*.json">
+    <Content Include=".\GarblerCore\**\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
@@ -90,7 +98,9 @@
     <ProjectReference Include="..\Penumbra.String\Penumbra.String.csproj" />
 	  <ProjectReference Include="..\Penumbra.GameData\Penumbra.GameData.csproj" />
     <ProjectReference Include="..\OtterGui\OtterGui.csproj" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Buttplug" Version="3.0.1" />
+    <PackageReference Include="Buttplug.Client.Connectors.WebsocketConnector" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

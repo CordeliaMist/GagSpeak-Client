@@ -1,12 +1,13 @@
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using GagSpeak.Utility;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using System;
+using GagSpeak.CharacterData;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
 public partial class MessageEncoder {
+    // for making sure we can interface with the character Handler
+    
     /// <summary> For requesting for information from another user in the whitelist </summary>
     public string EncodeRequestInfoMessage(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} "+
@@ -25,11 +26,11 @@ public partial class MessageEncoder {
     /// <item><c>[6]</c> - if the direct chat garbler is active (BOOL)</item>
     /// <item><c>[7]</c> - if the direct chat garbler is locked (BOOL)</item>
     /// </list> </summary>
-    public string EncodeProvideInfoMessage(PlayerPayload playerPayload, string targetPlayer, GagSpeakConfig config) {
+    public string HandleProvideInfoPartOne(PlayerPayload playerPayload, string targetPlayer, CharacterHandler _characterHandler) {
         // first we need to get which whitelisted player in out config this is going to
         int Idx = -1;
-        if(WhitelistHelpers.IsPlayerInWhitelist(targetPlayer, config)) {
-            Idx = WhitelistHelpers.GetWhitelistIndex(targetPlayer, config);
+        if(_characterHandler.IsPlayerInWhitelist(targetPlayer)) {
+            Idx = _characterHandler.GetWhitelistIndex(targetPlayer);
         }
         if(Idx == -1) {
             throw new Exception("The target player is not in the whitelist, and thus cannot be sent a request for information.");
@@ -39,27 +40,35 @@ public partial class MessageEncoder {
         // we will need to define all things in the long list for decoding.
         var baseString = $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name}, their "; // fulfills [1]
         // Example: "their Master's Pet." or "their Pet's Mistress"
-        // fulfills [2]
-        baseString += $"{config.whitelist[Idx]._theirStatusToYou}"+
-        "'s "+
-        // fulfills [3]
-        $"{config.whitelist[Idx]._yourStatusToThem} ";
         
+        // fulfills [2]
+        baseString += $"{_characterHandler.whitelistChars[Idx]._theirStatusToYou}"+
+        "'s "+
+        
+        // fulfills [3]
+        $"{_characterHandler.whitelistChars[Idx]._yourStatusToThem} ";
         baseString += "nodded in agreement, informing their partner of how when they last played together, ";
+        
         // [4] - if the safeword is used or not (BOOL)
-        baseString += config.playerInfo._safewordUsed 
-        ? "they had used their safeword. " : "they had no need to use a safeword. ";
-        // [5] - if they allow extendedLockTimes (BOOL)
-        baseString += config.playerInfo._grantExtendedLockTimes[Idx]
-        ? "They didnt mind the enduring binds, " : "Preferring to avoid long term binds, ";
-        // [6] - if the direct chat garbler is active (BOOL)
-        baseString += config.playerInfo._directChatGarblerActive
-        ? "and they certain enjoyed their gagged voice. " : "and not wishing to keep a gagged voice, ";
-        // [7] - if the direct chat garbler is locked (BOOL)
-        baseString += config.playerInfo._directChatGarblerLocked
-        ? "for even now their lips were sealed tight. " : "but as of now, their lips were not sealed fully. ";
+        baseString += _characterHandler.playerChar._safewordUsed
+        ? "they had used their safeword" : "they had no need to use a safeword";
+        baseString += ". ";
 
-        baseString += " ->";
+        // [5] - if they allow extendedLockTimes (BOOL)
+        baseString += _characterHandler.playerChar._grantExtendedLockTimes[Idx]
+        ? "They didnt mind the enduring binds" : "Preferring to avoid long term binds";
+        baseString += ", ";
+        
+        // [6] - if the direct chat garbler is active (BOOL)
+        baseString += _characterHandler.playerChar._directChatGarblerActive
+        ? "and they certain enjoyed their gagged voice" : "and not wishing to keep a gagged voice";
+        baseString += ", ";
+        
+        // [7] - if the direct chat garbler is locked (BOOL)
+        baseString += _characterHandler.playerChar._directChatGarblerLocked
+        ? "for even now their lips were sealed tight" : "but as of now, their lips were not sealed fully";
+
+        baseString += ". ->";
         // POTENTIAL MESSAGE SPLIT
         return baseString;
     }
@@ -79,39 +88,43 @@ public partial class MessageEncoder {
     /// <item><c>[21]</c> - layer two padlock assigner </item>
     /// <item><c>[22]</c> - layer three padlock assigner </item>
     /// </list> </summary>
-    public string EncodeProvideInfoMessage2(PlayerPayload playerPayload, string targetPlayer, GagSpeakConfig config) {
+    public string HandleProvideInfoPartTwo(PlayerPayload playerPayload, string targetPlayer, CharacterHandler _characterHandler) {
         // first we need to get which whitelisted player in out config this is going to
         int Idx = -1;
-        if(WhitelistHelpers.IsPlayerInWhitelist(targetPlayer, config)) {
-            Idx = WhitelistHelpers.GetWhitelistIndex(targetPlayer, config);
+        if(_characterHandler.IsPlayerInWhitelist(targetPlayer)) {
+            Idx = _characterHandler.GetWhitelistIndex(targetPlayer);
         }
 
         string baseString = $"/tell {targetPlayer} || When they had last played, ";
         // we need to create a large lambda function or conditional function that can be easily reversible by a regex.
         for (int i = 0; i < 3; i++) {
             string layerName = i == 0 ? "undermost" : i == 1 ? "main" : "uppermost";
-            string startingWords = i == 0 ? "They had a" : i == 1 ? "Over their mouth, a" : "Finally, a";
-            // start with our starting words
+            string startingWords = i == 0 ? $"On her {layerName} layer, " : i == 1 ? $"Over their mouths {layerName} layer, " : $"Finally on her {layerName} layer, ";
+            // begin with our starting words
             baseString += startingWords;
+            
             // [8, 9, 10] - layer {i} gag name if it WAS "None"
-            if (config.playerInfo._selectedGagTypes[i] == "None") {
-                baseString += $"nothing over her {layerName} layer";
-            } 
+            if (_characterHandler.playerChar._selectedGagTypes[i] == "None") {
+                baseString += $"there was nothing present";
+            }
             // [8, 9, 10] - layer {i} gag name if it WAS NOT "None"
             else {
-                baseString += $"a {config.playerInfo._selectedGagTypes[i]} over their {layerName} most layer";
+                baseString += $"she had a {_characterHandler.playerChar._selectedGagTypes[i]} fastened in good and tight";
                 // [11, 12, 13] - layer {i} padlock type IF A PADLOCK IS PRESENT
-                if (config.playerInfo._selectedGagPadlocks[i].ToString() != "None") {
-                    baseString += $", locked with a {config.playerInfo._selectedGagPadlocks[i]}"; // [11, 12, 13]
-
+                if (_characterHandler.playerChar._selectedGagPadlocks[i].ToString() != "None") {
+                    baseString += $", locked with a {_characterHandler.playerChar._selectedGagPadlocks[i]}"; // [11, 12, 13]
                     // [20, 21, 22] - layer {i} padlock assigner IF IT EXISTS
-                    if (!string.IsNullOrEmpty((config.playerInfo._selectedGagPadlockAssigner[i]))) {
-                        baseString += $" which had been secured by {config.playerInfo._selectedGagPadlockAssigner[i]}";
+                    if (!string.IsNullOrEmpty(_characterHandler.playerChar._selectedGagPadlockAssigner[i])) {
+                        baseString += $" which had been secured by {_characterHandler.playerChar._selectedGagPadlockAssigner[i]}";
                     }
                     // [17, 18, 19] - layer {i} timer for padlock IF IT EXISTS
-                    if (config.playerInfo._selectedGagPadlockTimer[i] - DateTimeOffset.Now > TimeSpan.Zero) {
+                    if (_characterHandler.playerChar._selectedGagPadlockTimer[i] - DateTimeOffset.Now > TimeSpan.Zero) {
                         baseString += $" with {UIHelpers.FormatTimeSpan(
-                            config.playerInfo._selectedGagPadlockTimer[i] - DateTimeOffset.Now)} remaining";
+                            _characterHandler.playerChar._selectedGagPadlockTimer[i] - DateTimeOffset.Now)} remaining";
+                    }
+
+                    if (_characterHandler.playerChar._selectedGagPadlockPassword != null) {
+                        baseString += $", with the password {_characterHandler.playerChar._selectedGagPadlockPassword[i]} on the lock";
                     }
                 }
             }
@@ -142,69 +155,81 @@ public partial class MessageEncoder {
     /// <item><c>[36]</c> - name of pattern to execute (not given in infoRequests) (STRING) </item>
     /// <item><c>[37]</c> - does messageSender allow you to lock the toybox UI? (BOOL) </item>
     /// </list> </summary>
-    public string EncodeProvideInfoMessage3(PlayerPayload playerPayload, string targetPlayer, GagSpeakConfig config) {
+    public string HandleProvideInfoPartThree(PlayerPayload playerPayload, string targetPlayer, CharacterHandler _characterHandler) {
         // first we need to get which whitelisted player in out config this is going to
         int Idx = -1;
-        if(WhitelistHelpers.IsPlayerInWhitelist(targetPlayer, config)) {
-            Idx = WhitelistHelpers.GetWhitelistIndex(targetPlayer, config);
+        if(_characterHandler.IsPlayerInWhitelist(targetPlayer)) {
+            Idx = _characterHandler.GetWhitelistIndex(targetPlayer);
         }
 
         string baseString = $"/tell {targetPlayer} || ";
 
         // [23] - is wardrobe enabled (BOOL)
-        baseString += config.playerInfo._enableWardrobe
-        ? "Their kink wardrobe was accessible for their partner. " : "Their kink wardrobe was closed off for their partner. ";
+        baseString += _characterHandler.playerChar._enableWardrobe
+        ? "Their kink wardrobe was accessible for their partner" : "Their kink wardrobe was closed off for their partner";
+        baseString += ". ";
 
         // [24] - state of gag storage lock UI on gaglock? (BOOL)
-        baseString += config.playerInfo._lockGagStorageUiOnGagLock
-        ? "The wardrobes gag compartment was closed shut, " : "the wardrobes gag compartment had been pulled open, ";
+        baseString += _characterHandler.playerChar._lockGagStorageOnGagLock
+        ? "The wardrobes gag compartment was closed shut" : "the wardrobes gag compartment had been pulled open";
+        baseString += ", ";
 
         // [25] - is player allowed to enabled restraint sets? (BOOL)
-        baseString += config.playerInfo._enableRestraintSets
-        ? "and their restraint compartment was accessible for their partner. " : "and they had not allowed their partner to enable restraint sets. ";
+        baseString += _characterHandler.playerChar._enableRestraintSets
+        ? "and their restraint compartment was accessible for their partner" : "and they had not allowed their partner to enable restraint sets";
+        baseString += ". ";
         
         // [26] - is player allowed to lock restraint sets? (BOOL)
-        baseString += config.playerInfo._restraintSetLocking
-        ? "They recalled their partner locking their restraints, " : "They recalled their partner leaving their restraints unlocked, ";
+        baseString += _characterHandler.playerChar._restraintSetLocking
+        ? "They recalled their partner locking their restraints" : "They recalled their partner leaving their restraints unlocked";
+        baseString += ", ";
 
         // [27] - trigger phrase of messageSender for puppeteer compartment
         baseString += $"their partner whispering"+
-        $"{config.whitelist[Idx]._triggerPhraseForPuppeteer}";
+        $"{_characterHandler.playerChar._triggerPhraseForPuppeteer[Idx]}";
 
         // [28] - does messageSender allow sit requests? (BOOL)
         baseString += ", causing them to ";
-        baseString += config.playerInfo._allowSitRequests
-        ? "sit down on command. " : " sit down. ";
+        baseString += _characterHandler.playerChar._allowSitRequests[Idx]
+        ? "sit down on command" : " sit down";
+        baseString += ". ";
 
         // [29] - does messageSender allow motion requests? (BOOL)
-        baseString += config.playerInfo._allowMotionRequests
-        ? "For their partner controlled their movements, " : "For their partner controlled most their movements, ";
+        baseString += _characterHandler.playerChar._allowMotionRequests[Idx]
+        ? "For their partner controlled their movements" : "For their partner controlled most their movements";
+        baseString += ", ";
 
         // [30] - does messageSender allow all commands? (BOOL)
-        baseString += config.playerInfo._allowAllCommands
-        ? "and all of their actions. " : "and some of their actions. ";
+        baseString += _characterHandler.playerChar._allowAllCommands[Idx]
+        ? "and all of their actions" : "and some of their actions";
+        baseString += ". ";
 
         // [31] - is messageSenders toybox enabled? (BOOL)
-        baseString += config.playerInfo._enableToybox
-        ? "Their toybox compartment accessible to use. For within the drawer " : "Their toybox inaccessible for use. But within the drawer ";
+        baseString += _characterHandler.playerChar._enableToybox
+        ? "Their toybox compartment accessible to use." : "Their toybox inaccessible for use.";
+        baseString += "Within the drawer there ";
 
-        // [32] - does messageSender allow you to toggle toybox? (BOOL)
-        baseString += config.playerInfo._toyActiveState
-        ? "was powered Vibrator " : "was an unpowered Vibrator ";
+        // [32] - does messageSender allow you to toggle toy? (BOOL)
+        baseString += _characterHandler.playerChar._allowChangingToyState[Idx]
+        ? "was powered Vibrator" : "was an unpowered Vibrator";
+        baseString += ", ";
 
         // [33] - does messageSender allow adjusting intensity of toy? (BOOL)
-        baseString += config.playerInfo._allowIntensityControl
-        ? "with an adjustable intensity level " : "with a static intensity level ";
+        baseString += _characterHandler.playerChar._allowIntensityControl
+        ? "with an adjustable intensity level" : "with a static intensity level";
 
         // [34] - current intensity level of active toy ((or new intensity level being sent)) (INT)
-        baseString += $"currently set to {config.playerInfo._intensityLevel}. ";
+        baseString += $" currently set to ";
+        baseString += $"{_characterHandler.playerChar._intensityLevel}";
+        baseString += ". ";
 
         // [35] - does messageSender allow you to execute storedToyPatterns? (BOOL)
-        baseString += config.playerInfo._canUseStoredPatterns
-        ? "The vibrator was able to execute set patterns, " : "Unfortuintely, the vibrator couldnt execute any patterns, ";
+        baseString += _characterHandler.playerChar._allowUsingPatterns[Idx]
+        ? "The vibrator was able to execute set patterns" : "Unfortuintely, the vibrator couldnt execute any patterns";
+        baseString += ", ";
 
         // [37] - does messageSender allow you to lock the toybox UI? (BOOL)
-        baseString += config.playerInfo._allowToyboxLocking
+        baseString += _characterHandler.playerChar._allowToyboxLocking
         ? "with the viberator strapped tight to their skin. " : "with the vibrator loosely tied to their skin. ";
 
         return baseString;

@@ -2,11 +2,9 @@ using System;
 using ImGuiNET;
 using System.Text.RegularExpressions;
 using System.Linq;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
-using GagSpeak.UI.Helpers;
-using Dalamud.Plugin.Services;
+using GagSpeak.CharacterData;
 
-namespace GagSpeak.Data;
+namespace GagSpeak.Gagsandlocks;
 /// <summary>
 /// This class is used to handle the the idenfitication of padlocks before and after they are equipped, seperate from the config padlocks yet linked all the same
 /// </summary>
@@ -55,7 +53,7 @@ public class PadlockIdentifier
     /// <item><c>targetPlayerName</c><param name="targetPlayerName"> - The name of the player who is being assigned the padlock.</param></item>
     /// </list> </summary>
     /// <returns>True if the password is valid, false if not.</returns>
-    public bool SetAndValidate(GagSpeakConfig _config, string locktype, string password = "", string secondPassword = "",
+    public bool SetAndValidate(CharacterHandler characterHandler, string locktype, string password = "", string secondPassword = "",
     string assignerPlayerName = "", string targetPlayerName = "") {
         // determine our padlock type
         if (!Enum.TryParse(locktype, true, out Padlocks padlockType)) {
@@ -88,7 +86,7 @@ public class PadlockIdentifier
                 break;
         }
         // finally, return if the password for it is actually valid, through the validation function normally used for UI input
-        return ValidatePadlockPasswords(false, _config, assignerPlayerName, targetPlayerName, targetPlayerName);
+        return ValidatePadlockPasswords(false, characterHandler, assignerPlayerName, targetPlayerName, targetPlayerName);
     }
 
     /// <summary>
@@ -151,7 +149,7 @@ public class PadlockIdentifier
     /// <item><c>targetPlayerName</c><param name="targetPlayerName"> - The name of the player who is being targetted for the check.</param></item>
     /// </list> </summary>
     /// <returns>True if the password is valid, false if not.</returns>
-    public bool ValidatePadlockPasswords(bool isUnlocking, GagSpeakConfig _config, string assignerPlayerName = "", string targetPlayerName = "", string YourPlayerName = "") {
+    public bool ValidatePadlockPasswords(bool isUnlocking, CharacterHandler characterHandler, string assignerPlayerName = "", string targetPlayerName = "", string YourPlayerName = "") {
         // setup a return bool variable called ret
         bool ret = false;
         GagSpeak.Log.Debug($"[PadlockIdentifer]: Validating password");
@@ -185,13 +183,13 @@ public class PadlockIdentifier
                     _inputTimer = "";}
                 return ret;
             case Padlocks.MistressPadlock:
-                ret = ValidateMistress(_config, assignerPlayerName, targetPlayerName, YourPlayerName);
+                ret = ValidateMistress(characterHandler, assignerPlayerName, targetPlayerName, YourPlayerName);
                 if(ret && !isUnlocking) {
                     _mistressAssignerName = assignerPlayerName;
                 }
                 return ret;
             case Padlocks.MistressTimerPadlock:
-                ret = (ValidateMistress(_config, assignerPlayerName, targetPlayerName, YourPlayerName) && ValidateTimer());
+                ret = (ValidateMistress(characterHandler, assignerPlayerName, targetPlayerName, YourPlayerName) && ValidateTimer());
                 if(ret && !isUnlocking) { 
                     _mistressAssignerName = assignerPlayerName;
                 }
@@ -259,7 +257,7 @@ public class PadlockIdentifier
     /// <item><c>assignerPlayerName</c><param name="assignerPlayerName"> - The name of the player who assigned the padlock.</param></item>
     /// <item><c>targetPlayerName</c><param name="targetPlayerName"> - The name of the player who is being targetted for the check.</param></item>
     /// </list> </summary>
-    private bool ValidateMistress(GagSpeakConfig _config, string assignerPlayerName, string targetPlayerName, string YourPlayerName) {
+    private bool ValidateMistress(CharacterHandler characterHandler, string assignerPlayerName, string targetPlayerName, string YourPlayerName) {
         GagSpeak.Log.Debug($"[PadlockIdentifer]: Your Name: {YourPlayerName}");
         GagSpeak.Log.Debug($"[PadlockIdentifer]: AssignedPlayerName: {assignerPlayerName}");
         GagSpeak.Log.Debug($"[PadlockIdentifer]: TargetPlayerName {targetPlayerName}");
@@ -270,12 +268,13 @@ public class PadlockIdentifier
             GagSpeak.Log.Debug($"[PadlockIdentifer]: Assigner name is null!"); return false;}
         
         // first see if the assigner is us. If it is us, we must be the mistress
-        if(assignerPlayerName == YourPlayerName && _config.InDomMode == true) {
+        if(assignerPlayerName == YourPlayerName) {
             GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the assigner, and you are in dom mode");
             // if we reach this point, it means we are the one assigning it and are in dom mode.
             // next make sure the target we are using this on views us as mistress
-            if(_config.Whitelist.Any(w => targetPlayerName.Contains(w.name) && w._yourStatusToThem == "Mistress"
-            && (w._theirStatusToYou == "Pet" || w._theirStatusToYou == "Slave") )) {
+            if(characterHandler.whitelistChars.Any(w => targetPlayerName.Contains(w._name)
+            && w.IsRoleLeanDominant(w._yourStatusToThem) 
+            && w.IsRoleLeanSubmissive(w._theirStatusToYou))) {
                 // if we reached this point our dynamic is OK for a mistress assigning a lock to a pet or slave
                 GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the Mistress locking the padlock to your submissive, {targetPlayerName}");
                 return true;
@@ -283,12 +282,12 @@ public class PadlockIdentifier
         }
 
         // if the target player is us, and we are not in dominant mode, then we are the submissive receieving the mistress padlock from our mistress 
-        if(targetPlayerName == YourPlayerName && _config.InDomMode == false) {
+        if(targetPlayerName == YourPlayerName) { // need to fix this later
             GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the target, and you are not in dom mode");
             // at this point we know what relation we are, so now we must verify the relations
-            if(_config.Whitelist.Any(w => assignerPlayerName.Contains(w.name)
-            && (w._yourStatusToThem == "Pet" || w._yourStatusToThem == "Slave")
-            && (w._theirStatusToYou == "Mistress"))) {
+            if(characterHandler.whitelistChars.Any(w => assignerPlayerName.Contains(w._name)
+            && w.IsRoleLeanSubmissive(w._yourStatusToThem) 
+            && w.IsRoleLeanDominant(w._theirStatusToYou))) {
                 // if we reached this point we know our dynamic is sucessful and we can accept it.
                 GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the submissive recieving the lock from your mistress, {assignerPlayerName}");
                 return true;
@@ -296,7 +295,7 @@ public class PadlockIdentifier
         }
 
         // yes we can gag ourself
-        if (assignerPlayerName == targetPlayerName && _config.InDomMode == true) {
+        if (assignerPlayerName == targetPlayerName) {
             GagSpeak.Log.Debug($"[PadlockIdentifer]: You are able to gag yourself with that, yes!");
             return true;
         }
@@ -315,7 +314,7 @@ public class PadlockIdentifier
     /// <item><c>password</c><param name="password"> - The password to check.</param></item>
     /// </list> </summary>
     /// <returns>True if the password is valid, false if not.</returns> 
-    public bool CheckPassword(GagSpeakConfig _config, string assignerName = "", string targetName = "", string password = "", string YourPlayerName = "") {
+    public bool CheckPassword(CharacterHandler characterHandler, string assignerName = "", string targetName = "", string password = "", string YourPlayerName = "") {
         // create a bool to return
         bool isValid = false;
         GagSpeak.Log.Debug($"[PadlockIdentifer]: Checking password {password}");
@@ -357,10 +356,10 @@ public class PadlockIdentifier
                 }
                 break;
             case Padlocks.MistressPadlock:
-                isValid = ValidateMistress(_config, assignerName, targetName, YourPlayerName);
+                isValid = ValidateMistress(characterHandler, assignerName, targetName, YourPlayerName);
                 break;
             case Padlocks.MistressTimerPadlock:
-                isValid = ValidateMistress(_config, assignerName, targetName, YourPlayerName);
+                isValid = ValidateMistress(characterHandler, assignerName, targetName, YourPlayerName);
                 break;
             default:
                 return false;
@@ -394,37 +393,37 @@ public class PadlockIdentifier
     /// <item><c>isUnlocking</c><param name="isUnlocking"> - if we are unlocking the padlock or not.</param></item>
     /// <item><c>_config</c><param name="_config"> - The GagSpeak configuration.</param></item>
     /// </list> </summary>
-    public void UpdateConfigPadlockInfo(int layerIndex, bool isUnlocking, GagSpeakConfig _config) {
+    public void UpdateConfigPadlockInfo(int layerIndex, bool isUnlocking, CharacterHandler characterHandler) {
         Padlocks padlockType = _padlockType;
         if (isUnlocking) { _padlockType = Padlocks.None; GagSpeak.Log.Debug("[Padlock] Unlocking Padlock");}
         // timers are handled by the timer service so we dont need to worry about it.
         switch (padlockType) {
             case Padlocks.MetalPadlock:
-                _config.playerInfo._selectedGagPadlocks[layerIndex] = _padlockType;
+                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
                 break;
             case Padlocks.CombinationPadlock:
-                _config.playerInfo._selectedGagPadlocks[layerIndex] = _padlockType;
-                _config.playerInfo._selectedGagPadlockPassword[layerIndex] = _storedCombination;
+                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
+                characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = _storedCombination;
                 break;
             case Padlocks.PasswordPadlock:
-                _config.playerInfo._selectedGagPadlocks[layerIndex] = _padlockType;
-                _config.playerInfo._selectedGagPadlockPassword[layerIndex] = _storedPassword;
+                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
+                characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = _storedPassword;
                 break;
             case Padlocks.FiveMinutesPadlock:
-                _config.playerInfo._selectedGagPadlocks[layerIndex] = _padlockType;
+                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
                 break;
             case Padlocks.TimerPasswordPadlock:
-                _config.playerInfo._selectedGagPadlocks[layerIndex] = _padlockType;
-                _config.playerInfo._selectedGagPadlockPassword[layerIndex] = _storedPassword;
+                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
+                characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = _storedPassword;
                 break;
             case Padlocks.MistressPadlock:
                 // handle MistressPadlock case
-                _config.playerInfo._selectedGagPadlocks[layerIndex] = _padlockType;
-                _config.playerInfo._selectedGagPadlockAssigner[layerIndex] = _mistressAssignerName;
+                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
+                characterHandler.playerChar._selectedGagPadlockAssigner[layerIndex] = _mistressAssignerName;
                 break;
             case Padlocks.MistressTimerPadlock:
-                _config.playerInfo._selectedGagPadlocks[layerIndex] = _padlockType;
-                _config.playerInfo._selectedGagPadlockAssigner[layerIndex] = _mistressAssignerName;
+                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
+                characterHandler.playerChar._selectedGagPadlockAssigner[layerIndex] = _mistressAssignerName;
                 break;
             default:
                 // No password field should be displayed
@@ -440,37 +439,37 @@ public class PadlockIdentifier
     /// <item><c>isUnlocking</c><param name="isUnlocking"> - if we are unlocking the padlock or not.</param></item>
     /// <item><c>_config</c><param name="_config"> - The GagSpeak configuration.</param></item>
     /// </list> </summary>
-    public void UpdateWhitelistPadlockInfo(WhitelistCharData character, int layer, bool isUnlocking, GagSpeakConfig _config) {
+    public void UpdateWhitelistPadlockInfo(int playerIdx, int layer, bool isUnlocking, CharacterHandler characterHandler) {
         Padlocks padlockType = _padlockType;
         if (isUnlocking) { _padlockType = Padlocks.None; GagSpeak.Log.Debug("[Whitelist Padlock] Unlocking Padlock");}
         // timers are handled by the timer service so we dont need to worry about it.
         switch (padlockType) {
             case Padlocks.MetalPadlock:
-                character.selectedGagPadlocks[layer] = _padlockType;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
                 break;
             case Padlocks.CombinationPadlock:
-                character.selectedGagPadlocks[layer] = _padlockType;
-                character.selectedGagPadlocksPassword[layer] = _storedCombination;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlockPassword[layer] = _storedCombination;
                 break;
             case Padlocks.PasswordPadlock:
-                character.selectedGagPadlocks[layer] = _padlockType;
-                character.selectedGagPadlocksPassword[layer] = _storedPassword;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlockPassword[layer] = _storedPassword;
                 break;
             case Padlocks.FiveMinutesPadlock:
-                character.selectedGagPadlocks[layer] = _padlockType;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
                 break;
             case Padlocks.TimerPasswordPadlock:
-                character.selectedGagPadlocks[layer] = _padlockType;
-                character.selectedGagPadlocksPassword[layer] = _storedPassword;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlockPassword[layer] = _storedPassword;
                 break;
             case Padlocks.MistressPadlock:
                 // handle MistressPadlock case
-                character.selectedGagPadlocks[layer] = _padlockType;
-                character.selectedGagPadlocksAssigner[layer] = _mistressAssignerName;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlockAssigner[layer] = _mistressAssignerName;
                 break;
             case Padlocks.MistressTimerPadlock:
-                character.selectedGagPadlocks[layer] = _padlockType;
-                character.selectedGagPadlocksAssigner[layer] = _mistressAssignerName;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
+                characterHandler.whitelistChars[playerIdx]._selectedGagPadlockAssigner[layer] = _mistressAssignerName;
                 break;
             default:
                 // No password field should be displayed

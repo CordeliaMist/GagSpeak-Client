@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Penumbra.GameData.Enums;
-using GagSpeak.Data;
 using Newtonsoft.Json.Linq;
+using GagSpeak.UI.Equipment;
+using GagSpeak.Utility;
 
 namespace GagSpeak.Wardrobe;
 
@@ -20,7 +21,7 @@ public class RestraintSet //: IDisposable
     public RestraintSet() {
         // define default data for the set
         _name = "New Restraint Set";
-        _description = "No Description Provided";
+        _description = "This is a blank description!\nYou can right click the title or description to modify them!";
         _enabled = false;
         _locked = false;
         _wasLockedBy = "";
@@ -30,6 +31,7 @@ public class RestraintSet //: IDisposable
         foreach (var slot in EquipSlotExtensions.EqdpSlots) {
             _drawData[slot] = new EquipDrawData(ItemIdVars.NothingItem(slot));
             _drawData[slot].SetDrawDataSlot(slot);
+            _drawData[slot].SetDrawDataIsEnabled(false);
         }
     }
 
@@ -43,6 +45,10 @@ public class RestraintSet //: IDisposable
 
     public void SetIsEnabled(bool enabled) {
         _enabled = enabled;
+    }
+
+    public void SetPieceIsEnabled(EquipSlot slot, bool enabled) {
+        _drawData[slot].SetDrawDataIsEnabled(enabled);
     }
 
     public void SetIsLocked(bool locked, string wasLockedBy = "") {

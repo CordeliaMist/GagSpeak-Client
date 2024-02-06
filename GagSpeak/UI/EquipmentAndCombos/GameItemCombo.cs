@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dalamud.Configuration.Internal;
 using Dalamud.Plugin.Services;
-using GagSpeak.Data;
+using GagSpeak.Utility;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using OtterGui;
@@ -15,7 +14,7 @@ using Penumbra.GameData.Data;
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
-namespace GagSpeak.UI.ComboListings;
+namespace GagSpeak.UI.Equipment;
 
 public sealed class GameItemCombo : FilterComboCache<EquipItem>
 {

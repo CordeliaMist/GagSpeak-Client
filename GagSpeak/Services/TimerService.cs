@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Timers;
-using GagSpeak.Data;
+using GagSpeak.CharacterData;
 using GagSpeak.Events;
-using GagSpeak.UI.Helpers;
+using GagSpeak.Utility;
 
 
 namespace GagSpeak.Services;
@@ -16,6 +16,7 @@ namespace GagSpeak.Services;
 public class TimerService : IDisposable
 {
    private readonly  GagSpeakConfig                _config;                // for config options
+   private readonly  CharacterHandler              _characterHandler;      // for getting the whitelist
    private readonly  InfoRequestEvent              _infoRequestEvent;      // event to notify subscribers when info is requested
    public event      Action<string, TimeSpan>?     RemainingTimeChanged;   // event to notify subscribers when remaining time changes
    public            Dictionary<string, TimerData> timers;                 // Dictionary to store active timers
@@ -26,8 +27,9 @@ public class TimerService : IDisposable
    /// <list type="bullet">
    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
    /// </list> </summary>
-   public TimerService(GagSpeakConfig config, InfoRequestEvent infoRequestEvent) {
+   public TimerService(GagSpeakConfig config, CharacterHandler characterHandler, InfoRequestEvent infoRequestEvent) {
       _config = config;
+      _characterHandler = characterHandler;
       _infoRequestEvent = infoRequestEvent;
       timers = new Dictionary<string, TimerData>();
       remainingTimes = new Dictionary<string, string>();
@@ -44,7 +46,7 @@ public class TimerService : IDisposable
    /// <item><c>onElapsed</c><param name="onElapsed"> - The action to invoke when the timer elapses.</param></item>
    /// </list> </summary>
    public void StartTimer(string timerName, string input, int elapsedMilliSecPeriod, Action onElapsed) {
-      StartTimer(timerName, input, elapsedMilliSecPeriod, onElapsed, _config.playerInfo._selectedGagPadlockTimer, -1);}
+      StartTimer(timerName, input, elapsedMilliSecPeriod, onElapsed, _characterHandler.playerChar._selectedGagPadlockTimer, -1);}
    
    /// <summary>
    /// The augmented timer constructor to start a new timer.
@@ -248,13 +250,13 @@ public class TimerService : IDisposable
                GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                _config.isLocked[0] = false;
                _config.padlockIdentifier[0].ClearPasswords();
-               _config.padlockIdentifier[0].UpdateConfigPadlockInfo(0, !_config.isLocked[0], _config);
+               _config.padlockIdentifier[0].UpdateConfigPadlockInfo(0, !_config.isLocked[0], _characterHandler);
             } else {
                GagSpeak.Log.Debug($"[Timer Service]: Restoring {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _config.isLocked[0] = false;
                   _config.padlockIdentifier[0].ClearPasswords();
-                  _config.padlockIdentifier[0].UpdateConfigPadlockInfo(0, !_config.isLocked[0], _config);
+                  _config.padlockIdentifier[0].UpdateConfigPadlockInfo(0, !_config.isLocked[0], _characterHandler);
                });
             }
          } else if(timerName.Contains("_Identifier1")) {
@@ -263,14 +265,14 @@ public class TimerService : IDisposable
                GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                _config.isLocked[1] = false;
                _config.padlockIdentifier[1].ClearPasswords();
-               _config.padlockIdentifier[1].UpdateConfigPadlockInfo(1, !_config.isLocked[1], _config);
+               _config.padlockIdentifier[1].UpdateConfigPadlockInfo(1, !_config.isLocked[1], _characterHandler);
             } else {
                // Check to see if the timer expired while we were offline, if it is, clear the respective data
                GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _config.isLocked[1] = false;
                   _config.padlockIdentifier[1].ClearPasswords();
-                  _config.padlockIdentifier[1].UpdateConfigPadlockInfo(1, !_config.isLocked[1], _config);
+                  _config.padlockIdentifier[1].UpdateConfigPadlockInfo(1, !_config.isLocked[1], _characterHandler);
                });
             }
          } else if(timerName.Contains("_Identifier2")) {
@@ -279,14 +281,14 @@ public class TimerService : IDisposable
                GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                _config.isLocked[2] = false;
                _config.padlockIdentifier[2].ClearPasswords();
-               _config.padlockIdentifier[2].UpdateConfigPadlockInfo(2, !_config.isLocked[2], _config);
+               _config.padlockIdentifier[2].UpdateConfigPadlockInfo(2, !_config.isLocked[2], _characterHandler);
             } else {
                // Check to see if the timer expired while we were offline, if it is, clear the respective data
                GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _config.isLocked[2] = false;
                   _config.padlockIdentifier[2].ClearPasswords();
-                  _config.padlockIdentifier[2].UpdateConfigPadlockInfo(2, !_config.isLocked[2], _config);
+                  _config.padlockIdentifier[2].UpdateConfigPadlockInfo(2, !_config.isLocked[2], _characterHandler);
                });
             }
          }
@@ -355,7 +357,7 @@ public class TimerService : IDisposable
             timers.Remove(key);
             SaveTimerData(_config);
             // update the selectedGagPadLockTimer list with the new end time. (only if using a list as input)
-            _config.playerInfo._selectedGagPadlockTimer[layerIndex] = DateTimeOffset.Now;
+            _characterHandler.playerChar._selectedGagPadlockTimer[layerIndex] = DateTimeOffset.Now;
          }
       }
    }

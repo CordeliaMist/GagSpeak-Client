@@ -7,16 +7,10 @@ using Lumina.Misc;
 using OtterGui;
 using OtterGui.Raii;
 using Dalamud.Plugin.Services;
-using Dalamud.Interface.Colors;
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 using GagSpeak.Services;
 using Dalamud.Interface.Utility;
-using GagSpeak.Data;
-using GagSpeak.UI.ComboListings;
-using Penumbra.GameData.DataContainers;
-using Lumina.Excel.GeneratedSheets;
-using System.IO;
 
 namespace GagSpeak.Utility;
 
@@ -188,6 +182,16 @@ public static class UIHelpers
 
         // If the input string is not in the correct format, throw an exception
         throw new FormatException($"[MsgResultLogic]: Invalid duration format: {input}");
+    }
+
+    /// <summary>
+    /// Validates if the regex time formatted string is correct
+    /// </summary>
+    public static bool ValidateTimer(string timerInput) {
+        // see if it meets the timer requirements
+        GagSpeak.Log.Debug($"[UI Helpers]: ValidatingTimer [{timerInput}]");
+        var match = Regex.Match(timerInput, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
+        return match.Success;
     }
 
     /// <summary>

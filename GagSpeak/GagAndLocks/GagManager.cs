@@ -2,36 +2,34 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using GagSpeak.CharacterData;
 using GagSpeak.Events;
 using GagSpeak.Garbler.Translator;
-
-// using System.Text.RegularExpressions;
-// using FFXIVClientStructs.FFXIV.Component.GUI;
 using GagSpeak.Services;
 
-namespace GagSpeak.Data;
+namespace GagSpeak.Gagsandlocks;
 public class GagGarbleManager : IDisposable
 {
-    private readonly    GagSpeakConfig          _config;        // Da configggg
+    private readonly    CharacterHandler        _characterHandler; // the character handler for managing player and whitelist info
     private readonly    GagService              _gagService;    // the gag service for getting the information off of the json stored within the obj
     private readonly    IpaParserEN_FR_JP_SP    _IPAParser;     // the class used to translate sent message to an IPA string that we can convert to gagspeak here. 
     public              List<Gag>               _activeGags;    // the list of gags that are currently active
 
-    public GagGarbleManager(GagSpeakConfig config, GagService gagService, IpaParserEN_FR_JP_SP IPAParser) {
-        _config = config;
+    public GagGarbleManager(CharacterHandler characterHandler, GagService gagService, IpaParserEN_FR_JP_SP IPAParser) {
+        _characterHandler = characterHandler;
         _gagService = gagService;
         _IPAParser = IPAParser;
-        // Filter the _gagTypes list to only include gags with names in _config.playerInfo._selectedGagTypes (i know i could just invoke it, but im playing around with different methods)
-        _activeGags = _config.playerInfo._selectedGagTypes
+        // Filter the _gagTypes list to only include gags with names in _characterHandler.playerChar._selectedGagTypes (i know i could just invoke it, but im playing around with different methods)
+        _activeGags = _characterHandler.playerChar._selectedGagTypes
             .Where(gagType => _gagService._gagTypes.Any(gag => gag._gagName == gagType))
             .Select(gagType => _gagService._gagTypes.First(gag => gag._gagName == gagType))
             .ToList();
         // subscribe to our events
-        _config.playerInfo._selectedGagTypes.ItemChanged += OnSelectedTypesChanged;
+        _characterHandler.playerChar._selectedGagTypes.ItemChanged += OnSelectedTypesChanged;
     }
 
     public void Dispose() {
-        _config.playerInfo._selectedGagTypes.ItemChanged -= OnSelectedTypesChanged;
+        _characterHandler.playerChar._selectedGagTypes.ItemChanged -= OnSelectedTypesChanged;
     }
 
 
@@ -39,8 +37,8 @@ public class GagGarbleManager : IDisposable
     /// Changes the gag list to match the equipped gags whenever a gag item is changed.
     /// </summary>
     private void OnSelectedTypesChanged(object sender, ItemChangedEventArgs e) {
-        // Update _activeGags when _config.playerInfo._selectedGagTypes changes
-        _activeGags = _config.playerInfo._selectedGagTypes
+        // Update _activeGags when _characterHandler.playerChar._selectedGagTypes changes
+        _activeGags = _characterHandler.playerChar._selectedGagTypes
             .Where(gagType => _gagService._gagTypes.Any(gag => gag._gagName == gagType))
             .Select(gagType => _gagService._gagTypes.First(gag => gag._gagName == gagType))
             .ToList();

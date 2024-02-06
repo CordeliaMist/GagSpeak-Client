@@ -28,7 +28,7 @@ public class IpaParserPersian
         _config = config;
         _pluginInterface = pluginInterface;
         // Set the path to the JSON file based on the language dialect
-        data_file = "GarblerParser\\jsonFiles\\fa.json";
+        data_file = "GarblerCore\\jsonFiles\\fa.json";
 		// Try to read the JSON file and deserialize it into the obj dictionary
 		try {
 			// Assuming you have an instance of DalamudPluginInterface named _pluginInterface

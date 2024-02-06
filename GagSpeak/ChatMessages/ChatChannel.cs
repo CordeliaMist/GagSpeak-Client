@@ -4,7 +4,7 @@ using System;                                           // this is used for the 
 using System.Collections.Generic;                       // this is used for the lists
 using System.Linq;                                      // this is used for the lists
 
-namespace GagSpeak.Data;
+namespace GagSpeak.ChatMessages;
 
 /// <summary> This class is used to handle the chat channels for the GagSpeak plugin. It makes use of chatlog agent pointers, and is fairly complex, so would recommend not using yourself until you know why it points to what it does. </summary>
 public static class ChatChannel

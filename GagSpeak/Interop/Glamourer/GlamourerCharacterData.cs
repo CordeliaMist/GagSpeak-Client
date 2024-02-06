@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 #pragma warning disable CS8618 // any non-nullable field will always be initialized when this is called.
 
-namespace GagSpeak.Data;
+namespace GagSpeak.Interop;
 
 // Currently as of right now, this does absolutely nothing.
 

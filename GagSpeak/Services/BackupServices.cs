@@ -11,16 +11,12 @@ public class BackupService
     private readonly DirectoryInfo           _configDirectory;
     private readonly IReadOnlyList<FileInfo> _fileNames;
 
-    /// <summary> Initializes a new instance of the <see cref="BackupService"/> class.
-    /// <list type="bullet">
-    /// <item><c>logger</c><param name="logger"> - The logger instance.</param></item>
-    /// <item><c>fileNames</c><param name="fileNames"> - The file names service.</param></item>
-    /// </list> </summary>
-    public BackupService(Logger logger, FilenameService fileNames) {
+    /// <summary> Initializes a new instance of the <see cref="BackupService"/> class. </summary>
+    public BackupService(Logger logger, FilenameService fileNames)
+    {
         _logger          = logger;
         _fileNames       = GagSpeakFiles(fileNames);
         _configDirectory = new DirectoryInfo(fileNames.ConfigDirectory);
-        // Create the backup directory if it does not exist
         Backup.CreateAutomaticBackup(logger, _configDirectory, _fileNames);
     }
 
@@ -31,7 +27,11 @@ public class BackupService
     /// <summary> Collect all relevant files for GagSpeak configuration. </summary>
     private static IReadOnlyList<FileInfo> GagSpeakFiles(FilenameService fileNames) {
         var list = new List<FileInfo>(16) {
-            new(fileNames.ConfigFile)
+            new(fileNames.ConfigFile),
+            new(fileNames.RestraintSetsFile),
+            new(fileNames.GagStorageFile),
+            new(fileNames.CharacterData),
+            new(fileNames.PatternStorageFile),
         };
         return list;
     }

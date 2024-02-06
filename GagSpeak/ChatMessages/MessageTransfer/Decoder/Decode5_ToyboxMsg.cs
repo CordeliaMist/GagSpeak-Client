@@ -35,7 +35,7 @@ public partial class MessageDecoder {
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
             if (match.Success) {
-                decodedMessage[0] = "toggleActiveToyboxOption"; // assign "toggleGagStorageSecurity" to decodedMessage[0]
+                decodedMessage[0] = "toggleActiveToyOption"; // assign "toggleGagStorageSecurity" to decodedMessage[0]
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
                 GagSpeak.Log.Debug($"[Message Decoder]: toggle active toybox option: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]}");

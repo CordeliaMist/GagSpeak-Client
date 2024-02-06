@@ -7,7 +7,7 @@ using ImGuiNET;
 using OtterGui;
 using OtterGui.Raii;
 
-namespace GagSpeak.UI.Tabs;
+namespace GagSpeak.UI;
 
 // This class draws the header of each of our tabs (not the tab list, but the line below it, listing the title)
 public static class WindowHeader
@@ -41,7 +41,6 @@ public static class WindowHeader
         public readonly void Draw() {
             if (!Visible)
                 return;
-
             using var color = ImRaii.PushColor(ImGuiCol.Border, BorderColor)
                 .Push(ImGuiCol.Text, TextColor, TextColor != 0); //
             
@@ -60,34 +59,43 @@ public static class WindowHeader
     /// <item><c>textColor</c><param name="textColor"> - The color of the text</param></item>
     /// <item><c>frameColor</c><param name="frameColor"> - The color of the frame</param></item>
     /// </list></summary>
-    public static void Draw(string text, uint textColor, uint frameColor, params Button[] buttons) {
+    public static void Draw(string text, uint textColor, uint frameColor, int leftButtons, float baseWidth = 0f, params Button[] buttons)
+    {
+        // if no custom basewidth if given, just set it to the basewidthavailable
+        if (baseWidth == 0f) {
+            baseWidth = ImGui.GetContentRegionAvail().X;
+        }
+
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero)
             .Push(ImGuiStyleVar.FrameRounding,   0)
             .Push(ImGuiStyleVar.FrameBorderSize, ImGuiHelpers.GlobalScale);
 
-        var buttonSize = 0f;
-
-        if (buttons != null && buttons.Length > 0) {
-            buttonSize = buttons.Where(b => b.Visible).Select(b => b.Width).Sum();
+        var leftButtonSize = 0f;
+        foreach (var button in buttons.Take(leftButtons).Where(b => b.Visible))
+        {
+            button.Draw();
+            ImGui.SameLine();
+            leftButtonSize += button.Width;
         }
 
-        var midSize = ImGui.GetContentRegionAvail().X - buttonSize - ImGuiHelpers.GlobalScale;
+        var rightButtonSize = buttons.Length > leftButtons ? buttons.Skip(leftButtons).Where(b => b.Visible).Select(b => b.Width).Sum() : 0f;
+        var midSize         = baseWidth - rightButtonSize - leftButtonSize;
 
         style.Pop();
-        style.Push(ImGuiStyleVar.ButtonTextAlign, new Vector2(0.5f, 0.5f));
+        style.Push(ImGuiStyleVar.ButtonTextAlign, new Vector2(0.5f + (rightButtonSize - leftButtonSize) / midSize, 0.5f));
         if (textColor != 0)
             ImGuiUtil.DrawTextButton(text, new Vector2(midSize, ImGui.GetFrameHeight()), frameColor, textColor);
         else
             ImGuiUtil.DrawTextButton(text, new Vector2(midSize, ImGui.GetFrameHeight()), frameColor);
-        
         style.Pop();
         style.Push(ImGuiStyleVar.FrameBorderSize, ImGuiHelpers.GlobalScale);
 
-        if(buttons != null && buttons.Length > 0) {
-            foreach (var button in buttons.Where(b => b.Visible)) {
-                ImGui.SameLine();
-                button.Draw();
-            }
+        foreach (var button in buttons.Skip(leftButtons).Where(b => b.Visible))
+        {
+            ImGui.SameLine();
+            button.Draw();
         }
+
+        style.Pop();
     }
 }

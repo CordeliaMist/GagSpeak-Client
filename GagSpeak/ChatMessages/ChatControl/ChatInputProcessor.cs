@@ -7,9 +7,9 @@ using System.Text.RegularExpressions;
 using Dalamud.Game;
 using Dalamud.Plugin.Services;
 using Dalamud.Utility;
-using GagSpeak.Services;
 using GagSpeak.Utility;
-using GagSpeak.Data;
+using GagSpeak.Gagsandlocks;
+using GagSpeak.CharacterData;
 // I swear to god, if any contributors even attempt to tinker with this file, I will swat you over the head. DO NOT DO IT.
 
 // Signatures located and adopted from sourcecode:
@@ -20,8 +20,8 @@ namespace GagSpeak.ChatMessages.ChatControl;
 /// <summary> This class is used to handle the chat input detouring for the GagSpeak plugin and is very dangerous to tinker with. Do not do it please. </summary>
 public unsafe class ChatInputProcessor : IDisposable {
     private readonly    GagSpeakConfig                          _config;                            // for config options
-    private readonly    HistoryService                          _historyService;                    // for history service
     private readonly    GagGarbleManager                        _gagManager;                        // for gag manager
+    private readonly    CharacterHandler                        _characterHandler;                  // for character handler
     public virtual      bool                                    Ready { get; protected set; }       // see if ready
     public virtual      bool                                    Enabled { get; protected set; }     // set if enabled
     private             nint                                    processChatInputAddress;            // address of the chat input
@@ -31,12 +31,13 @@ public unsafe class ChatInputProcessor : IDisposable {
     private readonly List<string> _configChannelsCommandsList;
 
     /// <summary> Initializes a new instance of the <see cref="ChatInputProcessor"/> class. </summary>
-    internal ChatInputProcessor(ISigScanner scanner, IGameInteropProvider interop, GagSpeakConfig config, HistoryService historyService, GagGarbleManager GagGarbleManager) {
+    internal ChatInputProcessor(ISigScanner scanner, IGameInteropProvider interop, GagSpeakConfig config, 
+    CharacterHandler characterHandler, GagGarbleManager GagGarbleManager) {
         // initialize interopfromattributes
         _config = config;
+        _characterHandler = characterHandler;
         _gagManager = GagGarbleManager;
         _configChannelsCommandsList = _config.ChannelsGagSpeak.GetChatChannelsListAliases();
-        _historyService = historyService;
         interop.InitializeFromAttributes(this);
         // try to get the chatinput address
         try {
@@ -137,7 +138,7 @@ public unsafe class ChatInputProcessor : IDisposable {
             }
 
             // if our current channel is in our list of enabled channels AND we have enabled direct chat translation...
-            if ( _config.ChannelsGagSpeak.Contains(Data.ChatChannel.GetChatChannel()) && (_config.playerInfo._directChatGarblerActive == true) ) {
+            if ( _config.ChannelsGagSpeak.Contains(ChatChannel.GetChatChannel()) && (_characterHandler.playerChar._directChatGarblerActive == true) ) {
                 // if we satisfy this condition, it means we can try to attempt modifying the message.
                 GagSpeak.Log.Debug($"[Chat Processor]: Modifying Message");
                 // we can try to attempt modifying the message.
@@ -150,8 +151,6 @@ public unsafe class ChatInputProcessor : IDisposable {
                     // adding command back to front
                     output = matchedCommand + output;
                     GagSpeak.Log.Debug($"[Chat Processor]: Output -> {output}");
-                    _historyService.AddTranslation(new Translation(inputString, output));
-                    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
                     // create the new string
                     var newStr = output;

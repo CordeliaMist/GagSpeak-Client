@@ -10,38 +10,42 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Enums;
 using XivCommon.Functions;
 using GagSpeak.ChatMessages.MessageTransfer;
+using GagSpeak.CharacterData;
 
-namespace GagSpeak.Chat;
+namespace GagSpeak.ChatMessages;
 
 /// <summary> This class is used to handle the incoming chat messages from the game, and decided what to do with them based off what is processed. </summary>
 public class ChatManager
 {
     private readonly IChatGui               _clientChat;                        // client chat 
     private readonly GagSpeakConfig         _config;                            // config from GagSpeak
+    private readonly CharacterHandler       _characterHandler;                   // character data manager
     private readonly IClientState           _clientState;                       // client state for player info
     private readonly IObjectTable           _objectTable;                       // object table for scanning through rendered objects
     private readonly RealChatInteraction    _realChatInteraction;               // real chat interaction
+    private readonly MessageDictionary      _messageDictionary;                 // dictionary for looking up encoded messages
     private readonly MessageDecoder         _messageDecoder;                    // decoder for encoded messages
-    private readonly MessageResultLogic     _msgResultLogic;                    // logic for what happens to the player as a result of the tell
+    private readonly ResultLogic            _msgResultLogic;                    // logic for what happens to the player as a result of the tell
     private readonly IFramework             _framework;                         // framework for dalamud and the game
     private          Queue<string>          messageQueue = new Queue<string>(); // queue for messages to be sent to the server
     private          Stopwatch              messageTimer = new Stopwatch();     // timer for the queue
 
     /// <summary> This is the constructor for the ChatManager class. </summary>
     public ChatManager(IChatGui clientChat, GagSpeakConfig config, IClientState clientState, IObjectTable objectTable,
-    RealChatInteraction realChatInteraction, MessageDecoder messageDecoder, MessageResultLogic messageResultLogic ,IFramework framework) {
+    RealChatInteraction realChatInteraction, MessageDictionary messageDictionary, MessageDecoder messageDecoder,
+    ResultLogic messageResultLogic ,IFramework framework, CharacterHandler characterHandler) {
         _clientChat = clientChat;
         _config = config;
         _clientState = clientState;
         _objectTable = objectTable;
         _realChatInteraction = realChatInteraction;
+        _messageDictionary = messageDictionary;
         _messageDecoder = messageDecoder;
         _msgResultLogic = messageResultLogic;
         _framework = framework;
+        _characterHandler = characterHandler;
 
-        // begin our framework check
         _framework.Update += framework_Update;
-        // Begin our OnChatMessage Detection
         _clientChat.CheckMessageHandled += Chat_OnCheckMessageHandled;
         _clientChat.ChatMessage += Chat_OnChatMessage;
     }
@@ -53,20 +57,16 @@ public class ChatManager
         _clientChat.ChatMessage -= Chat_OnChatMessage;
     }
 
-    /// <summary> 
-    /// This function will determine if we hide an incoming message or not. By default, this handles the hiding of all outgoing encoded tells
-    /// <list type="bullet">
-    /// <item><c>type</c><param name="type"> - The type of message that was sent.</param></item>
-    /// <item><c>senderid</c><param name="senderid"> - The id of the sender.</param></item>
-    /// <item><c>sender</c><param name="sender"> - The name of the sender.</param></item>
-    /// <item><c>message</c><param name="message"> - The message that was sent.</param></item>
-    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message was handled.</param></item>
-    /// </list> </summary>
+    /// <summary>
+    /// Called every time a message goes through the chatbox prior to be handled. Meaning, if we handle
+    /// it before it reaches Chat_OnChatMessage, setting its handled var to true, then it won't show up in chat.
+    /// </summary>
     private void Chat_OnCheckMessageHandled(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool isHandled) {
         // if the message is a outgoing tell
         if ( type == XivChatType.TellOutgoing) {
             // Scan if the message contains all words from the an ncoded tell message
-            if(MessageDictionary.EncodedMsgDictionary(message.TextValue)) {
+            int locatedMessage = -1;
+            if(_messageDictionary.LookupMsgDictionary(message.TextValue, ref locatedMessage)) {
                 isHandled = true;
                 _config.Save();
                 return;
@@ -75,14 +75,9 @@ public class ChatManager
     }
 
     /// <summary>
-    /// This function will determine what to do with an incoming message. By default, this handles the hiding of all incoming encoded tells
-    /// <list type="bullet">
-    /// <item><c>type</c><param name="type"> - The type of message that was sent.</param></item>
-    /// <item><c>senderid</c><param name="senderid"> - The id of the sender.</param></item>
-    /// <item><c>sender</c><param name="sender"> - The name of the sender.</param></item>
-    /// <item><c>message</c><param name="message"> - The message that was sent.</param></item>
-    /// <item><c>isHandled</c><param name="isHandled"> - Whether or not the message was handled.</param></item>
-    /// </list> </summary>
+    /// Function that is called every time a message is sent to your chatbox. Used to detecting anything we want to do with chat.
+    /// This included all of our encoded message :D
+    /// </summary>
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString chatmessage, ref bool isHandled) {
         // create some new SeStrings for the message and the new line
         var fmessage = new SeString(new List<Payload>());
@@ -140,13 +135,13 @@ public class ChatManager
             if (senderName == null) { GagSpeak.Log.Error("senderName is null"); return; } // removes the possibly null reference warning
 
             switch (true) {
-                case var _ when _config.playerInfo._doCmdsFromFriends && _config.playerInfo._doCmdsFromParty: //  both friend and party options are checked
+                case var _ when _characterHandler.playerChar._doCmdsFromFriends && _characterHandler.playerChar._doCmdsFromParty: //  both friend and party options are checked
                     if (!(IsFriend(senderName) || IsPartyMember(senderName) || IsWhitelistedPlayer(senderName))) { return; } break;
 
-                case var _ when _config.playerInfo._doCmdsFromFriends: // When only friend is checked
+                case var _ when _characterHandler.playerChar._doCmdsFromFriends: // When only friend is checked
                     if (!(IsFriend(senderName) || IsWhitelistedPlayer(senderName))) { return; } break;
 
-                case var _ when _config.playerInfo._doCmdsFromParty: // When only party is checked
+                case var _ when _characterHandler.playerChar._doCmdsFromParty: // When only party is checked
                     if (!(IsPartyMember(senderName) || IsWhitelistedPlayer(senderName))) { return; } break;
 
                 default: // None of the filters were checked, so just accept the message anyways because it works for everyone.
@@ -158,42 +153,30 @@ public class ChatManager
 
             // if the incoming tell is an encoded message, lets check if we are in dom mode before accepting changes
             int encodedMsgIndex = 0; // get a index to know which encoded msg it is, if any
-            if (MessageDictionary.EncodedMsgDictionary(chatmessage.TextValue, ref encodedMsgIndex)) {
-                // if in dom mode, back out, none of this will have any significance
-                if (_config.InDomMode && encodedMsgIndex > 0 && encodedMsgIndex <= 8) {
-                    GagSpeak.Log.Debug("[Chat Manager]: Encoded Command Ineffective Due to Dominant Status");
-                    isHandled = true;
-                    return;
-                }
-                // if our encodedmsgindex is > 1 && < 6, we have a encoded message via command
-                else if (encodedMsgIndex > 0 && encodedMsgIndex <= 8) {
+            if (_messageDictionary.LookupMsgDictionary(chatmessage.TextValue, ref encodedMsgIndex))
+            {
+                // at this point, we have determined that it is an encoded message, so let's make sure the criteria for sending is right
+
+                // CONDITION A :: It is an encoded GagSpeak command
+                if (encodedMsgIndex >= 1 && encodedMsgIndex <= 38)
+                {
+                    // find the correctly encoded message index to decode, and decode it
                     List<string> decodedCommandMsg = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
-                    // function that will determine what happens to the player as a result of the tell.
-                    if(_msgResultLogic.CommandMsgResLogic(fmessage.ToString(), decodedCommandMsg, isHandled, _clientChat, _config) ) {
-                        isHandled = true; // logic sucessfully parsed, so hide from chat
+                    
+                    // Now that we have found it and all the decoded info is stored in decodedCommandMsg, process its result.
+                    if(_msgResultLogic.CommandMsgResLogic(fmessage.ToString(), decodedCommandMsg, isHandled, _clientChat, _config))
+                    {
+                        // logic sucessfully parsed, so hide from chat
+                        isHandled = true;
+                        _config.Save(); // save our config. 
+                        // ONLY save on sucessful parses to not overflow the chat with save message
                     }
-                    _config.Save(); // save our config
-                
-                // for now at least, anything beyond 7 is a whitelist exchange message
-                } else if (encodedMsgIndex > 8) {
-                    List<string> decodedWhitelistMsg = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
-                    // function that will determine what happens to the player as a result of the tell.
-                    if(_msgResultLogic.WhitelistMsgResLogic(fmessage.ToString(), decodedWhitelistMsg, isHandled, _clientChat, _config) ) {
-                        isHandled = true; // logic sucessfully parsed, so hide from chat
-                    }
-                    isHandled = true;
-                    return;
                 }
             } // skipped to this point if not encoded message
         } // skips directly to here if not a tell
     }
 
-    /// <summary>
-    /// Will search through the senders friend list to see if they are a friend or not.
-    /// <list type="bullet">
-    /// <item><c>nameInput</c><param name="nameInput"> - The name who you want to see if they are in your friend list or not</param></item>
-    /// </list></summary>
-    /// <returns> True if they are a friend, false if they are not. </returns>
+    /// <summary> Will search through the senders friend list to see if they are a friend or not. </summary>
     private bool IsFriend(string nameInput) {
         // Check if it is possible for the client to grab the local player name, if so by default set to true.
         if (nameInput == _clientState.LocalPlayer?.Name.TextValue) return true;
@@ -210,12 +193,7 @@ public class ChatManager
         return false;
     }
 
-    /// <summary>
-    /// Will search through the senders party list to see if they are a party member or not.
-    /// <list type="bullet">
-    /// <item><c>nameInput</c><param name="nameInput"> - The name who you want to see if they are in your party list or not</param></item>
-    /// </list></summary>
-    /// <returns> True if they are a party member, false if they are not. </returns>
+    /// <summary> Will search through the senders party list to see if they are a party member or not. </summary>
     private bool IsPartyMember(string nameInput) {
         if (nameInput == _clientState.LocalPlayer?.Name.TextValue) return true;
         foreach (var t in _objectTable) {
@@ -226,12 +204,7 @@ public class ChatManager
         return false;
     }
 
-    /// <summary>
-    /// Will search through the senders party list to see if they are a party member or not.
-    /// <list type="bullet">
-    /// <item><c>nameInput</c><param name="nameInput"> - The name who you want to see if they are in your party list or not</param></item>
-    /// </list></summary>
-    /// <returns> True if they are a party member, false if they are not. </returns>
+    /// <summary> Will search through the senders party list to see if they are a party member or not. </summary>
     private bool IsWhitelistedPlayer(string nameInput) {
         // Check if it is possible for the client to grab the local player name, if so by default set to true.
         if (nameInput == _clientState.LocalPlayer?.Name.TextValue) {
@@ -240,7 +213,7 @@ public class ChatManager
         foreach (var t in _objectTable) {
             if (!(t is PlayerCharacter pc)) continue;
             if (pc.Name.TextValue == nameInput) {
-                foreach (var whitelistChar in _config.whitelist) {
+                foreach (var whitelistChar in _characterHandler.whitelistChars) {
                     if (whitelistChar._name.Contains(nameInput)) {
                         return true;
                     }

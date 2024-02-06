@@ -4,10 +4,10 @@ using OtterGui.Log;       // for our plugin logger
 using OtterGui.Services;  // REQUIRES FOR THE SERVICE MANAGER CLASS
 using GagSpeak.UI;        // REQUIRED for our plugins GagSpeakWindowManager requiredservices to be fetched
 using GagSpeak.Services;  // REQUIRED for our plugins CommandManager requiredservices to be fetched
-using GagSpeak.Chat;      // REQUIRED for our plugins ChatManager requiredservices to be fetched
 using GagSpeak.Interop;
-using GagSpeak.Utility;
-using System.Reflection;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
+using GagSpeak.ChatMessages;
+using GagSpeak.ChatMessages.ChatControl;
+using GagSpeak.CharacterData;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
 
 
 // The main namespace for the plugin, aka the same name of our plugin, the highest level
@@ -19,7 +19,7 @@ public class GagSpeak : IDalamudPlugin
   public string Name => "GagSpeak"; // Define plugin name
 
   /// <summary> gets the version of our current plugin from the .csproj file </summary>
-  public static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty; // I have no idea how this line works, look into it further later.
+  public static readonly string Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
   
   /// <summary> initialize the logger for our plugin, which will display debug information to our /xllog in game </summary>
   public static readonly Logger Log = new(); // initialize the logger for our plugin
@@ -40,7 +40,6 @@ public class GagSpeak : IDalamudPlugin
           _services = ServiceHandler.CreateProvider(pluginInt, Log); // Initialize the services in the large Service collection. (see ServiceHandler.cs)
           Messager = _services.GetService<MessageService>(); // Initialize messager service here
           _services.EnsureRequiredServices();
-
           /* Big Knowledge Info Time:
            The services we initialize here, are the classes that are not called upon by any other class in our Gagspeak plugin.
            This is because our service constructor does "lazy initialization", meaning it wont initialize the classes if they

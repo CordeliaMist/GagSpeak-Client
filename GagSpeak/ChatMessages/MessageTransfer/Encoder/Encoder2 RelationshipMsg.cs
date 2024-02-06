@@ -27,7 +27,7 @@ public partial class MessageEncoder {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
         "hears the sound of her leash's chain rattling along the floor as she crawls up to your feet. Stopping, looking up " +
-        "with pleading eyes in an embarassed tone* \"Would it be ok if I became your slave?\"";
+        "with pleading eyes in an embarassed tone* \"Would it be ok if I became your AbsoluteSlave?\"";
     }
 
     // encoder for accepting a player as your new Mistress/Master/Owner (relation) [ ID == 14 ]

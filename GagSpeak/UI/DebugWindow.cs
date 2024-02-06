@@ -5,9 +5,8 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 using OtterGui;
+using GagSpeak.ChatMessages;
 using GagSpeak.Services;
-using GagSpeak.UI.ComboListings;
-using GagSpeak.Data;
 using GagSpeak.Utility;
 using GagSpeak.Garbler.Translator;
 using GagSpeak.Events;
@@ -15,6 +14,9 @@ using Penumbra.GameData.Enums;
 using System.Linq;
 using Penumbra.GameData.Structs;
 using Penumbra.GameData.Data;
+using GagSpeak.Gagsandlocks;
+using GagSpeak.UI.Tabs.GeneralTab;
+using GagSpeak.CharacterData;
 
 namespace GagSpeak.UI;
 // probably can remove this later, atm it is literally just used for the debug window
@@ -37,24 +39,24 @@ public enum EquipmentSlotNameByEnum {
 /// <summary> This class is used to show the debug menu in its own window. </summary>
 public class DebugWindow : Window //, IDisposable
 {
+    private          GagSpeakConfig         _config;                        // for retrieving the config data to display to the window
+    private readonly CharacterHandler       _characterHandler;
+    private readonly IpaParserEN_FR_JP_SP   _translatorLanguage;            // creates an instance of the EnglishToIPA class
+    private readonly GagGarbleManager       _gagManager;                    // for knowing what gags are equipped
+    private readonly GagListingsDrawer      _gagListingsDrawer;             // for knowing the information in the currently equipped gags
+    private readonly FontService            _fontService;                   // for displaying the IPA symbols on the bottom chart
+    private readonly GagService             _gagService;                    // for displaying the number of registered gags
+    private readonly ItemAutoEquipEvent     _itemAutoEquipEvent;            // for knowing when a gag is equipped
+    private readonly ItemData               _itemData;                      // for knowing the item data
     private          string?                _tempTestMessage;               // stores the input password for the test translation system
     private          string?                _translatedMessage = "";        // stores the translated message for the test translation system
     private          string?                _translatedMessageSpaced ="";   // stores the translated message for the test translation system
     private          string?                _translatedMessageOutput ="";   // stores the translated message for the test translation system
-    private readonly FontService            _fontService;                   // for displaying the IPA symbols on the bottom chart
-    private readonly GagService             _gagService;                    // for displaying the number of registered gags
-    private          GagSpeakConfig         _config;                        // for retrieving the config data to display to the window
-    private readonly ItemAutoEquipEvent     _itemAutoEquipEvent;            // for knowing when a gag is equipped
-    private readonly IpaParserEN_FR_JP_SP   _translatorLanguage;            // creates an instance of the EnglishToIPA class
-    private readonly GagGarbleManager             _gagManager;                    // for knowing what gags are equipped
-    private readonly GagListingsDrawer      _gagListingsDrawer;             // for knowing the information in the currently equipped gags
-    private readonly ItemData               _itemData;                      // for knowing the item data
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HistoryWindow"/> class.
-    /// </summary>
-    public DebugWindow(DalamudPluginInterface pluginInt, FontService fontService, GagService gagService, IpaParserEN_FR_JP_SP translatorLanguage,
-    GagSpeakConfig config, GagGarbleManager GagGarbleManager, GagListingsDrawer gagListingsDrawer, ItemAutoEquipEvent itemAutoEquipEvent, ItemData itemData) : base(GetLabel()) {
+    public DebugWindow(DalamudPluginInterface pluginInt, FontService fontService, GagService gagService,
+    IpaParserEN_FR_JP_SP translatorLanguage, GagSpeakConfig config, CharacterHandler characterHandler,
+    GagGarbleManager GagGarbleManager, GagListingsDrawer gagListingsDrawer, ItemAutoEquipEvent itemAutoEquipEvent,
+    ItemData itemData) : base(GetLabel()) {
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
         // Next let's set the size of the window
@@ -63,6 +65,7 @@ public class DebugWindow : Window //, IDisposable
             MaximumSize = ImGui.GetIO().DisplaySize, // Maximum size of the window
         };
         _config = config;
+        _characterHandler = characterHandler;
         _itemAutoEquipEvent = itemAutoEquipEvent;
         _fontService = fontService;
         _gagService = gagService;
@@ -72,8 +75,17 @@ public class DebugWindow : Window //, IDisposable
         _itemData = itemData;
     }
 
-    /// <summary> This function is used to draw the history window. </summary>
+
     public override void Draw() {
+        ImGui.Text($"Whitelist Count: {_characterHandler.whitelistChars.Count()}");
+        ImGui.Text($"AliasCount: {_characterHandler.playerChar._triggerAliases.Count()}");
+        ImGui.Text($"Extended Lock Times Count: {_characterHandler.playerChar._grantExtendedLockTimes.Count()}");
+        ImGui.Text($"Trigger Phrase Count: {_characterHandler.playerChar._triggerPhraseForPuppeteer.Count()}");
+        ImGui.Text($"Allow Sit Requests Count: {_characterHandler.playerChar._allowSitRequests.Count()}");
+        ImGui.Text($"Allow Motion Requests Count: {_characterHandler.playerChar._allowMotionRequests.Count()}");
+        ImGui.Text($"Allow All Commands Count: {_characterHandler.playerChar._allowAllCommands.Count()}");
+        ImGui.Text($"Allow Changing Toy State Count: {_characterHandler.playerChar._allowChangingToyState.Count()}");
+        ImGui.Text($"Allow Using Patterns Count: {_characterHandler.playerChar._allowUsingPatterns.Count()}");
         DrawAdvancedGarblerInspector();
         DrawDebugInformationBasic();
         DrawDebugInformationWhitelistAndLocks();
@@ -85,9 +97,7 @@ public class DebugWindow : Window //, IDisposable
     private static string GetLabel() => "GagSpeakDebug###GagSpeakDebug";    
 
 
-    /// <summary>
-    /// Draws the advanced garbler inspector.
-    /// </summary>
+    /// <summary> Draws the advanced garbler inspector. </summary>
     public void DrawAdvancedGarblerInspector() {
         // create a collapsing header for this.
         if(!ImGui.CollapsingHeader("Advanced Garbler Debug Testing")) { return; }
@@ -127,20 +137,18 @@ public class DebugWindow : Window //, IDisposable
         ImGui.PopFont();
     }
 
-    /// <summary>
-    /// Draws the debug information.
-    /// </summary>
+    /// <summary> Draws the debug information. Needs a serious Massive overhaul </summary>
     public void DrawDebugInformationBasic() {
         if(!ImGui.CollapsingHeader("DEBUG INFORMATION")) { return; }
         // General plugin information
         ImGui.Text($"Fresh Install?: {_config.FreshInstall}");
-        ImGui.Text($"Safeword: {_config.playerInfo._safeword}");
-        ImGui.Text($"Has Safeword Been Used?: {_config.playerInfo._safewordUsed}");
+        ImGui.Text($"Safeword: {_characterHandler.playerChar._safeword}");
+        ImGui.Text($"Has Safeword Been Used?: {_characterHandler.playerChar._safewordUsed}");
         ImGui.Separator();
         // configuration tab options & details
-        ImGui.Text($"Allow Commands from Friends?: {_config.playerInfo._doCmdsFromFriends}");
-        ImGui.Text($"Allow Commands from Party Members?: {_config.playerInfo._doCmdsFromParty}");
-        ImGui.Text($"In DirectChatGarbler Mode?: {_config.playerInfo._directChatGarblerActive}");
+        ImGui.Text($"Allow Commands from Friends?: {_characterHandler.playerChar._doCmdsFromFriends}");
+        ImGui.Text($"Allow Commands from Party Members?: {_characterHandler.playerChar._doCmdsFromParty}");
+        ImGui.Text($"In DirectChatGarbler Mode?: {_characterHandler.playerChar._directChatGarblerActive}");
         ImGui.Text($"Selected Language: {_config.language}");
         ImGui.Text($"Selected Dialect: {_config.languageDialect}");
         ImGui.Text($"Translatable Chat Types:");
@@ -150,24 +158,25 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Text($"Ready To Accept sending player information?: {_config.acceptingInfoRequests}");
         ImGui.Separator();
         // wardrobe details
-        ImGui.Text($"Enable Wardrobe?: {_config.playerInfo._enableWardrobe}");
-        ImGui.Text($"Enable Item Auto-Equip?: {_config.playerInfo._allowItemAutoEquip}");
-        ImGui.Text($"Allow Restraint Locking?: {_config.playerInfo._allowRestraintSetAutoEquip}");
+        ImGui.Text($"Enable Wardrobe?: {_characterHandler.playerChar._enableWardrobe}");
+        ImGui.Text($"Enable Item Auto-Equip?: {_characterHandler.playerChar._allowItemAutoEquip}");
+        ImGui.Text($"Allow Restraint Locking?: {_characterHandler.playerChar._allowRestraintSetAutoEquip}");
         // Gag details
         ImGui.Separator();
         ImGui.Text($"Total Gag List Count: {_gagService._gagTypes.Count}");
-        ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _config.playerInfo._selectedGagTypes) { ImGui.SameLine(); ImGui.Text($"{gagType} ||"); };
-        ImGui.Text("Selected Padlocks: ||"); ImGui.SameLine(); foreach (Padlocks gagPadlock in _config.playerInfo._selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} ||");};
-        ImGui.Text("Selected Padlocks Passwords: ||"); ImGui.SameLine(); foreach (var gagPadlockPassword in _config.playerInfo._selectedGagPadlockPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} ||"); };
-        ImGui.Text("Selected GagPadlock Timers: ||"); ImGui.SameLine(); foreach (var gagPadlockTimer in _config.playerInfo._selectedGagPadlockTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} ||"); };
-        ImGui.Text("Selected Padlocks Assigners: ||"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _config.playerInfo._selectedGagPadlockAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} ||"); };
+        ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _characterHandler.playerChar._selectedGagTypes) { ImGui.SameLine(); ImGui.Text($"{gagType} ||"); };
+        ImGui.Text("Selected Padlocks: ||"); ImGui.SameLine(); foreach (Padlocks gagPadlock in _characterHandler.playerChar._selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} ||");};
+        ImGui.Text("Selected Padlocks Passwords: ||"); ImGui.SameLine(); foreach (var gagPadlockPassword in _characterHandler.playerChar._selectedGagPadlockPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} ||"); };
+        ImGui.Text("Selected GagPadlock Timers: ||"); ImGui.SameLine(); foreach (var gagPadlockTimer in _characterHandler.playerChar._selectedGagPadlockTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} ||"); };
+        ImGui.Text("Selected Padlocks Assigners: ||"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _characterHandler.playerChar._selectedGagPadlockAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} ||"); };
     }
+
 
     public void DrawDebugInformationWhitelistAndLocks() {
         if(!ImGui.CollapsingHeader("Whitelist & Locks Info")) { return; }
         // Whitelist uder information
         ImGui.Text("Whitelist:"); ImGui.Indent();
-        foreach (var whitelistPlayerData in _config.whitelist) {
+        foreach (var whitelistPlayerData in _characterHandler.whitelistChars) {
             ImGui.Text(whitelistPlayerData._name);
             ImGui.Indent();
             ImGui.Text($"Relationship to this Player: {whitelistPlayerData._yourStatusToThem}");
@@ -271,7 +280,7 @@ public class DebugWindow : Window //, IDisposable
         if (!table) { return; }
         ImGui.TableNextRow();
         // temp creation for equipment class
-        var properties = typeof(Equipment).GetProperties().Where(p => p.Name != "Hat" && p.Name != "Visor" && p.Name != "Weapon").ToArray();
+        var properties = typeof(Interop.Equipment).GetProperties().Where(p => p.Name != "Hat" && p.Name != "Visor" && p.Name != "Weapon").ToArray();
         // display equipment slots:
         var equipSlots = EquipSlotExtensions.EqdpSlots.Prepend(EquipSlot.OffHand).Prepend(EquipSlot.MainHand);
         for (int i = 0; i < properties.Length; i++) {
@@ -320,7 +329,7 @@ public class DebugWindow : Window //, IDisposable
         {
             if (index.ToString() == "ModelId") continue; // Skip ModelId
 
-            var property = typeof(Customize).GetProperty(index.ToString());
+            var property = typeof(Interop.Customize).GetProperty(index.ToString());
             dynamic? value = property?.GetValue(_config.cachedCharacterData.Customize);
             int valueInt = value?.Value;
             bool apply = value?.Apply;

@@ -6,32 +6,36 @@ using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 using OtterGui;
 using OtterGui.Widgets;
-using GagSpeak.UI.ComboListings;
 using GagSpeak.Services;
-using GagSpeak.Data;
-using GagSpeak.Wardrobe;
+using Dalamud.Interface.Utility;
+
+using GagSpeak.Gagsandlocks;
+using GagSpeak.CharacterData;
+using GagSpeak.UI.Equipment;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>
 public class GeneralTab : ITab, IDisposable
 {
-    private readonly GagSpeakConfig         _config;                    // the config for the plugin
-    private readonly TimerService           _timerService;              // the timer service for the plugin
-    private readonly GagListingsDrawer      _gagListingsDrawer;         // the drawer for the gag listings
-    private readonly GagAndLockManager      _lockManager;               // the lock manager for the plugin
-    private readonly GagService             _gagService;                // the gag manager for the plugin
-    private          GagTypeFilterCombo[]   _gagTypeFilterCombo;        // create an array of item combos
-    private          GagLockFilterCombo[]   _gagLockFilterCombo;        // create an array of item combos
-    private          bool?                  _inDomMode;                 // lets us know if we are in dom mode or not
-    private          string?                _tempSafeword;              // for initializing a temporary safeword for the text input field
-    private          bool                   modeButtonsDisabled = false;// lets us know if the mode buttons are disabled or not
+    private readonly    GagSpeakConfig          _config;                    // the config for the plugin
+    private readonly    GagSpeakChangelog       _changelog;
+    private readonly    CharacterHandler        _characterHandler;          // the character handler for the plugin
+    private readonly    TimerService            _timerService;              // the timer service for the plugin
+    private readonly    GagListingsDrawer       _gagListingsDrawer;         // the drawer for the gag listings
+    private readonly    GagAndLockManager       _lockManager;               // the lock manager for the plugin
+    private readonly    GagService              _gagService;                // the gag manager for the plugin
+    private             GagTypeFilterCombo[]    _gagTypeFilterCombo;        // create an array of item combos
+    private             GagLockFilterCombo[]    _gagLockFilterCombo;        // create an array of item combos
+    private             string?                 _tempSafeword;              // for initializing a temporary safeword for the text input field
     
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneralTab"/> class.
-    /// </summary>
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config,
-    TimerService timerService, GagAndLockManager lockManager, GagService gagService) {
+    /// </summary> 
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, GagSpeakChangelog changelog,
+    CharacterHandler characterHandler, TimerService timerService, GagAndLockManager lockManager, GagService gagService) {
         _config = config;
+        _changelog = changelog;
+        _characterHandler = characterHandler;
         _timerService = timerService;
         _gagListingsDrawer = gagListingsDrawer;
         _lockManager = lockManager;
@@ -87,7 +91,7 @@ public class GeneralTab : ITab, IDisposable
     /// This function draws the header for the window of the General Tab
     /// </summary>
     private void DrawHeader()
-        => WindowHeader.Draw("Gag Selections / Inspector", 0, ImGui.GetColorU32(ImGuiCol.FrameBg));
+        => WindowHeader.Draw("Gag Selections / Inspector", 0, ImGui.GetColorU32(ImGuiCol.FrameBg), 0, ImGui.GetContentRegionAvail().X-ImGuiHelpers.GlobalScale);
 
     /// <summary>
     /// This function draws the general tab contents
@@ -107,80 +111,50 @@ public class GeneralTab : ITab, IDisposable
             ImGuiUtil.DrawFrameColumn("Set Safeword");
             ImGui.TableNextColumn();
             // if the safeword was used, disable the section and show cooldown message
-            if(_config.SafewordUsed) { ImGui.BeginDisabled(); }
+            if(_characterHandler.playerChar._safewordUsed) { ImGui.BeginDisabled(); }
 
             // add variables for the safeword stuff
             var width = new Vector2(-1, 0);
-            var safeword  = _tempSafeword ?? _config.Safeword; // temp storage to hold until we de-select the text input
+            var safeword  = _tempSafeword ?? _characterHandler.playerChar._safeword; // temp storage to hold until we de-select the text input
             ImGui.SetNextItemWidth(width.X);
             if (ImGui.InputText("##Safeword", ref safeword, 30, ImGuiInputTextFlags.None))
                 _tempSafeword = safeword;
             if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
-                _config.Safeword = safeword;
+                _characterHandler.playerChar._safeword = safeword;
                 _tempSafeword = null;
             }
             // draw the cooldown timer
-            if(_config.SafewordUsed) { ImGui.EndDisabled(); }
+            if(_characterHandler.playerChar._safewordUsed) { ImGui.EndDisabled(); }
             ImGui.TableNextColumn();
-            if(_config.SafewordUsed) {
+            if(_characterHandler.playerChar._safewordUsed) {
                 ImGui.Text($"Safeword Cooldown: {_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
-            }
-            // draw our our second row
-            var mode = _inDomMode ?? _config.InDomMode;
-            ImGuiUtil.DrawFrameColumn("Mode Selector");
-            ImGui.TableNextColumn();
-            width = new Vector2(ImGui.GetContentRegionAvail().X-10,0);
-            // draw out our two buttons to set the modes. When the button labeled sub is pressed, it will switch isDomMode to false, and lock the interactability of the sub button.
-            // when the button labeled dom is pressed, it will switch isDomMode to true, and lock the interactability of the dom button.
-            if(modeButtonsDisabled) {
-                ImGui.BeginDisabled();
-            }
-            if (mode == true) {
-                // User is in Dom mode
-                if(!modeButtonsDisabled) {ImGui.BeginDisabled();}
-                if (ImGui.Button("Dominant", width/2)) {
-                    // Dom mode is already active, do nothing or display a message
-                }
-                if(!modeButtonsDisabled) {ImGui.EndDisabled();}
-                ImGui.SameLine();
-                if (ImGui.Button("Submissive", width/2)) {
-                    _inDomMode = false; // Switch to Sub mode
-                    _config.InDomMode = false;
-                    modeButtonsDisabled = true;
-                    _timerService.StartTimer("RoleSwitchCooldown", "10m", 1000, () => DisableModeButtons());
-                    _config.Save();
-                }
-            } else {
-                // User is in Sub mode
-                if (ImGui.Button("Dominant", width/2)) {
-                    _inDomMode = true; // Switch to Dom mode
-                    _config.InDomMode = true;
-                    modeButtonsDisabled = true;
-                    _timerService.StartTimer("RoleSwitchCooldown", "10m", 1000, () => DisableModeButtons());
-                    _config.Save();
-                }
-                if(!modeButtonsDisabled) {ImGui.BeginDisabled();}
-                ImGui.SameLine();
-                if (ImGui.Button("Submissive", width/2)) {
-                    // do nothing
-                }
-                if(!modeButtonsDisabled) {ImGui.EndDisabled();}
-            }
-            ImGui.TableNextColumn();
-            if(modeButtonsDisabled) {
-                ImGui.EndDisabled();
-                ImGui.Text($"[{(_config.InDomMode? "Dom" : "Sub")}] Swap Cooldown: {_timerService.remainingTimes.GetValueOrDefault("RoleSwitchCooldown", "N/A")}");
             }
         } 
         // if we used our safeword
-        if(_config.SafewordUsed) {
+        if(_characterHandler.playerChar._safewordUsed) {
             ImGui.SameLine();
             // create a timer that executes whenever you use the safeword command. This blocks all actions for the next 5m
             ImGui.Text($"Safeword Used! Disabling All Actions! CD: {_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
         }
 
         // disable this interactability if our safeword is on cooldown
-        if(_config.SafewordUsed) { ImGui.BeginDisabled(); }
+        if(_characterHandler.playerChar._safewordUsed) { ImGui.BeginDisabled(); }
+
+        // before we go down, lets draw the changelog button on the top right
+        var yPos = ImGui.GetCursorPosY();
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 9f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
+        ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
+        ImGui.Text(" ");
+        ImGui.SameLine();
+        if (ImGui.Button("Changelog")) {
+            // force open the changelog here
+            _changelog.Changelog.ForceOpen = true;
+        }
+        // pop off the colors we pushed
+        ImGui.PopStyleColor(3);
+
         
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
@@ -198,7 +172,7 @@ public class GeneralTab : ITab, IDisposable
         }
 
         // end of disabled stuff
-        if(_config.SafewordUsed) { ImGui.EndDisabled(); }
+        if(_characterHandler.playerChar._safewordUsed) { ImGui.EndDisabled(); }
     
         // let people know which gags are not working
         ImGui.Text("These Gags dont work yet! If you have any IRL, contact me to help fill in the data!");
@@ -206,12 +180,10 @@ public class GeneralTab : ITab, IDisposable
                                                 "Harness Panel Gag, Hook Gag, Inflatable Hood, Latex/Leather Hoods, Plug Gag\n"+
                                                 "Pump Gag, Sensory Deprivation Hood, Spider Gag, Tenticle Gag.");
     }
-
-    /// <summary> This function disables the mode buttons after the cooldown is over. </summary>
-    private void DisableModeButtons() {
-        modeButtonsDisabled = false;
-    }
     
+    /// <summary> This function is used to draw the changelog window. </summary>
+    private void DrawChangeLog(Changelog changelog) => changelog.ForceOpen = true;
+
     /// <summary>
     /// outputs the remaining time on timers each time the millisecond elapsed time passes.
     /// <list type="bullet">

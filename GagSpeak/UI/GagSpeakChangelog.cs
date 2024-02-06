@@ -24,6 +24,7 @@ public class GagSpeakChangelog
         Add0_9_9_10(Changelog); 
         Add1_0_1_3(Changelog);
         Add1_0_2_0(Changelog);
+        Add1_1_0_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -52,6 +53,29 @@ public class GagSpeakChangelog
     }
 
     // all versions are added here, the order doesnt madder, but it should be in order of newest to oldest.
+    private static void Add1_1_0_0(Changelog log)
+        => log.NextVersion("Version 1.1.0.0 Release")
+            .RegisterImportant("New Component now in GagSpeak: THE PUPPETEER TAB")
+            .RegisterEntry("    》 Set unique trigger phrases to each person on your whitelist, so you make sure they are truely the only one who can make you do things!")
+            .RegisterEntry("    》 Configure permission parameters for each person individually.")
+            .RegisterEntry("    》 Regex paramater trigger words are a WIP atm and are coming soon!")
+            .RegisterImportant("New Componet now in GagSpeak: THE TOYBOX TAB")
+            .RegisterEntry("    》 Unique configuration control for each person on your whitelist, dictate who can and cant use your vibrator!")
+            .RegisterEntry("    》 Toggle on and off your partners vibe, and know when it is connected!")
+            .RegisterEntry("    》 Set and adjust the intensity of the vibrator at will")
+            .RegisterEntry("    》 Create and execute patterns of vibration for your vibrator")
+            .RegisterEntry("    》 Lock the UI of the toybox to prevent any changes from being made, making your partner enjoy their partner's pleasure")
+            .RegisterImportant("GagSpeak Permissions have gone a FULL OVERHAUL")
+            .RegisterEntry("It is very likely to encounter new bugs, so please report them as you find them! I had to reformat the whole backend of message/info transfer")
+            .RegisterEntry("Permissions now are stored in 2 catagories, Global & Individual")
+            .RegisterEntry("Global permss = change for everyone when modified, so everyone will see that setting update when changed")
+            .RegisterEntry("Individual perms = unique to each whitelist player. EX: Give 1 person access to toybox & everyone else besides them still wont have access")
+            .RegisterEntry("Interaction permissions are now ranked in TIERS, dynamics have a /DynamicTier/ score. The higher the tier, more access you surrender!")
+            .RegisterImportant("Don't give absolute-slave dynamic out unless you are sure you trust them. This system is made to keep you safe, respect it!")
+            .RegisterEntry("Whitelist Interactions UI has been fully overhauled. Now you can see both what permissions your partner has configured & your own")
+            .RegisterHighlight("You can now toggle an option in the settings menu to disable the warning about live chat garbler when switching zones.");
+
+
     private static void Add1_0_2_0(Changelog log)
         => log.NextVersion("Version 1.0.2.1 Release")
             .RegisterImportant("A New Wardrobe tab has now been added!")

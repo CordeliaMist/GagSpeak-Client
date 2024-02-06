@@ -1,38 +1,53 @@
 using System;
-using GagSpeak.Data;
+using GagSpeak.Gagsandlocks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace GagSpeak.CharacterData;
-
 
 /// <summary> A class to hold the data for the whitelist character </summary>
 public class WhitelistedCharacterInfo : CharacterInfoBase
 {
-    public string           _name { get; set; }                             // get the character name
+    public string           _name { get; set; }                            // get the character name
     public string           _homeworld { get; set; }                        // get the characters world (dont know how to get this for now)
     public RoleLean         _yourStatusToThem { get; set; }                 // who you are to them
     public RoleLean         _theirStatusToYou { get; set; }                 // who they are to you
     public RoleLean         _pendingRelationRequestFromYou { get; set; }    // displays the current dyanmic request sent by you to this player
     public RoleLean         _pendingRelationRequestFromPlayer { get; set; } // displays the current dynamic request from this player to you
     public DateTimeOffset   _timeOfCommitment { get; set; }                 // how long has your commitment lasted?
+    public bool             _grantExtendedLockTimes { get; set; } = false;  // [TIER 2] if whitelisted user allows you to use extended lock times
+    public string           _theirTriggerPhrase { get; set; } = "";         // [TIER 0] this whitelisted user's trigger phrase
+    public bool             _allowsSitRequests { get; set; } = false;       // [TIER 1] if they allow you to use sit requests
+    public bool             _allowsMotionRequests { get; set; } = false;    // [TIER 2] if they allow you to use motion requests
+    public bool             _allowsAllCommands { get; set; } = false;       // [TIER 4] If they allow you to use all commands on them
+    public bool             _allowsChangingToyState { get; set; } = false;  // [TIER 1] if the whitelisted player is allowed to change the toy state
+    public bool             _allowsUsingPatterns { get; set; } = false;     // [TIER 0] This should appear as a single var in whitelist, and a list of that var in player info to match whitelist
     ////////////////////////////////////////////////// PROTECTED FIELDS ////////////////////////////////////////////////////
-    public  bool            _grantExtendedLockTimes { get; set; } = false;  // [TIER 2] without this enabled, no locked times can exceed 12 hours
-    public  string          _triggerPhraseForPuppeteer { get; set; } = "";  // [TIER 0] what is this persons trigger phrase for you?
     
-    /// <summary> Initializes a new instance of the <see cref="WhitelistCharData"/> class. </summary>
-    public WhitelistedCharacterInfo(string name, string homeworld, string relationshipStatus) {
+    public WhitelistedCharacterInfo() : this("None", "None") { }
+    public WhitelistedCharacterInfo(string name, string homeworld) {
         _name = name;
         _homeworld = homeworld;
-        _yourStatusToThem = (RoleLean) Enum.Parse(typeof(RoleLean), relationshipStatus, true);
+        _yourStatusToThem = RoleLean.None;
         _theirStatusToYou = RoleLean.None;
         _pendingRelationRequestFromPlayer = RoleLean.None;
         _pendingRelationRequestFromYou = RoleLean.None;
+        _timeOfCommitment = DateTimeOffset.Now;
     }
 #region General Interactions
-    /// <summary> get the string format of the roleleanEnum </summary>
-    public string GetRoleLeanString(RoleLean role) {
-        return role.ToString();
+    public bool IsRoleLeanDominant(RoleLean roleLean) {
+        if(roleLean == RoleLean.Mistress || roleLean == RoleLean.Master || roleLean == RoleLean.Owner) {
+            return true;
+        }
+        return false;
     }
 
+    public bool IsRoleLeanSubmissive(RoleLean roleLean) {
+        if(roleLean == RoleLean.Pet || roleLean == RoleLean.Slave || roleLean == RoleLean.AbsoluteSlave) {
+            return true;
+        }
+        return false;
+    }
     /// <summary> Sets the time of commitment </summary>
     public void Set_timeOfCommitment() {
         _timeOfCommitment = DateTimeOffset.Now;
@@ -75,11 +90,12 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
     public DynamicTier GetDynamicTier() {
         // If a two way dyanamic is note yet established, then our tier is 0.
         if (_yourStatusToThem == RoleLean.None || _theirStatusToYou == RoleLean.None) {
-            return DynamicTier.Tier0;
+                return DynamicTier.Tier0;
         }
         // TIER 1 == dynamic of PET/SLAVE/ABSOLUTE-SLAVE with MISTRESS|MASTER/OWNER.
         if (_yourStatusToThem == RoleLean.Mistress || _yourStatusToThem == RoleLean.Master || _yourStatusToThem == RoleLean.Owner) {
-            if(_theirStatusToYou == RoleLean.Pet || _theirStatusToYou == RoleLean.Slave || _theirStatusToYou == RoleLean.AbsoluteSlave) {
+            if(_theirStatusToYou == RoleLean.Submissive || _theirStatusToYou == RoleLean.Pet
+            || _theirStatusToYou == RoleLean.Slave || _theirStatusToYou == RoleLean.AbsoluteSlave) {
                 return DynamicTier.Tier1;
         }}
         // TIER 2 == dynamic of SLAVE/ABSOLUTE-SLAVE with MISTRESS|MASTER/OWNER.
@@ -101,5 +117,55 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         return DynamicTier.Tier0;
     }
 #endregion State Fetching / Setting
+
+#region Serialization and Deserialization
+    public override JObject Serialize() {
+        try{
+            JObject derivedSerialized = new JObject() {
+                ["Name"] = _name,
+                ["Homeworld"] = _homeworld,
+                ["YourStatusToThem"] = _yourStatusToThem.ToString(),
+                ["TheirStatusToYou"] = _theirStatusToYou.ToString(),
+                ["PendingRequestFromYou"] = _pendingRelationRequestFromYou.ToString(),
+                ["PendingRequestFromPlayer"] = _pendingRelationRequestFromPlayer.ToString(),
+                ["TimeOfCommitment"] = JsonConvert.SerializeObject(_timeOfCommitment),
+                ["ExtendedLockTimes"] = _grantExtendedLockTimes,
+                ["TriggerPhrase"] = _theirTriggerPhrase,
+                ["AllowsSitRequests"] = _allowsSitRequests,
+                ["AllowsMotionRequests"] = _allowsMotionRequests,
+                ["AllowsAllCommands"] = _allowsAllCommands,
+                ["AllowsChangingToyState"] = _allowsChangingToyState,
+                ["AllowsUsingPatterns"] = _allowsUsingPatterns,
+            };
+            // merge with the base serialization
+            JObject baseSerialized = base.Serialize();
+            derivedSerialized.Merge(baseSerialized);
+            // return it
+            return derivedSerialized;
+        } catch (Exception e) {
+            Console.WriteLine($"[WhitelistedCharacterInfo] Error in Serialize: {e}");
+            return new JObject();
+        }
+    }
+
+    public override void Deserialize(JObject jsonObject) {
+        base.Deserialize(jsonObject);
+        _name = jsonObject["Name"]?.Value<string>() ?? "None";
+        _homeworld = jsonObject["Homeworld"]?.Value<string>() ?? "None";
+        _yourStatusToThem = Enum.TryParse(jsonObject["YourStatusToThem"]?.Value<string>(), out RoleLean statusToThem) ? statusToThem : RoleLean.None;
+        _theirStatusToYou = Enum.TryParse(jsonObject["TheirStatusToYou"]?.Value<string>(), out RoleLean statusToYou) ? statusToYou : RoleLean.None;
+        _pendingRelationRequestFromYou = Enum.TryParse(jsonObject["PendingRequestFromYou"]?.Value<string>(), out RoleLean requestFromYou) ? requestFromYou : RoleLean.None;
+        _pendingRelationRequestFromPlayer = Enum.TryParse(jsonObject["PendingRequestFromPlayer"]?.Value<string>(), out RoleLean requestFromPlayer) ? requestFromPlayer : RoleLean.None;
+        _timeOfCommitment = JsonConvert.DeserializeObject<DateTimeOffset>(jsonObject["TimeOfCommitment"]?.Value<string>() ?? "");
+        _grantExtendedLockTimes = jsonObject["ExtendedLockTimes"]?.Value<bool>() ?? false;
+        _theirTriggerPhrase = jsonObject["TheirTriggerPhrase"]?.Value<string>() ?? "";
+        _allowsSitRequests = jsonObject["AllowsSitRequests"]?.Value<bool>() ?? false;
+        _allowsMotionRequests = jsonObject["AllowsMotionRequests"]?.Value<bool>() ?? false;
+        _allowsAllCommands = jsonObject["AllowsAllCommands"]?.Value<bool>() ?? false;
+        _allowsChangingToyState = jsonObject["AllowsChangingToyState"]?.Value<bool>() ?? false;
+        _allowsUsingPatterns = jsonObject["AllowsUsingPatterns"]?.Value<bool>() ?? false;
+    }
+
+#endregion Serialization and Deserialization
 }
 

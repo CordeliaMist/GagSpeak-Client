@@ -28,14 +28,14 @@ public class IpaParserEN_FR_JP_SP
 		// Set the path to the JSON file based on the language dialect
 		GagSpeak.Log.Debug($"[IPA Parser] Language dialect: {_config.languageDialect}");
 		switch (_config.languageDialect) {
-			case "IPA_US":		data_file = "GarblerParser\\jsonFiles\\en_US.json"; break;
-			case "IPA_UK":		data_file = "GarblerParser\\jsonFiles\\en_UK.json"; break;
-			case "IPA_FRENCH":	data_file = "GarblerParser\\jsonFiles\\fr_FR.json"; break;
-			case "IPA_QUEBEC":	data_file = "GarblerParser\\jsonFiles\\fr_QC.json"; break;
-			case "IPA_JAPAN":	data_file = "GarblerParser\\jsonFiles\\ja.json";	break;
-			case "IPA_SPAIN":	data_file = "GarblerParser\\jsonFiles\\es_ES.json"; break;
-			case "IPA_MEXICO":	data_file = "GarblerParser\\jsonFiles\\es_MX.json";	break;
-			default:			data_file = "GarblerParser\\jsonFiles\\en_US.json"; break;
+			case "IPA_US":		data_file = "GarblerCore\\jsonFiles\\en_US.json"; break;
+			case "IPA_UK":		data_file = "GarblerCore\\jsonFiles\\en_UK.json"; break;
+			case "IPA_FRENCH":	data_file = "GarblerCore\\jsonFiles\\fr_FR.json"; break;
+			case "IPA_QUEBEC":	data_file = "GarblerCore\\jsonFiles\\fr_QC.json"; break;
+			case "IPA_JAPAN":	data_file = "GarblerCore\\jsonFiles\\ja.json";	break;
+			case "IPA_SPAIN":	data_file = "GarblerCore\\jsonFiles\\es_ES.json"; break;
+			case "IPA_MEXICO":	data_file = "GarblerCore\\jsonFiles\\es_MX.json";	break;
+			default:			data_file = "GarblerCore\\jsonFiles\\en_US.json"; break;
 		}
 		// Try to read the JSON file and deserialize it into the obj dictionary
 		try {
@@ -47,11 +47,11 @@ public class IpaParserEN_FR_JP_SP
 			// deserialize the json into the obj dictionary
 			obj = JsonConvert.DeserializeObject<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
 			// let log know that the file was read
-			GagSpeak.Log.Debug($"[IPA Parser] File read: {jsonFilePath}");
+			GagSpeak.Log.Debug($"[IPA Parser] File read: [PluginDirectory\\{data_file}]");
 		}
 		catch (FileNotFoundException) {
 			// If the file does not exist, log an error and initialize obj as an empty dictionary
-			GagSpeak.Log.Debug($"[IPA Parser] File does not exist: {data_file}");
+			GagSpeak.Log.Debug($"[IPA Parser] File does not exist: [PluginDirectory\\{data_file}]");
 			obj = new Dictionary<string, string>();
 		}
 		catch (Exception ex) {

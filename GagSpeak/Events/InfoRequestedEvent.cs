@@ -1,5 +1,4 @@
 using System;
-using GagSpeak.Data;
 
 namespace GagSpeak.Events;
 

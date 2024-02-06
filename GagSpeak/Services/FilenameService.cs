@@ -9,18 +9,19 @@ public class FilenameService
     public readonly string ConfigDirectory; // Directory for the additional plugin files
     public readonly string ConfigFile;      // Configuration file
     public readonly string RestraintSetsFile; // Directory for restraint sets
-    public readonly string GagStorageFile;    // for storing information about our gags (coming soon probably)
+    public readonly string GagStorageFile;    // for storing information about our gags 
+    public readonly string CharacterData;     // for storing information about our whitelist
+    public readonly string PatternStorageFile; // for storing information about our patterns
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilenameService"/> class.
     /// </summary>
     public FilenameService(DalamudPluginInterface pi) {
-        // the FOLDER labeled "GagSpeak"
-        ConfigDirectory = pi.ConfigDirectory.FullName;
-        // where the pluginconfig file is stored
-        ConfigFile = pi.ConfigFile.FullName;
-        // where the extra files should be going
-        RestraintSetsFile = Path.Combine(ConfigDirectory, "RestraintSets.json");
-        GagStorageFile = Path.Combine(ConfigDirectory, "GagStorage.json");
+        ConfigDirectory     = pi.ConfigDirectory.FullName;
+        ConfigFile          = pi.ConfigFile.FullName;
+        RestraintSetsFile   = Path.Combine(ConfigDirectory, "RestraintSets.json");
+        GagStorageFile      = Path.Combine(ConfigDirectory, "GagStorage.json");
+        CharacterData       = Path.Combine(ConfigDirectory, "CharacterData.json");
+        PatternStorageFile  = Path.Combine(ConfigDirectory, "PatternStorage.json");
     }
 }

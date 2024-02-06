@@ -1,21 +1,21 @@
 using System;
 using System.Collections.Generic;
 using Penumbra.GameData.Enums;
-using GagSpeak.Data;
-using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using System.Linq;
-using OtterGui.Classes;
 using GagSpeak.Services;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using Newtonsoft.Json;
 using Penumbra.GameData.Structs;
+using GagSpeak.Gagsandlocks;
 
 namespace GagSpeak.Wardrobe;
 
 public class RestraintSetManager : ISavable
 {
     public List<RestraintSet> _restraintSets = []; // stores the restraint sets
+    public int _selectedIdx = 0;
+
 
     [JsonIgnore]
     private readonly SaveService _saveService;
@@ -35,6 +35,23 @@ public class RestraintSetManager : ISavable
     
     #region Manager Methods
 
+    public int GetSelectedIdx() => _selectedIdx;
+
+    public void SetSelectedIdx(int idx) {
+        _selectedIdx = idx;
+        Save();
+    }
+
+    public int GetRestraintSetIndex(string setName) {
+        // see if the set exists in our list of sets, and if it does, return the index
+        for (int i = 0; i < _restraintSets.Count; i++) {
+            if (_restraintSets[i]._name == setName) {
+                return i;
+            }
+        }
+        return -1; // Return -1 if the set name is not found
+    }
+    
     public void AddNewRestraintSet() {
         var newSet = new RestraintSet();
         string baseName = newSet._name;
@@ -44,7 +61,7 @@ public class RestraintSetManager : ISavable
             copyNumber++;
         }
         _restraintSets.Add(newSet);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     /// <summary> Deletes a restraint set spesified by index if it exists. </summary>
@@ -52,7 +69,7 @@ public class RestraintSetManager : ISavable
         // delete a restraint set spesified by index if it exists
         if (index >= 0 && index < _restraintSets.Count) {
             _restraintSets.RemoveAt(index);
-            Save();
+            _saveService.QueueSave(this);
         }
     }
 
@@ -66,7 +83,7 @@ public class RestraintSetManager : ISavable
         }
         // append the new name       
         _restraintSets[restraintSetIdx].ChangeSetName(newName);
-        Save(); // update our json after updating the manager 
+        _saveService.QueueSave(this);
         // (will remove old set but transfer all info to newly serialized one)
     }
 
@@ -86,8 +103,8 @@ public class RestraintSetManager : ISavable
             }
         }
         // make sure its the only one left enabled
-        _restraintSets[restraintSetIdx]._enabled = isEnabled && anyOtherEnabled;
-        Save();
+        _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled && anyOtherEnabled);
+        _saveService.QueueSave(this);
     }
 
     /// <summary> Toggles the enabled state of a restraint set spesified by index if it exists. </summary>
@@ -108,7 +125,22 @@ public class RestraintSetManager : ISavable
             // then enable the current set
             _restraintSets[restraintSetIdx].SetIsEnabled(true);
         }
-        Save();
+        _saveService.QueueSave(this);
+    }
+
+    /// <summary> Toggle the enabled state of a slot piece in a spesified restraint set if it exists. </summary>
+    public void ToggleRestraintSetPieceEnabledState(int restraintSetIdx, EquipSlot slot) {
+        // get the current state
+        bool currentState = _restraintSets[restraintSetIdx]._drawData[slot]._isEnabled;
+        GagSpeak.Log.Debug($"[RestraintSetManager] Toggled {slot} visibility ({!currentState})");
+        // invert the state
+        _restraintSets[restraintSetIdx].SetPieceIsEnabled(slot, !currentState);
+        // save the set
+        _saveService.QueueSave(this);
+    }
+
+    public bool GetIsRestraintSetPieceEnabled(int restraintSetIdx, EquipSlot slot) {
+        return _restraintSets[restraintSetIdx]._drawData[slot]._isEnabled;
     }
 
     public void LockRestraintSet(int restraintSetIdx, string wasLockedBy = "") {
@@ -118,7 +150,7 @@ public class RestraintSetManager : ISavable
             return;
         }
         _restraintSets[restraintSetIdx].SetIsLocked(true, wasLockedBy);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public bool TryUnlockRestraintSet(int restraintSetIdx, string UnlockerName = "") {
@@ -141,53 +173,53 @@ public class RestraintSetManager : ISavable
             return false;
         }
         _restraintSets[restraintSetIdx].SetIsLocked(false);
-        Save();
+        _saveService.QueueSave(this);
         return true;
     }
 
     public void ChangeRestraintSetNewLockEndTime(int restraintSetIdx, DateTimeOffset newEndTime) {
         _restraintSets[restraintSetIdx].DeclareNewEndTimeForSet(newEndTime);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ChangeSetDrawDataIsEnabled(int restraintSetIdx, EquipSlot DrawDataSlot, bool isEnabled) {
         _restraintSets[restraintSetIdx]._drawData[DrawDataSlot].SetDrawDataIsEnabled(isEnabled);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ChangeSetDrawDataWasEquippedBy(int restraintSetIdx, EquipSlot DrawDataSlot, string wasEquippedBy) {
         _restraintSets[restraintSetIdx]._drawData[DrawDataSlot].SetDrawDataEquippedBy(wasEquippedBy);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ChangeSetDrawDataIsLocked(int restraintSetIdx, EquipSlot DrawDataSlot, bool isLocked) {
         _restraintSets[restraintSetIdx]._drawData[DrawDataSlot].SetDrawDataLocked(isLocked);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ChangeSetDrawDataSlot(int restraintSetIdx, EquipSlot DrawDataSlot, EquipSlot slot) {
         _restraintSets[restraintSetIdx]._drawData[DrawDataSlot].SetDrawDataSlot(slot);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ChangeSetDrawDataGameItem(int restraintSetIdx, EquipSlot DrawDataSlot, EquipItem gameItem) {
         _restraintSets[restraintSetIdx]._drawData[DrawDataSlot].SetDrawDataGameItem(gameItem);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ChangeSetDrawDataGameStain(int restraintSetIdx, EquipSlot DrawDataSlot, StainId gameStain) {
         _restraintSets[restraintSetIdx]._drawData[DrawDataSlot].SetDrawDataGameStain(gameStain);
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ResetSetDrawDataGameItem(int restraintSetIdx, EquipSlot DrawDataSlot) {
         _restraintSets[restraintSetIdx]._drawData[DrawDataSlot].ResetDrawDataGameItem();
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ResetSetDrawDataGameStain(int restraintSetIdx, EquipSlot DrawDataSlot) {
         _restraintSets[restraintSetIdx]._drawData[DrawDataSlot].ResetDrawDataGameStain();
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void ResetEverythingDueToSafeword() {
@@ -225,6 +257,7 @@ public class RestraintSetManager : ISavable
             array.Add(set.Serialize());
         // return the new object under the label "RestraintSets"
         return new JObject() {
+            ["ActiveSetIdx"] = _selectedIdx,
             ["RestraintSets"] = array,
         };
     }
@@ -239,6 +272,7 @@ public class RestraintSetManager : ISavable
         try {
             var text = File.ReadAllText(file);
             var jsonObject = JObject.Parse(text);
+            _selectedIdx = jsonObject["ActiveSetIdx"]?.Value<int>() ?? 0;
             var restraintSetsArray = jsonObject["RestraintSets"]?.Value<JArray>();
             foreach (var item in restraintSetsArray) {
                 var restraintSet = new RestraintSet();

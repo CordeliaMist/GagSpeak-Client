@@ -4,11 +4,12 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Threading;
 using Newtonsoft.Json;
-using GagSpeak.Data;
 using GagSpeak.Events;
 using GagSpeak.Utility;
 using GagSpeak.Wardrobe;
 using GagSpeak.CharacterData;
+using GagSpeak.Gagsandlocks;
+using GagSpeak.UI.Equipment;
 
 namespace GagSpeak.Interop;
 
@@ -35,6 +36,7 @@ public class GlamourerFunctions : IDisposable
     private readonly    GagSpeakConfig                  _config;                // the plugin interface
     private readonly    GagStorageManager               _gagStorageManager;     // the gag storage manager
     private readonly    RestraintSetManager             _restraintSetManager;   // the restraint set manager
+    private readonly    CharacterHandler                _characterHandler;      // the character handler for managing player and whitelist info
     private readonly    GlamourerService                _Interop;               // the glamourer interop class
     private readonly    ItemAutoEquipEvent              _itemAutoEquipEvent;    // the item auto equip event class
     private readonly    JobChangedEvent                 _jobChangedEvent;       // for whenever we change jobs
@@ -43,11 +45,12 @@ public class GlamourerFunctions : IDisposable
     private             string?                         _lastCustomizationData; // store the last customization data
     private             CancellationTokenSource         _cts;
 
-    public GlamourerFunctions(GagSpeakConfig gagSpeakConfig, RestraintSetManager restraintSetManager,
+    public GlamourerFunctions(GagSpeakConfig gagSpeakConfig, RestraintSetManager restraintSetManager, CharacterHandler characterHandler,
     ClientUserInfo ClientUserInfo, GlamourerService GlamourerService, ItemAutoEquipEvent itemAutoEquipEvent,
     JobChangedEvent jobChangedEvent, GagStorageManager gagStorageManager) {
         // initialize the glamourer interop class
         _config = gagSpeakConfig;
+        _characterHandler = characterHandler;
         _Interop = GlamourerService;
         _itemAutoEquipEvent = itemAutoEquipEvent;
         _charaDataHelpers = ClientUserInfo;
@@ -87,7 +90,7 @@ public class GlamourerFunctions : IDisposable
             await Task.Run(() => DeserializeCustomizationData(_lastCustomizationData));
         }
         catch (Exception ex) {
-            GagSpeak.Log.Error($"[WaitForPlayerToLoad]: Error waiting for player to load: {ex}");
+            GagSpeak.Log.Error($"[WaitForPlayerToLoad]: Error waiting for player to load: {ex.Message}");
         }
     }
 
@@ -96,12 +99,12 @@ public class GlamourerFunctions : IDisposable
    private void GlamourerChanged(int type, nint address) {
         // Will be unessisary until after glamourer does its stateChanged update and more inclusion with IPC
         // CONDITION ONE: Make sure it is from the local player, and not another player
-        if (address != (_charaDataHelpers.Address) || _config.InDomMode) {
+        if (address != _charaDataHelpers.Address) {
             GagSpeak.Log.Verbose($"[GlamourerChanged]: Change not from Character / In Dom Mode, IGNORING");
             return;
         }
-        // CONDITION TWO: _config.playerInfo._enableWardrobe is false, meaning we shouldnt process any of these
-        if(!_config.playerInfo._enableWardrobe) {
+        // CONDITION TWO: _characterHandler.playerChar._enableWardrobe is false, meaning we shouldnt process any of these
+        if(!_characterHandler.playerChar._enableWardrobe) {
             GagSpeak.Log.Debug($"[GlamourerChanged]: Wardrobe is disabled, so we wont be updating/applying any gag items");
             return;
         }
@@ -121,7 +124,7 @@ public class GlamourerFunctions : IDisposable
                 ProcessLastGlamourData();
                 return;
             } catch (Exception ex) {
-                GagSpeak.Log.Error($"[GlamourerChanged]: Error processing last glamour data: {ex}");
+                GagSpeak.Log.Error($"[GlamourerChanged]: Error processing last glamour data: {ex.Message}");
             }
         }
         // CONDITION FIVE: The StateChangeType is an equip or Stain, meaning that the player changed classes in game, or gearsets, causing multiple events to trigger
@@ -169,7 +172,7 @@ public class GlamourerFunctions : IDisposable
 
 
     /// <summary> Processes glamourer data, injects info from wardrobe configurations, then sends back to glamourer. </summary>
-    private async void ProcessLastGlamourData() {
+    public async void ProcessLastGlamourData() {
         // set the item auto-equip to true, so we dont get stuck in a loop
         try {
             _config.disableGlamChangeEvent = true;
@@ -182,7 +185,7 @@ public class GlamourerFunctions : IDisposable
             // serialize and send back off the data
             // await Task.Run(() => SerilizationAndApplyCustomizationData());
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"[ProcessLastGlamourData]: Error processing last glamour data: {ex}");
+            GagSpeak.Log.Error($"[ProcessLastGlamourData]: Error processing last glamour data: {ex.Message}");
         } finally {
             GagSpeak.Log.Debug($"[GlamourerChanged]: re-allowing GlamourChangedEvent");
             _config.finishedDrawingGlamChange = true;
@@ -200,10 +203,11 @@ public class GlamourerFunctions : IDisposable
             var version = bytes[0];
             version = bytes.DecompressToString(out var decompressed);
             GagSpeak.Log.Debug($"[GlamourerChanged]: Decoded string: {decompressed}");
-            _config.cachedCharacterData = JsonConvert.DeserializeObject<GlamourerCharacterData>(decompressed);
+            _config.cachedCharacterData =
+                JsonConvert.DeserializeObject<GlamourerCharacterData>(decompressed) ?? new GlamourerCharacterData();
         }
         catch (Exception ex) {
-            GagSpeak.Log.Error($"[DeserializeCustomizationData]: Error deserializing customization: {ex}");
+            GagSpeak.Log.Error($"[DeserializeCustomizationData]: Error deserializing customization: {ex.Message}");
         }
         #pragma warning restore CS8604 , CS8601 // Possible null reference argument.
     }
@@ -212,20 +216,23 @@ public class GlamourerFunctions : IDisposable
     /// <list type="bullet">
     /// <item><c>customizationData</c><param name="customizationData">String containing base64 info of customization data</param></item>
     /// </list> </summary>
-    public async Task UpdateCachedCharacterData(string? customizationData) {
-        // next, see if we are allowed to apply restraint sets
-        await ApplyRestrainSetToCachedCharacterData();
+    public async Task UpdateCachedCharacterData(string? customizationData = "") {
         // for privacy reasons, we must first make sure that our options for allowing such things are enabled.
-        if(_config.playerInfo._allowItemAutoEquip) {
+        if(_characterHandler.playerChar._allowRestraintSetAutoEquip) {
+            await ApplyRestrainSetToCachedCharacterData();
+        } else {
+            GagSpeak.Log.Debug($"[GlamourerChanged]: Restraint Set Auto-Equip disabled, IGNORING");
+        }
+
+        if(_characterHandler.playerChar._allowItemAutoEquip) {
             await ApplyGagItemsToCachedCharacterData();
         } else {
-            GagSpeak.Log.Debug($"[GlamourerChanged]: Item Auto-Equip is disabled, IGNORING");
+            GagSpeak.Log.Debug($"[GlamourerChanged]: Item Auto-Equip disabled, IGNORING");
         }
     }
 
     /// <summary> Applies the only enabled restraint set to your character on update trigger. </summary>
     public async Task ApplyRestrainSetToCachedCharacterData() { // dummy placeholder line
-        GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: Applying Restraint Set to Cached Character Data");
         // Find the restraint set with the matching name
         foreach (var restraintSet in _restraintSetManager._restraintSets) {
             // If the restraint set is enabled
@@ -247,6 +254,7 @@ public class GlamourerFunctions : IDisposable
                     }
                 }
                 // early exit, we only want to apply one restraint set
+                GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: Applying Restraint Set to Cached Character Data");
                 return;
             }
         }
@@ -258,15 +266,15 @@ public class GlamourerFunctions : IDisposable
         GagSpeak.Log.Debug($"[ApplyGagItems]: Applying Gag Items to Cached Character Data");
         
         // temporary code until glamourer update's its IPC changes
-        await EquipWithSetItem(_config.playerInfo._selectedGagTypes[0], "self");
-        await EquipWithSetItem(_config.playerInfo._selectedGagTypes[1], "self");
-        await EquipWithSetItem(_config.playerInfo._selectedGagTypes[2], "self");
+        await EquipWithSetItem(_characterHandler.playerChar._selectedGagTypes[0], "self");
+        await EquipWithSetItem(_characterHandler.playerChar._selectedGagTypes[1], "self");
+        await EquipWithSetItem(_characterHandler.playerChar._selectedGagTypes[2], "self");
         
     /*      UNTIL GLAMOURER IPC CAN TAKE GRABBING CUSTOMIZATION CORRECTLY, USE THE FORMAT ABOVE
 
         // Iterate over each selected gag type
         var i = 1;
-        foreach (var gagName in _config.playerInfo._selectedGagTypes) {
+        foreach (var gagName in _characterHandler.playerChar._selectedGagTypes) {
             // skip if the gag is none (aka no gag
             if(gagName == "None") {
                 GagSpeak.Log.Debug($"[ApplyGagItems]: GagType is None for layer {i}, not setting item.");
@@ -355,14 +363,14 @@ public class GlamourerFunctions : IDisposable
             });
         }
         catch (Exception ex) {
-            GagSpeak.Log.Error($"[SerilizationAndApplyCustomizationData]: Error serilizing and applying customization: {ex}");
+            GagSpeak.Log.Error($"[SerilizationAndApplyCustomizationData]: Error serilizing and applying customization: {ex.Message}");
         }
     }
 
     public async void OnGagEquippedEvent(object sender, ItemAutoEquipEventArgs e) {
         try {
             // know if we can even do anything anyways
-            if(!(_config.playerInfo._enableWardrobe && _config.playerInfo._allowItemAutoEquip)) {
+            if(!(_characterHandler.playerChar._enableWardrobe && _characterHandler.playerChar._allowItemAutoEquip)) {
                 GagSpeak.Log.Debug($"[OnGagEquippedEvent]: ItemAutoEquip Permissions not granted. Not setting item.");
                 return;
             }
@@ -370,7 +378,7 @@ public class GlamourerFunctions : IDisposable
             await EquipWithSetItem(e.GagType, e.AssignerName);
         }
         catch (Exception ex) {
-            GagSpeak.Log.Error($"[OnGagEquippedEvent]: Error in OnGagEquippedEvent: {ex}");
+            GagSpeak.Log.Error($"[OnGagEquippedEvent]: Error in OnGagEquippedEvent: {ex.Message}");
         }
         finally {
             // release ItemAutoEquipping once done.
@@ -417,7 +425,8 @@ public class GlamourerFunctions : IDisposable
     /// <summary> A Helper function that will return true if ItemAutoEquip should occur based on the assigner name, or if it shouldnt. </summary>
     public bool ValidGagAssignerUser(string gagName, EquipDrawData equipDrawData) {
         // next, we need to see if the gag is being equipped.
-        if(equipDrawData._wasEquippedBy == "self") {
+        if(equipDrawData._wasEquippedBy == "self")
+        {
             GagSpeak.Log.Debug($"[ValidGagAssignerUser]: GagType {gagName} is being equipped by yourself, abiding by your config settings for Item Auto-Equip.");
             return true;
         }
@@ -426,19 +435,23 @@ public class GlamourerFunctions : IDisposable
         var words = tempAssignerName.Split(' ');
         tempAssignerName = string.Join(" ", words.Take(2)); // should only take the first two words
         // if the name matches anyone in the Whitelist:
-        if(_config.whitelist.Any(w => w._name == tempAssignerName)) {
+        if(_characterHandler.whitelistChars.Any(w => w._name == tempAssignerName)) {
             // if the _yourStatusToThem is pet or slave, and the _theirStatusToYou is Mistress, then we can equip the gag.
-            var whitelistCharData = _config.whitelist.FirstOrDefault(w => w._name == tempAssignerName);
-            if(whitelistCharData?._yourStatusToThem == "pet" || whitelistCharData?._yourStatusToThem == "slave" && whitelistCharData?._theirStatusToYou == "Mistress") {
+            int playerIdx = _characterHandler.GetWhitelistIndex(tempAssignerName);
+            if(_characterHandler.whitelistChars[playerIdx].IsRoleLeanSubmissive(_characterHandler.whitelistChars[playerIdx]._yourStatusToThem) 
+            && _characterHandler.whitelistChars[playerIdx].IsRoleLeanDominant(_characterHandler.whitelistChars[playerIdx]._theirStatusToYou))
+            {
                 GagSpeak.Log.Debug($"[ValidGagAssignerUser]: You are a pet/slave to the gag assigner, and {tempAssignerName} is your Mistress. Because this two way relationship is established, allowing Item Auto-Eqiup.");
                 return true;
             } 
-            else {
+            else
+            {
                 GagSpeak.Log.Debug($"[ValidGagAssignerUser]: {tempAssignerName} is not someone you are a pet or slave to, nor are they defined as your Mistress. Thus, Item Auto-Equip being disabled for this gag.");
                 return false;
             }
         }
-        else {
+        else
+        {
             GagSpeak.Log.Debug($"[ValidGagAssignerUser]: GagType {gagName} is being equipped by {tempAssignerName}, but they are not on your whitelist, so we are not doing Item-AutoEquip.");
             return false;
         }

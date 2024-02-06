@@ -6,16 +6,15 @@ using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Configuration;
 using OtterGui.Classes;
 using OtterGui.Widgets;
-using Penumbra.GameData.Enums;
 using Newtonsoft.Json;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
-using GagSpeak.Data;
 using GagSpeak.UI;
 using GagSpeak.Services;
-using GagSpeak.Events;
-using GagSpeak.Wardrobe;
+using GagSpeak.ChatMessages;
 using GagSpeak.Garbler.PhonemeData;
 using GagSpeak.CharacterData;
+using GagSpeak.Gagsandlocks;
+using GagSpeak.Interop;
 
 namespace GagSpeak;
 
@@ -33,6 +32,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          List<ChatChannel.ChatChannels>              ChannelsPuppeteer { get; set; }                         // Which channels are currently enabled / allowed?
     public          TabType                                     SelectedTab { get; set; } = TabType.General; // Default to the general tab
     public          bool                                        viewingRestraintCompartment { get; set; } = false;      // Is viewing the restraint shelf tab in wardrobe?
+    public          bool                                        ToyboxLeftSubTabActive { get; set; } = false;               // Which subtab is active in the toybox?
     public          string                                      sendInfoName = "";                                      // Name of the person you are sending info to
     public          bool                                        acceptingInfoRequests = true;                           // Are you accepting info requests? (for cooldowns)//
     public          Dictionary<string,DateTimeOffset>           timerData { get; set; }                                 // stores the timer data for the plugin
@@ -50,9 +50,10 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          string                                      languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
     public          List<string>                                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
     // our main information for player character and whitelist characters
-    public          PlayerCharacterInfo                         playerInfo { get; set; }                                // stores the player character info
-    public          List<WhitelistedCharacterInfo>              whitelist { get; set; }                                 // stores the whitelist character info
-    
+    // public          PlayerCharacterInfo                         playerInfo { get; set; }                                // stores the player character info
+    // public          List<WhitelistedCharacterInfo>              whitelist { get; set; }                                 // stores the whitelist character info
+    // public          PatternCollection                           patterns { get; set; }                                  // stores the pattern collection for the plugin
+
     [JsonIgnore]
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
 
@@ -60,12 +61,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public Dictionary<ColorId, uint> Colors { get; private set; }
         = Enum.GetValues<ColorId>().ToDictionary(c => c, c => c.Data().DefaultColor);
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GagSpeakConfig"/> class, and initializes any empty lists and dictionaries and other variables so we get a clean fresh startup!
-    /// <list type="bullet">
-    /// <item><c>saveService</c><param name="saveService"> - The save service.</param></item>
-    /// <item><c>migrator</c><param name="migrator"> - The config migrator.</param></item>
-    /// </list> </summary>
+    /// <summary> Initializes a new instance of the <see cref="GagSpeakConfig"/> class </summary>
     public GagSpeakConfig(SaveService saveService, ConfigMigrationService migrator)
     {
         _saveService = saveService;
@@ -77,7 +73,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         // set default values for selected channels/
         if (ChannelsPuppeteer == null || !ChannelsPuppeteer.Any()) {
             ChannelsPuppeteer = new List<ChatChannel.ChatChannels>(){ChatChannel.ChatChannels.Say};}
-
         // set default values for isLocked
         if (this.isLocked == null || !this.isLocked.Any() || this.isLocked.Count > 3) {
             GagSpeak.Log.Debug($"[Config]: isLocked is null, creating new list");
@@ -102,12 +97,9 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         if (this.phoneticSymbolList == null || !this.phoneticSymbolList.Any()) {
             GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
             this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
-        // & create new entry in dictionary for each one!
-        // set default class for GlamourerCharacterData if none exists already. Will be removed later, used for debug purposes now.
-        // if (this.cachedCharacterData == null) {
-        //     GagSpeak.Log.Debug($"[Config]: cachedCharacterData is null, creating new list");
+        
+        // set default values for the cached character data
         this.cachedCharacterData = new GlamourerCharacterData();
-        //}
             
         // finished!
         GagSpeak.Log.Debug("[Configuration File] Constructor Finished Initializing and setting default values, and previous data restored.");
@@ -119,11 +111,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         _saveService.DelaySave(this);
     }
 
-    /// <summary> 
-    /// Loads the config from our save service and migrates it if necessary.
-    /// <list type="bullet">
-    /// <item><c>migrator</c><param name="migrator"> - The config migrator.</param></item>
-    /// </list> </summary>
+    /// <summary> Loads the config from our save service and migrates it if necessary. </summary>
     /// <returns>The migrated config.</returns>
     public void Load(ConfigMigrationService migrator) {
         // Handle deserialization errors

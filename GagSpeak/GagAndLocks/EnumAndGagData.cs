@@ -1,6 +1,4 @@
-using System;
-
-namespace GagSpeak.Data {
+namespace GagSpeak.Gagsandlocks {
 
     /// <summary> the type of statechange provided by glamourerIPC </summary>
     public enum StateChangeType {

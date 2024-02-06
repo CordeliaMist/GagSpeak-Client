@@ -11,6 +11,8 @@ using GagSpeak.UI.Tabs.WhitelistTab;
 using GagSpeak.UI.Tabs.ConfigSettingsTab;
 using GagSpeak.UI.Tabs.HelpPageTab;
 using GagSpeak.UI.Tabs.WardrobeTab;
+using GagSpeak.UI.Tabs.PuppeteerTab;
+using GagSpeak.UI.Tabs.ToyboxTab;
 
 namespace GagSpeak.UI;
 
@@ -28,49 +30,53 @@ public enum TabType {
 public class MainWindow : Window
 {
     private readonly    GagSpeakConfig      _config;
-    private readonly    GagSpeakChangelog   _changelog;
     private readonly    ITab[]              _tabs;
     public readonly     GeneralTab          General;
     public readonly     WhitelistTab        Whitelist;
-    public readonly     ConfigSettingsTab   ConfigSettings;
     public readonly     WardrobeTab         Wardrobe;
+    public readonly		  PuppeteerTab		    Puppeteer;
+    public readonly		  ToyboxTab			      Toybox;
+    public readonly     ConfigSettingsTab   ConfigSettings;
     public readonly     HelpPageTab         HelpPage;
     public              TabType             SelectTab = TabType.None;
 
     /// <summary> Constructs the primary 'MainWindow'. Hosts the space for the other windows to fit in.
     /// <para> Note: The 'MainWindow' is the window space hosting the UI when you type /gagspeak, not any independant tab.
     /// </para> </summary>
-    public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general, GagSpeakChangelog changelog,
-    WhitelistTab whitelist, ConfigSettingsTab configsettings, HelpPageTab helpPageTab, WardrobeTab wardrobeTab): base(GetLabel()) {
-        // let the user know if their direct chat garlber is still enabled upon launch
-        // Let's first make sure that we disable the plugin while inside of gpose.
-        pluginInt.UiBuilder.DisableGposeUiHide = true;
-        // Next let's set the size of the window
-        SizeConstraints = new WindowSizeConstraints() {
-            MinimumSize = new Vector2(500, 525),     // Minimum size of the window
-            MaximumSize = new Vector2(550, 1000)     // Maximum size of the window
-        };
+    public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general,
+	WhitelistTab whitelist, ConfigSettingsTab configsettings, WardrobeTab wardrobeTab,
+	PuppeteerTab puppeteer, ToyboxTab toybox, HelpPageTab helpPageTab): base(GetLabel()) {
+		// Let's first make sure that we disable the plugin while inside of gpose.
+		pluginInt.UiBuilder.DisableGposeUiHide = true;
+		// Next let's set the size of the window
+		SizeConstraints = new WindowSizeConstraints() {
+			MinimumSize = new Vector2(540, 525),     // Minimum size of the window
+			MaximumSize = new Vector2(600, 1000)     // Maximum size of the window
+		};
 
-        // set the private readonly's to the passed in data of the respective names
-        General = general;
-        Whitelist = whitelist;
-        Wardrobe = wardrobeTab;
-        ConfigSettings = configsettings;
-        HelpPage = helpPageTab;
-
-        // Below are the stuff besides the tabs that are passed through
-        _config    = config;
-        _changelog = changelog;
-        // the tabs to be displayed
-        _tabs = new ITab[]
-        {
-            general,
-            whitelist,
-            wardrobeTab,
-            configsettings,
-            helpPageTab
-        };
-    }
+    //Size = new Vector2(540, 525);
+		// set the private readonly's to the passed in data of the respective names
+		General = general;
+		Whitelist = whitelist;
+		Wardrobe = wardrobeTab;
+		Puppeteer = puppeteer;
+		Toybox = toybox;
+		ConfigSettings = configsettings;
+		HelpPage = helpPageTab;
+		// Below are the stuff besides the tabs that are passed through
+		_config    = config;
+		// the tabs to be displayed
+		_tabs = new ITab[]
+		{
+			general,
+			whitelist,
+			wardrobeTab,
+			puppeteer,
+			toybox,
+			configsettings,
+			helpPageTab
+		};
+	}
 
     public override void Draw() {
         // get our cursors Y position and store it into YPOS
@@ -82,19 +88,12 @@ public class MainWindow : Window
             _config.Save(); // FIND OUT HOW TO USE SaveConfig(); ACROSS CLASSES LATER.
         }
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 9f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 6f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
         ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
         ImGui.Text(" ");
         ImGui.SameLine();
-        if (ImGui.Button("Changelog")) {
-            // force open the changelog here
-            _changelog.Changelog.ForceOpen = true;
-        }
-        // In that same line...
-        ImGui.SameLine();
-        // And now have that button be for the Ko-Fi Link
         if (ImGui.Button("Toss Cordy a Thanks♥")) {
             ImGui.SetTooltip( "Only if you want to though!");
             Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
@@ -103,24 +102,16 @@ public class MainWindow : Window
         ImGui.PopStyleColor(3);
     }
 
-    /// <summary> This function is used to draw the changelog window. </summary>
-    private void DrawChangeLog(Changelog changelog) {
-        // Draw the changelog
-        changelog.ForceOpen = true;
-    }
-
-    /// <summary> 
-    /// This function is used to draw the changelog window.
-    /// <list type="bullet">
-    /// <item><c>TabType</c><param name="type"> - the type of tab we want to go to.</param></item>
-    /// </list> </summary> 
+    /// <summary> Gets the correct label to display for each tab type </summary> 
     private ReadOnlySpan<byte> ToLabel(TabType type)
         => type switch // we do this via a switch statement
         {
             TabType.General         => General.Label,
             TabType.Whitelist       => Whitelist.Label,
-            TabType.ConfigSettings  => ConfigSettings.Label,
             TabType.Wardrobe        => Wardrobe.Label,
+            TabType.Puppeteer       => Puppeteer.Label,
+            TabType.Toybox          => Toybox.Label,
+            TabType.ConfigSettings  => ConfigSettings.Label,
             TabType.HelpPage        => HelpPage.Label,
             _                       => ReadOnlySpan<byte>.Empty, // This label confuses me a bit. I think it is just a blank label?
         };
@@ -135,8 +126,10 @@ public class MainWindow : Window
         // @formatter:off
         if (label == General.Label)         return TabType.General;
         if (label == Whitelist.Label)       return TabType.Whitelist;
-        if (label == ConfigSettings.Label)  return TabType.ConfigSettings;
         if (label == Wardrobe.Label)        return TabType.Wardrobe;
+        if (label == Puppeteer.Label)       return TabType.Puppeteer;
+        if (label == Toybox.Label)          return TabType.Toybox;
+        if (label == ConfigSettings.Label)  return TabType.ConfigSettings;
         if (label == HelpPage.Label)        return TabType.HelpPage;
         // @formatter:on
         return TabType.None;

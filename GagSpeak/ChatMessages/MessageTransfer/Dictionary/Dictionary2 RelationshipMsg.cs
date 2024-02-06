@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using GagSpeak.CharacterData;
-
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
 public partial class MessageDictionary {
@@ -29,7 +25,7 @@ public partial class MessageDictionary {
 
         // Request to have absolute submission status [ ID == 13 // request (Absolute-Slave) ]
         else if (textVal.Contains("hears the sound of her leash's chain rattling along the floor as she crawls up to your feet. Stopping, looking "+
-        "up with pleading eyes in an embarassed tone* \"Would it be ok if I became your slave?\""))
+        "up with pleading eyes in an embarassed tone* \"Would it be ok if I became your AbsoluteSlave?\""))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Absolute-Slave) command");
             index = 13;

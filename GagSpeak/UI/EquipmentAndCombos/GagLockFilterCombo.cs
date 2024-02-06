@@ -2,10 +2,10 @@ using System;
 using ImGuiNET;
 using OtterGui.Raii;
 using System.Linq;
-using GagSpeak.Data;
 using GagSpeak.Events;
+using GagSpeak.Gagsandlocks;
 
-namespace GagSpeak.UI.ComboListings;
+namespace GagSpeak.UI.Equipment;
 
 /// <summary> This class is used to handle the gag lock filter combo box. </summary>
 public sealed class GagLockFilterCombo

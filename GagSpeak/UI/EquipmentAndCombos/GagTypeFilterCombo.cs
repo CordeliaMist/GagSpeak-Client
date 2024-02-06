@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface.Utility;
 using GagSpeak.Events;
-using GagSpeak.Data;
 using GagSpeak.Services;
+using GagSpeak.Gagsandlocks;
 
-namespace GagSpeak.UI.ComboListings;
+namespace GagSpeak.UI.Equipment;
 
 /// <summary> This class is used to handle the gag type filter combo box. </summary>
 public sealed class GagTypeFilterCombo 

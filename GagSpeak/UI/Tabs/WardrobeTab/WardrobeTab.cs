@@ -3,17 +3,16 @@ using System.Numerics;
 using ImGuiNET;
 using OtterGui.Raii;
 using OtterGui.Widgets;
-using GagSpeak.Wardrobe;
-
 using OtterGui;
+using Dalamud.Interface.Utility;
 
 namespace GagSpeak.UI.Tabs.WardrobeTab;
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>
 public class WardrobeTab : ITab
 {
     private readonly    GagSpeakConfig                  _config;                // for getting the config
-    private readonly    WardrobeGagCompartment                _GagCompartment;              // for getting the gag shelf
-    private readonly    WardrobeRestraintCompartment          _RestraintCompartment;        // for getting the restraint shelf
+    private readonly    WardrobeGagCompartment          _GagCompartment;              // for getting the gag shelf
+    private readonly    WardrobeRestraintCompartment    _RestraintCompartment;        // for getting the restraint shelf
 
     // for toggling the restraint shelf tab
     private bool ViewingRestraintCompartment {
@@ -25,8 +24,8 @@ public class WardrobeTab : ITab
     } 
 
     public WardrobeTab(GagSpeakConfig config, WardrobeGagCompartment GagCompartment, WardrobeRestraintCompartment RestraintCompartment) {
-        _config         = config;
-        _GagCompartment       = GagCompartment;
+        _config = config;
+        _GagCompartment = GagCompartment;
         _RestraintCompartment = RestraintCompartment;
         _config.viewingRestraintCompartment = false;
     }
@@ -35,6 +34,8 @@ public class WardrobeTab : ITab
 
     /// <summary> This Function draws the content for the window of the ConfigSettings Tab </summary>
     public void DrawContent() {
+        var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
+        ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         DrawShelfSelection();
         if(ViewingRestraintCompartment) {
             _RestraintCompartment.DrawContent();
@@ -55,5 +56,7 @@ public class WardrobeTab : ITab
         ImGui.SameLine();
         if (ImGuiUtil.DrawDisabledButton("Restraint Outfits Compartment", buttonSize, "Configure Lockable Restraint sets that can act as an overlay for your glamour!", ViewingRestraintCompartment))
             ViewingRestraintCompartment = true;
+        // end the style
+        style.Pop();
     }
 }

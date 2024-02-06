@@ -29,11 +29,11 @@ public class IpaParserMandarian
         // Set the path to the JSON file based on the language dialect
         switch (_config.languageDialect) {
             case "IPA_zu_Hans":
-                data_file = "GarblerParser\\jsonFiles\\zu_hans.json"; break; // french, in the standard french dialect
+                data_file = "GarblerCore\\jsonFiles\\zu_hans.json"; break; // french, in the standard french dialect
             case "IPA_zu_Hant":
-                data_file = "GarblerParser\\jsonFiles\\zu_hant.json"; break; // french, using the quebec dialect
+                data_file = "GarblerCore\\jsonFiles\\zu_hant.json"; break; // french, using the quebec dialect
             default:
-                data_file = "GarblerParser\\jsonFiles\\zu_hans.json"; break; // french, in the standard french dialect
+                data_file = "GarblerCore\\jsonFiles\\zu_hans.json"; break; // french, in the standard french dialect
         }
 		// Try to read the JSON file and deserialize it into the obj dictionary
 		try {

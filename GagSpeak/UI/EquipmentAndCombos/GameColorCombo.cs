@@ -2,15 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Dalamud.Interface;
-using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 using OtterGui.Widgets;
 using Penumbra.GameData.DataContainers;
 using Penumbra.GameData.Structs;
 
-namespace GagSpeak.UI.ComboListings;
+namespace GagSpeak.UI.Equipment;
 public sealed class StainColorCombo(float _comboWidth, DictStain _stains)
     : FilterComboColors(_comboWidth, CreateFunc(_stains), GagSpeak.Log)
 {
@@ -26,5 +24,5 @@ public sealed class StainColorCombo(float _comboWidth, DictStain _stains)
     private static Func<IReadOnlyList<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>>> CreateFunc(DictStain stains)
         => () => stains.Select(kvp => kvp)
             .Prepend(new KeyValuePair<StainId, Stain>(Stain.None.RowIndex, Stain.None)).Select(kvp
-                => new KeyValuePair<byte, (string, uint, bool)>(kvp.Key.Id, (kvp.Value.Name, kvp.Value.RgbaColor, kvp.Value.Gloss))).ToList();
+                => new KeyValuePair<byte, (string, uint, bool)>(kvp.Key.Id, (kvp.Value.Name, kvp.Value.RgbaColor, kvp.Value.Gloss))).ToList();   
 }

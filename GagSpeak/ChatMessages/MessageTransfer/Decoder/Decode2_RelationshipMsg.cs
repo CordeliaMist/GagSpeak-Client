@@ -53,7 +53,7 @@ public partial class MessageDecoder {
         else if(encodedMsgIndex == 13) {
             // define the pattern using regular expressions
             string pattern = @"^\*(?<playerInfo>.+) hears the sound of her leash's chain rattling along the floor as she crawls up to your
-             feet. Stopping, looking up with pleading eyes in an embarassed tone\* ""Would it be ok if I became your slave?""$";
+             feet. Stopping, looking up with pleading eyes in an embarassed tone\* ""Would it be ok if I became your AbsoluteSlave?""$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is successful
@@ -61,6 +61,7 @@ public partial class MessageDecoder {
                 decodedMessage[0] = "requestAbsoluteSubmissionStatus"; // assign "requestAbsoluteSubmissionStatus" to decodedMessage[0]
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // Assign player info to decodedMessage[1]
+                decodedMessage[3] = "AbsoluteSlave"; // assign the relation type to decodedMessage[3]
                 GagSpeak.Log.Debug($"[Message Decoder]: request absolute submission status: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]}");
             } else {
                 GagSpeak.Log.Error($"[Message Decoder]: request absolute submission status: Failed to decode message: {recievedMessage}");
@@ -108,7 +109,7 @@ public partial class MessageDecoder {
         }
 
         // decoder for accepting a player as your new Absolute-Slave (relation)
-        // [0] = commandtype, [1] = playerMsgWasSentFrom
+        // [0] = commandtype, [1] = playerMsgWasSentFrom, [3] = nameOfRelationSent
         else if(encodedMsgIndex == 16) {
             // define the pattern using regular expressions
             string pattern = @"^\*(?<playerInfo>.+) glanced back down at her companion who had just crawled up to their legs with the pleading
