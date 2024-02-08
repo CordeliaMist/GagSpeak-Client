@@ -24,7 +24,6 @@ public class UserProfileWindow : Window, IDisposable
     private readonly CharacterHandler   _characterHandler;
     private readonly UiBuilder          _uiBuilder;
     public           int                _profileIndexOfUserSelected { get; set;}
-    public           Vector2            mainWindowPosition { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserProfileWindow"/> class.

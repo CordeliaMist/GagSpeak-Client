@@ -106,7 +106,8 @@ public static class ServiceHandler
             .AddSingleton<InteractOrPermButtonEvent>()
             .AddSingleton<ItemAutoEquipEvent>()
             .AddSingleton<JobChangedEvent>()
-            .AddSingleton<LanguageChangedEvent>();
+            .AddSingleton<LanguageChangedEvent>()
+            .AddSingleton<ActiveDeviceChangedEvent>();
 
     /// <summary> Classes to add to the service collection from the [GagsAndLocks] folder </summary>
     private static ServiceManager AddGagsAndLocks(this ServiceManager services)
@@ -127,7 +128,10 @@ public static class ServiceHandler
 
     /// <summary> Classes to add to the service collection from the [Toybox] folder </summary>
     private static ServiceManager AddToybox(this ServiceManager services)
-        => services.AddSingleton<PatternHandler>();
+        => services.AddSingleton<PatternHandler>()
+            .AddSingleton<PatternPlayback>()
+            .AddSingleton<WorkshopMediator>()
+            .AddSingleton<PuppeteerMediator>();
 
     /// <summary> Classes to add to the service collection from the [UI] folder </summary>
     private static ServiceManager AddUi(this ServiceManager services)
@@ -158,6 +162,8 @@ public static class ServiceHandler
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HelpPageTab>()
             .AddSingleton<UserProfileWindow>()
+            .AddSingleton<SavePatternWindow>()
+            .AddSingleton<TestingPhaseWarningWindow>()
             .AddSingleton<DebugWindow>()
             .AddSingleton<GagSpeakChangelog>();
 

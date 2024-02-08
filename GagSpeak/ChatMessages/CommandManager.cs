@@ -112,7 +112,14 @@ public class CommandManager : IDisposable // Our main command list manager
     private void OnGagSpeak(string command, string arguments)
     {
         var argumentList = arguments.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (argumentList.Length < 1) { _mainWindow.Toggle(); return; }
+        if (argumentList.Length < 1) { 
+            if(_config.TestingPhaseDisableMode) {
+                _chat.PrintError("GagSpeak is currently in testing phase, and is disabled. Please wait for the release.");
+            } else {
+                _mainWindow.Toggle();
+                return;
+            }
+        }
 
         var argument = argumentList.Length == 2 ? argumentList[1] : string.Empty; // Make arguement be everything after command
         switch(argumentList[0].ToLowerInvariant()) {
@@ -125,15 +132,14 @@ public class CommandManager : IDisposable // Our main command list manager
             case "debug":
                 _debugWindow.Toggle();     // when [/gagspeak debug] is typed
                 return;
-            case "startdebugging":
-                _debugWindow.Toggle();
-                _mainWindow.Toggle();
-                _realChatInteraction.SendMessage("/glamourer");
-                _realChatInteraction.SendMessage("/xllog");
-                return;
             case "":
-                _mainWindow.Toggle(); // when [/gagspeak] is typed
-                return;
+                if(_config.TestingPhaseDisableMode) {
+                    _chat.PrintError("GagSpeak is currently in testing phase, and is disabled. Please wait for the release.");
+                    return;
+                } else {
+                    _mainWindow.Toggle(); // when [/gagspeak] is typed
+                    return;
+                }
             default:
                 PrintHelpGagSpeak("help");// when no arguements are passed.
                 return;

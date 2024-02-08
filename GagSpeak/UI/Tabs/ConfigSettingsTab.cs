@@ -81,49 +81,60 @@ public class ConfigSettingsTab : ITab
         ImGui.Columns(2,"ConfigColumns", false);
         ImGui.SetColumnWidth(0, ImGui.GetWindowWidth() / 2 - 10);
 
-        UIHelpers.Checkbox("Commands From Friends", 
+        UIHelpers.CheckboxNoConfig("Commands From Friends", 
             "Commands & Interactions from other players are only recieved by GagSpeak if in your Friend List.",
-            _characterHandler.playerChar._doCmdsFromFriends, v => _characterHandler.playerChar._doCmdsFromFriends = v, _config);
-
-        UIHelpers.Checkbox("Commands From Party",
+            _characterHandler.playerChar._doCmdsFromFriends,
+            v => _characterHandler.ToggleCmdFromFriends()
+        );
+        UIHelpers.CheckboxNoConfig("Commands From Party",
             "Commands & Interactions from other players are only recieved by GagSpeak if in the Party List.",
-            _characterHandler.playerChar._doCmdsFromParty, v => _characterHandler.playerChar._doCmdsFromParty = v, _config);
-
+            _characterHandler.playerChar._doCmdsFromParty,
+            v => _characterHandler.ToggleCmdFromParty()
+        );
         if(_characterHandler.playerChar._directChatGarblerLocked) {ImGui.BeginDisabled();}
-        UIHelpers.Checkbox("Direct Chat Garbler",
+        UIHelpers.CheckboxNoConfig("Direct Chat Garbler",
             "AUTOMATICALLY Translate any NON-COMMAND chat message to gagspeak.\n\n"+
             ">> This will ONLY occur in any of the checked off channels under ENABLED CHANNELS below.\n\n"+
             ">> This is Serverside, just like /gsm.",
-            _characterHandler.playerChar._directChatGarblerActive, v => _characterHandler.playerChar._directChatGarblerActive = v, _config);
+            _characterHandler.playerChar._directChatGarblerActive, 
+            v => _characterHandler.ToggleDirectChatGarbler()
+        );
         if(_characterHandler.playerChar._directChatGarblerLocked) {ImGui.EndDisabled();}
 
-        UIHelpers.Checkbox("Enable Wardrobe",
+        UIHelpers.CheckboxNoConfig("Garbler Zone Warnings",
+            "Sends a warning to your chat every time you switch zones when direct chat garbler is enabled.\n",
+            _characterHandler.playerChar._liveGarblerWarnOnZoneChange,
+            v => _characterHandler.ToggleZoneWarnings()
+        );
+        UIHelpers.CheckboxNoConfig("Enable Wardrobe",
             "Must be enabled for anything in the Kink Wardrobe component of GagSpeak to function.",
-            _characterHandler.playerChar._enableWardrobe, v => _characterHandler.playerChar._enableWardrobe = v, _config);
-
-        UIHelpers.Checkbox("Enable GagItem Auto-Equip",
-            "[WHEN ON] : Any Gags you have individually enabled for Item Auto-Equip will work again.\n"+
-            "[WHEN OFF]: Disables all gag's auto equips.\n"+
-            ">> Acts as an Override for a quick disable across all gags for your privacy needs.<<\n"+
-            ">> For any gag to have their Item Auto-Equip work, it must be configured and enabled in wardrobe.\n"+
-            ">> Only auto-equips on gag equip if done by someone in your whitelist that you're a pet or slave to.",
-            _characterHandler.playerChar._allowItemAutoEquip, v => _characterHandler.playerChar._allowItemAutoEquip = v, _config);
-
-        UIHelpers.Checkbox("Enable Restraints Auto-Equip",
-            "[REQUIREMENT] : Only people on your WHITELIST can lock restraints when enabled.\n"+
-            "[REQUIREMENT] : This will be allows for ANYONE in your whitelist, so ONLY enable if you trust them to!\n"+
-            ">> Allows any person meeting the requirements above to lock/unlock any of your restraint sets on you.",
-            _characterHandler.playerChar._allowRestraintSetAutoEquip, v => _characterHandler.playerChar._allowRestraintSetAutoEquip = v, _config);
-
-        UIHelpers.Checkbox("Enable Puppeteer",
+            _characterHandler.playerChar._enableWardrobe,
+            v => _characterHandler.ToggleEnableWardrobe()
+        );
+        UIHelpers.CheckboxNoConfig("Gag Items Auto-Equip",
+            "If this option is enabled, anyone in your whitelist that applies a gag to you, applies the GagStorage item as well.\n"+
+            ">> This does not happen regardless if that item is disabled in your GagStorage.",
+            _characterHandler.playerChar._allowItemAutoEquip,
+            v => _characterHandler.ToggleGagItemAutoEquip()
+        );
+        UIHelpers.CheckboxNoConfig("Restraint Sets Auto-Equip",
+            "If enabled, anyone in your whitelist, any restraint set that is enabled will auto equip.\n"+
+            ">> You can manually disable this in the wardrobe tab so they only auto equip when you want them to.",
+            _characterHandler.playerChar._allowRestraintSetAutoEquip,
+            v => _characterHandler.ToggleRestraintSetAutoEquip()
+        );
+        UIHelpers.CheckboxNoConfig("Enable Puppeteer",
             "Allows the use of the Puppeteer Module of GagSpeak.\n"+
             ">> This will allow anyone in your whitelist to use the Puppeteer Module on you who is allowed.",
-            _characterHandler.playerChar._allowPuppeteer, v => _characterHandler.playerChar._allowPuppeteer = v, _config);
-
-        UIHelpers.Checkbox("Enable Toybox", 
+            _characterHandler.playerChar._allowPuppeteer,
+            v => _characterHandler.TogglePuppeteer()
+        );
+        UIHelpers.CheckboxNoConfig("Enable Toybox", 
             "Allows the use of the Toybox Module of GagSpeak.\n"+
             ">> This will allow anyone in your whitelist to use the Toybox Module on you who is allowed.",
-            _characterHandler.playerChar._enableToybox, v => _characterHandler.playerChar._enableToybox = v, _config);
+            _characterHandler.playerChar._enableToybox,
+            v => _characterHandler.ToggleEnableToybox()
+        );
         
         // Create the language dropdown
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);

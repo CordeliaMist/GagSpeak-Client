@@ -113,7 +113,7 @@ public partial class ResultLogic {
             _characterHandler.whitelistChars[Idx]._enableToybox                 = bool.Parse(decodedMessage[31]);
             _characterHandler.whitelistChars[Idx]._allowsChangingToyState       = bool.Parse(decodedMessage[32]);
             _characterHandler.whitelistChars[Idx]._allowIntensityControl        = bool.Parse(decodedMessage[33]);
-            _characterHandler.whitelistChars[Idx]._intensityLevel               = int.Parse(decodedMessage[34]);
+            _characterHandler.whitelistChars[Idx]._intensityLevel               = byte.Parse(decodedMessage[34]);
             _characterHandler.whitelistChars[Idx]._allowsUsingPatterns          = bool.Parse(decodedMessage[35]);
             _characterHandler.whitelistChars[Idx]._allowToyboxLocking           = bool.Parse(decodedMessage[37]);
             config.Save();

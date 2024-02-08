@@ -11,6 +11,8 @@ using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 using GagSpeak.Services;
 using Dalamud.Interface.Utility;
+using Dalamud.Game.Text.SeStringHandling;
+using OtterGui.Classes;
 
 namespace GagSpeak.Utility;
 
@@ -19,6 +21,17 @@ public static class UIHelpers
 {
     /// <summary> Frame Height for square icon buttons. </summary>
     public static Vector2 IconButtonSize = new Vector2(ImGui.GetFrameHeight());
+
+
+    /// <summary> A helper function for putting anything we want to display in the debug log in chat as well
+    /// <list type="Bullet">
+    /// <item><c>message</c><param name="message"> - The message to display</param></item>
+    /// </list> </summary>
+    public static void LogAndPrintGagSpeakMessage(string message, IChatGui chat, string italicBracketText = "[GagSpeak]") {
+        GagSpeak.Log.Debug(message);
+        chat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]")
+        .AddText($"{message}").AddItalicsOff().BuiltString);
+    }
 
     /// <summary> Push a text under a certain font to the UI 
     /// <list type="Bullet">
@@ -74,21 +87,37 @@ public static class UIHelpers
         return ret;
     }
 
-    /// <summary>
+    /// <summary> 
     /// This function draws a checkbox with a label and tooltip, alternative to the other helper function "DrawCheckbox"
     /// <list type="bullet">
     /// <item><c>label</c><param name="label"> - The label to display outside the checkbox</param></item>
     /// <item><c>tooltip</c><param name="tooltip"> - The tooltip to display when hovering over the checkbox</param></item>
     /// <item><c>current</c><param name="current"> - The current value of the checkbox</param></item>
     /// <item><c>setter</c><param name="setter"> - The setter for the checkbox</param></item>
-    /// </list>
-    /// </summary>
+    /// </list> </summary>
     public static void Checkbox(string label, string tooltip, bool current, Action<bool> setter, GagSpeakConfig _config) {
         using var id  = ImRaii.PushId(label);
         var       tmp = current;
         if (ImGui.Checkbox(string.Empty, ref tmp) && tmp != current) {
             setter(tmp);
             _config.Save();
+        }
+        ImGui.SameLine();
+        ImGuiUtil.LabeledHelpMarker(label, tooltip);
+    }
+
+    /// <summary> Just like the other one, but doesnt require gagspeak config
+    /// <list type="bullet">
+    /// <item><c>label</c><param name="label"> - The label to display outside the checkbox</param></item>
+    /// <item><c>tooltip</c><param name="tooltip"> - The tooltip to display when hovering over the checkbox</param></item>
+    /// <item><c>current</c><param name="current"> - The current value of the checkbox</param></item>
+    /// <item><c>setter</c><param name="setter"> - The setter for the checkbox</param></item>
+    /// </list> </summary>
+    public static void CheckboxNoConfig(string label, string tooltip, bool current, Action<bool> setter) {
+        using var id  = ImRaii.PushId(label);
+        var       tmp = current;
+        if (ImGui.Checkbox(string.Empty, ref tmp) && tmp != current) {
+            setter(tmp);
         }
         ImGui.SameLine();
         ImGuiUtil.LabeledHelpMarker(label, tooltip);

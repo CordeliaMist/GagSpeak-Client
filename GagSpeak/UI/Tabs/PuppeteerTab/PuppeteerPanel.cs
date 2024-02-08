@@ -6,6 +6,8 @@ using GagSpeak.CharacterData;
 using GagSpeak.ChatMessages;
 using Dalamud.Interface.Utility;
 using GagSpeak.Services;
+using OtterGui;
+using System;
 
 namespace GagSpeak.UI.Tabs.PuppeteerTab;
 public partial class PuppeteerPanel
@@ -15,12 +17,17 @@ public partial class PuppeteerPanel
     private readonly    GagSpeakConfig              _config;
     private readonly    FontService                 _fonts;
     private             string?                     _tempTriggerPhrase;
+    private             string?                     _tempStartParameter;
+    private             string?                     _tempEndParameter;
     public PuppeteerPanel(CharacterHandler characterHandler, GagSpeakConfig config, 
     PuppeteerAliasTable aliasTable, FontService fontService) {
         _characterHandler = characterHandler;
         _config = config;
         _aliasTable = aliasTable;
         _fonts = fontService;
+        _tempTriggerPhrase = null;
+        _tempStartParameter = null;
+        _tempEndParameter = null;
     }
 
     public void Draw(float height, float width) {
@@ -75,45 +82,88 @@ public partial class PuppeteerPanel
         using var style   = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         using var child = ImRaii.Child("##PuppeteerDrawPanel", Vector2.Zero, true, ImGuiWindowFlags.NoScrollbar);
         if (!child) { return; }
-
-        // change column count to 2
-        ImGui.Columns(2,"PuppeteerSettings", false);
-        // set width to 2/3 the width of the content region
-        ImGui.SetColumnWidth(0, width*2.3f);
-        // draw the trigger phrase
-        ImGui.PushFont(_fonts.UidFont);
-        ImGui.Text($"Your Trigger Phrase for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}:");
-        // store the input text boxes trigger phrase
-        var TriggerPhrase  = _tempTriggerPhrase ?? _characterHandler.playerChar._triggerPhraseForPuppeteer[_characterHandler.activeListIdx];
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sTriggerPhrase", ref TriggerPhrase, 64, ImGuiInputTextFlags.EnterReturnsTrue))
-            _tempTriggerPhrase = TriggerPhrase;
-        // will only update our safeword once we click away or enter is pressed
-        if (ImGui.IsItemDeactivatedAfterEdit()) {
-            _characterHandler.SetNewTriggerPhrase(TriggerPhrase);
-            _tempTriggerPhrase = null;
-        }
-        ImGui.PopFont();
-        // go to the next column
-        ImGui.NextColumn();
-        // draw out the permissions
-        var checkbox1Value = _characterHandler.playerChar._allowSitRequests[_characterHandler.activeListIdx];
-        var checkbox2Value = _characterHandler.playerChar._allowMotionRequests[_characterHandler.activeListIdx];
-        var checkbox3Value = _characterHandler.playerChar._allowAllCommands[_characterHandler.activeListIdx];
-        if(ImGui.Checkbox($"Sit & Groundsit", ref checkbox1Value)) {
-            _characterHandler.UpdateAllowSitRequests(checkbox1Value);
-        }
-        // next box
-        if(ImGui.Checkbox("Motion Commands", ref checkbox2Value)) {
-            _characterHandler.UpdateAllowMotionRequests(checkbox2Value);
-        }
-        // next box
-        if(ImGui.Checkbox("All Commands", ref checkbox3Value)) {
-            _characterHandler.UpdateAllowAllCommands(checkbox3Value);
-        }
-        // end the columns
-        ImGui.Columns(1);
+        
         var yPos = ImGui.GetCursorPosY();
+        using (var table = ImRaii.Table("UniqueAliasListCreator", 3, ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.BordersInnerV)) {
+            if (!table) { return; }
+            width = ImGui.GetContentRegionAvail().X;
+            ImGui.TableSetupColumn("##TriggerPhrase", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 290);
+            ImGui.TableSetupColumn("##Options", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Start Charmmmmm").X);
+            ImGui.TableSetupColumn("##Checkboxes", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            // draw the trigger phrase
+            ImGui.PushFont(_fonts.UidFont);
+            try{
+                yPos = ImGui.GetCursorPosY();
+                ImGui.SetCursorPosY(yPos - 5*ImGuiHelpers.GlobalScale);
+                ImGui.Text($"Trigger Phrase for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}:");
+                // store the input text boxes trigger phrase
+                var TriggerPhrase  = _tempTriggerPhrase ?? _characterHandler.playerChar._triggerPhraseForPuppeteer[_characterHandler.activeListIdx];
+                ImGui.SetNextItemWidth(280*ImGuiHelpers.GlobalScale);
+                if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sTriggerPhrase", ref TriggerPhrase, 64, ImGuiInputTextFlags.EnterReturnsTrue))
+                    _tempTriggerPhrase = TriggerPhrase;
+                // will only update our safeword once we click away or enter is pressed
+                if (ImGui.IsItemDeactivatedAfterEdit()) {
+                    _characterHandler.SetNewTriggerPhrase(TriggerPhrase);
+                    _tempTriggerPhrase = null;
+                }
+            } catch (Exception e) {
+                GagSpeak.Log.Error($"[PuppeteerPanel]: Error drawing trigger phrase: {e}");
+            } finally {
+                ImGui.PopFont();
+            }
+            // go to the next column
+            ImGui.TableNextColumn();
+            // draw out the inputs for our custom start and end parameters
+            var tempStartParam  = _tempStartParameter ?? _characterHandler.playerChar._StartCharForPuppeteerTrigger[_characterHandler.activeListIdx];
+            ImGui.SetNextItemWidth(20*ImGuiHelpers.GlobalScale);
+            if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sBegin",
+            ref tempStartParam, 1, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                _tempStartParameter = tempStartParam;
+            }
+            if (ImGui.IsItemDeactivatedAfterEdit()) {
+                _characterHandler.SetNewStartCharForPuppeteerTrigger(tempStartParam);
+                _tempStartParameter = null;
+            }
+            ImGuiUtil.LabeledHelpMarker("Start Char", "Sets a custom start character for enclosing what gets executed after your trigger word");
+            var tempEndParam  = _tempEndParameter ?? _characterHandler.playerChar._EndCharForPuppeteerTrigger[_characterHandler.activeListIdx];
+            ImGui.SetNextItemWidth(20*ImGuiHelpers.GlobalScale);
+            if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sEnd", 
+            ref tempEndParam, 1, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                _tempEndParameter = tempEndParam;
+            }
+            if (ImGui.IsItemDeactivatedAfterEdit()) {
+                _characterHandler.SetNewEndCharForPuppeteerTrigger(tempEndParam);
+                _tempEndParameter = null;
+            }
+            ImGuiUtil.LabeledHelpMarker("End Char", "Sets a custom start character for enclosing what gets executed after your trigger word");
+            // go to the next column
+            ImGui.TableNextColumn();
+            // draw out the permissions
+            var checkbox1Value = _characterHandler.playerChar._allowSitRequests[_characterHandler.activeListIdx];
+            var checkbox2Value = _characterHandler.playerChar._allowMotionRequests[_characterHandler.activeListIdx];
+            var checkbox3Value = _characterHandler.playerChar._allowAllCommands[_characterHandler.activeListIdx];
+            if(ImGui.Checkbox($"##Sitting", ref checkbox1Value)) {
+                _characterHandler.UpdateAllowSitRequests(checkbox1Value);
+            }
+            ImGui.SameLine();
+            ImGuiUtil.LabeledHelpMarker("Sitting", "Allows commands like /sit and /groundsit");
+            // next box
+            if(ImGui.Checkbox("##Emotes", ref checkbox2Value)) {
+                _characterHandler.UpdateAllowMotionRequests(checkbox2Value);
+            }
+            ImGui.SameLine();
+            ImGuiUtil.LabeledHelpMarker("Emotes", "Allows emote and expressions");
+            // next box
+            if(ImGui.Checkbox("##All", ref checkbox3Value)) {
+                _characterHandler.UpdateAllowAllCommands(checkbox3Value);
+            }
+            ImGui.SameLine();
+            ImGuiUtil.LabeledHelpMarker("All", "Can use any commands with arguements.\n"+
+            $"Commands can be encapsulated in the start & end parameters you defined above.");
+        }
+        yPos = ImGui.GetCursorPosY();
         ImGui.SetCursorPosY(yPos + 3*ImGuiHelpers.GlobalScale);
         ImGui.Separator();
         yPos = ImGui.GetCursorPosY();

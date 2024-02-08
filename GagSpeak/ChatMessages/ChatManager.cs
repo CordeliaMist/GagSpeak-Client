@@ -11,15 +11,16 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using XivCommon.Functions;
 using GagSpeak.ChatMessages.MessageTransfer;
 using GagSpeak.CharacterData;
+using GagSpeak.ToyboxandPuppeteer;
 
 namespace GagSpeak.ChatMessages;
-
 /// <summary> This class is used to handle the incoming chat messages from the game, and decided what to do with them based off what is processed. </summary>
 public class ChatManager
 {
     private readonly IChatGui               _clientChat;                        // client chat 
     private readonly GagSpeakConfig         _config;                            // config from GagSpeak
     private readonly CharacterHandler       _characterHandler;                   // character data manager
+    private readonly PuppeteerMediator      _puppeteerMediator;                 // puppeteer mediator
     private readonly IClientState           _clientState;                       // client state for player info
     private readonly IObjectTable           _objectTable;                       // object table for scanning through rendered objects
     private readonly RealChatInteraction    _realChatInteraction;               // real chat interaction
@@ -27,13 +28,13 @@ public class ChatManager
     private readonly MessageDecoder         _messageDecoder;                    // decoder for encoded messages
     private readonly ResultLogic            _msgResultLogic;                    // logic for what happens to the player as a result of the tell
     private readonly IFramework             _framework;                         // framework for dalamud and the game
-    private          Queue<string>          messageQueue = new Queue<string>(); // queue for messages to be sent to the server
-    private          Stopwatch              messageTimer = new Stopwatch();     // timer for the queue
+    private          Queue<string>          messageQueue = new Queue<string>(); // stores any messages to be sent on the next framework update
+    private          Stopwatch              messageTimer = new Stopwatch();     // timer for the queue of messages to be sent
 
     /// <summary> This is the constructor for the ChatManager class. </summary>
     public ChatManager(IChatGui clientChat, GagSpeakConfig config, IClientState clientState, IObjectTable objectTable,
     RealChatInteraction realChatInteraction, MessageDictionary messageDictionary, MessageDecoder messageDecoder,
-    ResultLogic messageResultLogic ,IFramework framework, CharacterHandler characterHandler) {
+    ResultLogic messageResultLogic ,IFramework framework, CharacterHandler characterHandler, PuppeteerMediator puppeteerMediator) {
         _clientChat = clientChat;
         _config = config;
         _clientState = clientState;
@@ -44,6 +45,7 @@ public class ChatManager
         _msgResultLogic = messageResultLogic;
         _framework = framework;
         _characterHandler = characterHandler;
+        _puppeteerMediator = puppeteerMediator;
 
         _framework.Update += framework_Update;
         _clientChat.CheckMessageHandled += Chat_OnCheckMessageHandled;
@@ -68,7 +70,6 @@ public class ChatManager
             int locatedMessage = -1;
             if(_messageDictionary.LookupMsgDictionary(message.TextValue, ref locatedMessage)) {
                 isHandled = true;
-                _config.Save();
                 return;
             }
         }
@@ -153,16 +154,11 @@ public class ChatManager
 
             // if the incoming tell is an encoded message, lets check if we are in dom mode before accepting changes
             int encodedMsgIndex = 0; // get a index to know which encoded msg it is, if any
-            if (_messageDictionary.LookupMsgDictionary(chatmessage.TextValue, ref encodedMsgIndex))
-            {
+            if (_messageDictionary.LookupMsgDictionary(chatmessage.TextValue, ref encodedMsgIndex)) {
                 // at this point, we have determined that it is an encoded message, so let's make sure the criteria for sending is right
-
-                // CONDITION A :: It is an encoded GagSpeak command
-                if (encodedMsgIndex >= 1 && encodedMsgIndex <= 38)
-                {
+                if (encodedMsgIndex >= 1 && encodedMsgIndex <= 38) {
                     // find the correctly encoded message index to decode, and decode it
                     List<string> decodedCommandMsg = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
-                    
                     // Now that we have found it and all the decoded info is stored in decodedCommandMsg, process its result.
                     if(_msgResultLogic.CommandMsgResLogic(fmessage.ToString(), decodedCommandMsg, isHandled, _clientChat, _config))
                     {
@@ -174,6 +170,34 @@ public class ChatManager
                 }
             } // skipped to this point if not encoded message
         } // skips directly to here if not a tell
+
+        // at this point, we have determined that it is not an encoded message, and we still have the sender info.
+        // because we know this, and are at this point, we can now scan our message to see if it meets the conditions for puppeteer.
+        GagSpeak.Log.Debug($"[ChatManager] SenderName: {senderName}");
+        if(senderName != null && _characterHandler.playerChar._allowPuppeteer){ //&& _characterHandler.IsPlayerInWhitelist(senderName)) {
+            GagSpeak.Log.Debug($"[ChatManager] Puppeteer was enabled, scanning message from {senderName}, as they are in your whitelist");
+            // see if it contains your trigger word for them
+            if(_puppeteerMediator.ContainsTriggerWord(senderName, chatmessage.TextValue, out string puppeteerMessageToSend)){
+                GagSpeak.Log.Debug($"[ChatManager] Puppeteer message to send: {puppeteerMessageToSend}");
+                if(puppeteerMessageToSend != string.Empty) {
+                    // apply any alias translations, if any
+                    SeString aliasedMessageToSend = _puppeteerMediator.ConvertAliasCommandsIfAny(senderName, puppeteerMessageToSend);
+                    // if it does, then our message is valid, but we should also make sure we are in one of our enabled channels
+                    if(_config.ChannelsPuppeteer.Contains(ChatChannel.GetChatChannel())
+                    && _puppeteerMediator.MeetsSettingCriteria(senderName, aliasedMessageToSend))
+                    {
+                        // if we are in a valid chatchannel, then send it
+                        messageQueue.Enqueue("/" + aliasedMessageToSend);
+                    } else {
+                        GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
+                    }
+                } else {
+                    GagSpeak.Log.Debug($"[ChatManager] Puppeteer message to send was empty, aborting");
+                }
+            } else {
+                GagSpeak.Log.Debug($"[ChatManager] Message does not contain trigger word");
+            }
+        }
     }
 
     /// <summary> Will search through the senders friend list to see if they are a friend or not. </summary>

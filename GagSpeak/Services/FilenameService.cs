@@ -10,7 +10,7 @@ public class FilenameService
     public readonly string ConfigFile;      // Configuration file
     public readonly string RestraintSetsFile; // Directory for restraint sets
     public readonly string GagStorageFile;    // for storing information about our gags 
-    public readonly string CharacterData;     // for storing information about our whitelist
+    public readonly string CharacterDataFile;     // for storing information about our whitelist
     public readonly string PatternStorageFile; // for storing information about our patterns
 
     /// <summary>
@@ -21,7 +21,7 @@ public class FilenameService
         ConfigFile          = pi.ConfigFile.FullName;
         RestraintSetsFile   = Path.Combine(ConfigDirectory, "RestraintSets.json");
         GagStorageFile      = Path.Combine(ConfigDirectory, "GagStorage.json");
-        CharacterData       = Path.Combine(ConfigDirectory, "CharacterData.json");
+        CharacterDataFile       = Path.Combine(ConfigDirectory, "CharacterData.json");
         PatternStorageFile  = Path.Combine(ConfigDirectory, "PatternStorage.json");
     }
 }

@@ -30,7 +30,7 @@ public class BackupService
             new(fileNames.ConfigFile),
             new(fileNames.RestraintSetsFile),
             new(fileNames.GagStorageFile),
-            new(fileNames.CharacterData),
+            new(fileNames.CharacterDataFile),
             new(fileNames.PatternStorageFile),
         };
         return list;

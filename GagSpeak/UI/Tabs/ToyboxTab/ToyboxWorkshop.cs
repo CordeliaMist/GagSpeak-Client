@@ -23,15 +23,16 @@ public class ToyboxWorkshopSubtab : IDisposable
     private readonly    IDalamudTextureWrap _floatingDotTextureWrap;    // for loading images
     private readonly    UiBuilder   _uiBuilder;             // for loading images
     private readonly    FontService _fontService;
+    private readonly    PlugService _plugService;
+    private readonly    WorkshopMediator _mediator;
+    private             SavePatternWindow _SavePatternWindow;
     private TimerRecorder _timerRecorder;
     private TimerRecorder _storedRecordedData;
-    private Stopwatch _recordingStopwatch;
     private List<double> recordedPositions = new List<double>();  // The recorded Y positions of the circle, this is used for the realtime feedback, temporary
     private List<double> tempStoredLoopPositions = new List<double>();  // Records AND STORES information about the recorded Y value of the circle, temporary
-    private List<byte> storedRecordedPositions = new List<byte>();  // Records AND STORES information about the recorded Y value of the circle, perminant
+    //private List<byte> storedRecordedPositions = new List<byte>();  // Records AND STORES information about the recorded Y value of the circle, perminant
     private bool isFirstPlaybackLoop = true;
     private bool isDragging;
-    public bool isRecording = false;
     public bool isLooping = false;
     public bool isFloating = false;
     private double[] circlePos = new double[2];  // The circle's position
@@ -52,9 +53,14 @@ public class ToyboxWorkshopSubtab : IDisposable
     #endregion Attributes
 
 
-    public ToyboxWorkshopSubtab(FontService fontService, UiBuilder uiBuilder, DalamudPluginInterface pluginInterface) {
+    public ToyboxWorkshopSubtab(FontService fontService, UiBuilder uiBuilder, SavePatternWindow savePatternWindow,
+    DalamudPluginInterface pluginInterface, PlugService plugService, WorkshopMediator mediator) {
         _fontService = fontService;
         _uiBuilder = uiBuilder;
+        _plugService = plugService;
+        _mediator = mediator;
+        _SavePatternWindow = savePatternWindow;
+        
         var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "arrows-spin.png");
         var imagePath2 = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "circle-dot.png");
         var IconImage = _uiBuilder.LoadImage(imagePath);
@@ -64,7 +70,7 @@ public class ToyboxWorkshopSubtab : IDisposable
 
         isDragging = false;
         // Create a new stopwatch
-        _recordingStopwatch = new Stopwatch();
+        _mediator.recordingStopwatch = new Stopwatch();
         // create a timer for realtime feedback display. This data is disposed of automatically after 300 entries (15s of data)
         _timerRecorder = new TimerRecorder(10, AddCirclePositionToBuffer);
         // create a timer for storing the recorded data. This timer is saved, and disposed of upon plugin restart or a new pattern start
@@ -73,8 +79,6 @@ public class ToyboxWorkshopSubtab : IDisposable
 
     public void Dispose() {
         _timerRecorder.Dispose();
-        _recordingStopwatch.Stop();
-        _recordingStopwatch.Reset();
     }
 
     public void Draw() {
@@ -82,6 +86,7 @@ public class ToyboxWorkshopSubtab : IDisposable
                                 .Push(ImGuiStyleVar.CellPadding, new Vector2(0, 0));
         using var child = ImRaii.Child("##ToyboxWorkshopPanelChild", new Vector2(ImGui.GetContentRegionAvail().X, -1), true, ImGuiWindowFlags.NoScrollbar);
         if (!child) { return;}
+        if(!_mediator.isRecording && _mediator.finishedRecording) { ImGui.BeginDisabled(); }
         try{
         // Draw the waveform
         
@@ -176,20 +181,37 @@ public class ToyboxWorkshopSubtab : IDisposable
             // now we can draw the buttons
             width = ImGui.GetContentRegionAvail().X;
             // Draw the buttons for recording and stopping the recording
-            if(!isRecording) {
-                if(ImGuiUtil.DrawDisabledButton("Start Recording##StartRecordingButton", new Vector2(width, -1), string.Empty, isRecording)) {
-                    isRecording = !isRecording;
+            if(!_mediator.isRecording) {
+                if(ImGuiUtil.DrawDisabledButton("Start Recording##StartRecordingButton", new Vector2(width, -1), string.Empty, _mediator.isRecording)) {
+                    _mediator.isRecording = !_mediator.isRecording;
                     StartRecording();
                 }
             } else {
-                if(ImGuiUtil.DrawDisabledButton("Stop Recording##StopRecordingButton", new Vector2(width, -1), string.Empty, !isRecording)) {
-                    isRecording = !isRecording;
+                if(ImGuiUtil.DrawDisabledButton("Stop Recording##StopRecordingButton", new Vector2(width, -1), string.Empty, !_mediator.isRecording)) {
+                    _mediator.isRecording = !_mediator.isRecording;
                     StopRecording();
+                    // for saving a pattern after it is finished recording
+                    if(!_mediator.isRecording && _mediator.finishedRecording) {
+                        // Get the size and position of the main window
+                        Vector2 mainWindowSize = ImGui.GetWindowSize();
+                        Vector2 mainWindowPos = ImGui.GetWindowPos();
+                        // Calculate the center of the main window
+                        Vector2 center = mainWindowPos + mainWindowSize / 2.0f;
+                        // Get the size of the SavePatternWindow
+                        Vector2 savePatternWindowSize = new Vector2(200, 100); // You need to implement GetSize method in SavePatternWindow
+                        // Calculate the position of the SavePatternWindow so that it's centered relative to the main window
+                        Vector2 savePatternWindowPos = center - savePatternWindowSize / 2.0f;
+                        // Set the position of the SavePatternWindow
+                        ImGui.SetNextWindowPos(savePatternWindowPos);
+                        _SavePatternWindow.Toggle();
+                    }
                 }
             }
         }
         } catch (Exception e) {
             GagSpeak.Log.Error($"{e} Error drawing the toybox workshop subtab");
+        } finally {
+            if(!_mediator.isRecording && _mediator.finishedRecording) { ImGui.EndDisabled(); }
         }
     }
 
@@ -212,8 +234,8 @@ public class ToyboxWorkshopSubtab : IDisposable
             ImGui.SetNextItemWidth(width);
             ImGui.AlignTextToFramePadding();
             ImGui.PushFont(_fontService.UidFont);
-            if(isRecording) {
-                ImGuiUtil.Center($"{_recordingStopwatch.Elapsed.ToString(@"mm\:ss")}");
+            if(_mediator.isRecording) {
+                ImGuiUtil.Center($"{_mediator.recordingStopwatch.Elapsed.ToString(@"mm\:ss")}");
             } else {
                 // we should move down the same ammount that cell would have printed
                 var yPos2 = ImGui.GetCursorPosY();
@@ -286,23 +308,29 @@ public class ToyboxWorkshopSubtab : IDisposable
     }
 
     public void StartRecording() {
-        storedRecordedPositions.Clear();
+        _mediator.storedRecordedPositions.Clear();
         _timerRecorder.Start();
         _storedRecordedData.Start();
-        _recordingStopwatch.Start();  // Start the stopwatch
-        isRecording = true;
+        _mediator.recordingStopwatch.Start();  // Start the stopwatch
+        _mediator.isRecording = true;
     }
 
     public void StopRecording() {
         _timerRecorder.Stop();
         _storedRecordedData.Stop();
-        _recordingStopwatch.Stop();  // Stop the stopwatch
-        _recordingStopwatch.Reset();  // Reset the stopwatch
         recordedPositions.Clear();
         tempStoredLoopPositions.Clear();
-        isRecording = false;
+        // handle mediators
+        _mediator.recordingStopwatch.Stop();  // Stop the stopwatch
+        _mediator.isRecording = false;
+        _mediator.finishedRecording = true;
+        // send a command to switch the vibe back down to 0
+        _ = _plugService.ToyboxVibrateAsync(0, 10);
+        // Open the popup
+        ImGui.OpenPopup("Save Pattern");
     }
 
+    // Then, in your main rendering loop:
     private int loopIndex; // the position in the temp stored loop data we are in
     // fired every 10ms
     private void AddCirclePositionToBuffer(object? sender, ElapsedEventArgs e) {
@@ -346,13 +374,29 @@ public class ToyboxWorkshopSubtab : IDisposable
             return;
         }
     }
-    // fired every 200ms
     private void RecordData(object? sender, ElapsedEventArgs e) {
-        storedRecordedPositions.Add((byte)Math.Round(circlePos[1]));
+        if(isLooping && !isDragging && tempStoredLoopPositions.Count > 0) {
+            // GagSpeak.Log.Debug("Looping, but not dragging, and we have data!");
+            // if we are not dragging, and we have data, then we need to add the data from the temp storage
+            _mediator.storedRecordedPositions.Add((byte)Math.Round(tempStoredLoopPositions[loopIndex]));
+        } else {
+            // GagSpeak.Log.Debug("Not Looping!");
+            // just add to the default
+            _mediator.storedRecordedPositions.Add((byte)Math.Round(circlePos[1]));
+        }
         // if we reached passed our "capped limit", start removing the data at the beginning
-        if (storedRecordedPositions.Count > 270000) {  // Limit the number of recorded positions to 1000
+        if (_mediator.storedRecordedPositions.Count > 270000) {  // Limit the number of recorded positions to 1000
             GagSpeak.Log.Debug("Capped the stored data, stopping recording!");
             StopRecording();
+        }
+        if(_plugService.HasConnectedDevice() && _plugService.IsClientConnected() && _plugService.anyDeviceConnected) {
+            if(isLooping && !isDragging && tempStoredLoopPositions.Count > 0) {
+                //GagSpeak.Log.Debug($"{(byte)Math.Round(tempStoredLoopPositions[loopIndex])}");
+                _ = _plugService.ToyboxVibrateAsync((byte)Math.Round(tempStoredLoopPositions[loopIndex]), 10);
+            } else {
+                //GagSpeak.Log.Debug($"{(byte)Math.Round(circlePos[1])}");
+                _ = _plugService.ToyboxVibrateAsync((byte)Math.Round(circlePos[1]), 10);
+            }
         }
     }
 #endregion Helper Fuctions

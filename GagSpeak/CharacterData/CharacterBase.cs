@@ -38,8 +38,8 @@ public class CharacterInfoBase
     /////////////////////////////////////////// TOYBOX MODULE SETTINGS ////////////////////////////////////////
     public  bool                _enableToybox { get; set; } = false;            // [TIER 4] if granting them access to toybox
     public  bool                _allowIntensityControl { get; set; } = false;   // [TIER 0] if they can control the vibes intensity and speed CANNOT BE
-    public  double              _activeToyStepSize { get; set; } = 0;           // [TIER 0] step size of the vibe, aka how many different levels of intensity it has
-    public  int                 _intensityLevel { get; set; } = 0;              // [TIER 2] the guage from 0 to _activeToyStepSize     
+    public  double              _activeToystepInterval { get; set; } = 0;           // [TIER 0] step size of the vibe, aka how many different levels of intensity it has
+    public  int                 _intensityLevel { get; set; } = 0;              // [TIER 2] the guage from 0 to _activeToystepInterval     
     public  bool                _allowToyboxLocking { get; set; } = false;      // [TIER 3] if granting them access to lock toybox        
     ///////////////////////////////////////// FUTURE MODULES CAN GO HERE ////////////////////////////////////////
     public CharacterInfoBase() {
@@ -67,7 +67,7 @@ public class CharacterInfoBase
             ["RestraintSetLocking"] = _restraintSetLocking,
             ["EnableToybox"] = _enableToybox,
             ["AllowIntensityControl"] = _allowIntensityControl,
-            ["ActiveToyStepSize"] = _activeToyStepSize,
+            ["ActiveToystepInterval"] = _activeToystepInterval,
             ["IntensityLevel"] = _intensityLevel,
             ["AllowToyboxLocking"] = _allowToyboxLocking
         };
@@ -88,8 +88,8 @@ public class CharacterInfoBase
         _restraintSetLocking = jsonObject["RestraintSetLocking"]?.Value<bool>() ?? false;
         _enableToybox = jsonObject["EnableToybox"]?.Value<bool>() ?? false;
         _allowIntensityControl = jsonObject["AllowIntensityControl"]?.Value<bool>() ?? false;
-        _activeToyStepSize = jsonObject["ActiveToyStepSize"]?.Value<double>() ?? 0;
-        _intensityLevel = jsonObject["IntensityLevel"]?.Value<int>() ?? 0;
+        _activeToystepInterval = jsonObject["ActiveToystepInterval"]?.Value<double>() ?? 0;
+        _intensityLevel = jsonObject["IntensityLevel"]?.Value<byte>() ?? 0;
         _allowToyboxLocking = jsonObject["AllowToyboxLocking"]?.Value<bool>() ?? false;
     }
 #endregion Json Saving and Loading

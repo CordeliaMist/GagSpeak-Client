@@ -7,8 +7,8 @@ public class PatternData
 {
     public string _name; // the name of the pattern
     public string _description; // the description of the pattern
-    public string _author; // the author of the pattern
     public string _duration; // the duration of the pattern
+    public bool _selected; // can this pattern be executed
     public bool _isActive; // is the pattern currently active/running
     public bool _loop; // should the pattern loop
     public List<byte> _patternData; // the data for the pattern. Stores the expected intensity of the vibrator every 20ms from range of 0 to 100
@@ -17,8 +17,8 @@ public class PatternData
         // define default data for the set
         _name = "New Pattern";
         _description = "No Description";
-        _author = "Unknown";
         _duration = "0h00m00s";
+        _selected = false;
         _isActive = false;
         _loop = false;
         _patternData = new List<byte>();
@@ -32,8 +32,8 @@ public class PatternData
         _description = description;
     }
 
-    public void ChangePatternAuthor(string author) {
-        _author = author;
+    public void ChangeSelectedState(bool selected) {
+        _selected = selected;
     }
 
     public void ChangePatternActive(bool isActive) {
@@ -52,8 +52,8 @@ public class PatternData
         {
             ["Name"] = _name,
             ["Description"] = _description,
-            ["Author"] = _author,
             ["Duration"] = _duration,
+            ["Selected"] = _selected,
             ["IsActive"] = _isActive,
             ["Loop"] = _loop,
             ["PatternData"] = patternDataString
@@ -61,18 +61,22 @@ public class PatternData
     }
 
     public void Deserialize(JObject jsonObject) {
-        _name = jsonObject["Name"]?.Value<string>() ?? string.Empty;
-        _description = jsonObject["Description"]?.Value<string>() ?? string.Empty;
-        _author = jsonObject["Author"]?.Value<string>() ?? string.Empty;
-        _duration = jsonObject["Duration"]?.Value<string>() ?? string.Empty;
-        _isActive = jsonObject["IsActive"]?.Value<bool>() ?? false;
-        _loop = jsonObject["Loop"]?.Value<bool>() ?? false;
-        
-        _patternData.Clear();
-        var patternDataString = jsonObject["PatternData"]?.Value<string>();
-        if (patternDataString != null) {
-            // Split the PatternData string into an array and convert each element to a byte
-            _patternData = patternDataString.Split(',').Select(byte.Parse).ToList();
+        try{
+            _name = jsonObject["Name"]?.Value<string>() ?? string.Empty;
+            _description = jsonObject["Description"]?.Value<string>() ?? string.Empty;
+            _duration = jsonObject["Duration"]?.Value<string>() ?? string.Empty;
+            _selected = jsonObject["Selected"]?.Value<bool>() ?? false;
+            _isActive = jsonObject["IsActive"]?.Value<bool>() ?? false;
+            _loop = jsonObject["Loop"]?.Value<bool>() ?? false;
+            
+            _patternData.Clear();
+            var patternDataString = jsonObject["PatternData"]?.Value<string>();
+            if (patternDataString != null) {
+                // Split the PatternData string into an array and convert each element to a byte
+                _patternData = patternDataString.Split(',').Select(byte.Parse).ToList();
+            }
+        } catch (System.Exception e) {
+            GagSpeak.Log.Debug($"{e} Error deserializing pattern data");
         }
     }
 }

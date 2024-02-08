@@ -17,7 +17,8 @@ public class GagSpeakWindowManager : IDisposable
 
     /// <summary> Initializes a new instance of the <see cref="GagSpeakWindowManager"/> class.</summary>
     public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config, IChatGui chatGui,
-    DebugWindow uiDebug, HelpPageTab helpPage, GagSpeakChangelog changelog, UserProfileWindow userProfile) {
+    DebugWindow uiDebug, HelpPageTab helpPage, GagSpeakChangelog changelog, UserProfileWindow userProfile,
+    SavePatternWindow savePatternWindow, TestingPhaseWarningWindow testingPhaseWarningWindow) {
         // set the main ui window
         _uiBuilder       = uiBuilder;
         _ui              = ui;
@@ -26,12 +27,14 @@ public class GagSpeakWindowManager : IDisposable
         _windowSystem.AddWindow(uiDebug);
         _windowSystem.AddWindow(helpPage);
         _windowSystem.AddWindow(userProfile);
+        _windowSystem.AddWindow(savePatternWindow);
+        _windowSystem.AddWindow(testingPhaseWarningWindow);
         _windowSystem.AddWindow(changelog.Changelog);
 
         _uiBuilder.Draw                  += _windowSystem.Draw;     // for drawing the UI stuff
-        _uiBuilder.OpenConfigUi          += _ui.Toggle;             // for toggling the UI stuff
+        //_uiBuilder.OpenConfigUi          += _ui.Toggle;             // for toggling the UI stuff (disabled for now)
 
-        _ui.Toggle();
+        // _ui.Toggle();
 
         //handle a fresh install
         if (config.FreshInstall){

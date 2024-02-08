@@ -79,7 +79,7 @@ public class MainWindow : Window
 	}
 
     public override void Draw() {
-        // get our cursors Y position and store it into YPOS
+
         var yPos = ImGui.GetCursorPosY();
         // set the cursor position to the top left of the window
         if (TabBar.Draw("##tabs", ImGuiTabBarFlags.None, ToLabel(SelectTab), out var currentTab, () => { }, _tabs)) {

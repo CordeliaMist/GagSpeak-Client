@@ -25,10 +25,83 @@ public class CharacterHandler : ISavable
         playerChar = new PlayerCharacterInfo();
         whitelistChars = new List<WhitelistedCharacterInfo>();
         activeListIdx = 0;
-        // load the information from our storage file
+        // load the information from our storage file stuff
         Load();
-        GagSpeak.Log.Debug($"[CharacterHandler]: CharacterHandler loaded! Loaded {whitelistChars.Count} the whitelist.");
     }
+#region Config Settings
+    public void ToggleCmdFromFriends() {
+        playerChar._doCmdsFromFriends = !playerChar._doCmdsFromFriends;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleCmdFromParty() {
+        playerChar._doCmdsFromParty = !playerChar._doCmdsFromParty;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleDirectChatGarbler() {
+        playerChar._directChatGarblerActive = !playerChar._directChatGarblerActive;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleDirectChatGarblerLock() {
+        playerChar._directChatGarblerLocked = !playerChar._directChatGarblerLocked;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleZoneWarnings() {
+        playerChar._liveGarblerWarnOnZoneChange = !playerChar._liveGarblerWarnOnZoneChange;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleEnableWardrobe() {
+        playerChar._enableWardrobe = !playerChar._enableWardrobe;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleGagItemAutoEquip() {
+        playerChar._allowItemAutoEquip = !playerChar._allowItemAutoEquip;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleRestraintSetAutoEquip() {
+        playerChar._allowRestraintSetAutoEquip = !playerChar._allowRestraintSetAutoEquip;
+        _saveService.QueueSave(this);
+    }
+
+    public void TogglePuppeteer() {
+        playerChar._allowPuppeteer = !playerChar._allowPuppeteer;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleEnableToybox() {
+        playerChar._enableToybox = !playerChar._enableToybox;
+        _saveService.QueueSave(this);
+    
+    }
+
+    public void ToggleAllowIntensityControl() {
+        playerChar._allowIntensityControl = !playerChar._allowIntensityControl;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleChangeToyState() {
+        playerChar._allowChangingToyState[activeListIdx] = !playerChar._allowChangingToyState[activeListIdx];
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleAllowPatternExecution() {
+        playerChar._allowUsingPatterns[activeListIdx] = !playerChar._allowUsingPatterns[activeListIdx];
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleToyboxUILocking() {
+        playerChar._allowToyboxLocking = !playerChar._allowToyboxLocking;
+        _saveService.QueueSave(this);
+    }
+
+    
+#endregion Config Settings
 #region PlayerChar Handler Functions
     public void SetNewTriggerPhrase(string newPhrase) {
         playerChar._triggerPhraseForPuppeteer[activeListIdx] = newPhrase;
@@ -93,6 +166,16 @@ public class CharacterHandler : ISavable
         else {
             playerChar._triggerAliases[activeListIdx]._aliasTriggers[index]._enabled = value;
         }
+    }
+
+    public void SetNewStartCharForPuppeteerTrigger(string newStartChar) {
+        playerChar._StartCharForPuppeteerTrigger[activeListIdx] = newStartChar;
+        _saveService.QueueSave(this);
+    }
+
+    public void SetNewEndCharForPuppeteerTrigger(string newEndChar) {
+        playerChar._EndCharForPuppeteerTrigger[activeListIdx] = newEndChar;
+        _saveService.QueueSave(this);
     }
 #endregion PlayerChar Handler Functions
 
@@ -171,7 +254,7 @@ public class CharacterHandler : ISavable
 
 #region Json ISavable & Loads
     public string ToFilename(FilenameService filenameService)
-        => filenameService.CharacterData;
+        => filenameService.CharacterDataFile;
 
     public void Save(StreamWriter writer)
     {
@@ -200,7 +283,7 @@ public class CharacterHandler : ISavable
 
     public void Load() {
         #pragma warning disable CS8604, CS8602 // Possible null reference argument.
-        var file = _saveService.FileNames.CharacterData;
+        var file = _saveService.FileNames.CharacterDataFile;
         whitelistChars.Clear();
         if (!File.Exists(file)) {
             return;
@@ -209,6 +292,12 @@ public class CharacterHandler : ISavable
             var text = File.ReadAllText(file);
             var jsonObject = JObject.Parse(text);
             activeListIdx = jsonObject["SelectedIdx"]?.Value<int>() ?? 0;
+            // Deserialize PlayerCharacterData
+            var playerCharacterData = jsonObject["PlayerCharacterData"]?.Value<JObject>();
+            if (playerCharacterData != null) {
+                playerChar = new PlayerCharacterInfo();
+                playerChar.Deserialize(playerCharacterData);
+            }
             var whitelistCharsArray = jsonObject["WhitelistData"].Value<JArray>();
             foreach (var item in whitelistCharsArray) {
                 var listedCharacter = new WhitelistedCharacterInfo();
@@ -218,7 +307,7 @@ public class CharacterHandler : ISavable
         } catch (Exception ex) {
             GagSpeak.Log.Error($"Failure to load Whitelisted Data: Error during parsing. {ex}");
         } finally {
-            GagSpeak.Log.Debug($"[GagStorageManager] CharacterData.json loaded! Loaded {whitelistChars.Count} the whitelist.");
+            GagSpeak.Log.Debug($"[CharacterHandler] CharacterData.json loaded! Loaded {whitelistChars.Count} the whitelist.");
         }
         //#pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }

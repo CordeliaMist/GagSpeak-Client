@@ -49,11 +49,10 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          string                                      language { get; set; } = "English";                     // The language dialect to use for the IPA conversion
     public          string                                      languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
     public          List<string>                                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
-    // our main information for player character and whitelist characters
-    // public          PlayerCharacterInfo                         playerInfo { get; set; }                                // stores the player character info
-    // public          List<WhitelistedCharacterInfo>              whitelist { get; set; }                                 // stores the whitelist character info
-    // public          PatternCollection                           patterns { get; set; }                                  // stores the pattern collection for the plugin
 
+    public          bool TestingPhaseDisableMode { get; set; } = false; // disables the testing phrase mode
+    
+    
     [JsonIgnore]
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
 

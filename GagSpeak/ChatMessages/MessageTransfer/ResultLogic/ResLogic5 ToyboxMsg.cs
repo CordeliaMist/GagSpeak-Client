@@ -84,7 +84,7 @@ public partial class ResultLogic {
             int index = _characterHandler.GetWhitelistIndex(playerName);
             DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
             if(tier != DynamicTier.Tier0 && tier != DynamicTier.Tier1) {
-                _characterHandler.playerChar._intensityLevel = int.Parse(decodedMessage[35]);
+                _characterHandler.playerChar._intensityLevel = byte.Parse(decodedMessage[35]);
                 GagSpeak.Log.Debug($"[Message Decoder]: {decodedMessage[1]} had its intensity updated "+
                 $"to lv.{decodedMessage[35]}");
                 _config.Save();

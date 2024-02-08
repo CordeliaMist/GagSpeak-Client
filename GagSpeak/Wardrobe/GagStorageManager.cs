@@ -14,7 +14,7 @@ using GagSpeak.Utility;
 namespace GagSpeak.Wardrobe;
 public class GagStorageManager : ISavable
 {
-    public int _selectedIdx = 0;
+    public GagList.GagType _selectedGag = 0;
     public Dictionary<GagList.GagType, EquipDrawData> _gagEquipData = [];
     
     [JsonIgnore]
@@ -34,11 +34,11 @@ public class GagStorageManager : ISavable
     }
 
 #region Manager Methods
-    public int GetSelectedIdx() => _selectedIdx;
+    public GagList.GagType GetSelectedIdx() => _selectedGag;
 
-    public void SetSelectedIdx(int idx) {
-        _selectedIdx = idx;
-        Save();
+    public void SetSelectedIdx(GagList.GagType idx) {
+        _selectedGag = idx;
+        _saveService.QueueSave(this);
     }
 
 
@@ -113,7 +113,7 @@ public class GagStorageManager : ISavable
         foreach (var pair in _gagEquipData)
             obj[pair.Key.ToString()] = pair.Value.Serialize();
         return new JObject() {
-            ["SelectedIdx"] = _selectedIdx,
+            ["SelectedGag"] = _selectedGag.ToString(),
             ["GagEquipData"] = obj,
         };
     }
@@ -128,7 +128,9 @@ public class GagStorageManager : ISavable
         try {
             var text = File.ReadAllText(file);
             var jsonObject = JObject.Parse(text);
-            _selectedIdx = jsonObject["SelectedIdx"]?.Value<int>() ?? 0;
+            if(jsonObject["SelectedGag"] != null){
+                _selectedGag = (GagList.GagType)Enum.Parse(typeof(GagList.GagType), jsonObject["SelectedGag"].Value<string>());
+            }    
             var gagEquipDataToken = jsonObject["GagEquipData"].Value<JObject>();
             if (gagEquipDataToken != null) {
                 foreach (var gagData in gagEquipDataToken) {

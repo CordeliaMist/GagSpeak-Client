@@ -12,9 +12,7 @@ namespace GagSpeak.UI.Tabs.WardrobeTab;
 public class GagStorageSelector
 {
     private readonly    GagStorageManager   _gagStorageManager;     // for getting the gag storage manager
-    private             GagList.GagType     _selectedGag;            // for getting the selected gag
     private             float               _width;
-    private readonly    ImRaii.Color        _childColor = new();
 
     /// <summary> Initializes a new instance wardrobe tab"/> class. <summary>
     public GagStorageSelector(GagStorageManager gagStorageManager)
@@ -44,11 +42,11 @@ public class GagStorageSelector
         // push the 
 
         foreach(var gag in Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>()) {
-            if(ImGui.Selectable(gag.GetGagAlias(), _gagStorageManager._selectedIdx == (int)gag)) {
-                // update the selected GagIndex in our gagstorage manager
-                _gagStorageManager.SetSelectedIdx((int)gag);
-                // update the actively displayed gag
-                _selectedGag = gag;
+            if(ImGui.Selectable(gag.GetGagAlias(), _gagStorageManager._selectedGag == gag)) {
+                // Only update the selected GagIndex in our gagstorage manager if it's different from the currently selected gag
+                if (_gagStorageManager._selectedGag != gag) {
+                    _gagStorageManager.SetSelectedIdx(gag);
+                }
             }
         }
     }

@@ -34,9 +34,9 @@ public partial class PuppeteerAliasTable {
         if (!table) { return; }
             // draw the header row
             ImGui.TableSetupColumn("##Delete", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
-            ImGui.TableSetupColumn("Alias Text Input", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("ThisIsALongName").X);
+            ImGui.TableSetupColumn("Alias Text Input", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("ThisIsALongNamemmmmm").X);
             ImGui.TableSetupColumn("Use##IsEnabled", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
-            ImGui.TableSetupColumn("Replacement text to execute instead", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("   Replacement text to execute instead", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableHeadersRow();
             // Replace this with your actual data
             foreach (var (aliasTrigger, idx) in _characterHandler.playerChar._triggerAliases.ElementAt(_characterHandler.activeListIdx)
