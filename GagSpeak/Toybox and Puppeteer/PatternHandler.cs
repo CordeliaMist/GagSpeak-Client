@@ -144,6 +144,7 @@ public class PatternHandler : ISavable
         _patterns.Clear();
         _activePatternIndex = -1; // Reset the active pattern index
         if (!File.Exists(file)) {
+            // create default data for the new file if it does not exist
             return;
         }
         try {

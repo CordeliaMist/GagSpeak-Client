@@ -25,6 +25,11 @@ public class RestraintSetManager : ISavable
         
         // load the information from our storage file
         Load();
+        // if the load failed, meaning our _restraintSets is empty, then we need to add a default set
+        if (_restraintSets == null || !_restraintSets.Any()) {
+            _restraintSets = new List<RestraintSet> { new RestraintSet() };
+            Save();
+        }
         // correctly account for any non-updated timed locked sets
         foreach (var set in _restraintSets) {
             if (set._locked && set._lockedTimer < DateTimeOffset.Now) {

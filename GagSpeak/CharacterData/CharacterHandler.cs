@@ -100,7 +100,7 @@ public class CharacterHandler : ISavable
         _saveService.QueueSave(this);
     }
 
-    
+
 #endregion Config Settings
 #region PlayerChar Handler Functions
     public void SetNewTriggerPhrase(string newPhrase) {
@@ -286,6 +286,7 @@ public class CharacterHandler : ISavable
         var file = _saveService.FileNames.CharacterDataFile;
         whitelistChars.Clear();
         if (!File.Exists(file)) {
+            GagSpeak.Log.Debug($"[CharacterHandler] CharacterData.json not found! Creating new file.");
             return;
         }
         try {
@@ -311,5 +312,18 @@ public class CharacterHandler : ISavable
         }
         //#pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }
+
+    public void CreateNewFile() {
+        // create a new charater data file
+        playerChar = new PlayerCharacterInfo();
+        
+        // Create a default WhitelistedCharacterInfo
+        var defaultWhitelistUser = new WhitelistedCharacterInfo();
+        whitelistChars.Add(defaultWhitelistUser);
+        
+        // Save the data
+        Save();
+    }
+
 #endregion Json ISavable & Loads
 }

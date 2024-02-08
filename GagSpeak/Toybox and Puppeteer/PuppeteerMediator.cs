@@ -21,7 +21,7 @@ public class PuppeteerMediator
     /// <summary> Checks if whitelisted players message contains your trigger word </summary>
     /// <returns> True if the message contains the trigger word, false if not </returns>
     public bool ContainsTriggerWord(string SenderName, string messageRecieved, out string puppeteerMessageToSend) {
-        int indexOfWhitelistedChar = _characterHandler.GetWhitelistIndex("None"); // our temp name in our whitelist
+        int indexOfWhitelistedChar = _characterHandler.GetWhitelistIndex(SenderName); // our temp name in our whitelist
         // if the index is -1, then the sender is not whitelisted
         if (indexOfWhitelistedChar == -1) {
             // if user is not in whitelist, exit early.
@@ -53,7 +53,7 @@ public class PuppeteerMediator
     }
 
     public bool MeetsSettingCriteria(string SenderName, SeString messageRecieved) {
-        int indexOfWhitelistedChar = _characterHandler.GetWhitelistIndex("None"); // our temp name in our whitelist
+        int indexOfWhitelistedChar = _characterHandler.GetWhitelistIndex(SenderName); // our temp name in our whitelist
         // if the index is -1, then the sender is not whitelisted
         if (indexOfWhitelistedChar == -1) { return false; }
         // At this point, our main concern is if the message to play is within the parameters of the settings we set
@@ -93,7 +93,7 @@ public class PuppeteerMediator
 
     public SeString ConvertAliasCommandsIfAny(string SenderName, string puppeteerMessageToSend) {
         // as a final step, let's check your alias list for the player, and translate any aliases you have set for them
-        int indexOfWhitelistedChar = _characterHandler.GetWhitelistIndex("None"); // our temp name in our whitelist
+        int indexOfWhitelistedChar = _characterHandler.GetWhitelistIndex(SenderName); // our temp name in our whitelist
         // we dont really need to do this check, but im being safe
         if (indexOfWhitelistedChar == -1) { return puppeteerMessageToSend; }
         // now we can use this index to scan our aliasLists
