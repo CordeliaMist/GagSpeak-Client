@@ -10,7 +10,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = playerMsgWasSentFrom, [3] = nameOfRelationSent
         if(encodedMsgIndex == 11) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) looks down upon the submissive one before them\, their pleading eyes forcing a smile across their lips\. ""I take it you would like for me to become your (?<relationType>.+)\""$";
+            string pattern = @"^\*(?<playerInfo>.+) looks down upon the submissive one before them\, their pleading eyes forcing a smile across their lips\. ""I take it you would like for me to become your (?<relationType>.+)\?""$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is successful
@@ -30,7 +30,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = playerMsgWasSentFrom, [3] = nameOfRelationSent
         else if(encodedMsgIndex == 12) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) looks up at the dominant figure before them pleading eyes\, apperciating their presence deeply and desiring to grow closer towards them\.\* ""Would you please take me in as your (?<relationType>.+)""$";
+            string pattern = @"^\*(?<playerInfo>.+) looks up at the dominant figure before them pleading eyes\, apperciating their presence deeply and desiring to grow closer towards them\.\* ""Would you please take me in as your (?<relationType>.+)\?""$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is successful
