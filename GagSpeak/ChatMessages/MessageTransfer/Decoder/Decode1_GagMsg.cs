@@ -31,8 +31,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = GagAssigner (who sent it), [2] = layer index, [11] = lockType,
         else if (encodedMsgIndex == 2) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) takes out a (?<lockType>.+) from her pocket and uses it to lock
-             your (?<layer>first|second|third) layer\*$";
+            string pattern = @"^\*(?<playerInfo>.+) takes out a (?<lockType>.+) from her pocket and uses it to lock your (?<layer>first|second|third) layer\*$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
@@ -53,8 +52,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = GagAssigner (who sent the msg), [2] = layerIndex, [11] = lockType, [14] = password/timer
         else if (encodedMsgIndex == 3) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) takes out a (?<lockType>.+) from (?<player>.+)'s pocket
-             and sets the password to (?<password>.+) locking your (?<layer>first|second|third) layer gag\*$";
+            string pattern = @"^\*(?<playerInfo>.+) takes out a (?<lockType>.+) from (?<player>.+)\'s pocket and sets the password to (?<password>.+)\, locking your (?<layer>first|second|third) layer gag\*$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
@@ -76,8 +74,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = LockAssigner, [2] = layerIndex, [11] = lockType, [14] = password, [15] = timer
         else if (encodedMsgIndex == 4) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) takes out a (?<lockType>.+) from her pocket and sets the password
-             to (?<password>.+) with (?<timer>.+) left, before locking your (?<layer>first|second|third) layer gag\*$";
+            string pattern = @"^\*(?<playerInfo>.+) takes out a (?<lockType>.+) from her pocket and sets the password to (?<password>.+) with (?<timer>.+) left\, before locking your (?<layer>first|second|third) layer gag\*$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
@@ -100,8 +97,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = LockAssigner, [2] = layerIndex
         else if (encodedMsgIndex == 5) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck, taking off the lock that was
-             keeping your (?<layer>first|second|third) gag layer fastened nice and tight\*$";
+            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck\, taking off the lock that was keeping your (?<layer>first|second|third) gag layer fastened nice and tight\*$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
@@ -121,8 +117,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = LockAssigner, [2] = layerIndex, [14] = password
         else if (encodedMsgIndex == 6) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck and sets the password to (?<password>.+)
-             on your (?<layer>first|second|third) layer gagstrap, unlocking it\*$";
+            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck and sets the password to (?<password>.+) on your (?<layer>first|second|third) layer gagstrap\, unlocking it\*$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
@@ -143,8 +138,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = LockAssigner, [2] = layerIndex
         else if (encodedMsgIndex == 7) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck and unfastens the
-             buckle of your (?<layer>first|second|third) gagstrap, allowing your voice to be a little clearer\*$";
+            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck and unfastens the buckle of your (?<layer>first|second|third) gagstrap\, allowing your voice to be a little clearer\*$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
@@ -164,8 +158,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = LockAssigner
         else if (encodedMsgIndex == 8) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck and unbuckles all of your gagstraps,
-             allowing you to speak freely once more\*$";
+            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck and unbuckles all of your gagstraps\, allowing you to speak freely once more\*$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
@@ -183,8 +176,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = ToggleAssigner
         else if (encodedMsgIndex == 9) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) brushes her finger overtop the gag resting over your mouth\.*
-             ""Now be a good girl and be sure to give me those sweet muffled sounds whenever you speak~""$";
+            string pattern = @"^\*(?<playerInfo>.+) brushes her finger overtop the gag resting over your mouth\.* ""Now be a good girl and be sure to give me those sweet muffled sounds whenever you speak\~""$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
@@ -202,8 +194,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = ToggleAssigner
         else if (encodedMsgIndex == 10) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) chuckles in delight of seeing their gagged submissive below them, a smile formed across their lips\.*
-             ""Look's like you'll be stuck speaking in muffled moans for some time now~""$";
+            string pattern = @"^\*(?<playerInfo>.+) chuckles in delight of seeing their gagged submissive below them\, a smile formed across their lips\.* ""Look's like you'll be stuck speaking in muffled moans for some time now\~""$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful

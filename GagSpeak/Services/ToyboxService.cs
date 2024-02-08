@@ -244,7 +244,6 @@ public class PlugService : IDisposable
                 if (activeDevice.VibrateAttributes.Count > 0) {
                     stepCount = (int)activeDevice.VibrateAttributes.First().StepCount;
                     stepInterval = 1.0 / stepCount;
-                    _characterHandler.playerChar._activeToystepInterval = stepInterval;
                 }
             }
         } catch (Exception ex) {

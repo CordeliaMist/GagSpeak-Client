@@ -10,8 +10,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = playerMsgWasSentFrom
         if(encodedMsgIndex == 21) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) held their sluts chin firmly, forcing them to look them in the
-             eyes\* ""Let's make sure your locks have a little bit more security, shall we?""$";
+            string pattern = @"^\*(?<playerInfo>.+) held their sluts chin firmly\, forcing them to look them in the eyes\* ""Let\'s make sure your locks have a little bit more security\, shall we\?""$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -29,8 +28,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = playerMsgWasSentFrom
         else if(encodedMsgIndex == 22) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) looked down at their companion before walking over to their
-             wardrobe, ""Now you'll be a good slut and not resist any restraint sets I try putting you in, understand?~""$";
+            string pattern = @"^\*(?<playerInfo>.+) looked down at their companion before walking over to their wardrobe\, ""Now you\'ll be a good slut and not resist any restraint sets I try putting you in\, understand\?\~""$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -48,8 +46,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = playerMsgWasSentFrom
         else if(encodedMsgIndex == 23) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) looked down at their companion before walking ove to their
-             wardrobe, ""Now you'll be a good slut and not resist any locks I try putting on your restraints, understand?~""$";
+            string pattern = @"^\*(?<playerInfo>.+) looked down at their companion before walking ove to their wardrobe\, ""Now you\'ll be a good slut and not resist any locks I try putting on your restraints\, understand\?\~""$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -67,8 +64,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = playerMsgWasSentFrom, [8] = restraintSetName
         else if(encodedMsgIndex == 24) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) opens up the compartment of restraints from their wardrobe, taking
-             out the (?<restraintSetName>.+) and brought it back over to their honny to help secure them inside it.$";
+            string pattern = @"^\*(?<playerInfo>.+) opens up the compartment of restraints from their wardrobe\, taking out the (?<restraintSetName>.+) and brought it back over to their honny to help secure them inside it\.$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -88,8 +84,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = playerMsgWasSentFrom, [8] = restraintSetName, [14] = timer
         else if(encodedMsgIndex == 25) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) took out a timed padlock, and fastned it around the (?<restraintSetName>.+)
-             on its focal point, setting its duration to (?<timer>.+)*$";
+            string pattern = @"^\*(?<playerInfo>.+) took out a timed padlock\, and fastned it around the (?<restraintSetName>.+) on its focal point\, setting its duration to (?<timer>.+)\*$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -110,8 +105,7 @@ public partial class MessageDecoder {
         // [0] = commandtype, [1] = playerMsgWasSentFrom, [8] = restraintSetName
         else if(encodedMsgIndex == 26) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) decided they wanted to use their companion for other things now, unlocking
-             the (?<restraintSetName>.+) from their partner and allowing them to feel a little more free, for now~*$";
+            string pattern = @"^\*(?<playerInfo>.+) decided they wanted to use their companion for other things now\, unlocking the (?<restraintSetName>.+) from their partner and allowing them to feel a little more free\, for now\~\*$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful

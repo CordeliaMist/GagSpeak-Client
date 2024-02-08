@@ -21,12 +21,9 @@ public partial class ResultLogic {
             int index = _characterHandler.GetWhitelistIndex(playerName);
             DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
             // make sure they have the correct tier to execute this
-            if(tier != DynamicTier.Tier0) {
+            if(tier >= DynamicTier.Tier1) {
                 // set the boolean for if they allow sit requests
-                _characterHandler.playerChar._allowSitRequests[index] = !(_characterHandler.playerChar._allowSitRequests[index]);
-                // save the information
-                _config.Save();
-                // return true
+                _characterHandler.ToggleAllowSitRequests(index);
                 return true;
             } else {
                 // return false
@@ -53,12 +50,9 @@ public partial class ResultLogic {
             int index = _characterHandler.GetWhitelistIndex(playerName);
             DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
             // make sure they have the correct tier to execute this
-            if(tier != DynamicTier.Tier0 && tier != DynamicTier.Tier1) {
+            if(tier >= DynamicTier.Tier2) {
                 // set the boolean for if they allow motion requests
-                _characterHandler.playerChar._allowMotionRequests[index] = !(_characterHandler.playerChar._allowMotionRequests[index]);
-                // save the information
-                _config.Save();
-                // return true
+                _characterHandler.ToggleAllowMotionRequests(index);
                 return true;
             } else {
                 // return false
@@ -87,10 +81,7 @@ public partial class ResultLogic {
             // make sure they have the correct tier to execute this
             if(tier == DynamicTier.Tier4) {
                 // set the boolean for if they allow all commands
-                _characterHandler.playerChar._allowAllCommands[index] = !_characterHandler.playerChar._allowAllCommands[index];
-                // save the information
-                _config.Save();
-                // return true
+                _characterHandler.ToggleAllowAllCommands(index);
                 return true;
             } else {
                 // return false

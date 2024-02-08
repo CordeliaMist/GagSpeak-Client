@@ -10,26 +10,31 @@ public partial class MessageDictionary {
             // if it was one of them, we can early escape
             return true;
         }
+        GagSpeak.Log.Debug($"[Message Dictionary]: Not a GagSpeak message");
         // otherwise, scan through the relation messages
-        if(LookupInfoExchangeMsg(textVal, ref encodedMsgIndex)) {
+        if(LookupRelationshipMsg(textVal, ref encodedMsgIndex)) {
             // if it was one of them, we can early escape
             return true;
         }
+        GagSpeak.Log.Debug($"[Message Dictionary]: Not a Relationship message");
         // otherwise, scan through the puppeteer messages
         if(LookupPuppeteerMsg(textVal, ref encodedMsgIndex)) {
             // if it was one of them, we can early escape
             return true;
         }
+        GagSpeak.Log.Debug($"[Message Dictionary]: Not a Puppeteer message");
         // otherwise look through the toybox
         if(LookupToyboxMsg(textVal, ref encodedMsgIndex)) {
             // if it was one of them, we can early escape
             return true;
         }
+        GagSpeak.Log.Debug($"[Message Dictionary]: Not a Toybox message");
         // finally, if it was none of those, check if it was an info exchange message
         if(LookupInfoExchangeMsg(textVal, ref encodedMsgIndex)) {
             // if it was one of them, we can early escape
             return true;
         }
+        GagSpeak.Log.Debug($"[Message Dictionary]: Not an Info Exchange message");
         // if it was none of them, return false
         return false;
     }

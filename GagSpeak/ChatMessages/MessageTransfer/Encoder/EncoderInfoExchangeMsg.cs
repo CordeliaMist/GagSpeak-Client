@@ -42,7 +42,7 @@ public partial class MessageEncoder {
         // Example: "their Master's Pet." or "their Pet's Mistress"
         
         // fulfills [2]
-        baseString += $"{_characterHandler.whitelistChars[Idx]._theirStatusToYou}"+
+        baseString += $"{_characterHandler.whitelistChars[Idx]._theirStatusToYou.ToString()}"+
         "'s "+
         
         // fulfills [3]
@@ -112,7 +112,7 @@ public partial class MessageEncoder {
                 baseString += $"she had a {_characterHandler.playerChar._selectedGagTypes[i]} fastened in good and tight";
                 // [11, 12, 13] - layer {i} padlock type IF A PADLOCK IS PRESENT
                 if (_characterHandler.playerChar._selectedGagPadlocks[i].ToString() != "None") {
-                    baseString += $", locked with a {_characterHandler.playerChar._selectedGagPadlocks[i]}"; // [11, 12, 13]
+                    baseString += $", locked with a {_characterHandler.playerChar._selectedGagPadlocks[i].ToString()}"; // [11, 12, 13]
                     // [20, 21, 22] - layer {i} padlock assigner IF IT EXISTS
                     if (!string.IsNullOrEmpty(_characterHandler.playerChar._selectedGagPadlockAssigner[i])) {
                         baseString += $" which had been secured by {_characterHandler.playerChar._selectedGagPadlockAssigner[i]}";
@@ -123,7 +123,7 @@ public partial class MessageEncoder {
                             _characterHandler.playerChar._selectedGagPadlockTimer[i] - DateTimeOffset.Now)} remaining";
                     }
 
-                    if (_characterHandler.playerChar._selectedGagPadlockPassword != null) {
+                    if (_characterHandler.playerChar._selectedGagPadlockPassword[i] != null) {
                         baseString += $", with the password {_characterHandler.playerChar._selectedGagPadlockPassword[i]} on the lock";
                     }
                 }
@@ -175,12 +175,12 @@ public partial class MessageEncoder {
         baseString += ", ";
 
         // [25] - is player allowed to enabled restraint sets? (BOOL)
-        baseString += _characterHandler.playerChar._enableRestraintSets
+        baseString += _characterHandler.playerChar._enableRestraintSets[Idx]
         ? "and their restraint compartment was accessible for their partner" : "and they had not allowed their partner to enable restraint sets";
         baseString += ". ";
         
         // [26] - is player allowed to lock restraint sets? (BOOL)
-        baseString += _characterHandler.playerChar._restraintSetLocking
+        baseString += _characterHandler.playerChar._restraintSetLocking[Idx]
         ? "They recalled their partner locking their restraints" : "They recalled their partner leaving their restraints unlocked";
         baseString += ", ";
 
@@ -215,7 +215,7 @@ public partial class MessageEncoder {
         baseString += ", ";
 
         // [33] - does messageSender allow adjusting intensity of toy? (BOOL)
-        baseString += _characterHandler.playerChar._allowIntensityControl
+        baseString += _characterHandler.playerChar._allowIntensityControl[Idx]
         ? "with an adjustable intensity level" : "with a static intensity level";
 
         // [34] - current intensity level of active toy ((or new intensity level being sent)) (INT)

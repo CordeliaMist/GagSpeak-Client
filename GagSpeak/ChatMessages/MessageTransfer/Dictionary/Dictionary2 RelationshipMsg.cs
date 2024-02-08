@@ -25,7 +25,7 @@ public partial class MessageDictionary {
 
         // Request to have absolute submission status [ ID == 13 // request (Absolute-Slave) ]
         else if (textVal.Contains("hears the sound of her leash's chain rattling along the floor as she crawls up to your feet. Stopping, looking "+
-        "up with pleading eyes in an embarassed tone* \"Would it be ok if I became your AbsoluteSlave?\""))
+        "up with pleading eyes in an embarassed tone") && textVal.Contains("Would it be ok if I became your"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Absolute-Slave) command");
             index = 13;

@@ -6,13 +6,14 @@ using Newtonsoft.Json.Linq;
 using System.IO;
 using Newtonsoft.Json;
 using GagSpeak.ToyboxandPuppeteer;
+using GagSpeak.Gagsandlocks;
 
 namespace GagSpeak.CharacterData;
 
 public class CharacterHandler : ISavable
 {
-    public PlayerCharacterInfo playerChar;
-    public List<WhitelistedCharacterInfo> whitelistChars = [];
+    public PlayerCharacterInfo playerChar { get; protected set; }
+    public List<WhitelistedCharacterInfo> whitelistChars { get; protected set; }
     // store the active whitelist index
     public int activeListIdx = 0;
 
@@ -28,7 +29,7 @@ public class CharacterHandler : ISavable
         // load the information from our storage file stuff
         Load();
     }
-#region Config Settings
+#region PlayerChar Handler Functions
     public void ToggleCmdFromFriends() {
         playerChar._doCmdsFromFriends = !playerChar._doCmdsFromFriends;
         _saveService.QueueSave(this);
@@ -64,6 +65,21 @@ public class CharacterHandler : ISavable
         _saveService.QueueSave(this);
     }
 
+    public void ToggleLockGagStorageOnGagLock() {
+        playerChar._lockGagStorageOnGagLock = !playerChar._lockGagStorageOnGagLock;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleEnableRestraintSets(int idx) {
+        playerChar._enableRestraintSets[idx] = !playerChar._enableRestraintSets[idx];
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleRestraintSetLocking(int idx) {
+        playerChar._restraintSetLocking[idx] = !playerChar._restraintSetLocking[idx];
+        _saveService.QueueSave(this);
+    }
+
     public void ToggleRestraintSetAutoEquip() {
         playerChar._allowRestraintSetAutoEquip = !playerChar._allowRestraintSetAutoEquip;
         _saveService.QueueSave(this);
@@ -74,24 +90,39 @@ public class CharacterHandler : ISavable
         _saveService.QueueSave(this);
     }
 
+    public void ToggleAllowSitRequests(int idx) {
+        playerChar._allowSitRequests[idx] = !playerChar._allowSitRequests[idx];
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleAllowMotionRequests(int idx) {
+        playerChar._allowMotionRequests[idx] = !playerChar._allowMotionRequests[idx];
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleAllowAllCommands(int idx) {
+        playerChar._allowAllCommands[idx] = !playerChar._allowAllCommands[idx];
+        _saveService.QueueSave(this);
+    }
+
     public void ToggleEnableToybox() {
         playerChar._enableToybox = !playerChar._enableToybox;
         _saveService.QueueSave(this);
     
     }
 
-    public void ToggleAllowIntensityControl() {
-        playerChar._allowIntensityControl = !playerChar._allowIntensityControl;
+    public void ToggleAllowIntensityControl(int idx) {
+        playerChar._allowIntensityControl[idx] = !playerChar._allowIntensityControl[idx];
         _saveService.QueueSave(this);
     }
 
-    public void ToggleChangeToyState() {
-        playerChar._allowChangingToyState[activeListIdx] = !playerChar._allowChangingToyState[activeListIdx];
+    public void ToggleChangeToyState(int idx) {
+        playerChar._allowChangingToyState[idx] = !playerChar._allowChangingToyState[idx];
         _saveService.QueueSave(this);
     }
 
-    public void ToggleAllowPatternExecution() {
-        playerChar._allowUsingPatterns[activeListIdx] = !playerChar._allowUsingPatterns[activeListIdx];
+    public void ToggleAllowPatternExecution(int idx) {
+        playerChar._allowUsingPatterns[idx] = !playerChar._allowUsingPatterns[idx];
         _saveService.QueueSave(this);
     }
 
@@ -100,9 +131,6 @@ public class CharacterHandler : ISavable
         _saveService.QueueSave(this);
     }
 
-
-#endregion Config Settings
-#region PlayerChar Handler Functions
     public void SetNewTriggerPhrase(string newPhrase) {
         playerChar._triggerPhraseForPuppeteer[activeListIdx] = newPhrase;
         _saveService.QueueSave(this);
@@ -137,7 +165,6 @@ public class CharacterHandler : ISavable
             playerChar._allowAllCommands[activeListIdx] = value;
         }
     }
-
 
     public void AddNewAliasEntry(AliasTrigger alias) {
         playerChar._triggerAliases[activeListIdx]._aliasTriggers.Add(alias);
@@ -179,6 +206,159 @@ public class CharacterHandler : ISavable
     }
 #endregion PlayerChar Handler Functions
 
+#region WhitelistSetters
+    public void SetWhitelistSafewordUsed(int index, bool value) {
+        if(whitelistChars[index]._safewordUsed != value) {
+            whitelistChars[index]._safewordUsed = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistGrantExtendedLockTimes(int index, bool value) {
+        if(whitelistChars[index]._grantExtendedLockTimes != value) {
+            whitelistChars[index]._grantExtendedLockTimes = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistDirectChatGarblerActive(int index, bool value) {
+        if(whitelistChars[index]._directChatGarblerActive != value) {
+            whitelistChars[index]._directChatGarblerActive = value;
+            _saveService.QueueSave(this);
+        }
+    }
+    
+    public void SetWhitelistDirectChatGarblerLocked(int index, bool value) {
+        if(whitelistChars[index]._directChatGarblerLocked != value) {
+            whitelistChars[index]._directChatGarblerLocked = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistEnableWardrobe(int index, bool value) {
+        if(whitelistChars[index]._enableWardrobe != value) {
+            whitelistChars[index]._enableWardrobe = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistLockGagStorageOnGagLock(int index, bool value) {
+        if(whitelistChars[index]._lockGagStorageOnGagLock != value) {
+            whitelistChars[index]._lockGagStorageOnGagLock = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistEnableRestraintSets(int index, bool value) {
+        if(whitelistChars[index]._enableRestraintSets != value) {
+            whitelistChars[index]._enableRestraintSets = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistRestraintSetLocking(int index, bool value) {
+        if(whitelistChars[index]._restraintSetLocking != value) {
+            whitelistChars[index]._restraintSetLocking = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistTriggerPhraseForPuppeteer(int index, string value) {
+        if(whitelistChars[index]._theirTriggerPhrase != value) {
+            whitelistChars[index]._theirTriggerPhrase = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistAllowSitRequests(int index, bool value) {
+        if(whitelistChars[index]._allowsSitRequests != value) {
+            whitelistChars[index]._allowsSitRequests = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistAllowMotionRequests(int index, bool value) {
+        if(whitelistChars[index]._allowsMotionRequests != value) {
+            whitelistChars[index]._allowsMotionRequests = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistAllowAllCommands(int index, bool value) {
+        if(whitelistChars[index]._allowsAllCommands != value) {
+            whitelistChars[index]._allowsAllCommands = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistEnableToybox(int index, bool value) {
+        if(whitelistChars[index]._enableToybox != value) {
+            whitelistChars[index]._enableToybox = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistAllowChangingToyState(int index, bool value) {
+        if(whitelistChars[index]._allowsChangingToyState != value) {
+            whitelistChars[index]._allowsChangingToyState = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistAllowIntensityControl(int index, bool value) {
+        if(whitelistChars[index]._allowsIntensityControl != value) {
+            whitelistChars[index]._allowsIntensityControl = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistIntensityLevel(int index, byte value) {
+        if(whitelistChars[index]._intensityLevel != value) {
+            whitelistChars[index]._intensityLevel = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistAllowUsingPatterns(int index, bool value) {
+        if(whitelistChars[index]._allowsUsingPatterns != value) {
+            whitelistChars[index]._allowsUsingPatterns = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistAllowToyboxLocking(int index, bool value) {
+        if(whitelistChars[index]._allowToyboxLocking != value) {
+            whitelistChars[index]._allowToyboxLocking = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void UpdateWhitelistGagInfo(List<string> infoExchangeList) {
+        int Idx = -1;
+        if(IsPlayerInWhitelist(infoExchangeList[1])){
+            Idx = GetWhitelistIndex(infoExchangeList[1]);
+        }
+        if(Idx != -1) {
+            whitelistChars[Idx]._selectedGagTypes[0] = infoExchangeList[8];
+            whitelistChars[Idx]._selectedGagTypes[1] = infoExchangeList[9];
+            whitelistChars[Idx]._selectedGagTypes[2] = infoExchangeList[10];
+            whitelistChars[Idx]._selectedGagPadlocks[0] = Enum.TryParse(infoExchangeList[11], out Padlocks padlockType) ? padlockType : Padlocks.None;
+            whitelistChars[Idx]._selectedGagPadlocks[1] = Enum.TryParse(infoExchangeList[12], out Padlocks padlockType2) ? padlockType2 : Padlocks.None;
+            whitelistChars[Idx]._selectedGagPadlocks[2] = Enum.TryParse(infoExchangeList[13], out Padlocks padlockType3) ? padlockType3 : Padlocks.None;
+            whitelistChars[Idx]._selectedGagPadlockPassword[0] = infoExchangeList[14];
+            whitelistChars[Idx]._selectedGagPadlockPassword[1] = infoExchangeList[15];
+            whitelistChars[Idx]._selectedGagPadlockPassword[2] = infoExchangeList[16];
+            whitelistChars[Idx]._selectedGagPadlockTimer[0] = DateTimeOffset.Parse(infoExchangeList[17]);
+            whitelistChars[Idx]._selectedGagPadlockTimer[1] = DateTimeOffset.Parse(infoExchangeList[18]);
+            whitelistChars[Idx]._selectedGagPadlockTimer[2] = DateTimeOffset.Parse(infoExchangeList[19]);
+            whitelistChars[Idx]._selectedGagPadlockAssigner[0] = infoExchangeList[20];
+            whitelistChars[Idx]._selectedGagPadlockAssigner[1] = infoExchangeList[21];
+            whitelistChars[Idx]._selectedGagPadlockAssigner[2] = infoExchangeList[22];
+        }
+        _saveService.QueueSave(this);
+    }
+
+#endregion WhitelistSetters
 
 #region Whitelist Handler Functions
     public bool IsPlayerInWhitelist(string playerName) {
@@ -232,6 +412,31 @@ public class CharacterHandler : ISavable
         playerChar._allowChangingToyState.RemoveAt(index);
         playerChar._allowUsingPatterns.RemoveAt(index);
         // do a quicksave (happens on the next framework tick, very fast)
+        _saveService.QueueSave(this);
+    }
+
+    public void UpdateYourStatusToThem(int index, RoleLean role) {
+        whitelistChars[index]._yourStatusToThem = role;
+        _saveService.QueueSave(this);
+    }
+
+    public void UpdateTheirStatusToYou(int index, RoleLean role) {
+        whitelistChars[index]._theirStatusToYou = role;
+        _saveService.QueueSave(this);
+    }
+
+    public void UpdatePendingRelationRequestFromYou(int index, RoleLean role) {
+        whitelistChars[index]._pendingRelationRequestFromYou = role;
+        _saveService.QueueSave(this);
+    }
+
+    public void UpdatePendingRelationRequestFromPlayer(int index, RoleLean role) {
+        whitelistChars[index]._pendingRelationRequestFromPlayer = role;
+        _saveService.QueueSave(this);
+    }
+
+    public void SetCommitmentTimeEstablished(int index) {
+        whitelistChars[index].Set_timeOfCommitment();
         _saveService.QueueSave(this);
     }
 
@@ -323,7 +528,7 @@ public class CharacterHandler : ISavable
         whitelistChars.Add(defaultWhitelistUser);
         
         // Save the data
-        Save();
+        _saveService.QueueSave(this);
     }
 
 #endregion Json ISavable & Loads

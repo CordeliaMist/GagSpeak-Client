@@ -33,12 +33,8 @@ public class CharacterInfoBase
     ///////////////////////////////////////// WARDROBE COMPONENT SETTINGS  //////////////////////////////////////
     public  bool                _enableWardrobe { get; set; } = false;          // [TIER 0] enables / disables all wardrobe functionality
     public  bool                _lockGagStorageOnGagLock { get; set; } = false; // [TIER 1] locks storage ui when gag is locked
-    public  bool                _enableRestraintSets { get; set; }= false;      // [TIER 2] allows dom to enable spesific restraint sets
-    public  bool                _restraintSetLocking { get; set; } = false;     // [TIER 1] enables / disables all restraint set locking 
     /////////////////////////////////////////// TOYBOX MODULE SETTINGS ////////////////////////////////////////
     public  bool                _enableToybox { get; set; } = false;            // [TIER 4] if granting them access to toybox
-    public  bool                _allowIntensityControl { get; set; } = false;   // [TIER 0] if they can control the vibes intensity and speed CANNOT BE
-    public  double              _activeToystepInterval { get; set; } = 0;           // [TIER 0] step size of the vibe, aka how many different levels of intensity it has
     public  int                 _intensityLevel { get; set; } = 0;              // [TIER 2] the guage from 0 to _activeToystepInterval     
     public  bool                _allowToyboxLocking { get; set; } = false;      // [TIER 3] if granting them access to lock toybox        
     ///////////////////////////////////////// FUTURE MODULES CAN GO HERE ////////////////////////////////////////
@@ -63,11 +59,7 @@ public class CharacterInfoBase
             ["SelectedGagPadlockAssigner"] = new JArray(_selectedGagPadlockAssigner),
             ["EnableWardrobe"] = _enableWardrobe,
             ["LockGagStorageOnGagLock"] = _lockGagStorageOnGagLock,
-            ["EnableRestraintSets"] = _enableRestraintSets,
-            ["RestraintSetLocking"] = _restraintSetLocking,
             ["EnableToybox"] = _enableToybox,
-            ["AllowIntensityControl"] = _allowIntensityControl,
-            ["ActiveToystepInterval"] = _activeToystepInterval,
             ["IntensityLevel"] = _intensityLevel,
             ["AllowToyboxLocking"] = _allowToyboxLocking
         };
@@ -84,11 +76,8 @@ public class CharacterInfoBase
         _selectedGagPadlockAssigner = jsonObject["SelectedGagPadlockAssigner"]?.ToObject<List<string>>() ?? new List<string> { "", "", "" };
         _enableWardrobe = jsonObject["EnableWardrobe"]?.Value<bool>() ?? false;
         _lockGagStorageOnGagLock = jsonObject["LockGagStorageOnGagLock"]?.Value<bool>() ?? false;
-        _enableRestraintSets = jsonObject["EnableRestraintSets"]?.Value<bool>() ?? false;
-        _restraintSetLocking = jsonObject["RestraintSetLocking"]?.Value<bool>() ?? false;
+
         _enableToybox = jsonObject["EnableToybox"]?.Value<bool>() ?? false;
-        _allowIntensityControl = jsonObject["AllowIntensityControl"]?.Value<bool>() ?? false;
-        _activeToystepInterval = jsonObject["ActiveToystepInterval"]?.Value<double>() ?? 0;
         _intensityLevel = jsonObject["IntensityLevel"]?.Value<byte>() ?? 0;
         _allowToyboxLocking = jsonObject["AllowToyboxLocking"]?.Value<bool>() ?? false;
     }

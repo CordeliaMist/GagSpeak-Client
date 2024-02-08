@@ -81,13 +81,13 @@ public partial class MessageDecoder {
         }
 
         // if the encoded message is related to the is related to the toybox tab, process them here
-        if(encodedMsgIndex >= 30 && encodedMsgIndex <= 34) {
+        if(encodedMsgIndex >= 30 && encodedMsgIndex <= 35) {
             DecodeToyboxMsg(recievedMessage, encodedMsgIndex, ref decodedMessage);
             return decodedMessage;
         }
 
         // otherwise, it is a info request or recieved message, so process it here
-        if(encodedMsgIndex >= 35 && encodedMsgIndex <= 38) {
+        if(encodedMsgIndex >= 36 && encodedMsgIndex <= 39) {
             DecodeInfoExchangeMsg(recievedMessage, encodedMsgIndex, ref decodedMessage);
             return decodedMessage;
         }

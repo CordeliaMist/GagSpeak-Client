@@ -24,7 +24,7 @@ public partial class WhitelistPlayerPermissions {
     protected   GagLockFilterCombo[]    _gagLockFilterCombo;        // create an array of item combos
 
 #region GeneralPerms
-    public void DrawGagInteractions() {
+    public void DrawGagInteractions(ref bool _viewMode) {
         // Big Name Header
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);

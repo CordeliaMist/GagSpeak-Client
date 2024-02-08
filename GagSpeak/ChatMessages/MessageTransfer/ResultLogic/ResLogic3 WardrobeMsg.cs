@@ -4,6 +4,7 @@ using System.Linq;
 using Dalamud.Game.Text.SeStringHandling;
 using GagSpeak.CharacterData;
 using GagSpeak.Utility;
+using ImGuiScene;
 using OtterGui.Classes;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
@@ -24,10 +25,10 @@ public partial class ResultLogic {
             DynamicTier dynamicStrength = _characterHandler.GetDynamicTier(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
             if(dynamicStrength != DynamicTier.Tier0) {
-                _characterHandler.playerChar._lockGagStorageOnGagLock = !_characterHandler.playerChar._lockGagStorageOnGagLock;
-                _config.Save();
+                _characterHandler.ToggleLockGagStorageOnGagLock();
                 // notify the user that the request as been sent. 
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Gag Storage UI Lock has been toggled to {_characterHandler.playerChar._lockGagStorageOnGagLock}.").AddItalicsOff().BuiltString);
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Gag Storage UI Lock has been toggled to "+
+                $"{_characterHandler.playerChar._lockGagStorageOnGagLock}.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling gag storage UI lock");
                 return true;
             } else {
@@ -52,14 +53,16 @@ public partial class ResultLogic {
         string playerName = string.Join(" ", parts.Take(parts.Length - 1));
         // see if they exist
         if( _characterHandler.IsPlayerInWhitelist(playerName)) {
+            // get the whitelist index
+            int whitelistIdx = _characterHandler.GetWhitelistIndex(playerName);
             // get its index
             DynamicTier dynamicStrength = _characterHandler.GetDynamicTier(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
-            if(dynamicStrength != DynamicTier.Tier0 && dynamicStrength != DynamicTier.Tier1) {
-                _characterHandler.playerChar._enableRestraintSets = !_characterHandler.playerChar._enableRestraintSets;
-                _config.Save();
+            if(dynamicStrength >= DynamicTier.Tier2) {
+                _characterHandler.ToggleEnableRestraintSets(whitelistIdx);
                 // notify the user that the request as been sent. 
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Enable Restraint Sets has been toggled to {_characterHandler.playerChar._enableRestraintSets}.").AddItalicsOff().BuiltString);
+                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Enable Restraint Sets has been toggled "+
+                $"to {_characterHandler.playerChar._enableRestraintSets[whitelistIdx]}.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling enable restraint sets");
                 return true;
             } else {
@@ -85,14 +88,14 @@ public partial class ResultLogic {
         // see if they exist
         if( _characterHandler.IsPlayerInWhitelist(playerName)) {
             // get its index
+            int idx = _characterHandler.GetWhitelistIndex(playerName);
             DynamicTier dynamicStrength = _characterHandler.GetDynamicTier(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
             if(dynamicStrength != DynamicTier.Tier0) {
-                _characterHandler.playerChar._restraintSetLocking = !_characterHandler.playerChar._restraintSetLocking;
-                _config.Save();
+                _characterHandler.ToggleRestraintSetLocking(idx);
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Allow Restraint Locking "+
-                $"has been toggled to {_characterHandler.playerChar._restraintSetLocking}.").AddItalicsOff().BuiltString);
+                $"has been toggled to {_characterHandler.playerChar._restraintSetLocking[idx]}.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling allow restraint locking");
                 return true;
             } else {
@@ -117,10 +120,8 @@ public partial class ResultLogic {
         string playerName = string.Join(" ", parts.Take(parts.Length - 1));
         // see if they exist
         if( _characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get its index
-            DynamicTier dynamicStrength = _characterHandler.GetDynamicTier(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
-            if(_characterHandler.playerChar._allowRestraintSetAutoEquip == true) {
+            if(_characterHandler.playerChar._allowRestraintSetAutoEquip == true && _characterHandler.GetDynamicTier(playerName) >= DynamicTier.Tier2) {
                 // see if our restraint set is anywhere in the list
                 int setIdx = _restraintSetManager.GetRestraintSetIndex(decodedMessage[8]);
                 // exit if the index is -1
@@ -162,7 +163,7 @@ public partial class ResultLogic {
             DynamicTier dynamicStrength = _characterHandler.GetDynamicTier(playerName);
             int whitelistIdx = _characterHandler.GetWhitelistIndex(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
-            if(dynamicStrength != DynamicTier.Tier0 && _characterHandler.playerChar._allowRestraintSetAutoEquip == true) {
+            if(dynamicStrength != DynamicTier.Tier0 && _characterHandler.playerChar._allowRestraintSetAutoEquip && _characterHandler.playerChar._restraintSetLocking[whitelistIdx]) {
                 // see if our restraint set is anywhere in the list
                 int setIdx = _restraintSetManager.GetRestraintSetIndex(decodedMessage[8]);
                 // exit if the index is -1

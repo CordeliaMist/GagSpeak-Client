@@ -150,22 +150,72 @@ public class ChatManager
             }
             
             ////// Once we have reached this point, we know we have recieved a tell, and that it is from one of our filtered players. //////
-            GagSpeak.Log.Debug($"[Chat Manager]: Recieved tell from: {senderName}");
+            GagSpeak.Log.Debug($"[Chat Manager]: Recieved tell from: {senderName} with message: {fmessage.ToString()}");
 
             // if the incoming tell is an encoded message, lets check if we are in dom mode before accepting changes
             int encodedMsgIndex = 0; // get a index to know which encoded msg it is, if any
+            List<string> decodedMessage = new List<string>{"","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""};
+            // if the message is a encoded message, then we can process it
             if (_messageDictionary.LookupMsgDictionary(chatmessage.TextValue, ref encodedMsgIndex)) {
                 // at this point, we have determined that it is an encoded message, so let's make sure the criteria for sending is right
-                if (encodedMsgIndex >= 1 && encodedMsgIndex <= 38) {
-                    // find the correctly encoded message index to decode, and decode it
-                    List<string> decodedCommandMsg = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
-                    // Now that we have found it and all the decoded info is stored in decodedCommandMsg, process its result.
-                    if(_msgResultLogic.CommandMsgResLogic(fmessage.ToString(), decodedCommandMsg, isHandled, _clientChat, _config))
-                    {
+                // if the index is between 1 and 8, process the basic gag commands
+                if(encodedMsgIndex >= 1 && encodedMsgIndex <= 10) {
+                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
+                    // we have found it, so do the resultlogic for it
+                    if(_msgResultLogic.CommandMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
                         // logic sucessfully parsed, so hide from chat
                         isHandled = true;
                         _config.Save(); // save our config. 
-                        // ONLY save on sucessful parses to not overflow the chat with save message
+                    }
+                }
+                // if the index is between 11 and 20, process the whitelist relation relation commands
+                if(encodedMsgIndex >= 11 && encodedMsgIndex <= 20) {
+                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
+                    // we have found it, so do the resultlogic for it
+                    if(_msgResultLogic.WhitelistMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
+                        // logic sucessfully parsed, so hide from chat
+                        isHandled = true;
+                        _config.Save(); // save our config. 
+                    }
+                }
+                // if the encoded message is related to the is related to the wardrobe tab, process them here
+                if(encodedMsgIndex >= 21 && encodedMsgIndex <= 26) {
+                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
+                    // we have found it, so do the resultlogic for it
+                    if(_msgResultLogic.WardrobeMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
+                        // logic sucessfully parsed, so hide from chat
+                        isHandled = true;
+                        _config.Save(); // save our config. 
+                    }
+                }
+                // if the encoded message is related to the is related to the puppeteer tab, process them here
+                if(encodedMsgIndex >= 27 && encodedMsgIndex <= 29) {
+                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
+                    // we have found it, so do the resultlogic for it
+                    if(_msgResultLogic.PuppeteerMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
+                        // logic sucessfully parsed, so hide from chat
+                        isHandled = true;
+                        _config.Save(); // save our config. 
+                    }
+                }
+                // if the encoded message is related to the is related to the toybox tab, process them here
+                if(encodedMsgIndex >= 30 && encodedMsgIndex <= 34) {
+                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
+                    // we have found it, so do the resultlogic for it
+                    if(_msgResultLogic.ToyboxMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
+                        // logic sucessfully parsed, so hide from chat
+                        isHandled = true;
+                        _config.Save(); // save our config. 
+                    }
+                }
+                // otherwise, it is a info request or recieved message, so process it here
+                if(encodedMsgIndex >= 35 && encodedMsgIndex <= 38) {
+                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
+                    // we have found it, so do the resultlogic for it
+                    if(_msgResultLogic.ResLogicInfoRequestMessage(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
+                        // logic sucessfully parsed, so hide from chat
+                        isHandled = true;
+                        _config.Save(); // save our config. 
                     }
                 }
             } // skipped to this point if not encoded message
@@ -173,7 +223,6 @@ public class ChatManager
 
         // at this point, we have determined that it is not an encoded message, and we still have the sender info.
         // because we know this, and are at this point, we can now scan our message to see if it meets the conditions for puppeteer.
-        GagSpeak.Log.Debug($"[ChatManager] SenderName: {senderName}");
         if(senderName != null && _characterHandler.playerChar._allowPuppeteer && _characterHandler.IsPlayerInWhitelist(senderName)) {
             GagSpeak.Log.Debug($"[ChatManager] Puppeteer was enabled, scanning message from {senderName}, as they are in your whitelist");
             // see if it contains your trigger word for them
@@ -237,10 +286,8 @@ public class ChatManager
         foreach (var t in _objectTable) {
             if (!(t is PlayerCharacter pc)) continue;
             if (pc.Name.TextValue == nameInput) {
-                foreach (var whitelistChar in _characterHandler.whitelistChars) {
-                    if (whitelistChar._name.Contains(nameInput)) {
-                        return true;
-                    }
+                if(_characterHandler.IsPlayerInWhitelist(nameInput)) {
+                    return true;
                 }
             }
         }

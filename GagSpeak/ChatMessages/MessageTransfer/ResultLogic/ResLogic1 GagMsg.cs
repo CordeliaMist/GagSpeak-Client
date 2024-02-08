@@ -144,7 +144,8 @@ public partial class ResultLogic {
         string playerNameWorld = decodedMessage[1];
         string[] parts = playerNameWorld.Split(' ');
         string playerName = string.Join(" ", parts.Take(parts.Length - 1));
-        _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} removed your {_characterHandler.playerChar._selectedGagTypes[layer-1]}, how sweet.").AddItalicsOff().BuiltString);
+        _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} removed your "+
+        $"{_characterHandler.playerChar._selectedGagTypes[layer-1]}, how sweet.").AddItalicsOff().BuiltString);
         // remove the gag
         _lockManager.RemoveGag(layer-1);
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag remove");
@@ -199,7 +200,7 @@ public partial class ResultLogic {
 
         // if we reach here, we meet the conditions to set it
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has toggled your live chat garbler.").AddItalicsOff().BuiltString);
-        _characterHandler.playerChar._directChatGarblerActive = !_characterHandler.playerChar._directChatGarblerActive; // toggle the live chat garbler
+        _characterHandler.ToggleDirectChatGarbler(); // toggle the live chat garbler
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag toggleLiveChatGarbler");
         return true; // sucessful parse
     }
@@ -228,7 +229,7 @@ public partial class ResultLogic {
 
         // if we reach here, we meet the conditions to set it
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has toggled your live chat garbler lock.").AddItalicsOff().BuiltString);
-        _characterHandler.playerChar._directChatGarblerLocked = !_characterHandler.playerChar._directChatGarblerLocked; // toggle the live chat garbler lock
+        _characterHandler.ToggleDirectChatGarblerLock(); // toggle the live chat garbler lock
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag toggleLiveChatGarblerLock");
         return true; // sucessful parse
     }

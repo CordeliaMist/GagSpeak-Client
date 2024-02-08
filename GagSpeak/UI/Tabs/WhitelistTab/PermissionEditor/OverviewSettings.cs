@@ -11,7 +11,7 @@ using GagSpeak.CharacterData;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 public partial class WhitelistPlayerPermissions {
-    public void DrawOverviewPerms() {
+    public void DrawOverviewPerms(ref bool _viewMode) {
         // Big Name Header
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);

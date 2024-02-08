@@ -24,9 +24,10 @@ public partial class ResultLogic {
     private readonly    GagService             _gagService;            // used to get the gag service
     private readonly    TimerService           _timerService;          // used to get the timer service
     private readonly    JobChangedEvent        _jobChangedEvent;       // for whenever we change jobs
+    private readonly    PlugService            _plugService;           // used to get the plug service
 
     public ResultLogic(IChatGui clientChat, IClientState clientState, GagSpeakConfig config, CharacterHandler characterHandler,
-    PatternHandler patternHandler, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager,
+    PatternHandler patternHandler, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager, PlugService plugService,
     GagAndLockManager lockManager, GagService gagService, TimerService timerService, JobChangedEvent jobChangedEvent) {
         _clientChat = clientChat;
         _clientState = clientState;
@@ -38,6 +39,7 @@ public partial class ResultLogic {
         _lockManager = lockManager;
         _gagService = gagService;
         _timerService = timerService;
+        _plugService = plugService;
         _jobChangedEvent = jobChangedEvent;
     }
     /// <summary> This function is used to handle the message result logic for decoded messages involing your player in the GagSpeak plugin. </summary>
@@ -127,11 +129,12 @@ public partial class ResultLogic {
         var commandType = decodedMessage[0];
         var _ = commandType switch
         {
-            "toggleEnableToyboxOption"  => ReslogicToggleEnableToybox(ref decodedMessage, ref isHandled, config),
-            "toggleActiveToyOption"     => ReslogicToggleActiveToy(ref decodedMessage, ref isHandled, config),
-            "updateActiveToyIntensity"  => ReslogicUpdateActiveToyIntensity(ref decodedMessage, ref isHandled, config),
-            "executeStoredToyPattern"   => ReslogicExecuteStoredToyPattern(ref decodedMessage, ref isHandled, config),
-            "toggleLockToyboxUI"        => ReslogicToggleLockToyboxUI(ref decodedMessage, ref isHandled, config),
+            "toggleEnableToyboxOption"       => ReslogicToggleEnableToybox(ref decodedMessage, ref isHandled, config),
+            "toggleActiveToyOption"          => ReslogicToggleActiveToy(ref decodedMessage, ref isHandled, config),
+            "toggleAllowingIntensityControl" => ReslogicToggleAllowingIntensityControl(ref decodedMessage, ref isHandled, config),
+            "updateActiveToyIntensity"       => ReslogicUpdateActiveToyIntensity(ref decodedMessage, ref isHandled, config),
+            "executeStoredToyPattern"        => ReslogicExecuteStoredToyPattern(ref decodedMessage, ref isHandled, config),
+            "toggleLockToyboxUI"             => ReslogicToggleLockToyboxUI(ref decodedMessage, ref isHandled, config),
             _ => LogError("Invalid Toybox message parse, If you see this report it to cordy ASAP.")
         };
         return true;

@@ -72,8 +72,8 @@ public class ToyboxOverviewPanel
         ImGui.AlignTextToFramePadding();
         UIHelpers.CheckboxNoConfig("Intensity Control", 
         "Determines if people are allowed to adjust the intensity of your vibe while connected and active.",
-        _charHandler.playerChar._allowIntensityControl,
-        v => _charHandler.ToggleAllowIntensityControl()
+        _charHandler.playerChar._allowIntensityControl[_charHandler.activeListIdx],
+        v => _charHandler.ToggleAllowIntensityControl(_charHandler.activeListIdx)
         );
         ImGui.SameLine();
         UIHelpers.CheckboxNoConfig("Toybox UI Locking",
@@ -85,13 +85,13 @@ public class ToyboxOverviewPanel
         UIHelpers.CheckboxNoConfig("Change Toy State",
         $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} is able to enable / disable your toy",
         _charHandler.playerChar._allowChangingToyState[_charHandler.activeListIdx],
-        v => _charHandler.ToggleChangeToyState()
+        v => _charHandler.ToggleChangeToyState(_charHandler.activeListIdx)
         );
         ImGui.SameLine();
         UIHelpers.CheckboxNoConfig("Executing Patterns",
         $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} is able to execute your stored patterns on your toy",
         _charHandler.playerChar._allowUsingPatterns[_charHandler.activeListIdx],
-        v => _charHandler.ToggleAllowPatternExecution()
+        v => _charHandler.ToggleAllowPatternExecution(_charHandler.activeListIdx)
         );
         // go over to the next column
         ImGui.NextColumn();

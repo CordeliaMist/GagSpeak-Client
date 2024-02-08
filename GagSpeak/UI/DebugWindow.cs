@@ -267,7 +267,6 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Separator();
         ImGui.Text($"Enable Toybox: {_characterHandler.playerChar._enableToybox}");
         ImGui.Text($"Allow Intensity Control: {_characterHandler.playerChar._allowIntensityControl}");
-        ImGui.Text($"Active Toystep Interval: {_characterHandler.playerChar._activeToystepInterval}");
         ImGui.Text($"Intensity Level: {_characterHandler.playerChar._intensityLevel}");
         ImGui.Text($"Allow Toybox Locking: {_characterHandler.playerChar._allowToyboxLocking}");
         ImGui.Separator();

@@ -27,7 +27,6 @@ public partial class WhitelistPlayerPermissions {
     private readonly    MessageEncoder              _messageEncoder;
     private readonly    ChatManager                 _chatManager;
     private readonly    UserProfileWindow           _userProfileWindow;
-    private             int                         _currentIconIndex = 0;
     public              TabType                     SelectedSubTab;
     public WhitelistPlayerPermissions(InteractOrPermButtonEvent interactOrPermButtonEvent, GagSpeakConfig config,
     CharacterHandler characterHandler, IClientState clientState, IChatGui chatGui, IDataManager dataManager,
@@ -64,27 +63,27 @@ public partial class WhitelistPlayerPermissions {
     }
 
     /// <summary> This function is used to draw the content of the tab. </summary>
-    public void Draw(Action<bool> setInteractions, ref bool _enableInteractions) {
+    public void Draw(Action<bool> setInteractions, Action<bool> setViewMode, ref bool _enableInteractions, ref bool _viewMode) {
         // Lets start by drawing the child.
         using (_ = ImRaii.Group()) {
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
-        DrawPermissionsHeader(setInteractions, _enableInteractions);
+        DrawPermissionsHeader(setInteractions, setViewMode, _enableInteractions, _viewMode);
         // make content disabled
         if(!_enableInteractions) { ImGui.BeginDisabled(); }
-        DrawPlayerPermissions();
+        DrawPlayerPermissions(ref _viewMode);
         DrawPlayerPermissionsButtons();
         if(!_enableInteractions) { ImGui.EndDisabled(); }
         }
     }
 
     // draw the header
-    private void DrawPermissionsHeader(Action<bool> setInteractions, bool _enableInteractions) {
+    private void DrawPermissionsHeader(Action<bool> setInteractions, Action<bool> setViewMode, bool _enableInteractions, bool _viewMode) {
         WindowHeader.Draw($"Status & Interactions for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}",
-        0, ImGui.GetColorU32(ImGuiCol.FrameBg), 1, 0, InteractionsButton(setInteractions, _enableInteractions), ViewModeButton());
+        0, ImGui.GetColorU32(ImGuiCol.FrameBg), 1, 0, InteractionsButton(setInteractions, _enableInteractions), ViewModeButton(setViewMode, _viewMode));
     }
 
-    private void DrawPlayerPermissions() {
+    private void DrawPlayerPermissions(ref bool _viewMode) {
         using var _ = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
         using var child = ImRaii.Child("##WhitelistPlayerPermissions", new Vector2(ImGui.GetContentRegionAvail().X, -ImGui.GetFrameHeight()), true, ImGuiWindowFlags.NoScrollbar);
         if (!child)
@@ -95,7 +94,7 @@ public partial class WhitelistPlayerPermissions {
         var yPosition = ImGui.GetCursorPosY();
         ImGui.SetCursorPos(new Vector2(xPosition, yPosition + 5*ImGuiHelpers.GlobalScale)); 
         DrawPermissionTabs(); // draws the tabs for the sub component permissions
-        DrawBody(); // draws out the body for each tab of permissions
+        DrawBody(ref _viewMode); // draws out the body for each tab of permissions
         
     }
 
@@ -166,20 +165,25 @@ public partial class WhitelistPlayerPermissions {
     private readonly FontAwesomeIcon[] _viewModeIcons = {
         FontAwesomeIcon.PersonArrowDownToLine,
         FontAwesomeIcon.PersonArrowUpFromLine,
-        FontAwesomeIcon.PeopleArrows,
     };
-    private WindowHeader.Button ViewModeButton()
-        => new() {
-            Description = "Changes the state of what permissions are visable to you.",
-        Icon = _viewModeIcons[_currentIconIndex],
-            OnClick     = () => {
-            _currentIconIndex = (_currentIconIndex + 1) % _viewModeIcons.Length;
-        },
-            Disabled    = false,
-            Visible     = true,
-            TextColor   = ColorId.DominantButton.Value(),
-            BorderColor = ColorId.DominantButton.Value(),
-        };
+    private WindowHeader.Button ViewModeButton(Action<bool> setViewMode, bool _viewMode)
+        => !_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)
+            ? WindowHeader.Button.Invisible
+            : _viewMode
+                ? new WindowHeader.Button {
+                    Description = "View your Settings.",
+                    Icon = FontAwesomeIcon.PersonArrowDownToLine,
+                    OnClick = () => setViewMode(false),
+                    Visible = true,
+                    Disabled = false,
+                }
+                : new WindowHeader.Button {
+                    Description = "View Their settings interactions.",
+                    Icon = FontAwesomeIcon.PersonArrowUpFromLine,
+                    OnClick = () => setViewMode(true),
+                    Visible = true,
+                    Disabled = false,
+                };
 #endregion Header Button Stuff
 
     public void DrawPermissionTabs() {
@@ -209,23 +213,23 @@ public partial class WhitelistPlayerPermissions {
         }
     }
 
-    public void DrawBody() {
+    public void DrawBody(ref bool _viewMode) {
         // determine which permissions we will draw out
         switch (SelectedSubTab) {
             case TabType.ConfigSettings:
-                DrawOverviewPerms();
+                DrawOverviewPerms(ref _viewMode);
                 break;
             case TabType.General:
-                DrawGagInteractions();
+                DrawGagInteractions(ref _viewMode);
                 break;
             case TabType.Wardrobe:
-                DrawWardrobePerms();
+                DrawWardrobePerms(ref _viewMode);
                 break;
             case TabType.Puppeteer:
-                DrawPuppeteerPerms();
+                DrawPuppeteerPerms(ref _viewMode);
                 break;
             case TabType.Toybox:
-                DrawToyboxPerms();
+                DrawToyboxPerms(ref _viewMode);
                 break;
         }
     }

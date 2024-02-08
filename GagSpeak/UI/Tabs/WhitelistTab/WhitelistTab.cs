@@ -18,6 +18,7 @@ public class WhitelistTab : ITab, IDisposable
     private readonly    TimerService     _timerService;
     private readonly    InteractOrPermButtonEvent _buttonInteractionEvent;
     private             bool _enableInteractions = false;
+    private             bool _viewMode = false;
 
 
     public WhitelistTab(WhitelistSelector selector, WhitelistPlayerPermissions playerPermissionEditor,
@@ -48,7 +49,7 @@ public class WhitelistTab : ITab, IDisposable
         _selector.Draw(GetSetSelectorWidth(), ref _enableInteractions);
         ImGui.SameLine();
         // draw the editor for that set
-        _playerPermEditor.Draw(SetEnableInteractions, ref _enableInteractions);
+        _playerPermEditor.Draw(SetEnableInteractions, SetViewMode, ref _enableInteractions, ref _viewMode);
         // remove the disabled state
     }
 
@@ -58,6 +59,10 @@ public class WhitelistTab : ITab, IDisposable
 
     public void SetEnableInteractions(bool value) {
         _enableInteractions = value;
+    }
+
+    public void SetViewMode(bool value) {
+        _viewMode = value;
     }
 
     // automates the startCooldown process across all our classes.

@@ -5,7 +5,7 @@ public partial class MessageDictionary {
         // The request for information from another user in the whitelist [ ID == 35 ]
         if(textVal.Contains("would enjoy it if you started our scene together by reminding them of "+
         "all the various states you were left in, before we took a break from things for awhile~")) {
-            encodedMsgIndex = 35;
+            encodedMsgIndex = 36;
             return true;
         }
 
@@ -17,7 +17,7 @@ public partial class MessageDictionary {
         && (textVal.Contains("and they certain enjoyed their gagged voice") || textVal.Contains("and not wishing to keep a gagged voice"))
         && (textVal.Contains("for even now their lips were sealed tight") || textVal.Contains("but as of now, their lips were not sealed fully")))
         {
-            encodedMsgIndex = 36;
+            encodedMsgIndex = 37;
             return true;
         }
 
@@ -25,7 +25,7 @@ public partial class MessageDictionary {
         if(textVal.Contains("|| When they had last played, ") && textVal.Contains("On her undermost layer, ") && textVal.Contains("Over their mouths main layer, ")
         && textVal.Contains("Finally on her uppermost layer, ") && textVal.Contains(".  ->"))
         {
-            encodedMsgIndex = 37;
+            encodedMsgIndex = 38;
             return true;
         }
         
@@ -45,7 +45,7 @@ public partial class MessageDictionary {
         && (textVal.Contains("The vibrator was able to execute set patterns") || textVal.Contains("Unfortuintely, the vibrator couldnt execute any patterns"))
         && (textVal.Contains("with the viberator strapped tight to their skin") || textVal.Contains("with the vibrator loosely tied to their skin")))
         {  
-            encodedMsgIndex = 38;
+            encodedMsgIndex = 39;
             return true;
         }
 

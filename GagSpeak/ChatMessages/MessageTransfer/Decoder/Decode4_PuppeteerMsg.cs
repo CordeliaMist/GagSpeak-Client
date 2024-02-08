@@ -10,8 +10,7 @@ public partial class MessageDecoder {
         // [0] = playerMsgWasSentFrom, [1] = PlayerMesgWasSentFrom
         if(encodedMsgIndex == 27) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) approached their submissive, ""Say now my love, how would
-             you like to grant me access to control where you can and cant sit down\?""$";
+            string pattern = @"^\*(?<playerInfo>.+) approached their submissive\, ""Say now my love\, how would you like to grant me access to control where you can and cant sit down\?""$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -29,8 +28,7 @@ public partial class MessageDecoder {
         // [0] = playerMsgWasSentFrom, [1] = PlayerMesgWasSentFrom
         else if(encodedMsgIndex == 28) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) approached their submissive, ""Say now my love, how would
-             you like to submit yourself to move about and dance for me whenever I say the word\?""$";
+            string pattern = @"^\*(?<playerInfo>.+) approached their submissive\, ""Say now my love\, how would you like to submit yourself to move about and dance for me whenever I say the word\?""$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -48,8 +46,7 @@ public partial class MessageDecoder {
         // [0] = playerMsgWasSentFrom, [1] = PlayerMesgWasSentFrom
         else if(encodedMsgIndex == 29) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) approached their submissive, ""We both know you've submitted yourself to me fully,
-             so why not accept that you'll do whatever I say without a second thought\?""$";
+            string pattern = @"^\*(?<playerInfo>.+) approached their submissive\, ""We both know you\'ve submitted yourself to me fully\, so why not accept that you\'ll do whatever I say without a second thought\?""$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful

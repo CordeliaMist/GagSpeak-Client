@@ -16,13 +16,14 @@ public partial class WhitelistPlayerPermissions {
     public string _resrtaintSetToUnlock = "";
 
 #region DrawWardrobePerms
-    public void DrawWardrobePerms() {
+    public void DrawWardrobePerms(ref bool _viewMode) {
         // Big Name Header
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
 
         ImGui.PushFont(_fontService.UidFont);
-        ImGui.Text($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Wardrobe Settings");
+        var name = _viewMode ? $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s" : "Your";
+        ImGui.Text($"{name} Wardrobe Settings");
         ImGui.PopFont();
 
         // store their dynamic tier for edit purposes

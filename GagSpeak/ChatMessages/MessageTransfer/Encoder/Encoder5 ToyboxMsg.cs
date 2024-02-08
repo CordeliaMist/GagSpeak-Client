@@ -17,7 +17,14 @@ public partial class MessageEncoder {
         "reached into the wardrobe and pulled out a vibrator device from the compartment, a smirk formed on her face while she returned to their pet.";
     }
 
-    // Encodes msg that lets the whitelisted user update the intensity of your active toy [ ID == 32 ]
+    // Encodes msg that lets the toggles if the whitelisted user is allowed to have control over the intensity of an active toy [ ID == 32 ]
+    public string EncodeToyboxToggleAllowingIntensityControl(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} "+
+        $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
+        "reached into the wardrobe and pulled out a controlling device from the compartment, a smirk formed on her face while she returned to their pet.";
+    }
+
+    // Encodes msg that lets the whitelisted user update the intensity of your active toy [ ID == 33 ]
     public string EncodeToyboxUpdateActiveToyIntensity(PlayerPayload playerPayload, string targetPlayer, int newIntensityLevel) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
@@ -26,7 +33,7 @@ public partial class MessageEncoder {
         ".";
     }
 
-    // Encodes msg that lets the whitelisted user execute a stored toy's pattern by its patternName [ ID == 33 ]
+    // Encodes msg that lets the whitelisted user execute a stored toy's pattern by its patternName [ ID == 34 ]
     public string EncodeToyboxExecuteStoredToyPattern(PlayerPayload playerPayload, string targetPlayer, string patternName) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
@@ -35,7 +42,7 @@ public partial class MessageEncoder {
         "pattern, which had been linked to the active vibe against their body, causing it to provide their submissive with a wonderous dose of pleasure.";
     }
 
-    // Encodes msg that lets the whitelisted user toggle the lock state of the toybox UI [ ID == 34 ]
+    // Encodes msg that lets the whitelisted user toggle the lock state of the toybox UI [ ID == 35 ]
     public string EncodeToyboxToggleLockToyboxUI(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+

@@ -12,11 +12,10 @@ public partial class MessageDecoder {
     /// <summary> decodes the recieved and sent messages related to the information exchange with the player.
     public void DecodeInfoExchangeMsg(string recievedMessage, int encodedMsgIndex, ref List<string> decodedMessage) {        
         // $"({playerPayload.PlayerName} from {playerPayload.World.Name} would enjoy it if you started our scene together by reminding them of all the various states you were left in, before we took a break from things for awhile~)";
-        // decoder for requesting information from whitelisted player. [ ID == 35 ]
-        if (encodedMsgIndex == 35) {
+        // decoder for requesting information from whitelisted player. [ ID == 36 ]
+        if (encodedMsgIndex == 36) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) would enjoy it if you started our scene together by reminding them of all
-             the various states you were left in, before we took a break from things for awhile~$";
+            string pattern = @"^\*(?<playerInfo>.+) would enjoy it if you started our scene together by reminding them of all the various states you were left in\, before we took a break from things for awhile\~$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -31,11 +30,9 @@ public partial class MessageDecoder {
         }
 
         // decoder for sharing info about player (part 1)
-        else if (encodedMsgIndex == 36) {
+        else if (encodedMsgIndex == 37) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+), their (?<theirStatusToYou>.+)'s (?<yourStatusToThem>.+) nodded in agreement, "+
-            $"informing their partner of how when they last played together, (?<safewordUsed>.+). (?<extendedLocks>.+), (?<gaggedVoice>.+)"+
-            $", (?<sealedLips>.+). ->$";
+            string pattern = @"^\*(?<playerInfo>.+)\, their (?<theirStatusToYou>.+)\'s (?<yourStatusToThem>.+) nodded in agreement\, informing their partner of how when they last played together\, (?<safewordUsed>.+)\. (?<extendedLocks>.+)\, (?<gaggedVoice>.+)\, (?<sealedLips>.+)\. \-\>$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -59,9 +56,9 @@ public partial class MessageDecoder {
         }
 
         // decoder for sharing info about player (part 2)
-        else if (encodedMsgIndex == 37) {
+        else if (encodedMsgIndex == 38) {
             // Split the message into substrings for each layer
-            string pattern = @"\/tell (?<targetPlayer>\w+) \|\| When they had last played, (?<layerInfo>.*?)(?= ->)";
+            string pattern = @"\/tell (?<targetPlayer>\w+) \|\| When they had last played\, (?<layerInfo>.*?)(?= ->)";
             Regex regex = new Regex(pattern);
             Match match = regex.Match(recievedMessage);
 
@@ -109,12 +106,9 @@ public partial class MessageDecoder {
         }
 
         // decoder for our sharing info about player (part 3)
-        else if (encodedMsgIndex == 38) {
+        else if (encodedMsgIndex == 39) {
             // get the pattern
-            string pattern = @"^\*(?<playerInfo>.+) || (?<wardrobeState>.+). (?<gagStorageState>.+), (?<restraintSetEnable>.+). "+
-            "(?<restraintLock>.+), their partner whispering (?<puppeteerTrigger>.+), causing them to (?<sitRequestState>.+). "+
-            "(?<motionRequestState>.+), (?<allCommandsState>.+). (?<toyboxState>.+), (?<toggleToyState>.+) Within the drawer there "+
-            "(?<toyState>.+), (?<canControlIntensity>.+) currently set to (?<intensityLevel>.+). (?<toyPatternState>.+), (?<toyboxLockState>.+)$";
+            string pattern = @"^\*(?<playerInfo>.+) \|\| (?<wardrobeState>.+)\. (?<gagStorageState>.+)\, (?<restraintSetEnable>.+)\. (?<restraintLock>.+)\, their partner whispering (?<puppeteerTrigger>.+)\, causing them to (?<sitRequestState>.+)\. (?<motionRequestState>.+)\, (?<allCommandsState>.+)\. (?<toyboxState>.+)\, (?<toggleToyState>.+) Within the drawer there (?<toyState>.+)\, (?<canControlIntensity>.+) currently set to (?<intensityLevel>.+)\. (?<toyPatternState>.+)\, (?<toyboxLockState>.+)$";
 
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);

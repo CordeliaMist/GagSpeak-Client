@@ -16,7 +16,7 @@ public partial class WhitelistPlayerPermissions {
     public string _vibePatternName = "";
 
 #region DrawWardrobePerms
-    public void DrawToyboxPerms() {
+    public void DrawToyboxPerms(ref bool _viewMode) {
         // Big Name Header
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
@@ -76,7 +76,7 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.DrawFrameColumn($"Can Control Intensity:");
             ImGui.TableNextColumn();
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowIntensityControl
+                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsIntensityControl
                                     ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
