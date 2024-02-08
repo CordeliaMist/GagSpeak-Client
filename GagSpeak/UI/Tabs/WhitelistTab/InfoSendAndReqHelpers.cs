@@ -13,10 +13,15 @@ public static class InfoSendAndRequestHelpers {
     public static void RequestInfoFromPlayer(int listIdx, CharacterHandler characterHandler, ChatMessages.ChatManager chatManager,
     ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
     {    
+        GagSpeak.Log.Debug($"[WhitelistTab]: Requesting information from player: {characterHandler.whitelistChars[listIdx]._name}");
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (characterHandler.IsIndexWithinBounds(listIdx)) { return; }
+        if (!characterHandler.IsIndexWithinBounds(listIdx)) { 
+            GagSpeak.Log.Error($"[WhitelistTab]: Error, Index out of bounds for requesting information from player: {characterHandler.whitelistChars[listIdx]._name}");
+            return;
+        }
         // print to chat that you sent the request
+
         chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending information request to " +
             $"{characterHandler.whitelistChars[listIdx]._name}, please wait...").AddItalicsOff().BuiltString);

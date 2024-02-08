@@ -15,7 +15,7 @@ public partial class MessageDecoder {
         // decoder for requesting information from whitelisted player. [ ID == 36 ]
         if (encodedMsgIndex == 36) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) would enjoy it if you started our scene together by reminding them of all the various states you were left in\, before we took a break from things for awhile\~$";
+            string pattern = @"^\((?<playerInfo>.+) would enjoy it if you started our scene together by reminding them of all the various states you were left in\, before we took a break from things for awhile\~\)$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful

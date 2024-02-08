@@ -30,6 +30,7 @@ public partial class WhitelistPlayerPermissions {
         ImGui.PopFont();
         ImGui.NextColumn();
         ImGuiUtil.RightAlign($"({_characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld})");
+        ImGuiUtil.RightAlign($"{_characterHandler.GetDynamicTier(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name).ToString()}");
         ImGui.Columns(1);
         
         string[] roleLeanNames = Enum.GetValues<RoleLean>().Select(role => role.ToString()).ToArray(); // for inside the table
