@@ -286,6 +286,7 @@ public class CharacterHandler : ISavable
         var file = _saveService.FileNames.CharacterDataFile;
         whitelistChars.Clear();
         if (!File.Exists(file)) {
+            CreateNewFile();
             GagSpeak.Log.Debug($"[CharacterHandler] CharacterData.json not found! Creating new file.");
             return;
         }

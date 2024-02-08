@@ -21,8 +21,6 @@ public class FontService : IDisposable
     private unsafe void BuildFont() {
         var fontFile = Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, "DoulosSIL-Regular.ttf");
         UidFontBuilt = false;
-        // log the font directory
-        GagSpeak.Log.Debug($"[Font] Directory: {fontFile}");
         // check if the font exists
         if (File.Exists(fontFile)) {
             try {
@@ -69,13 +67,13 @@ public class FontService : IDisposable
                 // attempt to load them in
                 UidFont = ImGui.GetIO().Fonts.AddFontFromFileTTF(fontFile, 30f, null, handle.AddrOfPinnedObject());
                 UidFontBuilt = true;
-                GagSpeak.Log.Debug($"[Font] Constructed. {fontFile}");
+                GagSpeak.Log.Debug($"[Font] Constructed. DoulosSIL-Regular.ttf");
             }
             catch (Exception ex) {
-                GagSpeak.Log.Warning($"[Font] Failed to load. {fontFile} :: {ex.Message}");
+                GagSpeak.Log.Warning($"[Font] Failed to load Font :: {ex.Message}");
             }
         } else {
-            GagSpeak.Log.Debug($"[Font] Does not exist. {fontFile}");
+            GagSpeak.Log.Debug($"[Font] Error");
         }
     }
     /// <summary> Dispose of the font service </summary>

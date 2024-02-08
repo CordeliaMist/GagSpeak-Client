@@ -174,7 +174,7 @@ public class ChatManager
         // at this point, we have determined that it is not an encoded message, and we still have the sender info.
         // because we know this, and are at this point, we can now scan our message to see if it meets the conditions for puppeteer.
         GagSpeak.Log.Debug($"[ChatManager] SenderName: {senderName}");
-        if(senderName != null && _characterHandler.playerChar._allowPuppeteer){ //&& _characterHandler.IsPlayerInWhitelist(senderName)) {
+        if(senderName != null && _characterHandler.playerChar._allowPuppeteer && _characterHandler.IsPlayerInWhitelist(senderName)) {
             GagSpeak.Log.Debug($"[ChatManager] Puppeteer was enabled, scanning message from {senderName}, as they are in your whitelist");
             // see if it contains your trigger word for them
             if(_puppeteerMediator.ContainsTriggerWord(senderName, chatmessage.TextValue, out string puppeteerMessageToSend)){

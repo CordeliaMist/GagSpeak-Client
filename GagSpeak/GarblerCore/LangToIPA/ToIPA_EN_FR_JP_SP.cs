@@ -47,11 +47,11 @@ public class IpaParserEN_FR_JP_SP
 			// deserialize the json into the obj dictionary
 			obj = JsonConvert.DeserializeObject<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
 			// let log know that the file was read
-			GagSpeak.Log.Debug($"[IPA Parser] File read: [PluginDirectory\\{data_file}]");
+			GagSpeak.Log.Debug($"[IPA Parser] File read: {data_file}");
 		}
 		catch (FileNotFoundException) {
 			// If the file does not exist, log an error and initialize obj as an empty dictionary
-			GagSpeak.Log.Debug($"[IPA Parser] File does not exist: [PluginDirectory\\{data_file}]");
+			GagSpeak.Log.Debug($"[IPA Parser] File does not exist: {data_file}");
 			obj = new Dictionary<string, string>();
 		}
 		catch (Exception ex) {
