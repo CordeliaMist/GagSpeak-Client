@@ -392,6 +392,7 @@ public class CharacterHandler : ISavable
         playerChar._allowIntensityControl.Add(false);
         playerChar._allowUsingPatterns.Add(false);
         // do a quicksave (happens on the next framework tick, very fast)
+        EnsureListSizes();
         _saveService.QueueSave(this);
     }
 
@@ -412,6 +413,7 @@ public class CharacterHandler : ISavable
         playerChar._allowIntensityControl[index] = false;
         playerChar._allowUsingPatterns[index] = false;
         // do a quicksave (happens on the next framework tick, very fast)
+        EnsureListSizes();
         _saveService.QueueSave(this);
     }
 
@@ -432,7 +434,66 @@ public class CharacterHandler : ISavable
         playerChar._allowIntensityControl.RemoveAt(index);
         playerChar._allowUsingPatterns.RemoveAt(index);
         // do a quicksave (happens on the next framework tick, very fast)
+        EnsureListSizes();
         _saveService.QueueSave(this);
+    }
+
+    public void EnsureListSizes() {
+        int targetSize = whitelistChars.Count;
+
+        // Helper function to resize a list to the target size
+        Action<List<AliasList>, AliasList> resizeAliasList = (list, defaultValue) => {
+            int currentSize = list.Count;
+
+            if (currentSize < targetSize) {
+                // If the list is too small, add default elements
+                for (int i = currentSize; i < targetSize; i++) {
+                    list.Add(defaultValue);
+                }
+            } else if (currentSize > targetSize) {
+                // If the list is too large, remove elements from the end
+                list.RemoveRange(targetSize, currentSize - targetSize);
+            }
+        };
+
+        Action<List<bool>, bool> resizeBoolList = (list, defaultValue) => {
+            int currentSize = list.Count;
+
+            if (currentSize < targetSize) {
+                for (int i = currentSize; i < targetSize; i++) {
+                    list.Add(defaultValue);
+                }
+            } else if (currentSize > targetSize) {
+                list.RemoveRange(targetSize, currentSize - targetSize);
+            }
+        };
+
+        Action<List<string>, string> resizeStringList = (list, defaultValue) => {
+            int currentSize = list.Count;
+
+            if (currentSize < targetSize) {
+                for (int i = currentSize; i < targetSize; i++) {
+                    list.Add(defaultValue);
+                }
+            } else if (currentSize > targetSize) {
+                list.RemoveRange(targetSize, currentSize - targetSize);
+            }
+        };
+
+        // Resize all the lists in playerChar
+        resizeAliasList(playerChar._triggerAliases, new AliasList());
+        resizeBoolList(playerChar._grantExtendedLockTimes, false);
+        resizeBoolList(playerChar._enableRestraintSets, false);
+        resizeBoolList(playerChar._restraintSetLocking, false);
+        resizeStringList(playerChar._triggerPhraseForPuppeteer, "");
+        resizeStringList(playerChar._StartCharForPuppeteerTrigger, "(");
+        resizeStringList(playerChar._EndCharForPuppeteerTrigger, ")");
+        resizeBoolList(playerChar._allowSitRequests, false);
+        resizeBoolList(playerChar._allowMotionRequests, false);
+        resizeBoolList(playerChar._allowAllCommands, false);
+        resizeBoolList(playerChar._allowChangingToyState, false);
+        resizeBoolList(playerChar._allowIntensityControl, false);
+        resizeBoolList(playerChar._allowUsingPatterns, false);
     }
 
     public void UpdateYourStatusToThem(int index, RoleLean role) {
