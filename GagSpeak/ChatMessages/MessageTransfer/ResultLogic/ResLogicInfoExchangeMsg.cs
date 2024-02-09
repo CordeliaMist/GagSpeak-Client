@@ -11,14 +11,14 @@ public partial class ResultLogic {
     /// <summary> Handles the information request message. </summary>
     private bool ResLogicInfoRequestMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
         try { 
-            string playerNameWorld = decodedMessage[4];
+            string playerNameWorld = decodedMessage[1];
             string[] parts = playerNameWorld.Split(' ');
             string world = parts.Length > 1 ? parts.Last() : "";
             string playerName = string.Join(" ", parts.Take(parts.Length - 1));
             // locate player in whitelist
             if(_characterHandler.IsPlayerInWhitelist(playerName)) {
                 // they are in our whitelist, so set our information sender to the players name.
-                _config.sendInfoName = playerName + "@" + world;
+                _config.SetSendInfoName(playerName + "@" + world);
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is requesting an update on your info for the profile viewer." +
                 "Providing Over the next 3 Seconds.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");

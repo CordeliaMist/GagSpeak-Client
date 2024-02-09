@@ -28,6 +28,8 @@ public class CharacterHandler : ISavable
         activeListIdx = 0;
         // load the information from our storage file stuff
         Load();
+
+        // ensure all lists have the correct sizes
     }
 #region PlayerChar Handler Functions
     public void ToggleCmdFromFriends() {
@@ -376,12 +378,18 @@ public class CharacterHandler : ISavable
     public void AddNewWhitelistItem(string playerName, string playerWorld) {
         whitelistChars.Add(new WhitelistedCharacterInfo(playerName, playerWorld));
         // update the player chars things to match the whitelist edit
+        playerChar._triggerAliases.Add(new AliasList());
         playerChar._grantExtendedLockTimes.Add(false);
+        playerChar._enableRestraintSets.Add(false);
+        playerChar._restraintSetLocking.Add(false);
         playerChar._triggerPhraseForPuppeteer.Add("");
+        playerChar._StartCharForPuppeteerTrigger.Add("");
+        playerChar._EndCharForPuppeteerTrigger.Add("");
         playerChar._allowSitRequests.Add(false);
         playerChar._allowMotionRequests.Add(false);
         playerChar._allowAllCommands.Add(false);
         playerChar._allowChangingToyState.Add(false);
+        playerChar._allowIntensityControl.Add(false);
         playerChar._allowUsingPatterns.Add(false);
         // do a quicksave (happens on the next framework tick, very fast)
         _saveService.QueueSave(this);
@@ -390,12 +398,18 @@ public class CharacterHandler : ISavable
     public void ReplaceWhitelistItem(int index, string playerName, string playerWorld) {
         whitelistChars[index] = new WhitelistedCharacterInfo(playerName, playerWorld);
         // update the player chars things to match the whitelist edit
+        playerChar._triggerAliases[index] = new AliasList();
         playerChar._grantExtendedLockTimes[index] = false;
+        playerChar._enableRestraintSets[index] = false;
+        playerChar._restraintSetLocking[index] = false;
         playerChar._triggerPhraseForPuppeteer[index] = "";
+        playerChar._StartCharForPuppeteerTrigger[index] = "";
+        playerChar._EndCharForPuppeteerTrigger[index] = "";
         playerChar._allowSitRequests[index] = false;
         playerChar._allowMotionRequests[index] = false;
         playerChar._allowAllCommands[index] = false;
         playerChar._allowChangingToyState[index] = false;
+        playerChar._allowIntensityControl[index] = false;
         playerChar._allowUsingPatterns[index] = false;
         // do a quicksave (happens on the next framework tick, very fast)
         _saveService.QueueSave(this);
@@ -404,12 +418,18 @@ public class CharacterHandler : ISavable
     public void RemoveWhitelistItem(int index) {
         whitelistChars.RemoveAt(index);
         // update the player chars things to match the whitelist edit
+        playerChar._triggerAliases.RemoveAt(index);
         playerChar._grantExtendedLockTimes.RemoveAt(index);
+        playerChar._enableRestraintSets.RemoveAt(index);
+        playerChar._restraintSetLocking.RemoveAt(index);
         playerChar._triggerPhraseForPuppeteer.RemoveAt(index);
+        playerChar._StartCharForPuppeteerTrigger.RemoveAt(index);
+        playerChar._EndCharForPuppeteerTrigger.RemoveAt(index);
         playerChar._allowSitRequests.RemoveAt(index);
         playerChar._allowMotionRequests.RemoveAt(index);
         playerChar._allowAllCommands.RemoveAt(index);
         playerChar._allowChangingToyState.RemoveAt(index);
+        playerChar._allowIntensityControl.RemoveAt(index);
         playerChar._allowUsingPatterns.RemoveAt(index);
         // do a quicksave (happens on the next framework tick, very fast)
         _saveService.QueueSave(this);

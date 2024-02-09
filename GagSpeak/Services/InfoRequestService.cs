@@ -49,31 +49,32 @@ public class InfoRequestService : IDisposable
         string senderName = _config.sendInfoName.Substring(0, _config.sendInfoName.IndexOf('@'));
         if (_characterHandler.IsPlayerInWhitelist(senderName))
         {
-            //_config.acceptingInfoRequests = false;
+            _config.SetAcceptInfoRequests(false);
+            _config.SetSendInfoName("");
             GagSpeak.Log.Debug("[Whitelist]: Player is in your whitelist, sending info...");
-            InfoSendAndRequestHelpers.SendInfoToPlayer(_characterHandler, _chatManager, _encoder, _clientState, _chatGui, _config);
+            InfoSendAndRequestHelpers.SendInfoToPlayer(_characterHandler, _chatManager, _encoder, _clientState, _chatGui, _config, senderName);
             // set up a timer that triggers the second half when expired
-            _timerService.StartTimer("InfoRequestCDTimer", "2s", 1000, () => { SendInformationPartTwo(); });
-            _config.sendInfoName = "";
+            
+            _timerService.StartTimer("InfoRequestCDTimer", "2s", 1000, () => { SendInformationPartTwo(senderName); });
         } 
         else
         {
-            GagSpeak.Log.Debug("[Whitelist]: Player is not in your whitelist, ignoring request...");
-            _config.sendInfoName = "";
-            _config.acceptingInfoRequests = true;
+            GagSpeak.Log.Debug($"[Whitelist]: Player {senderName} is not in your whitelist, ignoring request...");
+            _config.SetSendInfoName("");
+            _config.SetAcceptInfoRequests(true);
             return;
         }
     }
 
-    private void SendInformationPartTwo() {
+    private void SendInformationPartTwo(string senderName) {
         GagSpeak.Log.Debug("[Whitelist]: Sending second chunk of info...");
-        InfoSendAndRequestHelpers.SendInfoToPlayer2(_characterHandler, _chatManager, _encoder, _clientState, _chatGui, _config);
-        _timerService.StartTimer("InfoRequestTimer", "2s", 1000, () => { SendInformationPartThree(); });
+        InfoSendAndRequestHelpers.SendInfoToPlayer2(_characterHandler, _chatManager, _encoder, _clientState, _chatGui, _config, senderName);
+        _timerService.StartTimer("InfoRequestTimer", "2s", 1000, () => { SendInformationPartThree(senderName); });
     }
 
-    private void SendInformationPartThree() {
+    private void SendInformationPartThree(string senderName) {
         GagSpeak.Log.Debug("[Whitelist]: Sending final chunk of info...");
-        InfoSendAndRequestHelpers.SendInfoToPlayer2(_characterHandler, _chatManager, _encoder, _clientState, _chatGui, _config);
-        _timerService.StartTimer("InfoRequestTimer", "4s", 1000, () => { _config.acceptingInfoRequests = true; });
+        InfoSendAndRequestHelpers.SendInfoToPlayer3(_characterHandler, _chatManager, _encoder, _clientState, _chatGui, _config, senderName);
+        _timerService.StartTimer("InfoRequestTimer", "4s", 1000, () => { _config.SetAcceptInfoRequests(true); });
     }
 }

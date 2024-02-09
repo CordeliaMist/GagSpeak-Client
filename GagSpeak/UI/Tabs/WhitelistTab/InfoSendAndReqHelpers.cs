@@ -34,19 +34,18 @@ public static class InfoSendAndRequestHelpers {
     /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
     /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
     public static void SendInfoToPlayer(CharacterHandler characterHandler, ChatMessages.ChatManager chatManager, 
-    ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config)
+    ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config, string senderName)
     {
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         try
         {
-            string targetPlayer = config.sendInfoName;
             // print to chat that you sent the request
             chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{targetPlayer}] "+
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
                 "with your details(1/3)").AddItalicsOff().BuiltString);
             //send the message
-            chatManager.SendRealMessage(gagMessages.HandleProvideInfoPartOne(playerPayload, targetPlayer, characterHandler));
+            chatManager.SendRealMessage(gagMessages.HandleProvideInfoPartOne(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {
@@ -57,19 +56,18 @@ public static class InfoSendAndRequestHelpers {
 
     /// <summary>  Controls logic for sending the second chunk of your info the player that requested it from you. </summary>
     public static void SendInfoToPlayer2(CharacterHandler characterHandler, ChatMessages.ChatManager chatManager,
-    ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config)
+    ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config, string senderName)
     {
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         try
         {
-            string targetPlayer = config.sendInfoName;
             // print to chat that you sent the request
             chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{targetPlayer}] "+
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
                 "with your details(2/3)").AddItalicsOff().BuiltString);
             //send the message
-            chatManager.SendRealMessage(gagMessages.HandleProvideInfoPartTwo(playerPayload, targetPlayer, characterHandler));
+            chatManager.SendRealMessage(gagMessages.HandleProvideInfoPartTwo(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {
@@ -80,19 +78,18 @@ public static class InfoSendAndRequestHelpers {
 
     /// <summary>  Controls logic for sending the third chunk of your info the player that requested it from you. </summary>
     public static void SendInfoToPlayer3(CharacterHandler characterHandler, ChatMessages.ChatManager chatManager,
-    ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config)
+    ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config, string senderName)
     {
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         try
         {
-            string targetPlayer = config.sendInfoName;
             // print to chat that you sent the request
             chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{targetPlayer}] "+
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
                 "with your details(3/3)").AddItalicsOff().BuiltString);
             //send the message
-            chatManager.SendRealMessage(gagMessages.HandleProvideInfoPartThree(playerPayload, targetPlayer, characterHandler));
+            chatManager.SendRealMessage(gagMessages.HandleProvideInfoPartThree(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {

@@ -36,9 +36,10 @@ public partial class MessageEncoder {
             throw new Exception("The target player is not in the whitelist, and thus cannot be sent a request for information.");
         }
         // if we reach here, it is successful, and we can begin to encode the message.
+        string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
 
         // we will need to define all things in the long list for decoding.
-        var baseString = $"/tell {targetPlayer} *{playerPayload.PlayerName} from {playerPayload.World.Name}, their "; // fulfills [1]
+        var baseString = $"/tell {targetPlayerFormatted} *{playerPayload.PlayerName} from {playerPayload.World.Name}, their "; // fulfills [1]
         // Example: "their Master's Pet." or "their Pet's Mistress"
         
         // fulfills [2]
@@ -94,8 +95,14 @@ public partial class MessageEncoder {
         if(_characterHandler.IsPlayerInWhitelist(targetPlayer)) {
             Idx = _characterHandler.GetWhitelistIndex(targetPlayer);
         }
+        if(Idx == -1) {
+            throw new Exception("The target player is not in the whitelist, and thus cannot be sent a request for information.");
+        }
+        // if we reach here, it is successful, and we can begin to encode the message.
+        string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
 
-        string baseString = $"/tell {targetPlayer} || When they had last played, ";
+
+        string baseString = $"/tell {targetPlayerFormatted} || When they had last played, ";
         // we need to create a large lambda function or conditional function that can be easily reversible by a regex.
         for (int i = 0; i < 3; i++) {
             string layerName = i == 0 ? "undermost" : i == 1 ? "main" : "uppermost";
@@ -159,10 +166,20 @@ public partial class MessageEncoder {
         // first we need to get which whitelisted player in out config this is going to
         int Idx = -1;
         if(_characterHandler.IsPlayerInWhitelist(targetPlayer)) {
+            GagSpeak.Log.Debug($"[MsgEncoder]: Target Player: {targetPlayer}");
             Idx = _characterHandler.GetWhitelistIndex(targetPlayer);
         }
+        if(Idx == -1) {
+            throw new Exception("The target player is not in the whitelist, and thus cannot be sent a request for information.");
+        }
+        GagSpeak.Log.Debug($"[MsgEncoder]: Index of Whitelisted Char: {Idx}");
 
-        string baseString = $"/tell {targetPlayer} || ";
+        // if we reach here, it is successful, and we can begin to encode the message.
+        string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[Idx]._homeworld;
+
+
+    try{
+        string baseString = $"/tell {targetPlayerFormatted} || ";
 
         // [23] - is wardrobe enabled (BOOL)
         baseString += _characterHandler.playerChar._enableWardrobe
@@ -233,6 +250,10 @@ public partial class MessageEncoder {
         ? "with the viberator strapped tight to their skin. " : "with the vibrator loosely tied to their skin. ";
 
         return baseString;
+    } catch (Exception e) {
+        GagSpeak.Log.Error($"[MsgEncoder]: Error: {e}");
+        return "";
+    }
     }
 
 }

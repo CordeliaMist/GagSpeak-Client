@@ -141,7 +141,7 @@ public class TimerService : IDisposable
    public void CheckForInfoRequestInvokeConditoin() {
       // first check to see if our interaction cooldown timer is gone, and if so, invoke the info request condition
       GagSpeak.Log.Debug($"[Timer Service]: Checking for info request invoke condition...");
-      if (!timers.ContainsKey("interactionButtonPressed") && !string.IsNullOrEmpty(_config.sendInfoName)) {
+      if (!timers.ContainsKey("interactionButtonPressed") && !string.IsNullOrEmpty(_config.sendInfoName) && _config.acceptingInfoRequests) {
          GagSpeak.Log.Debug($"[Timer Service]: Info request invoke condition met, invoking event...");
          _infoRequestEvent.Invoke();
       }

@@ -99,10 +99,23 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         
         // set default values for the cached character data
         this.cachedCharacterData = new GlamourerCharacterData();
+
+        acceptingInfoRequests = true;
             
         // finished!
         GagSpeak.Log.Debug("[Configuration File] Constructor Finished Initializing and setting default values, and previous data restored.");
     }
+
+    public void SetSendInfoName(string name) {
+        sendInfoName = name;
+        _saveService.QueueSave(this);
+    }
+
+    public void SetAcceptInfoRequests(bool value) {
+        acceptingInfoRequests = value;
+        _saveService.QueueSave(this);
+    }
+
 
     /// <summary> Saves the config to our save service and updates the garble level to its new value. </summary>
     public void Save() {
