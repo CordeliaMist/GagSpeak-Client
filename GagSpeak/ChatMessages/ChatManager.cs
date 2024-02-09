@@ -28,7 +28,7 @@ public class ChatManager
     private readonly MessageDecoder         _messageDecoder;                    // decoder for encoded messages
     private readonly ResultLogic            _msgResultLogic;                    // logic for what happens to the player as a result of the tell
     private readonly IFramework             _framework;                         // framework for dalamud and the game
-    private          Queue<string>          messageQueue = new Queue<string>(); // stores any messages to be sent on the next framework update
+    public          Queue<string>           messageQueue = new Queue<string>(); // stores any messages to be sent on the next framework update
     private          Stopwatch              messageTimer = new Stopwatch();     // timer for the queue of messages to be sent
 
     /// <summary> This is the constructor for the ChatManager class. </summary>
@@ -199,7 +199,7 @@ public class ChatManager
                     }
                 }
                 // if the encoded message is related to the is related to the toybox tab, process them here
-                if(encodedMsgIndex >= 30 && encodedMsgIndex <= 34) {
+                if(encodedMsgIndex >= 30 && encodedMsgIndex <= 35) {
                     decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
                     // we have found it, so do the resultlogic for it
                     if(_msgResultLogic.ToyboxMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
@@ -209,7 +209,7 @@ public class ChatManager
                     }
                 }
                 // otherwise, it is a info request or recieved message, so process it here
-                if(encodedMsgIndex >= 35 && encodedMsgIndex <= 38) {
+                if(encodedMsgIndex >= 36 && encodedMsgIndex <= 40) {
                     decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
                     // we have found it, so do the resultlogic for it
                     if(_msgResultLogic.ResLogicInfoRequestMessage(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
@@ -302,8 +302,8 @@ public class ChatManager
     public void SendRealMessage(string message) {
         try {
             _realChatInteraction.SendMessage(message);
-        } catch {
-            GagSpeak.Log.Error($"[Chat Manager]: Failed to send message: {message}");
+        } catch(Exception e) {
+            GagSpeak.Log.Error($"[Chat Manager]: Failed to send message {e}: {message}");
         }
     }
 

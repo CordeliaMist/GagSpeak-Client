@@ -36,7 +36,7 @@ public partial class MessageEncoder {
             throw new Exception("The target player is not in the whitelist, and thus cannot be sent a request for information.");
         }
         // if we reach here, it is successful, and we can begin to encode the message.
-        string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[Idx]._homeworld;
 
         // we will need to define all things in the long list for decoding.
         var baseString = $"/tell {targetPlayerFormatted} *{playerPayload.PlayerName} from {playerPayload.World.Name}, their "; // fulfills [1]
@@ -99,7 +99,7 @@ public partial class MessageEncoder {
             throw new Exception("The target player is not in the whitelist, and thus cannot be sent a request for information.");
         }
         // if we reach here, it is successful, and we can begin to encode the message.
-        string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[Idx]._homeworld;
 
 
         string baseString = $"/tell {targetPlayerFormatted} || When they had last played, ";
@@ -155,12 +155,6 @@ public partial class MessageEncoder {
     /// <item><c>[30]</c> - does messageSender allow all commands? (BOOL) </item>
     ///
     /// <item><c>[31]</c> - is messageSenders toybox enabled? (BOOL) </item>
-    /// <item><c>[32]</c> - does messageSender allow you to toggle their toys active state? (BOOL) </item>
-    /// <item><c>[33]</c> - does messageSender allow adjusting intensity of toy? (BOOL) </item>
-    /// <item><c>[34]</c> - current intensity level of active toy ((or new intensity level being sent)) (INT) </item>
-    /// <item><c>[35]</c> - does messageSender allow you to execute storedToyPatterns? (BOOL) </item>
-    /// <item><c>[36]</c> - name of pattern to execute (not given in infoRequests) (STRING) </item>
-    /// <item><c>[37]</c> - does messageSender allow you to lock the toybox UI? (BOOL) </item>
     /// </list> </summary>
     public string HandleProvideInfoPartThree(PlayerPayload playerPayload, string targetPlayer, CharacterHandler _characterHandler) {
         // first we need to get which whitelisted player in out config this is going to
@@ -178,7 +172,6 @@ public partial class MessageEncoder {
         string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[Idx]._homeworld;
 
 
-    try{
         string baseString = $"/tell {targetPlayerFormatted} || ";
 
         // [23] - is wardrobe enabled (BOOL)
@@ -226,6 +219,35 @@ public partial class MessageEncoder {
         ? "Their toybox compartment accessible to use." : "Their toybox inaccessible for use.";
         baseString += "Within the drawer there ";
 
+        // for message splitting
+        baseString += " ->";
+        return baseString;
+    }
+
+
+    /// <item><c>[32]</c> - does messageSender allow you to toggle their toys active state? (BOOL) </item>
+    /// <item><c>[33]</c> - does messageSender allow adjusting intensity of toy? (BOOL) </item>
+    /// <item><c>[34]</c> - current intensity level of active toy ((or new intensity level being sent)) (INT) </item>
+    /// <item><c>[35]</c> - does messageSender allow you to execute storedToyPatterns? (BOOL) </item>
+    /// <item><c>[36]</c> - name of pattern to execute (not given in infoRequests) (STRING) </item>
+    /// <item><c>[37]</c> - does messageSender allow you to lock the toybox UI? (BOOL) </item>
+    public string HandleProvideInfoPartFour(PlayerPayload playerPayload, string targetPlayer, CharacterHandler _characterHandler) {
+        // first we need to get which whitelisted player in out config this is going to
+        int Idx = -1;
+        if(_characterHandler.IsPlayerInWhitelist(targetPlayer)) {
+            GagSpeak.Log.Debug($"[MsgEncoder]: Target Player: {targetPlayer}");
+            Idx = _characterHandler.GetWhitelistIndex(targetPlayer);
+        }
+        if(Idx == -1) {
+            throw new Exception("The target player is not in the whitelist, and thus cannot be sent a request for information.");
+        }
+        GagSpeak.Log.Debug($"[MsgEncoder]: Index of Whitelisted Char: {Idx}");
+
+        // if we reach here, it is successful, and we can begin to encode the message.
+        string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[Idx]._homeworld;
+
+        string baseString = $"/tell {targetPlayerFormatted} || ";
+        
         // [32] - does messageSender allow you to toggle toy? (BOOL)
         baseString += _characterHandler.playerChar._allowChangingToyState[Idx]
         ? "was powered Vibrator" : "was an unpowered Vibrator";
@@ -250,10 +272,5 @@ public partial class MessageEncoder {
         ? "with the viberator strapped tight to their skin. " : "with the vibrator loosely tied to their skin. ";
 
         return baseString;
-    } catch (Exception e) {
-        GagSpeak.Log.Error($"[MsgEncoder]: Error: {e}");
-        return "";
     }
-    }
-
 }

@@ -36,6 +36,9 @@ public partial class ResultLogic {
         // we will need to update all of our information for this player.
         // this means WE are RECIEVING the provide info, so we should be updating to white player
         string senderName = decodedMessage[1];
+        // trim the last word off the string
+        string[] parts = senderName.Split(' ');
+        senderName = string.Join(" ", parts.Take(parts.Length - 1));
         int Idx = -1;
         if(_characterHandler.IsPlayerInWhitelist(senderName)) {
             Idx = _characterHandler.GetWhitelistIndex(senderName);
@@ -59,6 +62,9 @@ public partial class ResultLogic {
         // we will need to update all of our information for this player.
         // this means WE are RECIEVING the provide info, so we should be updating to white player
         string senderName = decodedMessage[1];
+        // trim the last word off the string
+        string[] parts = senderName.Split(' ');
+        senderName = string.Join(" ", parts.Take(parts.Length - 1));
         int Idx = -1;
         if(_characterHandler.IsPlayerInWhitelist(senderName)) {
             Idx = _characterHandler.GetWhitelistIndex(senderName);
@@ -77,6 +83,9 @@ public partial class ResultLogic {
         // we will need to update all of our information for this player.
         // this means WE are RECIEVING the provide info, so we should be updating to white player
         string senderName = decodedMessage[1];
+        // trim the last word off the string
+        string[] parts = senderName.Split(' ');
+        senderName = string.Join(" ", parts.Take(parts.Length - 1));
         int Idx = -1;
         if(_characterHandler.IsPlayerInWhitelist(senderName)) {
             Idx = _characterHandler.GetWhitelistIndex(senderName);

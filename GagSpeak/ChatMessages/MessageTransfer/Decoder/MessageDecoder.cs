@@ -87,7 +87,7 @@ public partial class MessageDecoder {
         }
 
         // otherwise, it is a info request or recieved message, so process it here
-        if(encodedMsgIndex >= 36 && encodedMsgIndex <= 39) {
+        if(encodedMsgIndex >= 36 && encodedMsgIndex <= 40) {
             DecodeInfoExchangeMsg(recievedMessage, encodedMsgIndex, ref decodedMessage);
             return decodedMessage;
         }

@@ -43,9 +43,9 @@ public static class InfoSendAndRequestHelpers {
             // print to chat that you sent the request
             chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
-                "with your details(1/3)").AddItalicsOff().BuiltString);
+                "with your details(1/4)").AddItalicsOff().BuiltString);
             //send the message
-            chatManager.SendRealMessage(gagMessages.HandleProvideInfoPartOne(playerPayload, senderName, characterHandler));
+            chatManager.messageQueue.Enqueue(gagMessages.HandleProvideInfoPartOne(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {
@@ -65,9 +65,9 @@ public static class InfoSendAndRequestHelpers {
             // print to chat that you sent the request
             chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
-                "with your details(2/3)").AddItalicsOff().BuiltString);
+                "with your details(2/4)").AddItalicsOff().BuiltString);
             //send the message
-            chatManager.SendRealMessage(gagMessages.HandleProvideInfoPartTwo(playerPayload, senderName, characterHandler));
+            chatManager.messageQueue.Enqueue(gagMessages.HandleProvideInfoPartTwo(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {
@@ -87,9 +87,31 @@ public static class InfoSendAndRequestHelpers {
             // print to chat that you sent the request
             chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
-                "with your details(3/3)").AddItalicsOff().BuiltString);
+                "with your details(3/4)").AddItalicsOff().BuiltString);
             //send the message
-            chatManager.SendRealMessage(gagMessages.HandleProvideInfoPartThree(playerPayload, senderName, characterHandler));
+            chatManager.messageQueue.Enqueue(gagMessages.HandleProvideInfoPartThree(playerPayload, senderName, characterHandler));
+        }
+        catch (Exception e)
+        {
+            chatGui.Print(
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
+        }
+    }
+
+    /// <summary>  Controls logic for sending the fourth chunk of your info the player that requested it from you. </summary>
+    public static void SendInfoToPlayer4(CharacterHandler characterHandler, ChatMessages.ChatManager chatManager,
+    ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config, string senderName)
+    {
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(clientState, out playerPayload);
+        try
+        {
+            // print to chat that you sent the request
+            chatGui.Print(
+                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
+                "with your details(4/4)").AddItalicsOff().BuiltString);
+            //send the message
+            chatManager.messageQueue.Enqueue(gagMessages.HandleProvideInfoPartThree(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {

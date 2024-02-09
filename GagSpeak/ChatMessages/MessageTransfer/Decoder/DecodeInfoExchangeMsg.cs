@@ -32,7 +32,7 @@ public partial class MessageDecoder {
         // decoder for sharing info about player (part 1)
         else if (encodedMsgIndex == 37) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+)\, their (?<theirStatusToYou>.+)\'s (?<yourStatusToThem>.+) nodded in agreement\, informing their partner of how when they last played together\, (?<safewordUsed>.+)\. (?<extendedLocks>.+)\, (?<gaggedVoice>.+)\, (?<sealedLips>.+)\. \-\>$";
+            string pattern = @"^\*(?<playerInfo>.+)\, their (?<yourStatusToThem>.+)\'s (?<theirStatusToYou>.+) nodded in agreement\, informing their partner of how when they last played together\, (?<safewordUsed>.+)\. (?<extendedLocks>.+)\, (?<gaggedVoice>.+)\, (?<sealedLips>.+)\. \-\>$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -40,8 +40,8 @@ public partial class MessageDecoder {
                 decodedMessage[0] = "shareInfoPartOne"; // assign "shareInfo" to decodedMessage[0]
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // decodedMessage[1]
-                decodedMessage[2] = match.Groups["theirStatusToYou"].Value.Trim(); // Assign theirStatusToYou to decodedMessage[2]
-                decodedMessage[3] = match.Groups["yourStatusToThem"].Value.Trim(); // Assign yourStatusToThem to decodedMessage[3]
+                decodedMessage[2] = match.Groups["yourStatusToThem"].Value.Trim(); // Assign theirStatusToYou to decodedMessage[2]
+                decodedMessage[3] = match.Groups["theirStatusToYou"].Value.Trim(); // Assign yourStatusToThem to decodedMessage[3]
                 // Assign safeword to decodedMessage[4]
                 decodedMessage[4] = AssignMatchValue(match, "safewordUsed", "they had used their safeword");
                 decodedMessage[5] = AssignMatchValue(match, "extendedLocks", "They didnt mind the enduring binds");
@@ -58,7 +58,7 @@ public partial class MessageDecoder {
         // decoder for sharing info about player (part 2)
         else if (encodedMsgIndex == 38) {
             // Split the message into substrings for each layer
-            string pattern = @"\/tell (?<targetPlayer>\w+) \|\| When they had last played\, (?<layerInfo>.*?)(?= ->)";
+            string pattern = @"^(?<playerInfo>.+) \|\| When they had last played\, (?<layerInfo>.*?) \-\>$";
             Regex regex = new Regex(pattern);
             Match match = regex.Match(recievedMessage);
 
@@ -72,6 +72,7 @@ public partial class MessageDecoder {
                     string startingWords = i == 0 ? "On her " + layerName + " layer, " : i == 1 ? "Over their mouths " + layerName + " layer, " : "Finally on her " + layerName + " layer, ";
                     // store the current regex for this section
                     string layerInfo = layerInfoParts[i];
+                    GagSpeak.Log.Debug($"[Message Decoder]: share info2: layerInfo: {layerInfo}");
                     // if it contains nothing present, then we know we have a blank entry.
                     if (layerInfo.Contains("nothing present")) {
                         decodedMessage[8 + i] = "None"; // gag type, [8, 9, 10]
@@ -108,7 +109,8 @@ public partial class MessageDecoder {
         // decoder for our sharing info about player (part 3)
         else if (encodedMsgIndex == 39) {
             // get the pattern
-            string pattern = @"^\*(?<playerInfo>.+) \|\| (?<wardrobeState>.+)\. (?<gagStorageState>.+)\, (?<restraintSetEnable>.+)\. (?<restraintLock>.+)\, their partner whispering (?<puppeteerTrigger>.+)\, causing them to (?<sitRequestState>.+)\. (?<motionRequestState>.+)\, (?<allCommandsState>.+)\. (?<toyboxState>.+)\, (?<toggleToyState>.+) Within the drawer there (?<toyState>.+)\, (?<canControlIntensity>.+) currently set to (?<intensityLevel>.+)\. (?<toyPatternState>.+)\, (?<toyboxLockState>.+)$";
+            string pattern = @"^(?<playerInfo>.+) \|\| (?<wardrobeState>.+)\. (?<gagStorageState>.+)\, (?<restraintSetEnable>.+)\. (?<restraintLock>.+)\, their partner whispering (?<puppeteerTrigger>.+)\, causing them 
+            to (?<sitRequestState>.+)\. (?<motionRequestState>.+)\, (?<allCommandsState>.+)\. Within the drawer there \-\>$";
 
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
@@ -125,20 +127,42 @@ public partial class MessageDecoder {
                 decodedMessage[28] = AssignMatchValue(match, "sitRequestState", "sit down on command");
                 decodedMessage[29] = AssignMatchValue(match, "motionRequestState", "For their partner controlled their movements");
                 decodedMessage[30] = AssignMatchValue(match, "allCommandsState", "and all of their actions");
+                GagSpeak.Log.Debug($"[Message Decoder]: share info3: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} || "+
+                $"(23) {decodedMessage[23]} || (24) {decodedMessage[24]} || (25) {decodedMessage[25]} || (26) {decodedMessage[26]} || "+
+                $"(27) {decodedMessage[27]} || (28) {decodedMessage[28]} || (29) {decodedMessage[29]} || (30) {decodedMessage[30]}");
+            } else {
+                GagSpeak.Log.Error($"[Message Decoder]: share info3: Failed to decode message: {recievedMessage}");
+            }
+        }
+
+        
+
+        // decoder for our sharing info about player (part 4)
+        else if (encodedMsgIndex == 40) {
+            // get the pattern
+            string pattern = @"^\*(?<playerInfo>.+) \|\| (?<toyboxState>.+)\, (?<toggleToyState>.+) Within the drawer there (?<toyState>.+)\, (?<canControlIntensity>.+) currently set to (?<intensityLevel>.+)\. (?<toyPatternState>.+)\, (?<toyboxLockState>.+)\. $";
+        
+            // use regex to match the pattern
+            Match match = Regex.Match(recievedMessage, pattern);
+            // check if the match is sucessful
+            if(match.Success) {
+                decodedMessage[0] = "shareInfoPartFour"; // assign "shareInfo3" to decodedMessage[0]
+                string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
+                decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // decodedMessage[1]
                 decodedMessage[31] = AssignMatchValue(match, "toyboxState", "Their toybox compartment accessible to use");
                 decodedMessage[32] = AssignMatchValue(match, "toggleToyState", "was powered Vibrator");
                 decodedMessage[33] = AssignMatchValue(match, "canControlIntensity", "with an adjustable intensity level");
                 decodedMessage[34] = match.Groups["intensityLevel"].Value.Trim();
                 decodedMessage[35] = AssignMatchValue(match, "toyPatternState", "The vibrator was able to execute set patterns");
                 decodedMessage[37] = AssignMatchValue(match, "toyboxLockState", "with the viberator strapped tight to their skin");
-                GagSpeak.Log.Debug($"[Message Decoder]: share info3: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} || "+
-                $"(23) {decodedMessage[23]} || (24) {decodedMessage[24]} || (25) {decodedMessage[25]} || (26) {decodedMessage[26]} || "+
-                $"(27) {decodedMessage[27]} || (28) {decodedMessage[28]} || (29) {decodedMessage[29]} || (30) {decodedMessage[30]} || "+
+                GagSpeak.Log.Debug($"[Message Decoder]: share info4: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} || "+
                 $"(31) {decodedMessage[31]} || (32) {decodedMessage[32]} || (33) {decodedMessage[33]} || (34) {decodedMessage[34]} || "+
                 $"(35) {decodedMessage[35]} || (37) {decodedMessage[37]}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: share info3: Failed to decode message: {recievedMessage}");
+                GagSpeak.Log.Error($"[Message Decoder]: share info4: Failed to decode message: {recievedMessage}");
             }
+        
+        
         }
     }
 }

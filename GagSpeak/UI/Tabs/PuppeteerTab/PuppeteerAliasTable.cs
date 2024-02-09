@@ -6,13 +6,15 @@ using Dalamud.Interface;
 using OtterGui;
 using System.Linq;
 using GagSpeak.ToyboxandPuppeteer;
+using System.Collections.Generic;
 
 namespace GagSpeak.UI.Tabs.PuppeteerTab;
 public partial class PuppeteerAliasTable {
 
     private readonly    CharacterHandler            _characterHandler;
-    private             string?                     _tempAliasText;
-    private             string?                     _tempAliasCommand;
+    private Dictionary<int, string> _tempAliasTexts = new Dictionary<int, string>();
+    private Dictionary<int, string> _tempAliasCommands = new Dictionary<int, string>();
+
     private             AliasTrigger                _tempNewAlias;
     public PuppeteerAliasTable(CharacterHandler characterHandler) {
         _characterHandler = characterHandler;
@@ -58,14 +60,14 @@ public partial class PuppeteerAliasTable {
             _characterHandler.RemoveAliasEntry(idx); // Use the helper function to remove the alias entry
 
         ImGui.TableNextColumn();
-        string aliasText = _tempAliasText ?? aliasTrigger._inputCommand;
+        string aliasText = _tempAliasTexts.ContainsKey(idx) ? _tempAliasTexts[idx] : aliasTrigger._inputCommand;
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         if (ImGui.InputText($"##aliasText{idx}", ref aliasText, 50)) {
-            _tempAliasText = aliasText; // Update the alias entry input
+            _tempAliasTexts[idx] = aliasText; // Update the alias entry input
         }
         if(ImGui.IsItemDeactivatedAfterEdit()) {
             _characterHandler.UpdateAliasEntryInput(idx, aliasText);
-            _tempAliasText = null;
+            _tempAliasTexts.Remove(idx);
         }
         ImGui.TableNextColumn();
         bool isEnabled = aliasTrigger._enabled;
@@ -74,15 +76,15 @@ public partial class PuppeteerAliasTable {
         }
 
 
-        ImGui.TableNextColumn();
-        string command = _tempAliasCommand ?? aliasTrigger._outputCommand;
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if (ImGui.InputText($"##command{idx}", ref command, 200)) // If the input text is modified
-            _tempAliasCommand = command; // Update the alias entry output
-        if(ImGui.IsItemDeactivatedAfterEdit()) {
-            _characterHandler.UpdateAliasEntryOutput(idx, command);
-            _tempAliasText = null;
-        }
+    ImGui.TableNextColumn();
+    string command = _tempAliasCommands.ContainsKey(idx) ? _tempAliasCommands[idx] : aliasTrigger._outputCommand;
+    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+    if (ImGui.InputText($"##command{idx}", ref command, 200)) // If the input text is modified
+        _tempAliasCommands[idx] = command; // Update the alias entry output
+    if(ImGui.IsItemDeactivatedAfterEdit()) {
+        _characterHandler.UpdateAliasEntryOutput(idx, command);
+        _tempAliasCommands.Remove(idx);
+    }
     }
 
     private void DrawNewModRow() {
