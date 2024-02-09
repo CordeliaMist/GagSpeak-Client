@@ -152,6 +152,7 @@ public partial class ResultLogic {
             "shareInfoPartOne"  => ResLogicProvideInfoPartOne(ref decodedMessage, ref isHandled, config),
             "shareInfoPartTwo"  => ResLogicProvideInfoPartTwo(ref decodedMessage, ref isHandled, config),
             "shareInfoPartThree"=> ResLogicProvideInfoPartThree(ref decodedMessage, ref isHandled, config),
+            "shareInfoPartFour" => ResLogicProvideInfoPartFour(ref decodedMessage, ref isHandled, config),
             _ => LogError("Invalid Provide Info message parse, If you see this report it to cordy ASAP.")
         };
         return true;

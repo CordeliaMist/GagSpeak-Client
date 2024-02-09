@@ -111,7 +111,7 @@ public static class InfoSendAndRequestHelpers {
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
                 "with your details(4/4)").AddItalicsOff().BuiltString);
             //send the message
-            chatManager.messageQueue.Enqueue(gagMessages.HandleProvideInfoPartThree(playerPayload, senderName, characterHandler));
+            chatManager.messageQueue.Enqueue(gagMessages.HandleProvideInfoPartFour(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {

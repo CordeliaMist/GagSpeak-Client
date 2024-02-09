@@ -109,9 +109,7 @@ public partial class MessageDecoder {
         // decoder for our sharing info about player (part 3)
         else if (encodedMsgIndex == 39) {
             // get the pattern
-            string pattern = @"^(?<playerInfo>.+) \|\| (?<wardrobeState>.+)\. (?<gagStorageState>.+)\, (?<restraintSetEnable>.+)\. (?<restraintLock>.+)\, their partner whispering (?<puppeteerTrigger>.+)\, causing them 
-            to (?<sitRequestState>.+)\. (?<motionRequestState>.+)\, (?<allCommandsState>.+)\. Within the drawer there \-\>$";
-
+            string pattern = @"^(?<playerInfo>.+) \|\| (?<wardrobeState>.+)\. (?<gagStorageState>.+)\, (?<restraintSetEnable>.+)\. (?<restraintLock>.+)\, their partner whispering (?<puppeteerTrigger>.+)\, causing them to (?<sitRequestState>.+)\. (?<motionRequestState>.+)\, (?<allCommandsState>.+)\. (?<toyboxEnabled>.+)\. Within the drawer there \-\>$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -127,6 +125,7 @@ public partial class MessageDecoder {
                 decodedMessage[28] = AssignMatchValue(match, "sitRequestState", "sit down on command");
                 decodedMessage[29] = AssignMatchValue(match, "motionRequestState", "For their partner controlled their movements");
                 decodedMessage[30] = AssignMatchValue(match, "allCommandsState", "and all of their actions");
+                decodedMessage[31] = AssignMatchValue(match, "toyboxState", "Their toybox compartment accessible to use");
                 GagSpeak.Log.Debug($"[Message Decoder]: share info3: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} || "+
                 $"(23) {decodedMessage[23]} || (24) {decodedMessage[24]} || (25) {decodedMessage[25]} || (26) {decodedMessage[26]} || "+
                 $"(27) {decodedMessage[27]} || (28) {decodedMessage[28]} || (29) {decodedMessage[29]} || (30) {decodedMessage[30]}");
@@ -140,7 +139,7 @@ public partial class MessageDecoder {
         // decoder for our sharing info about player (part 4)
         else if (encodedMsgIndex == 40) {
             // get the pattern
-            string pattern = @"^\*(?<playerInfo>.+) \|\| (?<toyboxState>.+)\, (?<toggleToyState>.+) Within the drawer there (?<toyState>.+)\, (?<canControlIntensity>.+) currently set to (?<intensityLevel>.+)\. (?<toyPatternState>.+)\, (?<toyboxLockState>.+)\. $";
+            string pattern = @"^(?<playerInfo>.+) \|\| (?<toyboxState>.+)\, (?<canControlIntensity>.+) current set to (?<intensityLevel>.+)\. (?<canControlIntensity>.+) currently set to (?<intensityLevel>.+)\. (?<toyPatternState>.+)\, (?<toyboxLockState>.+)\. $";
         
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
@@ -149,14 +148,13 @@ public partial class MessageDecoder {
                 decodedMessage[0] = "shareInfoPartFour"; // assign "shareInfo3" to decodedMessage[0]
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessage[1] = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim(); // decodedMessage[1]
-                decodedMessage[31] = AssignMatchValue(match, "toyboxState", "Their toybox compartment accessible to use");
                 decodedMessage[32] = AssignMatchValue(match, "toggleToyState", "was powered Vibrator");
                 decodedMessage[33] = AssignMatchValue(match, "canControlIntensity", "with an adjustable intensity level");
                 decodedMessage[34] = match.Groups["intensityLevel"].Value.Trim();
                 decodedMessage[35] = AssignMatchValue(match, "toyPatternState", "The vibrator was able to execute set patterns");
                 decodedMessage[37] = AssignMatchValue(match, "toyboxLockState", "with the viberator strapped tight to their skin");
                 GagSpeak.Log.Debug($"[Message Decoder]: share info4: (0) = {decodedMessage[0]} ||(1) {decodedMessage[1]} || "+
-                $"(31) {decodedMessage[31]} || (32) {decodedMessage[32]} || (33) {decodedMessage[33]} || (34) {decodedMessage[34]} || "+
+                $"(32) {decodedMessage[32]} || (33) {decodedMessage[33]} || (34) {decodedMessage[34]} || "+
                 $"(35) {decodedMessage[35]} || (37) {decodedMessage[37]}");
             } else {
                 GagSpeak.Log.Error($"[Message Decoder]: share info4: Failed to decode message: {recievedMessage}");

@@ -216,8 +216,8 @@ public partial class MessageEncoder {
 
         // [31] - is messageSenders toybox enabled? (BOOL)
         baseString += _characterHandler.playerChar._enableToybox
-        ? "Their toybox compartment accessible to use." : "Their toybox inaccessible for use.";
-        baseString += "Within the drawer there ";
+        ? "Their toybox compartment accessible to use" : "Their toybox inaccessible for use";
+        baseString += ". Within the drawer there ";
 
         // for message splitting
         baseString += " ->";

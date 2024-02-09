@@ -100,16 +100,36 @@ public partial class ResultLogic {
             _characterHandler.SetWhitelistAllowSitRequests(Idx, bool.Parse(decodedMessage[28]));
             _characterHandler.SetWhitelistAllowMotionRequests(Idx, bool.Parse(decodedMessage[29]));
             _characterHandler.SetWhitelistAllowAllCommands(Idx, bool.Parse(decodedMessage[30]));
+            GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 3 message");
+            return true;
+        } else {
+            return LogError($"ERROR, Invalid information provide part 3 message parse.");
+        }
+    }
+
+    public bool ResLogicProvideInfoPartFour(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig config) {
+        // we will need to update all of our information for this player.
+        // this means WE are RECIEVING the provide info, so we should be updating to white player
+        string senderName = decodedMessage[1];
+        // trim the last word off the string
+        string[] parts = senderName.Split(' ');
+        senderName = string.Join(" ", parts.Take(parts.Length - 1));
+        int Idx = -1;
+        if(_characterHandler.IsPlayerInWhitelist(senderName)) {
+            Idx = _characterHandler.GetWhitelistIndex(senderName);
+        }
+        // we have the index, so now we can update with the variables.
+        if(Idx != -1) {
             _characterHandler.SetWhitelistEnableToybox(Idx, bool.Parse(decodedMessage[31]));
             _characterHandler.SetWhitelistAllowChangingToyState(Idx, bool.Parse(decodedMessage[32]));
             _characterHandler.SetWhitelistAllowIntensityControl(Idx, bool.Parse(decodedMessage[33]));
             _characterHandler.SetWhitelistIntensityLevel(Idx, byte.Parse(decodedMessage[34]));
             _characterHandler.SetWhitelistAllowUsingPatterns(Idx, bool.Parse(decodedMessage[35]));
             _characterHandler.SetWhitelistAllowToyboxLocking(Idx, bool.Parse(decodedMessage[37]));
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 3 message");
+            GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 4 message");
             return true;
         } else {
-            return LogError($"ERROR, Invalid information provide part 3 message parse.");
+            return LogError($"ERROR, Invalid information provide part 4 message parse.");
         }
     }
 }
