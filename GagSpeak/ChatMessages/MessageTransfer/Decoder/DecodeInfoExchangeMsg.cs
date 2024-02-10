@@ -126,7 +126,7 @@ public partial class MessageDecoder {
         // decoder for our sharing info about player (part 3)
         else if (decodedMessageMediator.encodedMsgIndex == 40) {
             // get the pattern
-            string pattern = @"^\|\|\s*(?<wardrobeState>.+?)\.\s*(?<gagStorageState>.+?)\,\s*(?<restraintSetEnable>.+?)\.\s*(?<restraintLock>.+?)\,\s*(?<allowPuppeteer>.+?)\s*their partner whispered\s*(.)(?<puppeteerTrigger>.*?)(.)\s*causing them to\s*(?<sitRequestState>.+?)\.\s*(?<motionRequestState>.+?)\,\s*(?<allCommandsState>.+?)\.\s*\-\>$";
+            string pattern = @"^\|\|\s*(?<wardrobeState>.+?)\.\s*(?<gagStorageState>.+?)\,\s*(?<restraintSetEnable>.+?)\.\s*(?<restraintLock>.+?)\,\s*(?<allowPuppeteer>.+?)\s*their partner whispered\s*(?<puppeteerTrigger>.*?)\s*causing them to\s*(?<sitRequestState>.+?)\.\s*(?<motionRequestState>.+?)\,\s*(?<allCommandsState>.+?)\.\s*\-\>$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -145,13 +145,14 @@ public partial class MessageDecoder {
                 decodedMessageMediator.isPuppeteerEnabled = match.Groups["allowPuppeteer"].Value.Trim() == "loyal as ever when" ? true : false;                
                 // puppeteer trigger
                 string puppeteerTrigger = match.Groups["puppeteerTrigger"].Value.Trim();
+                GagSpeak.Log.Debug($"[Message Decoder]: share info3: puppeteerTrigger: -->{puppeteerTrigger}<--");
+                decodedMessageMediator.triggerStartChar = puppeteerTrigger[0].ToString();
+                decodedMessageMediator.triggerEndChar = puppeteerTrigger[puppeteerTrigger.Length - 1].ToString();
                 if(puppeteerTrigger.Length > 2) {
                     decodedMessageMediator.triggerPhrase = puppeteerTrigger.Substring(1, puppeteerTrigger.Length - 2);
                 } else {
                     decodedMessageMediator.triggerPhrase = string.Empty;
                 }
-                decodedMessageMediator.triggerStartChar = puppeteerTrigger[0].ToString();
-                decodedMessageMediator.triggerEndChar = puppeteerTrigger[puppeteerTrigger.Length - 1].ToString();
                 // sit request state
                 decodedMessageMediator.allowSitRequests = match.Groups["sitRequestState"].Value.Trim() == "sit down on command" ? true : false;
                 // motion request state

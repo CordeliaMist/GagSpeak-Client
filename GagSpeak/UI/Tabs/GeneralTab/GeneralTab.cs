@@ -99,13 +99,14 @@ public class GeneralTab : ITab, IDisposable
     /// </summary>
     /// 
     private void TestRegex(){
-        string testString = "|| hey, hi currently set to 100. did, you know that we could, walk the stars.";
+        string testString = "";
 
-        string pattern = @"^\|\|\s*(?<deviceState>.+?),\s*(?<intensityState>.+?)\s*currently set to\s*(?<intensityLevel>\d+)\.\s*(?<patternState>.+?),\s*(?<sourceState>.+?)\.$";
+        string pattern = @"^\|\|\s*(?<wardrobeState>.+?)\.\s*(?<gagStorageState>.+?)\,\s*(?<restraintSetEnable>.+?)\.\s*(?<restraintLock>.+?)\,\s*(?<allowPuppeteer>.+?)\s*their partner whispered\s*(?<puppeteerTrigger>.*?)\s*causing them to\s*(?<sitRequestState>.+?)\.\s*(?<motionRequestState>.+?)\,\s*(?<allCommandsState>.+?)\.\s*\-\>$";
             // use regex to match the pattern
         Match match = Regex.Match(testString, pattern);
             // check if the match is sucessful
             if (match.Success) {
+                GagSpeak.Log.Debug($"[Message Decoder]: Matched groups: {match.Groups["wardrobeState"].Value}, {match.Groups["gagStorageState"].Value}, {match.Groups["restraintSetEnable"].Value}, {match.Groups["restraintLock"].Value}, {match.Groups["allowPuppeteer"].Value}, {match.Groups["puppeteerTrigger"].Value}, {match.Groups["sitRequestState"].Value}, {match.Groups["motionRequestState"].Value}, {match.Groups["allCommandsState"].Value}");
                 GagSpeak.Log.Debug($"[Message Decoder]: share info: Sucessfully decoded message: {testString}");
             } else {
                 GagSpeak.Log.Error($"[Message Decoder]: share info: Failed to decode message: {testString}");

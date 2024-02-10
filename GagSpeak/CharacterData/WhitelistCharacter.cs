@@ -114,12 +114,11 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         }}
         // TIER 1 == dynamic of PET/SLAVE/ABSOLUTE-SLAVE with MISTRESS|MASTER/OWNER.
         if (_yourStatusToThem == RoleLean.Mistress || _yourStatusToThem == RoleLean.Master || _yourStatusToThem == RoleLean.Owner) {
-            if(_theirStatusToYou == RoleLean.Submissive || _theirStatusToYou == RoleLean.Pet
-            || _theirStatusToYou == RoleLean.Slave || _theirStatusToYou == RoleLean.AbsoluteSlave) {
+            if(_theirStatusToYou == RoleLean.Pet || _theirStatusToYou == RoleLean.Slave || _theirStatusToYou == RoleLean.AbsoluteSlave) {
                 return DynamicTier.Tier1;
         }}
         // If a two way dyanamic is note yet established, then our tier is 0.
-        if (_yourStatusToThem == RoleLean.None || _theirStatusToYou == RoleLean.None) {
+        if (_yourStatusToThem == RoleLean.None || _theirStatusToYou == RoleLean.None || _theirStatusToYou == RoleLean.Submissive) {
                 return DynamicTier.Tier0;
         }
         // we should never make it here, but if we do, set the dynamic to 0 anyways

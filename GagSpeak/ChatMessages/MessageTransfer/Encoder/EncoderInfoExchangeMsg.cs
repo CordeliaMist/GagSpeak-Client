@@ -178,7 +178,7 @@ public partial class MessageEncoder {
         // does messageSender allow sit requests? (BOOL)
         baseString += " causing them to ";
         baseString += _characterHandler.playerChar._allowSitRequests[Idx]
-        ? "sit down on command" : " sit down";
+        ? "sit down on command" : "sit down";
         baseString += ". ";
 
         // does messageSender allow motion requests? (BOOL)
