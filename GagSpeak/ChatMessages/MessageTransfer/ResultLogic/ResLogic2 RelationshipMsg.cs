@@ -10,19 +10,16 @@ public partial class ResultLogic {
     
     // decoder for requesting a dominant based relationship (master/mistress/owner) [ ID == 11, 12, 13]
     // [0] = commandtype, [1] = playerMsgWasSentFrom, [3] = nameOfRelationSent
-    private bool HandleRequestRelationStatusMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
-        // get playernameworld
-        string playerNameWorld = decodedMessage[1];
-        string[] parts = playerNameWorld.Split(' ');
-        string world = parts.Length > 1 ? parts.Last() : "";
+    private bool HandleRequestRelationStatusMessage(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
         // get playerName
-        string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+        string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get its index
             int idx = _characterHandler.GetWhitelistIndex(playerName);
             // declare the pending request status as the passed in status
-            RoleLean lean = _characterHandler.GetRoleLeanFromString(decodedMessage[3]);
+            RoleLean lean = _characterHandler.GetRoleLeanFromString(decodedMessageMediator.dynamicLean);
+            // set the pending relationship from player to the passed in status
             _characterHandler.UpdatePendingRelationRequestFromPlayer(idx, lean);
             // notify the user that the request as been sent. 
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has sent a request to have a {lean} relationship dynamic with you.").AddItalicsOff().BuiltString);
@@ -33,35 +30,24 @@ public partial class ResultLogic {
 
     // decoder for accepting a player relation request [ ID == 14, 15, 16]
     // [0] = commandtype, [1] = playerMsgWasSentFrom, [3] = nameOfRelationSent
-    private bool HandleAcceptRelationStatusMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
-        // get playernameworld
-        string playerNameWorld = decodedMessage[1];
-        string[] parts = playerNameWorld.Split(' ');
-        string world = parts.Length > 1 ? parts.Last() : "";
+    private bool HandleAcceptRelationStatusMessage(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
         // get playerName
-        string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+        string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
         if( _characterHandler.IsPlayerInWhitelist(playerName)) {
             // get its index
             int idx = _characterHandler.GetWhitelistIndex(playerName);
             // declare the pending request status as the passed in status
-            RoleLean lean = _characterHandler.GetRoleLeanFromString(decodedMessage[3]);
+            RoleLean lean = _characterHandler.GetRoleLeanFromString(decodedMessageMediator.dynamicLean);
             // set the pending relationship to none and relationship with that player to none
             switch(lean) {
-                case RoleLean.Owner:
-                    _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Owner); break;
-                case RoleLean.Mistress:
-                    _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Mistress); break;
-                case RoleLean.Master:
-                    _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Master); break;
-                case RoleLean.Submissive:
-                    _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Submissive); break;
-                case RoleLean.Pet:
-                    _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Pet); break;
-                case RoleLean.Slave:
-                    _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Slave); break;
-                case RoleLean.AbsoluteSlave:
-                    _characterHandler.UpdateYourStatusToThem(idx, RoleLean.AbsoluteSlave); break;
+                case RoleLean.Owner:        _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Owner); break;
+                case RoleLean.Mistress:     _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Mistress); break;
+                case RoleLean.Master:       _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Master); break;
+                case RoleLean.Submissive:   _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Submissive); break;
+                case RoleLean.Pet:          _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Pet); break;
+                case RoleLean.Slave:        _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Slave); break;
+                case RoleLean.AbsoluteSlave:_characterHandler.UpdateYourStatusToThem(idx, RoleLean.AbsoluteSlave); break;
             }
             _characterHandler.UpdatePendingRelationRequestFromYou(idx, RoleLean.None);
                         // set the commitment time if relationship is now two-way!
@@ -75,19 +61,15 @@ public partial class ResultLogic {
         return LogError($"ERROR, Player not in your whitelist!");
     }
 
-    private bool HandleDeclineRelationStatusMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
-        // get playernameworld
-        string playerNameWorld = decodedMessage[1];
-        string[] parts = playerNameWorld.Split(' ');
-        string world = parts.Length > 1 ? parts.Last() : "";
+    private bool HandleDeclineRelationStatusMessage(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
         // get playerName
-        string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+        string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
         if( _characterHandler.IsPlayerInWhitelist(playerName)) {
             // get its index
             int idx = _characterHandler.GetWhitelistIndex(playerName);
             // declare the pending request status as the passed in status
-            RoleLean lean = _characterHandler.GetRoleLeanFromString(decodedMessage[3]);
+            RoleLean lean = _characterHandler.GetRoleLeanFromString(decodedMessageMediator.dynamicLean);
             // set the pending relationship to none and relationship with that player to none
             _characterHandler.UpdatePendingRelationRequestFromYou(idx, RoleLean.None);
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have declined {playerName}'s request.").AddItalicsOff().BuiltString);
@@ -98,11 +80,9 @@ public partial class ResultLogic {
 
     // result logic for removing a relationship
     // [0] = commandtype, [1] = playerMsgWasSentFrom
-    private bool HandleRelationRemovalMessage(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
-        string playerNameWorld = decodedMessage[1];
-        string[] parts = playerNameWorld.Split(' ');
-        string world = parts.Length > 1 ? parts.Last() : "";
-        string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+    private bool HandleRelationRemovalMessage(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
+        // get playerName
+        string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // locate player in whitelist
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             int idx = _characterHandler.GetWhitelistIndex(playerName);

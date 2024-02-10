@@ -2,7 +2,7 @@ namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
 public partial class MessageDictionary {
     // lookup function for the relationship messages
-    public bool LookupRelationshipMsg(string textVal, ref int index) {
+    public bool LookupRelationshipMsg(string textVal, DecodedMessageMediator decodedMessageMediator) {
         // IF ANY CONDITIONS ARE MET, DO AN EARLY EXIT RETURN
 
         // Request to have dominant status [ ID == 11 // request (Mistress/Master/Owner) ]
@@ -10,7 +10,8 @@ public partial class MessageDictionary {
         "it you would like for me to become your"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Mistress/Master/Owner) command");
-            index = 11;
+            decodedMessageMediator.encodedMsgIndex = 11;
+            decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
         }
 
@@ -19,7 +20,8 @@ public partial class MessageDictionary {
         "to grow closer towards them.* \"Would you please take me in as your"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Slave/Pet) command");
-            index = 12;
+            decodedMessageMediator.encodedMsgIndex = 12;
+            decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
         }
 
@@ -28,7 +30,8 @@ public partial class MessageDictionary {
         "up with pleading eyes in an embarassed tone") && textVal.Contains("Would it be ok if I became your"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Absolute-Slave) command");
-            index = 13;
+            decodedMessageMediator.encodedMsgIndex = 13;
+            decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
         }
 
@@ -36,7 +39,8 @@ public partial class MessageDictionary {
         else if (textVal.Contains("nods in agreement with a smile.* \"Oh yes, most certainly. I would love for you to become my"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship acceptance (Mistress/Master/Owner) command");
-            index = 14;
+            decodedMessageMediator.encodedMsgIndex = 14;
+            decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
         }
 
@@ -45,7 +49,8 @@ public partial class MessageDictionary {
         "collar snug around their submissives neck.* \"Yes dearest, I'd love to make you my"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship acceptance (Slave/Pet) command");
-            index = 15;
+            decodedMessageMediator.encodedMsgIndex = 15;
+            decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
         }
 
@@ -54,7 +59,8 @@ public partial class MessageDictionary {
         "\"Verywell. And I hope you're able to devote yourself to the commitment of being my"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship acceptance (Absolute-Slave) command");
-            index = 16;
+            decodedMessageMediator.encodedMsgIndex = 16;
+            decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
         }
 
@@ -63,7 +69,8 @@ public partial class MessageDictionary {
         "commit to such a bond quite yet.\""))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship decline (Mistress/Master/Owner) command");
-            index = 17;
+            decodedMessageMediator.encodedMsgIndex = 17;
+            decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
         }
 
@@ -72,7 +79,8 @@ public partial class MessageDictionary {
         "of dynamic at the moment.\""))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship decline (Slave/Pet) command");
-            index = 18;
+            decodedMessageMediator.encodedMsgIndex = 18;
+            decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
         }
 
@@ -81,7 +89,8 @@ public partial class MessageDictionary {
         "I'd love to oblige, I dont have enough space left in my life to commit to such a thing.\""))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship decline (Absolute-Slave) command");
-            index = 19;
+            decodedMessageMediator.encodedMsgIndex = 19;
+            decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
         }
 
@@ -90,7 +99,8 @@ public partial class MessageDictionary {
         "circumstances it was enivtable.* \"I'm sorry, but I cant keep our relationship going right now, there is just too much going on\""))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /relationship removal command");
-            index = 20;
+            decodedMessageMediator.encodedMsgIndex = 20;
+            decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
         }
 

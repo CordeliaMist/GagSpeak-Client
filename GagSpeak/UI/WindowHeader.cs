@@ -18,20 +18,20 @@ public static class WindowHeader
             Width   = 0,
         };
 
-        public Action?         OnClick;
-        public string          Description = string.Empty;
-        public float           Width;
-        public uint            BorderColor;
-        public uint            TextColor;
-        public FontAwesomeIcon Icon;
-        public bool            Disabled;
-        public bool            Visible;
+        public Action?          OnClick;
+        public string           Description = string.Empty;
+        public float            Width;
+        public Vector4          BorderColor;
+        public Vector4          TextColor;
+        public FontAwesomeIcon  Icon;
+        public bool             Disabled;
+        public bool             Visible;
 
         public Button() {
             Visible     = true;
             Width       = ImGui.GetFrameHeightWithSpacing();
-            BorderColor = ColorId.HeaderButtons.Value();
-            TextColor   = ColorId.HeaderButtons.Value();
+            BorderColor = ColorId.WhiteMostlyOpaque.Value();
+            TextColor   = ColorId.WhiteMostlyOpaque.Value();
             Disabled    = false;
         }
 
@@ -42,7 +42,7 @@ public static class WindowHeader
             if (!Visible)
                 return;
             using var color = ImRaii.PushColor(ImGuiCol.Border, BorderColor)
-                .Push(ImGuiCol.Text, TextColor, TextColor != 0); //
+                .Push(ImGuiCol.Text, TextColor, TextColor.LengthSquared() != 0); //
             
             if (ImGuiUtil.DrawDisabledButton(Icon.ToIconString(), new Vector2(Width, ImGui.GetFrameHeight()), string.Empty, Disabled, true))
                 OnClick?.Invoke();

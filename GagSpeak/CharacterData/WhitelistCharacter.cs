@@ -15,6 +15,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
     public RoleLean         _pendingRelationRequestFromYou { get; set; }     // displays the current dyanmic request sent by you to this player
     public RoleLean         _pendingRelationRequestFromPlayer { get; set; }  // displays the current dynamic request from this player to you
     public DateTimeOffset   _timeOfCommitment { get; set; }                  // how long has your commitment lasted?
+    //////////////////// FIELDS THAT ARE TWO WAY MODIFIABLE ////////////////////
     public bool             _grantExtendedLockTimes { get; set; } = false;   // [TIER 2] if whitelisted user allows you to use extended lock times
     public bool             _enableRestraintSets { get; set; } = false;      // [TIER 2] allows dom to enable spesific restraint sets
     public bool             _restraintSetLocking { get; set; } = false;      // [TIER 1] enables / disables all restraint set locking 
@@ -24,7 +25,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
     public bool             _allowsSitRequests { get; set; } = false;        // [TIER 1] if they allow you to use sit requests
     public bool             _allowsMotionRequests { get; set; } = false;     // [TIER 2] if they allow you to use motion requests
     public bool             _allowsAllCommands { get; set; } = false;        // [TIER 4] If they allow you to use all commands on them
-    public bool             _allowsChangingToyState { get; set; } = false;   // [TIER 1] Basically, "They can turn on my vibe, at my selected slider position"
+    public bool             _allowChangingToyState { get; set; } = false;   // [TIER 1] Basically, "They can turn on my vibe, at my selected slider position"
     public bool             _allowsIntensityControl { get; set; } = false;   // [TIER 3] Basically says "This person can adjust the intensity slider"
     public bool             _allowsUsingPatterns { get; set; } = false;      // [TIER 0] Do they allow you to execute stored patterns
     public  int             _activeToystepSize { get; set; } = 0;            // [TIER 0] the step count of the vibe
@@ -146,7 +147,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
                 ["AllowsSitRequests"] = _allowsSitRequests,
                 ["AllowsMotionRequests"] = _allowsMotionRequests,
                 ["AllowsAllCommands"] = _allowsAllCommands,
-                ["AllowsChangingToyState"] = _allowsChangingToyState,
+                ["AllowsChangingToyState"] = _allowChangingToyState,
                 ["AllowIntensityControl"] = _allowsIntensityControl,
                 ["AllowsUsingPatterns"] = _allowsUsingPatterns,
                 ["ActiveToystepSize"] = _activeToystepSize,
@@ -179,7 +180,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         _allowsSitRequests = jsonObject["AllowsSitRequests"]?.Value<bool>() ?? false;
         _allowsMotionRequests = jsonObject["AllowsMotionRequests"]?.Value<bool>() ?? false;
         _allowsAllCommands = jsonObject["AllowsAllCommands"]?.Value<bool>() ?? false;
-        _allowsChangingToyState = jsonObject["AllowsChangingToyState"]?.Value<bool>() ?? false;
+        _allowChangingToyState = jsonObject["AllowsChangingToyState"]?.Value<bool>() ?? false;
         _allowsIntensityControl = jsonObject["AllowIntensityControl"]?.Value<bool>() ?? false;
         _allowsUsingPatterns = jsonObject["AllowsUsingPatterns"]?.Value<bool>() ?? false;
         _activeToystepSize = jsonObject["ActiveToystepSize"]?.Value<int>() ?? 0;

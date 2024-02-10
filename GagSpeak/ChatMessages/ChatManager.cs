@@ -17,23 +17,24 @@ namespace GagSpeak.ChatMessages;
 /// <summary> This class is used to handle the incoming chat messages from the game, and decided what to do with them based off what is processed. </summary>
 public class ChatManager
 {
-    private readonly IChatGui               _clientChat;                        // client chat 
-    private readonly GagSpeakConfig         _config;                            // config from GagSpeak
-    private readonly CharacterHandler       _characterHandler;                   // character data manager
-    private readonly PuppeteerMediator      _puppeteerMediator;                 // puppeteer mediator
-    private readonly IClientState           _clientState;                       // client state for player info
-    private readonly IObjectTable           _objectTable;                       // object table for scanning through rendered objects
-    private readonly RealChatInteraction    _realChatInteraction;               // real chat interaction
-    private readonly MessageDictionary      _messageDictionary;                 // dictionary for looking up encoded messages
-    private readonly MessageDecoder         _messageDecoder;                    // decoder for encoded messages
-    private readonly ResultLogic            _msgResultLogic;                    // logic for what happens to the player as a result of the tell
-    private readonly IFramework             _framework;                         // framework for dalamud and the game
-    public          Queue<string>           messageQueue = new Queue<string>(); // stores any messages to be sent on the next framework update
-    private          Stopwatch              messageTimer = new Stopwatch();     // timer for the queue of messages to be sent
+    private readonly    IChatGui               _clientChat;                        // client chat 
+    private readonly    GagSpeakConfig         _config;                            // config from GagSpeak
+    private readonly    CharacterHandler       _characterHandler;                   // character data manager
+    private readonly    PuppeteerMediator      _puppeteerMediator;                 // puppeteer mediator
+    private readonly    IClientState           _clientState;                       // client state for player info
+    private readonly    IObjectTable           _objectTable;                       // object table for scanning through rendered objects
+    private readonly    RealChatInteraction    _realChatInteraction;               // real chat interaction
+    private readonly    MessageDictionary      _messageDictionary;                 // dictionary for looking up encoded messages
+    private readonly    MessageDecoder         _messageDecoder;                    // decoder for encoded messages
+    private readonly    ResultLogic            _msgResultLogic;                    // logic for what happens to the player as a result of the tell
+    private             DecodedMessageMediator _decodedMessageMediator;           // mediator for decoded messages
+    private readonly    IFramework             _framework;                         // framework for dalamud and the game
+    public              Queue<string>          messageQueue = new Queue<string>(); // stores any messages to be sent on the next framework update
+    private             Stopwatch              messageTimer = new Stopwatch();     // timer for the queue of messages to be sent
 
     /// <summary> This is the constructor for the ChatManager class. </summary>
     public ChatManager(IChatGui clientChat, GagSpeakConfig config, IClientState clientState, IObjectTable objectTable,
-    RealChatInteraction realChatInteraction, MessageDictionary messageDictionary, MessageDecoder messageDecoder,
+    RealChatInteraction realChatInteraction, MessageDictionary messageDictionary, MessageDecoder messageDecoder, DecodedMessageMediator decodedMessageMediator,
     ResultLogic messageResultLogic ,IFramework framework, CharacterHandler characterHandler, PuppeteerMediator puppeteerMediator) {
         _clientChat = clientChat;
         _config = config;
@@ -46,6 +47,7 @@ public class ChatManager
         _framework = framework;
         _characterHandler = characterHandler;
         _puppeteerMediator = puppeteerMediator;
+        _decodedMessageMediator = decodedMessageMediator;
 
         _framework.Update += framework_Update;
         _clientChat.CheckMessageHandled += Chat_OnCheckMessageHandled;
@@ -64,12 +66,16 @@ public class ChatManager
     /// it before it reaches Chat_OnChatMessage, setting its handled var to true, then it won't show up in chat.
     /// </summary>
     private void Chat_OnCheckMessageHandled(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool isHandled) {
+        
         // if the message is a outgoing tell
         if ( type == XivChatType.TellOutgoing) {
             // Scan if the message contains all words from the an ncoded tell message
-            int locatedMessage = -1;
-            if(_messageDictionary.LookupMsgDictionary(message.TextValue, ref locatedMessage)) {
+            if(_messageDictionary.LookupMsgDictionary(message.TextValue, _decodedMessageMediator)) {
+                // if we reach here it is an encoded tell so hide it
                 isHandled = true;
+                // then reset its variables
+                _decodedMessageMediator.encodedMsgIndex = 0;
+                _decodedMessageMediator.msgType = DecodedMessageType.None;
                 return;
             }
         }
@@ -153,77 +159,79 @@ public class ChatManager
             GagSpeak.Log.Debug($"[Chat Manager]: Recieved tell from: {senderName} with message: {fmessage.ToString()}");
 
             // if the incoming tell is an encoded message, lets check if we are in dom mode before accepting changes
-            int encodedMsgIndex = 0; // get a index to know which encoded msg it is, if any
-            List<string> decodedMessage = new List<string>{"","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""};
+            
             // if the message is a encoded message, then we can process it
-            if (_messageDictionary.LookupMsgDictionary(chatmessage.TextValue, ref encodedMsgIndex)) {
-                // at this point, we have determined that it is an encoded message, so let's make sure the criteria for sending is right
-                // if the index is between 1 and 8, process the basic gag commands
-                if(encodedMsgIndex >= 1 && encodedMsgIndex <= 10) {
-                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
-                    // we have found it, so do the resultlogic for it
-                    if(_msgResultLogic.CommandMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
-                        // logic sucessfully parsed, so hide from chat
-                        isHandled = true;
-                        _config.Save(); // save our config. 
-                    }
-                }
-                // if the index is between 11 and 20, process the whitelist relation relation commands
-                if(encodedMsgIndex >= 11 && encodedMsgIndex <= 20) {
-                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
-                    // we have found it, so do the resultlogic for it
-                    if(_msgResultLogic.WhitelistMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
-                        // logic sucessfully parsed, so hide from chat
-                        isHandled = true;
-                        _config.Save(); // save our config. 
-                    }
-                }
-                // if the encoded message is related to the is related to the wardrobe tab, process them here
-                if(encodedMsgIndex >= 21 && encodedMsgIndex <= 26) {
-                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
-                    // we have found it, so do the resultlogic for it
-                    if(_msgResultLogic.WardrobeMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
-                        // logic sucessfully parsed, so hide from chat
-                        isHandled = true;
-                        _config.Save(); // save our config. 
-                    }
-                }
-                // if the encoded message is related to the is related to the puppeteer tab, process them here
-                if(encodedMsgIndex >= 27 && encodedMsgIndex <= 29) {
-                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
-                    // we have found it, so do the resultlogic for it
-                    if(_msgResultLogic.PuppeteerMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
-                        // logic sucessfully parsed, so hide from chat
-                        isHandled = true;
-                        _config.Save(); // save our config. 
-                    }
-                }
-                // if the encoded message is related to the is related to the toybox tab, process them here
-                if(encodedMsgIndex >= 30 && encodedMsgIndex <= 35) {
-                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
-                    // we have found it, so do the resultlogic for it
-                    if(_msgResultLogic.ToyboxMsgResLogic(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
-                        // logic sucessfully parsed, so hide from chat
-                        isHandled = true;
-                        _config.Save(); // save our config. 
-                    }
-                }
-                // otherwise, it is a info request or recieved message, so process it here
-                if(encodedMsgIndex >= 36 && encodedMsgIndex <= 40) {
-                    decodedMessage = _messageDecoder.DecodeMsgToList(fmessage.ToString(), encodedMsgIndex);
-                    // we have found it, so do the resultlogic for it
-                    if(_msgResultLogic.ResLogicInfoRequestMessage(fmessage.ToString(), decodedMessage, isHandled, _clientChat, _config)) {
-                        // logic sucessfully parsed, so hide from chat
-                        isHandled = true;
-                        _config.Save(); // save our config. 
-                    }
+            if (_messageDictionary.LookupMsgDictionary(chatmessage.TextValue, _decodedMessageMediator)) {
+                // if we reach here, we have the encodedMsgIndex and the msgType stored into our mediator, and we know it will process our message, so do it
+                _messageDecoder.DecodeMsgToList(fmessage.ToString(), _decodedMessageMediator);
+
+                // Process the message based on its type
+                switch (_decodedMessageMediator.msgType) {
+                    case DecodedMessageType.GagSpeak:
+                        // try and process the result logic, if successful, set isHandled to true
+                        if(_msgResultLogic.CommandMsgResLogic(fmessage.ToString(), _decodedMessageMediator, isHandled)){
+                            isHandled = true;
+                            // because it is handled now, we should reset the mediators values and do an early escape / return
+                            _decodedMessageMediator.ResetAttributes();
+                            return;
+                        }
+                        break;
+                    case DecodedMessageType.Relationship:
+                        // try and process the result logic, if successful, set isHandled to true
+                        if(_msgResultLogic.WhitelistMsgResLogic(fmessage.ToString(), _decodedMessageMediator, isHandled)) {
+                            isHandled = true;
+                            // because it is handled now, we should reset the mediators values and do an early escape / return
+                            _decodedMessageMediator.ResetAttributes();
+                            return;
+                        }
+                        break;
+                    case DecodedMessageType.Wardrobe:
+                        // try and process the result logic, if successful, set isHandled to true
+                        if(_msgResultLogic.WardrobeMsgResLogic(fmessage.ToString(), _decodedMessageMediator, isHandled)) {
+                            isHandled = true;
+                            // because it is handled now, we should reset the mediators values and do an early escape / return
+                            _decodedMessageMediator.ResetAttributes();
+                            return;
+                        }
+                        break;
+                    case DecodedMessageType.Puppeteer:
+                        // try and process the result logic, if successful, set isHandled to true
+                        if(_msgResultLogic.PuppeteerMsgResLogic(fmessage.ToString(), _decodedMessageMediator, isHandled)) {
+                            isHandled = true;
+                            // because it is handled now, we should reset the mediators values and do an early escape / return
+                            _decodedMessageMediator.ResetAttributes();
+                            return;
+                        }
+                        break;
+                    case DecodedMessageType.Toybox:
+                        // try and process the result logic, if successful, set isHandled to true
+                        if(_msgResultLogic.ToyboxMsgResLogic(fmessage.ToString(), _decodedMessageMediator, isHandled)) {
+                            isHandled = true;
+                            // because it is handled now, we should reset the mediators values and do an early escape / return
+                            _decodedMessageMediator.ResetAttributes();
+                            return; 
+                        }
+                        break;
+                    case DecodedMessageType.InfoExchange:
+                        // try and process the result logic, if successful, set isHandled to true
+                        if(_msgResultLogic.ResLogicInfoRequestMessage(fmessage.ToString(), _decodedMessageMediator, isHandled)) {
+                            isHandled = true;
+                            // because it is handled now, we should reset the mediators values and do an early escape / return
+                            _decodedMessageMediator.ResetAttributes();
+                            return;
+                        }
+                        break;
                 }
             } // skipped to this point if not encoded message
         } // skips directly to here if not a tell
 
         // at this point, we have determined that it is not an encoded message, and we still have the sender info.
-        // because we know this, and are at this point, we can now scan our message to see if it meets the conditions for puppeteer.
-        if(senderName != null && _characterHandler.playerChar._allowPuppeteer && _characterHandler.IsPlayerInWhitelist(senderName)) {
+        // This Conditional Says it will only meet if the following is true:
+        // --- The sender name is not null
+        // --- The sender allows puppeteer
+        // --- The sender is in your whitelist
+        // --- the message was not processed by the encoded messages
+        if(senderName != null && _characterHandler.playerChar._allowPuppeteer && _characterHandler.IsPlayerInWhitelist(senderName) && isHandled == false) {
             GagSpeak.Log.Debug($"[ChatManager] Puppeteer was enabled, scanning message from {senderName}, as they are in your whitelist");
             // see if it contains your trigger word for them
             if(_puppeteerMediator.ContainsTriggerWord(senderName, chatmessage.TextValue, out string puppeteerMessageToSend)){
@@ -319,7 +327,7 @@ public class ChatManager
                     if (!messageTimer.IsRunning) {
                         messageTimer.Start();
                     } else {
-                        if (messageTimer.ElapsedMilliseconds > 1000) {
+                        if (messageTimer.ElapsedMilliseconds > 1500) {
                             try {
                                 _realChatInteraction.SendMessage(messageQueue.Dequeue());
                             } catch (Exception e) {

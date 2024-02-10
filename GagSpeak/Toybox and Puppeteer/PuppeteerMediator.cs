@@ -101,7 +101,11 @@ public class PuppeteerMediator
         // see if our message contains any of the alias strings. For it to match, it must match the full alias string.
         foreach (AliasTrigger alias in aliasListToScan._aliasTriggers) {
             // if the alias is enabled
-            if (alias._enabled && puppeteerMessageToSend.Contains(alias._inputCommand)) {
+            if (alias._enabled 
+            && !string.IsNullOrWhiteSpace(alias._inputCommand) 
+            && !string.IsNullOrWhiteSpace(alias._outputCommand) 
+            && puppeteerMessageToSend.Contains(alias._inputCommand))
+            {
                 // replace the alias command with the output command
                 puppeteerMessageToSend = puppeteerMessageToSend.Replace(alias._inputCommand, alias._outputCommand);
             }

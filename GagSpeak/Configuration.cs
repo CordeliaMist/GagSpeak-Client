@@ -15,6 +15,7 @@ using GagSpeak.Garbler.PhonemeData;
 using GagSpeak.CharacterData;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.Interop;
+using System.Numerics;
 
 namespace GagSpeak;
 
@@ -35,6 +36,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                        ToyboxLeftSubTabActive { get; set; } = false;               // Which subtab is active in the toybox?
     public          string                                      sendInfoName = "";                                      // Name of the person you are sending info to
     public          bool                                        acceptingInfoRequests = true;                           // Are you accepting info requests? (for cooldowns)//
+    public          bool                                        processingInfoRequest = false;                          // Are you processing an info request?
     public          Dictionary<string,DateTimeOffset>           timerData { get; set; }                                 // stores the timer data for the plugin
     // stuff for the gaglistingDrawer
     public          List<bool>                                  isLocked { get; set; }                                  // determines if the gaglisting should have its UI locked
@@ -57,7 +59,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
 
     /// <summary> Gets or sets the colors used within our UI </summary>
-    public Dictionary<ColorId, uint> Colors { get; private set; }
+    public Dictionary<ColorId, Vector4> Colors { get; private set; }
         = Enum.GetValues<ColorId>().ToDictionary(c => c, c => c.Data().DefaultColor);
 
     /// <summary> Initializes a new instance of the <see cref="GagSpeakConfig"/> class </summary>
@@ -113,6 +115,11 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
 
     public void SetAcceptInfoRequests(bool value) {
         acceptingInfoRequests = value;
+        _saveService.QueueSave(this);
+    }
+
+    public void SetprocessingInfoRequest(bool value) {
+        processingInfoRequest = value;
         _saveService.QueueSave(this);
     }
 

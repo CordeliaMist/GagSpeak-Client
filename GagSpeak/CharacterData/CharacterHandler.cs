@@ -8,6 +8,20 @@ using Newtonsoft.Json;
 using GagSpeak.ToyboxandPuppeteer;
 using GagSpeak.Gagsandlocks;
 
+/*
+/////////////////////////////////////////////////////////////////////////////////////////////////
+///
+///                    Warning for anyone viewing this class:
+///                    
+///       Yes, I am aware this is long and ugly. However, I need to update saveservice
+///       whenever a value is changed, and I didnt want to just implement a lazy quicksave
+///       function and rather practice protected setting.
+///       
+///       Because of this, i have split it up into regions. If I could have done it by partial
+///       class split i would have, but at this time i'm too deprived of energy to do that.
+/////////////////////////////////////////////////////////////////////////////////////////////////
+*/
+
 namespace GagSpeak.CharacterData;
 
 public class CharacterHandler : ISavable
@@ -49,6 +63,11 @@ public class CharacterHandler : ISavable
 
     public void ToggleDirectChatGarblerLock() {
         playerChar._directChatGarblerLocked = !playerChar._directChatGarblerLocked;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleExtendedLockTimes() {
+        playerChar._grantExtendedLockTimes[activeListIdx] = !playerChar._grantExtendedLockTimes[activeListIdx];
         _saveService.QueueSave(this);
     }
 
@@ -129,7 +148,12 @@ public class CharacterHandler : ISavable
     }
 
     public void ToggleToyboxUILocking() {
-        playerChar._allowToyboxLocking = !playerChar._allowToyboxLocking;
+        playerChar._lockToyboxUI = !playerChar._lockToyboxUI;
+        _saveService.QueueSave(this);
+    }
+
+    public void ToggleToyState() {
+        playerChar._isToyActive = !playerChar._isToyActive;
         _saveService.QueueSave(this);
     }
 
@@ -265,9 +289,30 @@ public class CharacterHandler : ISavable
         }
     }
 
+    public void SetWhitelistAllowPuppeteer(int index, bool value) {
+        if(whitelistChars[index]._allowPuppeteer != value) {
+            whitelistChars[index]._allowPuppeteer = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
     public void SetWhitelistTriggerPhraseForPuppeteer(int index, string value) {
         if(whitelistChars[index]._theirTriggerPhrase != value) {
             whitelistChars[index]._theirTriggerPhrase = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistTriggerPhraseStartChar(int index, string value) {
+        if(whitelistChars[index]._theirTriggerStartChar != value) {
+            whitelistChars[index]._theirTriggerStartChar = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistTriggerPhraseEndChar(int index, string value) {
+        if(whitelistChars[index]._theirTriggerEndChar != value) {
+            whitelistChars[index]._theirTriggerEndChar = value;
             _saveService.QueueSave(this);
         }
     }
@@ -301,8 +346,8 @@ public class CharacterHandler : ISavable
     }
 
     public void SetWhitelistAllowChangingToyState(int index, bool value) {
-        if(whitelistChars[index]._allowsChangingToyState != value) {
-            whitelistChars[index]._allowsChangingToyState = value;
+        if(whitelistChars[index]._allowChangingToyState != value) {
+            whitelistChars[index]._allowChangingToyState = value;
             _saveService.QueueSave(this);
         }
     }
@@ -329,33 +374,78 @@ public class CharacterHandler : ISavable
     }
 
     public void SetWhitelistAllowToyboxLocking(int index, bool value) {
-        if(whitelistChars[index]._allowToyboxLocking != value) {
-            whitelistChars[index]._allowToyboxLocking = value;
+        if(whitelistChars[index]._lockToyboxUI != value) {
+            whitelistChars[index]._lockToyboxUI = value;
             _saveService.QueueSave(this);
         }
     }
 
-    public void UpdateWhitelistGagInfo(List<string> infoExchangeList) {
+    public void SetWhitelistToyIsActive(int index, bool value) {
+        if(whitelistChars[index]._isToyActive != value) {
+            whitelistChars[index]._isToyActive = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagTypes(int index, int gagIndex, string gagName) {
+        if(whitelistChars[index]._selectedGagTypes[gagIndex] != gagName) {
+            whitelistChars[index]._selectedGagTypes[gagIndex] = gagName;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagPadlocks(int index, int padlockIndex, string padlockName) {
+        Padlocks lockToAssign = Enum.TryParse(padlockName, out Padlocks padlockType) ? padlockType : Padlocks.None;
+        if(whitelistChars[index]._selectedGagPadlocks[padlockIndex] != lockToAssign) {
+            whitelistChars[index]._selectedGagPadlocks[padlockIndex] = lockToAssign;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagPadlockPassword(int index, int passwordIndex, string password) {
+        if(whitelistChars[index]._selectedGagPadlockPassword[passwordIndex] != password) {
+            whitelistChars[index]._selectedGagPadlockPassword[passwordIndex] = password;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagPadlockTimer(int index, int timerIndex, string endTimeOfTimerLock) {
+        DateTimeOffset timeToAssign = DateTimeOffset.Parse(endTimeOfTimerLock) is DateTimeOffset value ? value : DateTimeOffset.MinValue;
+        if(whitelistChars[index]._selectedGagPadlockTimer[timerIndex] != timeToAssign) {
+            whitelistChars[index]._selectedGagPadlockTimer[timerIndex] = timeToAssign;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagPadlockAssigner(int index, int assignerIndex, string AssignerName) {
+        if(whitelistChars[index]._selectedGagPadlockAssigner[assignerIndex] != AssignerName) {
+            whitelistChars[index]._selectedGagPadlockAssigner[assignerIndex] = AssignerName;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    // for not spamming the save service during info request transfer, do it all in bulk
+    public void UpdateWhitelistGagInfo(string whitelistName, string[] GagTypes, string[] Padlocks, string[] Passwords, string[] Timers, string[] Assigners) {
         int Idx = -1;
-        if(IsPlayerInWhitelist(infoExchangeList[1])){
-            Idx = GetWhitelistIndex(infoExchangeList[1]);
+        if(IsPlayerInWhitelist(whitelistName)){
+            Idx = GetWhitelistIndex(whitelistName);
         }
         if(Idx != -1) {
-            whitelistChars[Idx]._selectedGagTypes[0] = infoExchangeList[8];
-            whitelistChars[Idx]._selectedGagTypes[1] = infoExchangeList[9];
-            whitelistChars[Idx]._selectedGagTypes[2] = infoExchangeList[10];
-            whitelistChars[Idx]._selectedGagPadlocks[0] = Enum.TryParse(infoExchangeList[11], out Padlocks padlockType) ? padlockType : Padlocks.None;
-            whitelistChars[Idx]._selectedGagPadlocks[1] = Enum.TryParse(infoExchangeList[12], out Padlocks padlockType2) ? padlockType2 : Padlocks.None;
-            whitelistChars[Idx]._selectedGagPadlocks[2] = Enum.TryParse(infoExchangeList[13], out Padlocks padlockType3) ? padlockType3 : Padlocks.None;
-            whitelistChars[Idx]._selectedGagPadlockPassword[0] = infoExchangeList[14];
-            whitelistChars[Idx]._selectedGagPadlockPassword[1] = infoExchangeList[15];
-            whitelistChars[Idx]._selectedGagPadlockPassword[2] = infoExchangeList[16];
-            whitelistChars[Idx]._selectedGagPadlockTimer[0] = DateTimeOffset.Parse(infoExchangeList[17]);
-            whitelistChars[Idx]._selectedGagPadlockTimer[1] = DateTimeOffset.Parse(infoExchangeList[18]);
-            whitelistChars[Idx]._selectedGagPadlockTimer[2] = DateTimeOffset.Parse(infoExchangeList[19]);
-            whitelistChars[Idx]._selectedGagPadlockAssigner[0] = infoExchangeList[20];
-            whitelistChars[Idx]._selectedGagPadlockAssigner[1] = infoExchangeList[21];
-            whitelistChars[Idx]._selectedGagPadlockAssigner[2] = infoExchangeList[22];
+            whitelistChars[Idx]._selectedGagTypes[0] = GagTypes[0];
+            whitelistChars[Idx]._selectedGagTypes[1] = GagTypes[1];
+            whitelistChars[Idx]._selectedGagTypes[2] = GagTypes[2];
+            whitelistChars[Idx]._selectedGagPadlocks[0] = Enum.TryParse(Padlocks[0], out Padlocks padlockType) ? padlockType : Gagsandlocks.Padlocks.None;
+            whitelistChars[Idx]._selectedGagPadlocks[1] = Enum.TryParse(Padlocks[1], out Padlocks padlockType2) ? padlockType2 : Gagsandlocks.Padlocks.None;
+            whitelistChars[Idx]._selectedGagPadlocks[2] = Enum.TryParse(Padlocks[2], out Padlocks padlockType3) ? padlockType3 : Gagsandlocks.Padlocks.None;
+            whitelistChars[Idx]._selectedGagPadlockPassword[0] = Passwords[0];
+            whitelistChars[Idx]._selectedGagPadlockPassword[1] = Passwords[1];
+            whitelistChars[Idx]._selectedGagPadlockPassword[2] = Passwords[2];
+            whitelistChars[Idx]._selectedGagPadlockTimer[0] = DateTimeOffset.Parse(Timers[0]);
+            whitelistChars[Idx]._selectedGagPadlockTimer[1] = DateTimeOffset.Parse(Timers[1]);
+            whitelistChars[Idx]._selectedGagPadlockTimer[2] = DateTimeOffset.Parse(Timers[2]);
+            whitelistChars[Idx]._selectedGagPadlockAssigner[0] = Assigners[0];
+            whitelistChars[Idx]._selectedGagPadlockAssigner[1] = Assigners[1];
+            whitelistChars[Idx]._selectedGagPadlockAssigner[2] = Assigners[2];
         }
         _saveService.QueueSave(this);
     }
@@ -404,8 +494,8 @@ public class CharacterHandler : ISavable
         playerChar._enableRestraintSets[index] = false;
         playerChar._restraintSetLocking[index] = false;
         playerChar._triggerPhraseForPuppeteer[index] = "";
-        playerChar._StartCharForPuppeteerTrigger[index] = "";
-        playerChar._EndCharForPuppeteerTrigger[index] = "";
+        playerChar._StartCharForPuppeteerTrigger[index] = "(";
+        playerChar._EndCharForPuppeteerTrigger[index] = ")";
         playerChar._allowSitRequests[index] = false;
         playerChar._allowMotionRequests[index] = false;
         playerChar._allowAllCommands[index] = false;

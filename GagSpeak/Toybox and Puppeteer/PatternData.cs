@@ -71,9 +71,14 @@ public class PatternData
             
             _patternData.Clear();
             var patternDataString = jsonObject["PatternData"]?.Value<string>();
-            if (patternDataString != null) {
-                // Split the PatternData string into an array and convert each element to a byte
-                _patternData = patternDataString.Split(',').Select(byte.Parse).ToList();
+            if (string.IsNullOrEmpty(patternDataString)) {
+                // If the string is null or empty, generate a list with a single byte of 0
+                _patternData = new List<byte> { (byte)0 };
+            } else {
+                // Otherwise, split the string into an array and convert each element to a byte
+                _patternData = patternDataString.Split(',')
+                    .Select(byte.Parse)
+                    .ToList();
             }
         } catch (System.Exception e) {
             GagSpeak.Log.Debug($"{e} Error deserializing pattern data");

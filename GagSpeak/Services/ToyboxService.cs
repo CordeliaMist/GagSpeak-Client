@@ -152,7 +152,6 @@ public class PlugService : IDisposable
                 await client.ConnectAsync(connector);
                 // after we wait for the connector to process, check if the connection is there
                 if(client.Connected) {
-                    // If it is, we should check quickly to see a few things
                     // 1. see if there are already devices connected
                     anyDeviceConnected = HasConnectedDevice();
                     // 2. If anyDeviceConnected is true, set our active device to the first device in the list
@@ -175,8 +174,9 @@ public class PlugService : IDisposable
             }
         } 
         catch (Exception ex) {
-            GagSpeak.Log.Error($"[Toybox Service] Error in ConnectToServerAsync: {ex.ToString()}");
-            GagSpeak.Log.Debug("[Toybox Service] Make sure you dont have any other plugins connected to the Intiface server!");
+            GagSpeak.Log.Error($"[Toybox Service] Error in ConnectToServerAsync: {ex.Message.ToString()}");
+            UIHelpers.LogAndPrintGagSpeakMessage("Error while connectiong to Intiface Server! Make sure you have disabled any other plugins "+
+            $"that connect with Intiface before connecting, or make sure you have Intiface running.", _chatGui, "[GagSpeak Toybox]");
         }
     }
 

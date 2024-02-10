@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using GagSpeak.CharacterData;
 
@@ -8,13 +7,9 @@ public partial class ResultLogic {
         
     // decoder for if the whitelisted user is toggling your permissions for allowing sit requests
     // [0] = playerMsgWasSentFrom, [1] = PlayerMesgWasSentFrom, [28] = Boolean for if they allow sit requests
-    public bool ReslogicToggleSitRequests(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
-        // get playernameworld
-        string playerNameWorld = decodedMessage[1];
-        string[] parts = playerNameWorld.Split(' ');
-        string world = parts.Length > 1 ? parts.Last() : "";
+    public bool ReslogicToggleSitRequests(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
         // get playerName
-        string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+        string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
@@ -27,7 +22,7 @@ public partial class ResultLogic {
                 return true;
             } else {
                 // return false
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {decodedMessage[1]} is not strong enough to grant access to toggling all commands");
+                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling all commands");
                 return false;
             }
         }
@@ -37,13 +32,9 @@ public partial class ResultLogic {
 
     // decoder for if the whitelisted user is toggling your permissions for allowing motion requests
     // [0] = playerMsgWasSentFrom, [1] = PlayerMesgWasSentFrom, [29] = Boolean for if they allow motion requests
-    public bool ReslogicToggleMotionRequests(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
-        // get playernameworld
-        string playerNameWorld = decodedMessage[1];
-        string[] parts = playerNameWorld.Split(' ');
-        string world = parts.Length > 1 ? parts.Last() : "";
+    public bool ReslogicToggleMotionRequests(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
         // get playerName
-        string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+        string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
@@ -56,7 +47,7 @@ public partial class ResultLogic {
                 return true;
             } else {
                 // return false
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {decodedMessage[1]} is not strong enough to grant access to toggling all commands");
+                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling all commands");
                 return false;
             }
         }
@@ -66,13 +57,9 @@ public partial class ResultLogic {
 
     // decoder for if the whitelisted user is toggling your permissions for allowing all commands
     // [0] = playerMsgWasSentFrom, [1] = PlayerMesgWasSentFrom, [30] = Boolean for if they allow all commands
-    public bool ReslogicToggleAllCommands(ref List<string> decodedMessage, ref bool isHandled, GagSpeakConfig _config) {
-        // get playernameworld
-        string playerNameWorld = decodedMessage[1];
-        string[] parts = playerNameWorld.Split(' ');
-        string world = parts.Length > 1 ? parts.Last() : "";
+    public bool ReslogicToggleAllCommands(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
         // get playerName
-        string playerName = string.Join(" ", parts.Take(parts.Length - 1));
+        string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
@@ -85,7 +72,7 @@ public partial class ResultLogic {
                 return true;
             } else {
                 // return false
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {decodedMessage[1]} is not strong enough to grant access to toggling all commands");
+                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling all commands");
                 return false;
             }
         }

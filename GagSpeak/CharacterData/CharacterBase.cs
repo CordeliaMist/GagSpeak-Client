@@ -33,10 +33,13 @@ public class CharacterInfoBase
     ///////////////////////////////////////// WARDROBE COMPONENT SETTINGS  //////////////////////////////////////
     public  bool                _enableWardrobe { get; set; } = false;          // [TIER 0] enables / disables all wardrobe functionality
     public  bool                _lockGagStorageOnGagLock { get; set; } = false; // [TIER 1] locks storage ui when gag is locked
+    ///////////////////////////////////////////// PUPPETEER SETTINGS  ////////////////////////////////////////////
+    public  bool                _allowPuppeteer { get; set; } = false;          // [TIER 0] lets the player set if puppeteer will function
     /////////////////////////////////////////// TOYBOX MODULE SETTINGS ////////////////////////////////////////
     public  bool                _enableToybox { get; set; } = false;            // [TIER 4] if granting them access to toybox
+    public  bool                _isToyActive { get; set; } = false;             // [TIER 2] if the toybox is currently active
     public  int                 _intensityLevel { get; set; } = 0;              // [TIER 2] the guage from 0 to _activeToystepInterval     
-    public  bool                _allowToyboxLocking { get; set; } = false;      // [TIER 3] if granting them access to lock toybox        
+    public  bool                _lockToyboxUI { get; set; } = false;            // [TIER 3] if granting them access to lock toybox        
     ///////////////////////////////////////// FUTURE MODULES CAN GO HERE ////////////////////////////////////////
     public CharacterInfoBase() {
         _selectedGagTypes = new WatchList<string> { "None", "None", "None" };
@@ -59,9 +62,11 @@ public class CharacterInfoBase
             ["SelectedGagPadlockAssigner"] = new JArray(_selectedGagPadlockAssigner),
             ["EnableWardrobe"] = _enableWardrobe,
             ["LockGagStorageOnGagLock"] = _lockGagStorageOnGagLock,
+            ["AllowPuppeteer"] = _allowPuppeteer,
             ["EnableToybox"] = _enableToybox,
+            ["IsToyActive"] = _isToyActive,
             ["IntensityLevel"] = _intensityLevel,
-            ["AllowToyboxLocking"] = _allowToyboxLocking
+            ["AllowToyboxLocking"] = _lockToyboxUI
         };
     }
 
@@ -76,10 +81,11 @@ public class CharacterInfoBase
         _selectedGagPadlockAssigner = jsonObject["SelectedGagPadlockAssigner"]?.ToObject<List<string>>() ?? new List<string> { "", "", "" };
         _enableWardrobe = jsonObject["EnableWardrobe"]?.Value<bool>() ?? false;
         _lockGagStorageOnGagLock = jsonObject["LockGagStorageOnGagLock"]?.Value<bool>() ?? false;
-
+        _allowPuppeteer = jsonObject["AllowPuppeteer"]?.Value<bool>() ?? false;
         _enableToybox = jsonObject["EnableToybox"]?.Value<bool>() ?? false;
+        _isToyActive = jsonObject["IsToyActive"]?.Value<bool>() ?? false;
         _intensityLevel = jsonObject["IntensityLevel"]?.Value<byte>() ?? 0;
-        _allowToyboxLocking = jsonObject["AllowToyboxLocking"]?.Value<bool>() ?? false;
+        _lockToyboxUI = jsonObject["AllowToyboxLocking"]?.Value<bool>() ?? false;
     }
 #endregion Json Saving and Loading
 }

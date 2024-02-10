@@ -21,12 +21,12 @@ public static class InfoSendAndRequestHelpers {
             return;
         }
         // print to chat that you sent the request
-
         chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending information request to " +
             $"{characterHandler.whitelistChars[listIdx]._name}, please wait...").AddItalicsOff().BuiltString);
         // send the message
         string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
+        // set the sender name to our active recieving info from var, 
         chatManager.SendRealMessage(gagMessages.EncodeRequestInfoMessage(playerPayload, targetPlayer));
     }
 
@@ -40,17 +40,11 @@ public static class InfoSendAndRequestHelpers {
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         try
         {
-            // print to chat that you sent the request
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
-                "with your details(1/4)").AddItalicsOff().BuiltString);
-            //send the message
             chatManager.messageQueue.Enqueue(gagMessages.HandleProvideInfoPartOne(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
+            chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
         }
     }
 
@@ -62,17 +56,11 @@ public static class InfoSendAndRequestHelpers {
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         try
         {
-            // print to chat that you sent the request
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
-                "with your details(2/4)").AddItalicsOff().BuiltString);
-            //send the message
             chatManager.messageQueue.Enqueue(gagMessages.HandleProvideInfoPartTwo(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
+            chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
         }
     }
 
@@ -84,17 +72,11 @@ public static class InfoSendAndRequestHelpers {
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         try
         {
-            // print to chat that you sent the request
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
-                "with your details(3/4)").AddItalicsOff().BuiltString);
-            //send the message
             chatManager.messageQueue.Enqueue(gagMessages.HandleProvideInfoPartThree(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
+            chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
         }
     }
 
@@ -106,17 +88,11 @@ public static class InfoSendAndRequestHelpers {
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         try
         {
-            // print to chat that you sent the request
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating whitelisted player [{senderName}] "+
-                "with your details(4/4)").AddItalicsOff().BuiltString);
-            //send the message
             chatManager.messageQueue.Enqueue(gagMessages.HandleProvideInfoPartFour(playerPayload, senderName, characterHandler));
         }
         catch (Exception e)
         {
-            chatGui.Print(
-                new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
+            chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Error: {e}").AddItalicsOff().BuiltString);
         }
     }
 }

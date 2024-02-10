@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Diagnostics;
 using System.Numerics;
 using Dalamud.Interface.Utility;
 using GagSpeak.CharacterData;
@@ -12,7 +11,7 @@ using OtterGui;
 using OtterGui.Raii;
 using Dalamud.Utility;
 using GagSpeak.Events;
-using GagSpeak.Gagsandlocks;
+using System.Diagnostics;
 
 namespace GagSpeak.UI.Tabs.ToyboxTab;
 public class ToyboxOverviewPanel
@@ -23,10 +22,9 @@ public class ToyboxOverviewPanel
     private readonly    PatternPlayback _patternPlayback; // for getting the pattern playback
     private readonly    CharacterHandler _charHandler; // for getting the whitelist
     private readonly    PatternHandler _patternCollection; // for getting the patterns
-    private             Stopwatch _recordingStopwatch; // tracking how long a pattern was executing for
     private readonly    ActiveDeviceChangedEvent _activeDeviceChangedEvent; // for getting the active device
-    private             bool _playingPattern; // for checking if we are recording
     private             int? _tempSliderValue;
+    private             bool _isOpen = true;
     public ToyboxOverviewPanel(FontService fontService, CharacterHandler characterHandler, PlugService plugService, PatternPlayback patternPlayback,
     ActiveDeviceChangedEvent activeDeviceChangedEvent, PatternHandler patternCollection, ToyboxPatternTable patternTable) {
         _fontService = fontService;
@@ -36,15 +34,11 @@ public class ToyboxOverviewPanel
         _patternTable = patternTable;
         _activeDeviceChangedEvent = activeDeviceChangedEvent;
         _patternPlayback = patternPlayback;
-
-        _playingPattern = false;
         _tempSliderValue = 0;
 
         if(_plugService == null) {
             throw new ArgumentNullException(nameof(plugService));
         }
-
-        _recordingStopwatch = new Stopwatch();
     }
 
     public void Draw() {
@@ -63,62 +57,84 @@ public class ToyboxOverviewPanel
         if (!child) { return;}
         var xPos = ImGui.GetCursorPosX();
         var yPos = ImGui.GetCursorPosY();
-        ImGui.SetCursorPosY(yPos + 5*ImGuiHelpers.GlobalScale);
-        // create two columns
-        var width = ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize("Disconnectedm").X;
-        ImGui.Columns(2, "PermissionSetters and Connection Buttons", false);
-        ImGui.SetColumnWidth(0, width);
-        // draw out the global settings
-        ImGui.AlignTextToFramePadding();
-        UIHelpers.CheckboxNoConfig("Intensity Control", 
-        "Determines if people are allowed to adjust the intensity of your vibe while connected and active.",
-        _charHandler.playerChar._allowIntensityControl[_charHandler.activeListIdx],
-        v => _charHandler.ToggleAllowIntensityControl(_charHandler.activeListIdx)
-        );
-        ImGui.SameLine();
-        UIHelpers.CheckboxNoConfig("Toybox UI Locking",
-        "Determines if people are allowed to lock the toybox UI. Tiers 3+ Can override this setting.",
-        _charHandler.playerChar._allowToyboxLocking,
-        v => _charHandler.ToggleToyboxUILocking()
-        );
-        // draw out the individual settings
-        UIHelpers.CheckboxNoConfig("Change Toy State",
-        $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} is able to enable / disable your toy",
-        _charHandler.playerChar._allowChangingToyState[_charHandler.activeListIdx],
-        v => _charHandler.ToggleChangeToyState(_charHandler.activeListIdx)
-        );
-        ImGui.SameLine();
-        UIHelpers.CheckboxNoConfig("Executing Patterns",
-        $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} is able to execute your stored patterns on your toy",
-        _charHandler.playerChar._allowUsingPatterns[_charHandler.activeListIdx],
-        v => _charHandler.ToggleAllowPatternExecution(_charHandler.activeListIdx)
-        );
-        // go over to the next column
-        ImGui.NextColumn();
-        // get the remaining width
-        yPos = ImGui.GetCursorPosY();
-        ImGui.SetCursorPosY(yPos + 2*ImGuiHelpers.GlobalScale);
-        var width2 = ImGui.GetContentRegionAvail().X;
+        ImGui.SetCursorPos(new Vector2(xPos+5*ImGuiHelpers.GlobalScale, yPos + 5*ImGuiHelpers.GlobalScale));
+        var width2 = ImGui.GetContentRegionAvail().X/3 - ImGui.GetStyle().ItemSpacing.X;
         // draw out the connect button
-        ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
-        ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
-        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
+        using var colorStyle = ImRaii.PushColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF)
+                                    .Push(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF)
+                                    .Push(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
         if(ImGuiUtil.DrawDisabledButton("Connect", new Vector2(width2, 20*ImGuiHelpers.GlobalScale),
         "Attempts to connect to the Intiface server", _plugService.IsClientConnected())){
             // attempt to connect to the server
             _plugService.ConnectToServerAsync();
         }
+        ImGui.SameLine();
         // and disconnect button
         if(ImGuiUtil.DrawDisabledButton("Disconnect", new Vector2(width2, 20*ImGuiHelpers.GlobalScale),
         "disconnects from the Intiface server", !_plugService.IsClientConnected())) {
-            // attempt to disconnect from the server
+            // attempt to disconnect from the server sty
             _plugService.DisconnectAsync();
         }
+        ImGui.SameLine();
+        // draw a Get Intiface button
+        if(ImGuiUtil.DrawDisabledButton("Get Intiface", new Vector2(width2, 20*ImGuiHelpers.GlobalScale),
+        "Opens the Intiface website", false)) {
+            // open a popup to prompt the user with 2 buttons
+            ImGui.OpenPopup("IntifacePopup");
+        }
+
+        // Set the size of the next window (the popup)
+        ImGui.SetNextWindowSize(new Vector2(300, 100));
         // pop off the colors we pushed
-        ImGui.PopStyleColor(3);
-        // go to the next row
-        ImGui.TableNextColumn();
-        ImGui.Columns(1);
+        colorStyle.Pop(3);
+        if (ImGui.BeginPopup("IntifacePopup"))
+        {
+            ImGuiUtil.Center("Either click to watch a quick CK guide on the install & setup");
+            ImGuiUtil.Center("Or go straight to the releases page for the download");
+            if (ImGui.Button("Watch Quick Install Guide", new Vector2(-1, 0)))
+            {
+                // Open the youtube guide link from CK
+                Process.Start(new ProcessStartInfo {FileName = "https://www.youtube.com/@cordyskinkporium-ffxivbdsm8665/", UseShellExecute = true});
+                ImGui.CloseCurrentPopup();
+            }
+            if (ImGui.Button("Go To Site Directly", new Vector2(-1, 0)))
+            {
+                // open the releases tab of the intiface central site
+                Process.Start(new ProcessStartInfo {FileName = "https://github.com/intiface/intiface-central/releases/", UseShellExecute = true});
+                ImGui.CloseCurrentPopup();
+            }
+            ImGui.EndPopup();
+        }
+
+        xPos = ImGui.GetCursorPosX();
+        ImGui.SetCursorPosX(xPos + 5*ImGuiHelpers.GlobalScale);
+        // draw out the checkmarks
+        var activationText = _charHandler.playerChar._isToyActive ? "Active" : "Inactive";
+        if(ImGuiUtil.DrawDisabledButton($"{activationText}", new Vector2(ImGui.CalcTextSize("Inactiven").X,0), "Toggles the active state of your toy", false)) {
+            _charHandler.ToggleToyState();
+        }
+        ImGui.SameLine();
+        ImGui.AlignTextToFramePadding();
+        UIHelpers.CheckboxNoConfig("Changing State",
+        $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} is able to enable / disable your toy",
+        _charHandler.playerChar._allowChangingToyState[_charHandler.activeListIdx],
+        v => _charHandler.ToggleChangeToyState(_charHandler.activeListIdx)
+        );
+        ImGui.SameLine();
+        UIHelpers.CheckboxNoConfig("Intensity", 
+        $"Determines if  {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} can adjust the intensity of your vibe while connected and active.",
+        _charHandler.playerChar._allowIntensityControl[_charHandler.activeListIdx],
+        v => _charHandler.ToggleAllowIntensityControl(_charHandler.activeListIdx)
+        );
+        ImGui.SameLine();
+        UIHelpers.CheckboxNoConfig("Patterns",
+        $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} is able to execute your stored patterns on your toy",
+        _charHandler.playerChar._allowUsingPatterns[_charHandler.activeListIdx],
+        v => _charHandler.ToggleAllowPatternExecution(_charHandler.activeListIdx)
+        );
+        // now draw the buttons
+        width2 = ImGui.GetContentRegionAvail().X;
+
         // draw the separator
         ImGui.Separator();
         // now we can draw out a table 
@@ -151,14 +167,14 @@ public class ToyboxOverviewPanel
                     }
                     #pragma warning restore CS8602 // Dereference of a possibly null reference.
                     // print all the juicy info about your currently active toy
-                    width = ImGui.GetContentRegionAvail().X;
+                    var width = ImGui.GetContentRegionAvail().X;
                     ImGui.Columns(2, "ToyInfo", false);
                     ImGui.SetColumnWidth(0, width*0.7f);
                     if (_plugService.activeDevice != null)
                     {
                         
                         ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + 3*ImGuiHelpers.GlobalScale, ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale));
-                        ImGui.PushStyleColor(ImGuiCol.Text, lushPinkLine);
+                        ImGui.PushStyleColor(ImGuiCol.Text, ColorId.LushPinkLine.Value());
                         ImGui.Text($"Name: {_plugService.activeDevice.Name}");
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3*ImGuiHelpers.GlobalScale);
                         ImGui.Text($"Display Name: {_plugService.activeDevice.DisplayName}");
@@ -185,8 +201,10 @@ public class ToyboxOverviewPanel
                         // update the intensity on our device if it is set to active
                         if(_plugService.activeDevice != null && _tempSliderValue != intensityResult) {
                             _tempSliderValue = intensityResult;
-                            // send the intensity to the device
-                            _ = _plugService.ToyboxVibrateAsync((byte)((intensityResult/(double)maxVal)*100), 20);
+                            // send the intensity to the device, if it is active
+                            if(_charHandler.playerChar._isToyActive) {
+                                _ = _plugService.ToyboxVibrateAsync((byte)((intensityResult/(double)maxVal)*100), 20);
+                            }
                         }
                     }
                     if(_patternCollection.GetActiveIdx() != -1 && _patternCollection._patterns[_patternCollection._activePatternIndex]._isActive) { ImGui.EndDisabled(); }
@@ -200,10 +218,22 @@ public class ToyboxOverviewPanel
                         ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX(), ImGui.GetCursorPosY() - 15*ImGuiHelpers.GlobalScale));
                     }
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5*ImGuiHelpers.GlobalScale);
-                    DisplayText($"{_patternCollection._patterns[_patternCollection._activePatternIndex]._name} : ID {_patternCollection._activePatternIndex}");
+                    ImGui.PushFont(_fontService.UidFont);
+                    string newPatternName = _patternCollection._patterns[_patternCollection._activePatternIndex]._name;
+                    UIHelpers.EditableTextFieldWithPopup("RestraintSetName", ref newPatternName, 20,
+                    "Rename your Pattern:", "Enter a new name for the Pattern here");
+                    if (newPatternName != _patternCollection._patterns[_patternCollection._activePatternIndex]._name) {
+                        _patternCollection.RenamePattern(_patternCollection._activePatternIndex, newPatternName);
+                    }
+                    ImGui.PopFont();
                     // display the description, the duration, and if it is running stuff
                     ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + 5*ImGuiHelpers.GlobalScale, ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale));
-                    ImGui.Text($"{_patternCollection._patterns[_patternCollection._activePatternIndex]._description}");
+                    string newPatternDesc =_patternCollection._patterns[_patternCollection._activePatternIndex]._description;
+                    UIHelpers.EditableTextFieldWithPopup("RestraintSetDesc", ref newPatternDesc, 40,
+                    "Modify your Description:", "Modify your pattern description here");
+                    if (newPatternDesc != _patternCollection._patterns[_patternCollection._activePatternIndex]._description) {
+                        _patternCollection.ModifyDescription(_patternCollection._activePatternIndex, newPatternDesc);
+                    }
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5*ImGuiHelpers.GlobalScale);
                     ImGui.Text($"Length: {_patternCollection._patterns[_patternCollection._activePatternIndex]._duration}");
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5*ImGuiHelpers.GlobalScale);
@@ -211,7 +241,7 @@ public class ToyboxOverviewPanel
                     ImGui.Text($"{isRunningText}");
                     // now draw out the button for starting/stopping a pattern, and a checkbox for if we should loop it or not
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5*ImGuiHelpers.GlobalScale);
-                    width = ImGui.GetContentRegionAvail().X;
+                    var width = ImGui.GetContentRegionAvail().X;
                     if (ImGui.Button("Start / Stop", new Vector2(width/3, 22*ImGuiHelpers.GlobalScale))) {
                         if (!_patternCollection._patterns[_patternCollection._activePatternIndex]._isActive) {
                             _patternCollection.ExecutePatternProper();
@@ -242,8 +272,6 @@ public class ToyboxOverviewPanel
         // draw the pattern playback sampler here
         _patternPlayback.Draw();
     }
-    public Vector4 lushPinkLine = new Vector4(.806f, .102f, .407f, 1);
-    public Vector4 lushPinkButton = new Vector4(1, .051f, .462f, 1);
 
     private void DisplayText(string text) {
         ImGui.PushFont(_fontService.UidFont);

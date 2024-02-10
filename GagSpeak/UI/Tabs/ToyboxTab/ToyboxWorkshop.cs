@@ -31,7 +31,6 @@ public class ToyboxWorkshopSubtab : IDisposable
     private List<double> recordedPositions = new List<double>();  // The recorded Y positions of the circle, this is used for the realtime feedback, temporary
     private List<double> tempStoredLoopPositions = new List<double>();  // Records AND STORES information about the recorded Y value of the circle, temporary
     //private List<byte> storedRecordedPositions = new List<byte>();  // Records AND STORES information about the recorded Y value of the circle, perminant
-    private bool isFirstPlaybackLoop = true;
     private bool isDragging;
     public bool isLooping = false;
     public bool isFloating = false;
@@ -251,7 +250,6 @@ public class ToyboxWorkshopSubtab : IDisposable
                 if(ImGuiUtil.DrawDisabledButton($"##ThePatternLoopingButton", new Vector2(90*ImGuiHelpers.GlobalScale, 90*ImGuiHelpers.GlobalScale),
                 "Keeps the circle from falling back to the ground", false)) {
                     isLooping = !isLooping;
-                    if(isLooping) { isFirstPlaybackLoop = true; }
                     if(isFloating) { isFloating = false; }
                 }
                 ImGui.SetCursorPos(new Vector2(xPos + (ImGui.GetContentRegionAvail().X - 80*ImGuiHelpers.GlobalScale )/ 2*ImGuiHelpers.GlobalScale, yPos+ 5f*ImGuiHelpers.GlobalScale));

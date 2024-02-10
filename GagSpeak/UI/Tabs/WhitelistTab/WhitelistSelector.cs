@@ -115,7 +115,7 @@ public class WhitelistSelector
         ImGui.SetCursorPos(new Vector2(xPos, yPos + ImGuiHelpers.GlobalScale));
         if (ImGui.Button("Remove Player", buttonWidth)) {
             if (_characterHandler.whitelistChars.Count == 1) {
-                _characterHandler.ReplaceWhitelistItem(0, "None","None");
+                _characterHandler.ReplaceWhitelistItem(0, "None None","None");
             } else {
                 _characterHandler.RemoveWhitelistItem(_characterHandler.activeListIdx);
             }

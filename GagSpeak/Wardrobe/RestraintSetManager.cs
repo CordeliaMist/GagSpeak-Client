@@ -98,6 +98,17 @@ public class RestraintSetManager : ISavable
         Save();
     }
 
+    // see if any sets are currently locked
+    public bool AreAnySetsLocked() {
+        foreach (var set in _restraintSets) {
+            if (set._locked) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     /// <summary> Sets the IsEnabled for a restraint set spesified by index if it exists. </summary>
     public void ChangeRestraintSetEnabled(int restraintSetIdx, bool isEnabled) {
         bool anyOtherEnabled = false;

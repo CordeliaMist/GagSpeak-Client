@@ -129,7 +129,7 @@ public class RestraintSetSelector
         // only display our restraints timer
         foreach(var restraintset in _restraintSetManager._restraintSets) {
             if(timerName == $"RestraintSet_{restraintset._name}") {
-                _timerService.remainingTimes[timerName] = $"Locked: {remainingTime.Days}d, "+
+                _timerService.remainingTimes[timerName] = $"{remainingTime.Days}d, "+
                 $"{remainingTime.Hours}h, {remainingTime.Minutes}m, {remainingTime.Seconds}s";
             }
         }
@@ -138,18 +138,29 @@ public class RestraintSetSelector
     private void OverviewButtons() {
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero)
             .Push(ImGuiStyleVar.FrameRounding, 0);
-        var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X/3, 0);
+        var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X*.175f, 0);
         // draw out the options
         string lambdaText = _restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._enabled
-                          ? "Set is ACTIVE" : "Set is INACTIVE";
+                          ? "ACTIVE" : "INACTIVE";
         // the enabled toggle button
         if (ImGui.Button($"{lambdaText}", buttonWidth)) {
             _restraintSetManager.ToggleRestraintSetEnabled(_restraintSetManager._selectedIdx);
         }
         // draw the input for the lock timer
         ImGui.SameLine();
-        string result = _inputTimer; // get the input timer storage
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 2/3);
+        string timerName = $"RestraintSet_{_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._name}";
+        string result;
+        if (_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._locked) {
+            if (_timerService.remainingTimes.ContainsKey(timerName)) {
+                result = "Locked by "+$"{_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._wasLockedBy.Split(' ')[0]} for: "
+                +_timerService.remainingTimes[timerName];
+            } else {
+                result = ""; // Display an empty string if the timer hasn't started yet
+            }
+        } else {
+            result = _inputTimer;
+        }
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X *.785f);
         if (ImGui.InputTextWithHint("##RestraintSetTimer", " Lock Time; Ex: 0h2m7s", ref result, 12, ImGuiInputTextFlags.None)) {
             _inputTimer = result;
         }
@@ -169,10 +180,6 @@ public class RestraintSetSelector
             } else {
                 _inputTimer = "ERROR: Invalid Timer";
             }
-        }
-        if(_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._locked) {
-            ImGui.SameLine();
-            ImGui.Text($"{_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._wasLockedBy}");
         }
     }
 #endregion RestraintSetOverview

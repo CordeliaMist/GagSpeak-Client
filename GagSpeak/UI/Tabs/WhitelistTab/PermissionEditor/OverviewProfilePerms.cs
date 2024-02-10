@@ -7,7 +7,6 @@ using OtterGui;
 using GagSpeak.CharacterData;
 using System.Linq;
 using Dalamud.Interface.Utility;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Text.SeStringHandling;
 using OtterGui.Classes;
@@ -22,15 +21,14 @@ public partial class WhitelistPlayerPermissions {
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         var yPos = ImGui.GetCursorPosY();
         ImGui.SetCursorPosY(yPos - 5*ImGuiHelpers.GlobalScale);
-        var width = ImGui.GetContentRegionAvail().X * 0.7f;
+        var width = ImGui.GetContentRegionAvail().X * 0.85f;
         ImGui.Columns(2, $"##Whitelist{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}Header", false);
         ImGui.SetColumnWidth(0, width);
         ImGui.PushFont(_fontService.UidFont);
-        ImGui.Text($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}");
+        ImGui.Text($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name} ({_characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld})");
         ImGui.PopFont();
         ImGui.NextColumn();
-        ImGuiUtil.RightAlign($"({_characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld})");
-        ImGuiUtil.RightAlign($"{_characterHandler.GetDynamicTier(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name).ToString()}");
+        ImGuiUtil.RightAlign($"{_characterHandler.GetDynamicTier(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name)}");
         ImGui.Columns(1);
         
         string[] roleLeanNames = Enum.GetValues<RoleLean>().Select(role => role.ToString()).ToArray(); // for inside the table
@@ -42,27 +40,31 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableSetupColumn("Relation Information", ImGuiTableColumnFlags.WidthStretch);            
             // underneath this, we will display the relationship dynamic, we will want to display "No Defined Dynamic" and lean a blank line under it, if no dynamic is defind
             ImGui.AlignTextToFramePadding();
-            ImGuiUtil.DrawFrameColumn($"Your Dynamic Lean to {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}: ");
+            ImGuiUtil.DrawFrameColumn($"Your Dynamic Lean to {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}: ");
             ImGui.TableNextColumn();
             ImGui.Text($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem}");
             // Draw out the line that displays the players defined relationship towards you
             ImGui.AlignTextToFramePadding();
-            ImGuiUtil.DrawFrameColumn($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Dynamic lean to you: ");
+            ImGuiUtil.DrawFrameColumn($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}'s Dynamic lean to you: ");
             ImGui.TableNextColumn();
             ImGui.Text($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou}");
             // display commitment length
             ImGui.AlignTextToFramePadding();
             ImGuiUtil.DrawFrameColumn("Commitment Length: ");
             ImGui.TableNextColumn(); // Next Row (Commitment Length)
-            ImGui.Text($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx].GetCommitmentDuration()}");
-            
+            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None
+            && _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou != RoleLean.None) {
+                ImGui.Text($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx].GetCommitmentDuration()}");
+            } else {
+                ImGui.Text("No Defined Commitment");
+            }            
             ImGui.TableNextColumn(); // Next Row (Request Dynamic)
             // Get a RoleLean combo listing for requesting relations
             ImGui.AlignTextToFramePadding();
             ImGui.Text("Select Lean:");
             ImGui.SameLine();
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            if (ImGui.Combo("##DynamicLeanCombo", ref _selectedDynamicIdx, roleLeanNames, roleLeanNames.Length));
+            ImGui.Combo("##DynamicLeanCombo", ref _selectedDynamicIdx, roleLeanNames, roleLeanNames.Length);
             ImGui.TableNextColumn();
             
             // draw a button spanning the 1st and 2nd columns of this row

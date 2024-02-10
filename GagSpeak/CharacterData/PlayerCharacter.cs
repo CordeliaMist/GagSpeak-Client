@@ -17,13 +17,8 @@ public class PlayerCharacterInfo : CharacterInfoBase
     public  bool            _allowItemAutoEquip { get; set; } = false;          // lets player know if anything in the GagStorage compartment will function
     public  bool            _allowRestraintSetAutoEquip { get; set; } = false;  // lets gagspeak know if anything in the Restraintset compartment will function
     ///////////////////////////////////////////// GAGSPEAK PUPPETEER SETTINGS  /////////////////////////////////////////////
-    public  bool            _allowPuppeteer { get; set; } = false;              // lets the player set if puppeteer will function
     public  List<AliasList> _triggerAliases { get; set; }                       // lets the player set the trigger phrases for each whitelisted player
     ///////////////////////////////////////////// FUTURE MODULES CAN GO HERE /////////////////////////////////////////////
-    
-    // THESE PROPERTIES SHOULD BE PULLED FROM THE PLUG SERVICE INSTEAD!
-    // public  int             _activeToystepSize { get; set; } = 0;           // [TIER 0] the step count of the vibe
-    // public  double          _activeToystepInterval { get; set; } = 0;       // [TIER 0] step size interval of the vibe
 
     ///////////////////////////////////////// FIELDS UNIQUE FOR EACH WHITELIST USER ////////////////////////////////////////////////////
     public  List<bool>      _grantExtendedLockTimes { get; set; }         // [TIER 2] If you allow the whitelisted player to use extended lock times
@@ -64,7 +59,6 @@ public class PlayerCharacterInfo : CharacterInfoBase
             ["LiveGarblerWarnOnZoneChange"] = _liveGarblerWarnOnZoneChange,
             ["AllowItemAutoEquip"] = _allowItemAutoEquip,
             ["AllowRestraintSetAutoEquip"] = _allowRestraintSetAutoEquip,
-            ["AllowPuppeteer"] = _allowPuppeteer,
             ["TriggerAliasesList"] = new JArray(_triggerAliases.Select(alias => alias.Serialize())),
             ["ExtendedLockTimes"] = new JArray(_grantExtendedLockTimes),
             ["EnableRestraintSets"] = new JArray(_enableRestraintSets),
@@ -85,6 +79,7 @@ public class PlayerCharacterInfo : CharacterInfoBase
     }
 
     public override void Deserialize(JObject jsonObject) {
+        #pragma warning disable CS8604 // Possible null reference argument.
         try{
             // will need to clear and then deserialize the trigger aliass
             _triggerAliases.Clear();
@@ -103,13 +98,12 @@ public class PlayerCharacterInfo : CharacterInfoBase
             _liveGarblerWarnOnZoneChange = jsonObject["LiveGarblerWarnOnZoneChange"]?.Value<bool>() ?? false;
             _allowItemAutoEquip = jsonObject["AllowItemAutoEquip"]?.Value<bool>() ?? false;
             _allowRestraintSetAutoEquip = jsonObject["AllowRestraintSetAutoEquip"]?.Value<bool>() ?? false;
-            _allowPuppeteer = jsonObject["AllowPuppeteer"]?.Value<bool>() ?? false;
             _grantExtendedLockTimes = jsonObject["ExtendedLockTimes"]?.Values<bool>().ToList() ?? new List<bool>();
             _enableRestraintSets = jsonObject["EnableRestraintSets"]?.Values<bool>().ToList() ?? new List<bool>();
             _restraintSetLocking = jsonObject["RestraintSetLocking"]?.Values<bool>().ToList() ?? new List<bool>();
             _triggerPhraseForPuppeteer = jsonObject["TriggerPhrase"]?.Values<string>().Select(s => s ?? "").ToList() ?? new List<string>();
-            _StartCharForPuppeteerTrigger = jsonObject["StartCharForPuppeteerTrigger"]?.Values<string>().Select(s => s ?? "(").ToList() ?? new List<string>();
-            _EndCharForPuppeteerTrigger = jsonObject["EndCharForPuppeteerTrigger"]?.Values<string>().Select(s => s ?? ")").ToList() ?? new List<string>();
+            _StartCharForPuppeteerTrigger = jsonObject["StartCharForPuppeteerTrigger"]?.Values<string>().Select(s => s ?? "(").ToList() ?? new List<string> { "(" };
+            _EndCharForPuppeteerTrigger = jsonObject["EndCharForPuppeteerTrigger"]?.Values<string>().Select(s => s ?? ")").ToList() ?? new List<string> { ")" };
             _allowSitRequests = jsonObject["AllowSitRequests"]?.Values<bool>().ToList() ?? new List<bool>();
             _allowMotionRequests = jsonObject["AllowMotionRequests"]?.Values<bool>().ToList() ?? new List<bool>();
             _allowAllCommands = jsonObject["AllowAllCommands"]?.Values<bool>().ToList() ?? new List<bool>();
@@ -120,6 +114,7 @@ public class PlayerCharacterInfo : CharacterInfoBase
         catch (System.Exception e) {
             GagSpeak.Log.Error($"[PlayerCharacterInfo]: Error deserializing PlayerCharacterInfo: {e}");
         }
+        #pragma warning restore CS8604 // Possible null reference argument.
     }
 #endregion Serialization
 }

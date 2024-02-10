@@ -26,7 +26,6 @@ public class RestraintSetEditor
     private             Vector2                         _VisibilityIconSize;
     private readonly    IDataManager                    _gameData;              // for getting the game data
     private readonly    TextureService                  _textures;              // for getting the textures
-    private readonly    UiBuilder                       _uiBuilder;             // for getting the ui builder
     private readonly    RestraintSetManager             _restraintSetManager;   // for getting the restraint set manager
     private readonly    Vector2                         _iconSize;              // size of icons that can display
     private             float                           _comboLength;           // length of combo boxes
@@ -38,13 +37,12 @@ public class RestraintSetEditor
 
     /// <summary> Initializes a new instance wardrobe tab"/> class. <summary>
     public RestraintSetEditor(IDataManager gameData, TextureService textures, ItemData itemData, DictStain stainData,
-    DalamudPluginInterface pluginInterface, RestraintSetManager restraintSetManager, UiBuilder uiBuilder) {
+    DalamudPluginInterface pluginInterface, RestraintSetManager restraintSetManager) {
         _gameData = gameData;
         _textures = textures;
         _itemData = itemData;
         _stainData = stainData;
         _restraintSetManager = restraintSetManager;
-        _uiBuilder = uiBuilder;
         _iconSize    = ImGuiHelpers.ScaledVector2(48);
         _eyeIcon = new string[EquipSlotExtensions.EqdpSlots.Count];
         // create a new gameItemCombo for each equipment piece type, then store them into the array.

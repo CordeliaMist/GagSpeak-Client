@@ -87,6 +87,7 @@ public static class ServiceHandler
             .AddSingleton<MessageDecoder>()
             .AddSingleton<ResultLogic>()
             .AddSingleton<ChatManager>()
+            .AddSingleton<DecodedMessageMediator>()
             .AddSingleton<ChatInputProcessor>(_ => {
                 var sigService = _.GetRequiredService<ISigScanner>(); 
                 var interop = _.GetRequiredService<IGameInteropProvider>();

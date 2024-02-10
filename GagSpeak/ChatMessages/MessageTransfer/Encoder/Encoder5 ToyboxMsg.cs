@@ -48,4 +48,11 @@ public partial class MessageEncoder {
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
         "wrapped a layer of durable and tight concealment over the vibe, making it remain locked in place against their submissive's skin.\"Enjoy~\"";
     }
+
+    // Encodes msg that lets the whitelisted user turn on/off the toy [ ID == 36 ]
+    public string EncodeToyboxToggleToyOnOff(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} "+
+        $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
+        "placed her thumb over the remote, toggling the switch and inverted the device state.";
+    }
 }

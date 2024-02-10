@@ -34,7 +34,7 @@ public class WardrobeRestraintCompartment
     }
 
     public float GetSetSelectorWidth()
-        => 200f * ImGuiHelpers.GlobalScale;
+        => 175f * ImGuiHelpers.GlobalScale;
 
     public float GetInfoSectionHeight()
         => 145f * ImGuiHelpers.GlobalScale;

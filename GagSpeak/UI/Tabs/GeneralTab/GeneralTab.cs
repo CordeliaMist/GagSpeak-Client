@@ -12,6 +12,7 @@ using Dalamud.Interface.Utility;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;
 using GagSpeak.UI.Equipment;
+using System.Text.RegularExpressions;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>
@@ -96,6 +97,22 @@ public class GeneralTab : ITab, IDisposable
     /// <summary>
     /// This function draws the general tab contents
     /// </summary>
+    /// 
+    private void TestRegex(){
+        string testString = "|| hey, hi currently set to 100. did, you know that we could, walk the stars.";
+
+        string pattern = @"^\|\|\s*(?<deviceState>.+?),\s*(?<intensityState>.+?)\s*currently set to\s*(?<intensityLevel>\d+)\.\s*(?<patternState>.+?),\s*(?<sourceState>.+?)\.$";
+            // use regex to match the pattern
+        Match match = Regex.Match(testString, pattern);
+            // check if the match is sucessful
+            if (match.Success) {
+                GagSpeak.Log.Debug($"[Message Decoder]: share info: Sucessfully decoded message: {testString}");
+            } else {
+                GagSpeak.Log.Error($"[Message Decoder]: share info: Failed to decode message: {testString}");
+            }
+        }
+
+
     private void DrawGeneral() {
         // let's start by drawing the outline for the container
         using var child = ImRaii.Child("GeneralTabPanel", -Vector2.One, true);
@@ -151,6 +168,10 @@ public class GeneralTab : ITab, IDisposable
         if (ImGui.Button("Changelog")) {
             // force open the changelog here
             _changelog.Changelog.ForceOpen = true;
+        }
+        ImGui.SameLine();
+        if(ImGui.Button("Test Regex")) {
+            TestRegex();
         }
         // pop off the colors we pushed
         ImGui.PopStyleColor(3);

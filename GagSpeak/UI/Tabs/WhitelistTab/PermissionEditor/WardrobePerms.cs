@@ -47,17 +47,22 @@ public partial class WhitelistPlayerPermissions {
             // Lock Gag Storage on Gag Lock option
             ImGuiUtil.DrawFrameColumn($"Lock Gag Storage on Gag Lock:");
             ImGui.TableNextColumn();
+            var gagStorageUILock = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockGagStorageOnGagLock 
+                                             : _characterHandler.playerChar._lockGagStorageOnGagLock;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockGagStorageOnGagLock
-                                    ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                ImGuiUtil.Center((gagStorageUILock ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("1");
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleLockGagStorageOnGagLockButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, !(dynamicTier >= DynamicTier.Tier1))) {
-                TogglePlayersGagStorageUIState();
-                _interactOrPermButtonEvent.Invoke();
+            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier1))) {
+                if(_viewMode) {
+                    TogglePlayersGagStorageUIState();
+                    _interactOrPermButtonEvent.Invoke();
+                } else {
+                    _characterHandler.ToggleLockGagStorageOnGagLock();
+                }
             }
 
 
@@ -65,18 +70,22 @@ public partial class WhitelistPlayerPermissions {
             // Enable Restraint Sets option
             ImGuiUtil.DrawFrameColumn($"Enable Restraint Sets:");
             ImGui.TableNextColumn();
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont))
-            {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets
-                                    ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+            var enableRestraintSets = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets 
+                                                : _characterHandler.playerChar._enableRestraintSets[_characterHandler.activeListIdx];
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
+                ImGuiUtil.Center((enableRestraintSets ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("2");
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleEnableRestraintSetsButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, !(dynamicTier >= DynamicTier.Tier2))) {
-                TogglePlayerEnableRestraintSetOption();
-                _interactOrPermButtonEvent.Invoke();
+            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
+                if(_viewMode) {
+                    TogglePlayerEnableRestraintSetOption();
+                    _interactOrPermButtonEvent.Invoke();
+                } else {
+                    _characterHandler.ToggleEnableRestraintSets(_characterHandler.activeListIdx);
+                }
             }
 
 
@@ -84,17 +93,22 @@ public partial class WhitelistPlayerPermissions {
             // Restraint Set Locking option
             ImGuiUtil.DrawFrameColumn($"Restraint Set Locking:");
             ImGui.TableNextColumn();
+            var restraintSetLocking = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking 
+                                               : _characterHandler.playerChar._restraintSetLocking[_characterHandler.activeListIdx];
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking
-                                    ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                ImGuiUtil.Center((restraintSetLocking ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("1");
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleRestraintSetLockingButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, !(dynamicTier >= DynamicTier.Tier1))) {
-                TogglePlayerRestraintSetLockingOption();
-                _interactOrPermButtonEvent.Invoke();
+            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier1))) {
+                if(_viewMode) {
+                    TogglePlayerRestraintSetLockingOption();
+                    _interactOrPermButtonEvent.Invoke();
+                } else {
+                    _characterHandler.ToggleRestraintSetLocking(_characterHandler.activeListIdx);
+                }
             }
         }
             // shift it up to align with the other table
@@ -111,7 +125,7 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemm").X);
 
             // None of the editable states should be enabled if the wardrobe is not enabled
-            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe)
+            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _viewMode==false)
             { 
                 ImGui.BeginDisabled();
             }
@@ -132,7 +146,7 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.Center("2");
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Enable##EnableRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, !(dynamicTier >= DynamicTier.Tier2))) {
+            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
                 EnableRestraintSetByName(_restraintSetToEnable);
                 _interactOrPermButtonEvent.Invoke();
             }
@@ -161,15 +175,7 @@ public partial class WhitelistPlayerPermissions {
             }
             // end the disabled state
             if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking) { ImGui.EndDisabled(); }
-
-
-            // end the disabled state
-            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe)
-            {
-                ImGui.EndDisabled();
-            }
-
-            
+           
             // dont need any state to try and unlock
             ImGui.AlignTextToFramePadding();
             ImGuiUtil.DrawFrameColumn($"Unlock Set:");
@@ -185,6 +191,12 @@ public partial class WhitelistPlayerPermissions {
             if(ImGui.Button("Unlock##UnlockRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
                 UnlockRestraintSetToPlayer(_resrtaintSetToUnlock);
                 _interactOrPermButtonEvent.Invoke();
+            }
+
+            // end the disabled state
+            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _viewMode==false)
+            {
+                ImGui.EndDisabled();
             }
         }
         

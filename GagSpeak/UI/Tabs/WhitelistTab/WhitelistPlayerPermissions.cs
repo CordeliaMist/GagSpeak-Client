@@ -136,6 +136,9 @@ public partial class WhitelistPlayerPermissions {
             GagSpeak.Log.Debug("[Whitelist]: Sending Request for Player Info");
             InfoSendAndRequestHelpers.RequestInfoFromPlayer(_characterHandler.activeListIdx,
             _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
+            // we need to set the sendInfoName to the player name @ world so we know who we are looking for when we start recieving info
+            _config.SetSendInfoName(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name +
+            "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld);
             // Start a 5-second cooldown timer
             _interactOrPermButtonEvent.Invoke();
         }

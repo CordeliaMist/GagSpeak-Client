@@ -113,6 +113,17 @@ public class PatternHandler : ISavable
         _patternPlayback.StopPlayback();
     }
 
+    public void RenamePattern(int index, string newName) {
+        _patterns[index]._name = newName;
+        _saveService.QueueSave(this);
+    }
+
+    public void ModifyDescription(int index, string newDescription) {
+        _patterns[index]._description = newDescription;
+        _saveService.QueueSave(this);
+    }
+    
+
     public string ToFilename(FilenameService filenameService)
         => filenameService.PatternStorageFile;
 

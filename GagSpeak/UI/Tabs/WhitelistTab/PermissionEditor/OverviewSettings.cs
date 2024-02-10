@@ -17,13 +17,12 @@ public partial class WhitelistPlayerPermissions {
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
 
         ImGui.PushFont(_fontService.UidFont);
-        ImGui.Text($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}'s General Settings");
+        var name = _viewMode ? $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}'s" : "Your";
+        ImGui.Text($"{name} General Settings");
         ImGui.PopFont();
 
         // store their dynamic tier for edit purposes
         DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTier();
-        // store the hovered var for tooltips
-        var hovered  = ImGui.IsItemHovered();
 
         // draw out the table for our permissions
         using (var tableOverrideSettings = ImRaii.Table("RelationsManagerTable", 4, ImGuiTableFlags.RowBg)) {
@@ -39,88 +38,89 @@ public partial class WhitelistPlayerPermissions {
 
             // safeword option
             ImGuiUtil.DrawFrameColumn($"Has Used Safeword:");
-            hovered  |= ImGui.IsItemHovered();
-            if(hovered)
-                ImGui.SetTooltip("Dictates if this player has used their safeword / it is active.");
             ImGui.TableNextColumn();
+            var usedSafewordIcon = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._safewordUsed
+                                             : _characterHandler.playerChar._safewordUsed;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._safewordUsed
-                                     ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                ImGuiUtil.Center((usedSafewordIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("0");
             ImGui.TableNextColumn();
             ImGuiUtil.Center("ReadOnly");
 
-            
-            
             // draw out the extended lock times
             ImGuiUtil.DrawFrameColumn($"Extended Lock Times:");
-            hovered  |= ImGui.IsItemHovered();
-            if(hovered)
-                ImGui.SetTooltip("Determines if you are allowed to lock them for any duration over 12 hours.\n(subject to change in future updates)");
             ImGui.TableNextColumn();
+            var extendedLockTimesIcon = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._grantExtendedLockTimes
+                                                  : _characterHandler.playerChar._grantExtendedLockTimes[_characterHandler.activeListIdx];
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._grantExtendedLockTimes
-                                     ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                ImGuiUtil.Center((extendedLockTimesIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("2");
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleExtendedLockTimesButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, !(dynamicTier >= DynamicTier.Tier2))) {
-                // This will only allow us to send this if the defined dynamic tier is 2 or higher
-                TogglePlayerExtendedLockTimes();
-                _interactOrPermButtonEvent.Invoke();
+            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
+                if(_viewMode) {
+                    TogglePlayerExtendedLockTimes();
+                    _interactOrPermButtonEvent.Invoke();
+                } else {
+                    _characterHandler.ToggleExtendedLockTimes();
+                }
             }
             
             
             // draw out the Direct Chat Garbler Active option
             ImGuiUtil.DrawFrameColumn($"Live Chat Garbler:");
-            hovered  |= ImGui.IsItemHovered();
-            if(hovered)
-                ImGui.SetTooltip("View if this player's live chat garbler is currently active or not.");
             ImGui.TableNextColumn();
+            var directChatGarblerActiveIcon = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerActive
+                                                        : _characterHandler.playerChar._directChatGarblerActive;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerActive
-                                     ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                ImGuiUtil.Center((directChatGarblerActiveIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("4");
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleDirectChatGarblerActiveButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, !(dynamicTier >= DynamicTier.Tier2))) {
-                // This will only allow us to send this if the defined dynamic tier is 4 or higher
-                TogglePlayerLiveChatGarbler();
-                _interactOrPermButtonEvent.Invoke();
+            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
+                if(_viewMode) {
+                    TogglePlayerLiveChatGarbler();
+                    _interactOrPermButtonEvent.Invoke();
+                } else {
+                    _characterHandler.ToggleDirectChatGarbler();
+                }
             }
 
             // draw out the Direct Chat Garbler Locked option
             ImGuiUtil.DrawFrameColumn($"Live Chat Garbler Lock:");
-            hovered  |= ImGui.IsItemHovered();
-            if(hovered)
-                ImGui.SetTooltip("View if this player's live chat garbler is currently locked or not.");
             ImGui.TableNextColumn();
+            var directChatGarblerLockedIcon = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerLocked
+                                                        : _characterHandler.playerChar._directChatGarblerLocked;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerLocked
-                                    ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                ImGuiUtil.Center((directChatGarblerLockedIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("3");
             ImGui.TableNextColumn();
+            if(_viewMode) {
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleDirectChatGarblerLockedButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, !(dynamicTier >= DynamicTier.Tier3))) {
+            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier3))) {
                 // This will only allow us to send this if the defined dynamic tier is 3 or higher
                 TogglePlayerLiveChatGarblerLock();
                 _interactOrPermButtonEvent.Invoke();
+            }
+            } else {
+                ImGuiUtil.Center("ReadOnly");
             }
 
             // Enable Wardrobe option
             ImGuiUtil.DrawFrameColumn($"Wardrobe Enabled:");
             ImGui.TableNextColumn();
+            var wardrobeIcon = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe
+                                         : _characterHandler.playerChar._enableWardrobe;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe
-                                    ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                ImGuiUtil.Center((wardrobeIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("0");
@@ -131,9 +131,10 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.DrawFrameColumn($"Puppeteer Active:");
             
             ImGui.TableNextColumn();
+            var puppeteerIcon = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowPuppeteer
+                                         : _characterHandler.playerChar._allowPuppeteer;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirTriggerPhrase != ""
-                                    ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                ImGuiUtil.Center((puppeteerIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("0");
@@ -144,17 +145,22 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.DrawFrameColumn($"Toybox Enabled:");
 
             ImGui.TableNextColumn();
+            var toyboxIcon = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableToybox
+                                       : _characterHandler.playerChar._enableToybox;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableToybox
-                                    ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                ImGuiUtil.Center((toyboxIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("4");
             ImGui.TableNextColumn();
-            if(ImGuiUtil.DrawDisabledButton("Toggle##ToyboxComponentEnabledButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, !(dynamicTier >= DynamicTier.Tier4))) {
-                TogglePlayersEnableToyboxOption();
-                _interactOrPermButtonEvent.Invoke();
+            if(_viewMode) {
+                if(ImGuiUtil.DrawDisabledButton("Toggle##ToyboxComponentEnabledButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+                string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier4))) {
+                    TogglePlayersEnableToyboxOption();
+                    _interactOrPermButtonEvent.Invoke();
+                }
+            } else {
+                ImGuiUtil.Center("ReadOnly");
             }
         }
         // pop the spacing

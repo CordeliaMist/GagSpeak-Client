@@ -1,13 +1,14 @@
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
 public partial class MessageDictionary {
-    public bool LookupWardrobeMsg(string textVal, ref int encodedMsgIndex) {
+    public bool LookupWardrobeMsg(string textVal, DecodedMessageMediator decodedMessageMediator) {
         // The GagStorageUI lock toggle [ ID == 21 // gagStorageUiLockToggle ]
         if (textVal.Contains("held their sluts chin firmly, forcing them to look them in the eyes* \"Let's make "+
         "sure your locks have a little bit more security, shall we?\""))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing GagStorageUILock command");   
-            encodedMsgIndex = 21;
+            decodedMessageMediator.encodedMsgIndex = 21;
+            decodedMessageMediator.msgType = DecodedMessageType.Wardrobe;
             return true;
         }
 
@@ -15,7 +16,8 @@ public partial class MessageDictionary {
         if(textVal.Contains("looked down at their companion before walking ove to their wardrobe, \"Now you'll "+
         "be a good slut and not resist any restraint sets I try putting you in, understand?~\""))
         {  
-            encodedMsgIndex = 22;
+            decodedMessageMediator.encodedMsgIndex = 22;
+            decodedMessageMediator.msgType = DecodedMessageType.Wardrobe;
             return true;
         }
 
@@ -23,7 +25,8 @@ public partial class MessageDictionary {
         if(textVal.Contains("looked down at their companion before walking ove to their wardrobe, \"Now you'll be "+
         "a good slut and not resist any locks I try putting on your restraints, understand?~\""))
         {
-            encodedMsgIndex = 23;
+            decodedMessageMediator.encodedMsgIndex = 23;
+            decodedMessageMediator.msgType = DecodedMessageType.Wardrobe;
             return true;   
         }
 
@@ -31,7 +34,8 @@ public partial class MessageDictionary {
         if(textVal.Contains("opens up the compartment of restraints from their wardrobe, taking out the "+
         "and brought it back over to their slut to help secure them inside it."))
         {
-            encodedMsgIndex = 24;
+            decodedMessageMediator.encodedMsgIndex = 24;
+            decodedMessageMediator.msgType = DecodedMessageType.Wardrobe;
             return true;   
         }
 
@@ -39,7 +43,8 @@ public partial class MessageDictionary {
         if(textVal.Contains("took out a timed padlock, and fastned it around the ")
         && textVal.Contains("on its focal point, setting its duration to "))
         {
-            encodedMsgIndex = 25;
+            decodedMessageMediator.encodedMsgIndex = 25;
+            decodedMessageMediator.msgType = DecodedMessageType.Wardrobe;
             return true;   
         }
 
@@ -47,7 +52,8 @@ public partial class MessageDictionary {
         if(textVal.Contains("decided they wanted to use their companion for other things now, unlocking the ")
         && textVal.Contains("from their partner and allowing them to feel a little more free, for now~*"))
         {
-            encodedMsgIndex = 26;
+            decodedMessageMediator.encodedMsgIndex = 26;
+            decodedMessageMediator.msgType = DecodedMessageType.Wardrobe;
             return true;    
         }
 

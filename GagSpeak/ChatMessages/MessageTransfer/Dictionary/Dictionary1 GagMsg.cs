@@ -1,14 +1,15 @@
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
 public partial class MessageDictionary {
-    public bool LookupGagSpeakMsg(string textVal, ref int encodedMsgIndex) {
+    public bool LookupGagSpeakMsg(string textVal, DecodedMessageMediator decodedMessageMediator) {
         // The Apply Gag Message [ ID == 1 // apply ]
         if (textVal.Contains("applies a")
         && textVal.Contains("over your mouth as the")
         && textVal.Contains("layer of your concealment"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag apply command");
-            encodedMsgIndex = 1;
+            decodedMessageMediator.encodedMsgIndex = 1;
+            decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
             return true;
         }
 
@@ -22,19 +23,22 @@ public partial class MessageDictionary {
             // The Lock Gag Message [ ID == 4 // lockTimerPassword ]
             if(textVal.Contains("from her pocket and sets the password to") && textVal.Contains("with") && textVal.Contains("left, before locking your")) {
                 GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag lock password password2 command");
-                encodedMsgIndex = 4;
+                decodedMessageMediator.encodedMsgIndex = 4;
+                decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
                 return true;
             }
             // The Lock Gag Message [ ID == 3 // lockPassword ]
             else if( textVal.Contains("from her pocket and sets the password to") && textVal.Contains("locking your") && textVal.Contains("layer gag*")) {
                 GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag lock password command");
-                encodedMsgIndex = 3;
+                decodedMessageMediator.encodedMsgIndex = 3;
+                decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
                 return true;
             } 
             // The Lock Gag Message [ ID == 2 // lock ]
             else {
                 GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag lock command");
-                encodedMsgIndex = 2; 
+                decodedMessageMediator.encodedMsgIndex = 2;
+                decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
                 return true;
             }
         }
@@ -49,12 +53,14 @@ public partial class MessageDictionary {
             // The Unlock Gag Message [ ID == 6 // unlockPassword ]
             if(textVal.Contains("and sets the password to") && textVal.Contains("on your") && textVal.Contains("layer gagstrap, unlocking it.*")) {
                 GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag unlock password command");
-                encodedMsgIndex = 6;
+                decodedMessageMediator.encodedMsgIndex = 6;
+                decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
             }
             // The Unlock Gag Message [ ID == 5 // unlock ]
             else {
                 GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag unlock command");
-                encodedMsgIndex = 5;
+                decodedMessageMediator.encodedMsgIndex = 5;
+                decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
             }
         } 
         
@@ -65,7 +71,8 @@ public partial class MessageDictionary {
         && textVal.Contains("gag layer strap, allowing your voice to be a little clearer.*"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag remove command");
-            encodedMsgIndex = 7;
+            decodedMessageMediator.encodedMsgIndex = 7;
+            decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
             return true;
         }
 
@@ -75,21 +82,24 @@ public partial class MessageDictionary {
         && textVal.Contains("and unbuckles all of your gagstraps, allowing you to speak freely once more.*"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag remove all command");
-            encodedMsgIndex = 8;
+            decodedMessageMediator.encodedMsgIndex = 8;
+            decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
             return true;
         }
 
         // The gag order "Toggle Live Garbler State" Message [ ID == 9 // toggleLiveChatGarbler ]
         if (textVal.Contains("brushes her finger overtop the gag resting over your mouth.* \"Now be a good girl and be sure to give me those sweet muffled sounds whenever you speak~\"")) {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing toggleLiveChatGarbler command");
-            encodedMsgIndex = 9;
+            decodedMessageMediator.encodedMsgIndex = 9;
+            decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
             return true;
         }
 
         // the gag order "toggle Live Chat Garbler lock" Message [ ID == 10 // toggleLiveChatGarblerLock ]
         if (textVal.Contains("chuckles in delight of seeing their gagged submissive below them, a smile formed across their lips.* \"Look's like you'll be stuck speaking in muffled moans for some time now~\"")) {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing toggleLiveChatGarblerLock command");
-            encodedMsgIndex = 10;
+            decodedMessageMediator.encodedMsgIndex = 10;
+            decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
             return true;
         }
         

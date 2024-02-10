@@ -29,6 +29,9 @@ public partial class PuppeteerAliasTable {
         DrawAliasListTable();
     }
 
+    // store a temp list of items to replace;
+    public List<int> itemsToRemove = new List<int>();
+
     private void DrawAliasListTable() {
 
         ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(ImGui.GetStyle().CellPadding.X * 0.2f, ImGui.GetStyle().CellPadding.Y)); // Modify the X padding
@@ -40,24 +43,36 @@ public partial class PuppeteerAliasTable {
             ImGui.TableSetupColumn("Use##IsEnabled", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
             ImGui.TableSetupColumn("   Replacement text to execute instead", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableHeadersRow();
+            
+            
+            
             // Replace this with your actual data
             foreach (var (aliasTrigger, idx) in _characterHandler.playerChar._triggerAliases.ElementAt(_characterHandler.activeListIdx)
                                                                                     ._aliasTriggers.Select((value, index) => (value, index)))
             {
                 using var id = ImRaii.PushId(idx);
-                DrawAssociatedModRow(aliasTrigger, idx);
+                bool shouldRemove = DrawAssociatedModRow(aliasTrigger, idx);
+                if(shouldRemove) {
+                    itemsToRemove.Add(idx);
+                }
             }
+            // after we get what must be removed, remove them before we draw
+            foreach (var item in itemsToRemove) {
+                _characterHandler.RemoveAliasEntry(item);
+            }
+            itemsToRemove.Clear();
             DrawNewModRow();
         }
         // remove the style var
         ImGui.PopStyleVar();
     }
 
-    private void DrawAssociatedModRow(AliasTrigger aliasTrigger, int idx) {
+    private bool DrawAssociatedModRow(AliasTrigger aliasTrigger, int idx) {
+        bool shouldRemove = false;
         ImGui.TableNextColumn();
         if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), new Vector2(ImGui.GetFrameHeight()),
                 "Delete this alias from associations", false, true))
-            _characterHandler.RemoveAliasEntry(idx); // Use the helper function to remove the alias entry
+            shouldRemove = true;
 
         ImGui.TableNextColumn();
         string aliasText = _tempAliasTexts.ContainsKey(idx) ? _tempAliasTexts[idx] : aliasTrigger._inputCommand;
@@ -75,16 +90,17 @@ public partial class PuppeteerAliasTable {
             _characterHandler.UpdateAliasEntryEnabled(idx, isEnabled); // Use the helper function to update the alias entry enabled status
         }
 
+        ImGui.TableNextColumn();
+        string command = _tempAliasCommands.ContainsKey(idx) ? _tempAliasCommands[idx] : aliasTrigger._outputCommand;
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        if (ImGui.InputText($"##command{idx}", ref command, 200)) // If the input text is modified
+            _tempAliasCommands[idx] = command; // Update the alias entry output
+        if(ImGui.IsItemDeactivatedAfterEdit()) {
+            _characterHandler.UpdateAliasEntryOutput(idx, command);
+            _tempAliasCommands.Remove(idx);
+        }
 
-    ImGui.TableNextColumn();
-    string command = _tempAliasCommands.ContainsKey(idx) ? _tempAliasCommands[idx] : aliasTrigger._outputCommand;
-    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-    if (ImGui.InputText($"##command{idx}", ref command, 200)) // If the input text is modified
-        _tempAliasCommands[idx] = command; // Update the alias entry output
-    if(ImGui.IsItemDeactivatedAfterEdit()) {
-        _characterHandler.UpdateAliasEntryOutput(idx, command);
-        _tempAliasCommands.Remove(idx);
-    }
+        return shouldRemove;
     }
 
     private void DrawNewModRow() {

@@ -239,18 +239,28 @@ public class GlamourerFunctions : IDisposable
             if (restraintSet._enabled) {
                 // Iterate over each EquipDrawData in the restraint set
                 foreach (var pair in restraintSet._drawData) {
-                    // If the EquipDrawData is not a nothing item
-                    if (!pair.Value._gameItem.Equals(ItemIdVars.NothingItem(pair.Value._slot))) {
-                        // Apply the EquipDrawData
+                    // see if the item is enabled or not (controls it's visibility)
+                    if(pair.Value._isEnabled) {
+                        // because it is enabled, we will still apply nothing items
                         await _Interop.SetItemToCharacterAsync(
                             _charaDataHelpers.Address, 
                             Convert.ToByte(pair.Key), // the key (EquipSlot)
-                            pair.Value._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
+                            ItemIdVars.NothingItem(pair.Value._slot).Id.Id, // The _drawData._gameItem.Id.Id
                             pair.Value._gameStain.Id, // The _drawData._gameStain.Id
                             0);
-                    }
-                    else {
-                        GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: EquipDrawData for {pair.Key} is a nothing item, skipping!");
+                    } else {
+                        // Because it was disabled, we will treat it as an overlay, ignoring it if it is a nothing item
+                        if (!pair.Value._gameItem.Equals(ItemIdVars.NothingItem(pair.Value._slot))) {
+                            // Apply the EquipDrawData
+                            await _Interop.SetItemToCharacterAsync(
+                                _charaDataHelpers.Address, 
+                                Convert.ToByte(pair.Key), // the key (EquipSlot)
+                                pair.Value._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
+                                pair.Value._gameStain.Id, // The _drawData._gameStain.Id
+                                0);
+                        } else {
+                            GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: EquipDrawData for {pair.Key} is a nothing item, skipping!");
+                        }
                     }
                 }
                 // early exit, we only want to apply one restraint set

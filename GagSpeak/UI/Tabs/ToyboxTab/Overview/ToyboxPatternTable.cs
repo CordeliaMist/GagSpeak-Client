@@ -37,6 +37,10 @@ public partial class ToyboxPatternTable {
     private void DrawPatternHeader() // Draw our header
         => WindowHeader.Draw("Stored Patterns", 0, ImGui.GetColorU32(ImGuiCol.FrameBg), 1, 0, ExportToClipboardButton(), SetFromClipboardButton());
 
+
+    // create a temp list of items to remove
+    public List<int> itemsToRemove = new List<int>();
+    // draw the pattern table
     private void DrawPatternsTable() {
         ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(ImGui.GetStyle().CellPadding.X * 0.2f, ImGui.GetStyle().CellPadding.Y)); // Modify the X padding
         try{
@@ -52,8 +56,18 @@ public partial class ToyboxPatternTable {
                 foreach (var (pattern, idx) in _patternHandler._patterns.Select((value, index) => (value, index)))
                 {
                     using var id = ImRaii.PushId(idx);
-                    DrawAssociatedPatternRow(pattern, idx);
+                    bool shouldRemove = DrawAssociatedPatternRow(pattern, idx);
+                    if(shouldRemove) {
+                        itemsToRemove.Add(idx);
+                    }
                 }
+                // now remove any items before we draw our mod rows
+                foreach (var item in itemsToRemove) {
+                    _patternHandler.RemovePattern(item);
+                }
+                // clear the items
+                itemsToRemove.Clear();
+                // draw the rows
                 DrawNewPatternRow();
             }
         } catch (System.Exception e) {
@@ -63,11 +77,12 @@ public partial class ToyboxPatternTable {
         }
     }
 
-    private void DrawAssociatedPatternRow(PatternData pattern, int idx) {
+    private bool DrawAssociatedPatternRow(PatternData pattern, int idx) {
+        bool shouldRemove = false;
         ImGui.TableNextColumn();
         if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), new Vector2(ImGui.GetFrameHeight()),
                 "Delete this pattern", false, true))
-            _patternHandler.RemovePattern(idx); // Use the helper function to remove the pattern
+            shouldRemove = true;
 
         ImGui.TableNextColumn();
         string patternName = pattern._name;
@@ -77,9 +92,15 @@ public partial class ToyboxPatternTable {
         }
 
         ImGui.TableNextColumn();
-        if (ImGui.RadioButton($"##isActive{idx}", _patternHandler._activePatternIndex == idx)) {
+        bool isActive = _patternHandler._activePatternIndex == idx;
+        if (ImGui.Checkbox($"##isActive{idx}", ref isActive)) {
+            if(isActive) {
                 _patternHandler.SetActiveIdx(idx); // Update the selected pattern
+            } else {
+                _patternHandler.SetActiveIdx(-1); // Update the selected pattern
+            }
         }
+        return shouldRemove;
     }
 
     private void DrawNewPatternRow() {
@@ -102,10 +123,9 @@ public partial class ToyboxPatternTable {
         => new()
         {
             Description =
-                "Try to apply a design from your clipboard.\nHold Control to only apply gear.\nHold Shift to only apply customizations.",
+                "Try to apply a design from your clipboard.",
             Icon     = FontAwesomeIcon.Clipboard,
             OnClick  = SetFromClipboard,
-            BorderColor = 0x00FFFFFF,
             Visible  = true,
             Disabled = false,
         };
@@ -114,14 +134,12 @@ public partial class ToyboxPatternTable {
         => new()
         {
             Description =
-                "Copy the current design to your clipboard.\nHold Control to disable applying of customizations for the copied design.\nHold Shift to disable applying of gear for the copied design.",
+                "Copy the current design to your clipboard.",
             Icon    = FontAwesomeIcon.Copy,
             OnClick = ExportToClipboard,
-            BorderColor = 0x00FFFFFF,
             Visible  = true,
             Disabled = false,
         };
-
 
     private void ExportToClipboard()
     {
@@ -139,22 +157,21 @@ public partial class ToyboxPatternTable {
             string base64 = Convert.ToBase64String(compressed);
             // Copy the base64 string to the clipboard
             ImGui.SetClipboardText(base64);
-            GagSpeak.Log.Debug($"Copied pattern data to clipboard: {base64}");
+            GagSpeak.Log.Debug($"Copied pattern data to clipboard");
         }
         catch (Exception ex)
         {
-            GagSpeak.Log.Warning($"{ex} Could not copy pattern data to clipboard.");
+            GagSpeak.Log.Warning($"{ex.Message} Could not copy pattern data to clipboard.");
         }
     }
-
 
     private void SetFromClipboard()
     {
         try
         {
-            // Get the base64 string from the clipboard
+            // Get the JSON string from the clipboard
             string base64 = ImGui.GetClipboardText();
-
+            // Deserialize the JSON string back to pattern data
             var bytes = Convert.FromBase64String(base64);
             // Decode the base64 string back to a regular string
             var version = bytes[0];
@@ -168,17 +185,12 @@ public partial class ToyboxPatternTable {
                 pattern._name = baseName + $"(copy{copyNumber++})";
             }
             // Set the active pattern
-            if (!_patternHandler.IsActivePatternInBounds()) {
-                _patternHandler._patterns[_patternHandler._activePatternIndex] = pattern;
-            } else {
-                // If there is no active pattern, add the new pattern to the list
-                _patternHandler.ReplacePattern(_patternHandler._activePatternIndex, pattern);
-            }
-            GagSpeak.Log.Debug($"Set pattern data from clipboard: {pattern}");
+            _patternHandler.AddNewPattern(pattern);
+            GagSpeak.Log.Debug($"Set pattern data from clipboard");
         }
         catch (Exception ex)
         {
-            GagSpeak.Log.Warning($"{ex} Could not set pattern data from clipboard.");
+            GagSpeak.Log.Warning($"{ex.Message} Could not set pattern data from clipboard.");
         }
     }
 }
