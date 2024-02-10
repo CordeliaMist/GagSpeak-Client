@@ -103,6 +103,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         this.cachedCharacterData = new GlamourerCharacterData();
 
         acceptingInfoRequests = true;
+        processingInfoRequest = false;
             
         // finished!
         GagSpeak.Log.Debug("[Configuration File] Constructor Finished Initializing and setting default values, and previous data restored.");

@@ -200,6 +200,7 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Text($"Current ChatBox Channel: {ChatChannel.GetChatChannel()}");
         ImGui.Text($"Player Current Requesting Info: {_config.sendInfoName}");
         ImGui.Text($"Ready To Accept sending player information?: {_config.acceptingInfoRequests}");
+        ImGui.Text($"Processing Info Request?: {_config.processingInfoRequest}");
         ImGui.Separator();
         // wardrobe details
         ImGui.Text($"Enable Wardrobe?: {_characterHandler.playerChar._enableWardrobe}");
