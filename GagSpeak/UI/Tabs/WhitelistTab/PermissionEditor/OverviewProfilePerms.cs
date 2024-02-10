@@ -125,7 +125,7 @@ public partial class WhitelistPlayerPermissions {
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name} as your {requestedDynamic}. Updating their whitelist information").AddItalicsOff().BuiltString);
             // set the relationship status the player has towards you "They are your Mistress" here, because once you hit accept, both sides agree
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer;
+            _characterHandler.UpdateTheirStatusToYou(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer);
             if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None) {
                 _characterHandler.whitelistChars[_characterHandler.activeListIdx].Set_timeOfCommitment(); // set the commitment time if relationship is now two-way!
             }
@@ -135,7 +135,7 @@ public partial class WhitelistPlayerPermissions {
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name} as your {requestedDynamic}. Updating their whitelist information").AddItalicsOff().BuiltString);
             // set the relationship status the player has towards you "They are your Pet" here, because once you hit accept, both sides agree
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer;
+            _characterHandler.UpdateTheirStatusToYou(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer);
             if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None) {
                 _characterHandler.whitelistChars[_characterHandler.activeListIdx].Set_timeOfCommitment(); // set the commitment time if relationship is now two-way!
             }
@@ -145,7 +145,7 @@ public partial class WhitelistPlayerPermissions {
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name} as your {requestedDynamic}. Updating their whitelist information").AddItalicsOff().BuiltString);
             // set the relationship status the player has towards you "They are your Absolute-Slave" here, because once you hit accept, both sides agree
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer;
+            _characterHandler.UpdateTheirStatusToYou(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer);
             if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None) {
                 _characterHandler.whitelistChars[_characterHandler.activeListIdx].Set_timeOfCommitment(); // set the commitment time if relationship is now two-way!
             }
@@ -172,24 +172,24 @@ public partial class WhitelistPlayerPermissions {
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now declined "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s request to become their {requestedDynamic}.").AddItalicsOff().BuiltString);
             // clear the pending status and not change the relationship status, rather set it to none, because both sides do not agree.
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou = RoleLean.None;
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer = RoleLean.None;
+            _characterHandler.UpdateTheirStatusToYou(_characterHandler.activeListIdx, RoleLean.None);
+            _characterHandler.UpdatePendingRelationRequestFromPlayer(_characterHandler.activeListIdx, RoleLean.None);
             _chatManager.SendRealMessage(_messageEncoder.EncodeDeclineRequestDominantStatus(playerPayload, targetPlayer));
         } else if(requestedDynamic == RoleLean.Pet || requestedDynamic == RoleLean.Slave) {
             _chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now declined "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s request to become their {requestedDynamic}.").AddItalicsOff().BuiltString);
             // clear the pending status and not change the relationship status, rather set it to none, because both sides do not agree.
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou = RoleLean.None;
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer = RoleLean.None;
+            _characterHandler.UpdateTheirStatusToYou(_characterHandler.activeListIdx, RoleLean.None);
+            _characterHandler.UpdatePendingRelationRequestFromPlayer(_characterHandler.activeListIdx, RoleLean.None);
             _chatManager.SendRealMessage(_messageEncoder.EncodeDeclineRequestSubmissiveStatus(playerPayload, targetPlayer));
         } else {
             _chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now declined "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s request to become their {requestedDynamic}.").AddItalicsOff().BuiltString);
             // clear the pending status and not change the relationship status, rather set it to none, because both sides do not agree.
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou = RoleLean.None;
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer = RoleLean.None;
+            _characterHandler.UpdateTheirStatusToYou(_characterHandler.activeListIdx, RoleLean.None);
+            _characterHandler.UpdatePendingRelationRequestFromPlayer(_characterHandler.activeListIdx, RoleLean.None);
             _chatManager.SendRealMessage(_messageEncoder.EncodeDeclineRequestAbsoluteSubmissionStatus(playerPayload, targetPlayer));
         }
     }
@@ -212,7 +212,7 @@ public partial class WhitelistPlayerPermissions {
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}, to see if they would like you to become their {dynamicRole}.").AddItalicsOff().BuiltString);
             //update information and send message
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromYou = dynamicRole;
+            _characterHandler.UpdatePendingRelationRequestFromYou(_characterHandler.activeListIdx, dynamicRole);
             _chatManager.SendRealMessage(_messageEncoder.EncodeRequestDominantStatus(playerPayload, targetPlayer, dynamicRole));
         } 
         // if the dynamic role is a submissive role
@@ -221,14 +221,14 @@ public partial class WhitelistPlayerPermissions {
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}, to see if they would like you to become their {dynamicRole}.").AddItalicsOff().BuiltString);
             //update information and send message
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromYou = dynamicRole;
+            _characterHandler.UpdatePendingRelationRequestFromYou(_characterHandler.activeListIdx, dynamicRole);
             _chatManager.SendRealMessage(_messageEncoder.EncodeRequestSubmissiveStatus(playerPayload, targetPlayer, dynamicRole));
         } else {
             _chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}, to see if they would like you to become their Absolute-Slave.").AddItalicsOff().BuiltString);
             //update information and send message
-            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromYou = RoleLean.AbsoluteSlave;
+            _characterHandler.UpdatePendingRelationRequestFromYou(_characterHandler.activeListIdx, RoleLean.AbsoluteSlave);
             _chatManager.SendRealMessage(_messageEncoder.EncodeRequestAbsoluteSubmissionStatus(playerPayload, targetPlayer));
         }
     }
@@ -244,10 +244,10 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Removing Relation Status "+
             $"with {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}.").AddItalicsOff().BuiltString);
         //update information and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem = RoleLean.None;
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou = RoleLean.None;
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromYou = RoleLean.None;
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer = RoleLean.None;
+        _characterHandler.UpdateYourStatusToThem(_characterHandler.activeListIdx, RoleLean.None);
+        _characterHandler.UpdateTheirStatusToYou(_characterHandler.activeListIdx, RoleLean.None);
+        _characterHandler.UpdatePendingRelationRequestFromYou(_characterHandler.activeListIdx, RoleLean.None);
+        _characterHandler.UpdatePendingRelationRequestFromPlayer(_characterHandler.activeListIdx, RoleLean.None);
         string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
         _chatManager.SendRealMessage(_messageEncoder.EncodeSendRelationRemovalMessage(playerPayload, targetPlayer));
     }
