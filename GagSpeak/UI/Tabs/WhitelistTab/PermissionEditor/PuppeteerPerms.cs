@@ -24,7 +24,7 @@ public partial class WhitelistPlayerPermissions {
         ImGui.PopFont();
 
         // store their dynamic tier for edit purposes
-        DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTier();
+        DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTierClient();
         // store the hovered var for tooltips
         var hovered  = ImGui.IsItemHovered();
 

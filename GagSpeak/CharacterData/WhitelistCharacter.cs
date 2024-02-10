@@ -96,7 +96,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
 #endregion General Interactions
 #region State Fetching / Setting
     /// <summary> get the spesified tier of a current dynamic </summary>
-    public DynamicTier GetDynamicTier() {
+    public DynamicTier GetDynamicTierClient() {
         // TIER 4 == dynamic of ABSOLUTE-SLAVE with OWNER.
         if (_yourStatusToThem == RoleLean.Owner) {
             if(_theirStatusToYou == RoleLean.AbsoluteSlave) {
@@ -119,6 +119,36 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         }}
         // If a two way dyanamic is note yet established, then our tier is 0.
         if (_yourStatusToThem == RoleLean.None || _theirStatusToYou == RoleLean.None || _theirStatusToYou == RoleLean.Submissive) {
+                return DynamicTier.Tier0;
+        }
+        // we should never make it here, but if we do, set the dynamic to 0 anyways
+        return DynamicTier.Tier0;
+    }
+
+    /// <summary> get the spesified tier of a current dynamic (for using someone who isnt you) (meant for result logic) </summary>
+    public DynamicTier GetDynamicTierNonClient() {
+        // TIER 4 == dynamic of ABSOLUTE-SLAVE with OWNER.
+        if (_theirStatusToYou == RoleLean.Owner) {
+            if(_yourStatusToThem == RoleLean.AbsoluteSlave) {
+                return DynamicTier.Tier4;
+        }}
+        // TIER 3 == dynamic of SLAVE/ABSOLUTE-SLAVE with OWNER.
+        if (_theirStatusToYou == RoleLean.Owner) {
+            if(_yourStatusToThem == RoleLean.Slave || _yourStatusToThem == RoleLean.AbsoluteSlave) {
+                return DynamicTier.Tier3;
+        }}
+        // TIER 2 == dynamic of SLAVE/ABSOLUTE-SLAVE with MISTRESS|MASTER/OWNER.
+        if (_theirStatusToYou == RoleLean.Mistress || _theirStatusToYou == RoleLean.Master || _theirStatusToYou == RoleLean.Owner) {
+            if(_yourStatusToThem == RoleLean.Slave || _yourStatusToThem == RoleLean.AbsoluteSlave) {
+                return DynamicTier.Tier2;
+        }}
+        // TIER 1 == dynamic of PET/SLAVE/ABSOLUTE-SLAVE with MISTRESS|MASTER/OWNER.
+        if (_theirStatusToYou == RoleLean.Mistress || _theirStatusToYou == RoleLean.Master || _theirStatusToYou == RoleLean.Owner) {
+            if(_yourStatusToThem == RoleLean.Pet || _yourStatusToThem == RoleLean.Slave || _yourStatusToThem == RoleLean.AbsoluteSlave) {
+                return DynamicTier.Tier1;
+        }}
+        // If a two way dyanamic is note yet established, then our tier is 0.
+        if (_theirStatusToYou == RoleLean.None || _yourStatusToThem == RoleLean.None || _yourStatusToThem == RoleLean.Submissive) {
                 return DynamicTier.Tier0;
         }
         // we should never make it here, but if we do, set the dynamic to 0 anyways

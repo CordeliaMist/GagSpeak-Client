@@ -18,7 +18,7 @@ public class WhitelistTab : ITab, IDisposable
     private readonly    TimerService     _timerService;
     private readonly    InteractOrPermButtonEvent _buttonInteractionEvent;
     private             bool _enableInteractions = false;
-    private             bool _viewMode = false;
+    private             bool _viewMode = true;
 
 
     public WhitelistTab(WhitelistSelector selector, WhitelistPlayerPermissions playerPermissionEditor,

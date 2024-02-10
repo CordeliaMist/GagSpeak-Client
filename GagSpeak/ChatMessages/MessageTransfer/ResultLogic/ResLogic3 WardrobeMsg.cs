@@ -17,7 +17,7 @@ public partial class ResultLogic {
         // see if they exist
         if( _characterHandler.IsPlayerInWhitelist(playerName)) {
             // get its index
-            DynamicTier dynamicStrength = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier dynamicStrength = _characterHandler.GetDynamicTierNonClient(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
             if(dynamicStrength != DynamicTier.Tier0) {
                 // toggle the gag storage UI lock
@@ -49,7 +49,7 @@ public partial class ResultLogic {
             // get the whitelist index
             int whitelistIdx = _characterHandler.GetWhitelistIndex(playerName);
             // get its index
-            DynamicTier dynamicStrength = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier dynamicStrength = _characterHandler.GetDynamicTierNonClient(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
             if(dynamicStrength >= DynamicTier.Tier2) {
                 // toggle the enable restraint sets option for that player
@@ -79,7 +79,7 @@ public partial class ResultLogic {
         if( _characterHandler.IsPlayerInWhitelist(playerName)) {
             // get its index
             int idx = _characterHandler.GetWhitelistIndex(playerName);
-            DynamicTier dynamicStrength = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier dynamicStrength = _characterHandler.GetDynamicTierNonClient(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
             if(dynamicStrength != DynamicTier.Tier0) {
                 // toggle the allow restraint locking option for that player
@@ -108,7 +108,7 @@ public partial class ResultLogic {
         // see if they exist
         if( _characterHandler.IsPlayerInWhitelist(playerName)) {
             // toggle the gag storage if we have a tier above 1 or higher
-            if(_characterHandler.playerChar._allowRestraintSetAutoEquip == true && _characterHandler.GetDynamicTier(playerName) >= DynamicTier.Tier2) {
+            if(_characterHandler.playerChar._allowRestraintSetAutoEquip == true && _characterHandler.GetDynamicTierNonClient(playerName) >= DynamicTier.Tier2) {
                 // see if our restraint set is anywhere in the list
                 int setIdx = _restraintSetManager.GetRestraintSetIndex(decodedMessageMediator.setToLockOrUnlock);
                 // exit if the index is -1
@@ -148,7 +148,7 @@ public partial class ResultLogic {
         // see if they exist
         if( _characterHandler.IsPlayerInWhitelist(playerName)) {
             // get its index
-            DynamicTier dynamicStrength = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier dynamicStrength = _characterHandler.GetDynamicTierNonClient(playerName);
             int whitelistIdx = _characterHandler.GetWhitelistIndex(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
             if(dynamicStrength != DynamicTier.Tier0 && _characterHandler.playerChar._allowRestraintSetAutoEquip && _characterHandler.playerChar._restraintSetLocking[whitelistIdx]) {

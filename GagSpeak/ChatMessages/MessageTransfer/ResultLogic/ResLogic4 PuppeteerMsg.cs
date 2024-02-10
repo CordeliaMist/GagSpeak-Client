@@ -14,7 +14,7 @@ public partial class ResultLogic {
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
             int index = _characterHandler.GetWhitelistIndex(playerName);
-            DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier >= DynamicTier.Tier1) {
                 // set the boolean for if they allow sit requests
@@ -39,7 +39,7 @@ public partial class ResultLogic {
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
             int index = _characterHandler.GetWhitelistIndex(playerName);
-            DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier >= DynamicTier.Tier2) {
                 // set the boolean for if they allow motion requests
@@ -64,7 +64,7 @@ public partial class ResultLogic {
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
             int index = _characterHandler.GetWhitelistIndex(playerName);
-            DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier == DynamicTier.Tier4) {
                 // set the boolean for if they allow all commands

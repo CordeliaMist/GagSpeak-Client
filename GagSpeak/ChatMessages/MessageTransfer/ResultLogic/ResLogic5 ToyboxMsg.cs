@@ -11,7 +11,7 @@ public partial class ResultLogic {
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
             int index = _characterHandler.GetWhitelistIndex(playerName);
-            DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier == DynamicTier.Tier4) {
                 // set the boolean for the new state _allowChangingToyState will be for you with them (if they can turn on/off your toy)
@@ -39,7 +39,7 @@ public partial class ResultLogic {
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
             int index = _characterHandler.GetWhitelistIndex(playerName);
-            DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier != DynamicTier.Tier0) {
                 // likely change this to an individual item later
@@ -63,7 +63,7 @@ public partial class ResultLogic {
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
             int index = _characterHandler.GetWhitelistIndex(playerName);
-            DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier >= DynamicTier.Tier3) {
                 // likely change this to an individual item later
@@ -121,7 +121,7 @@ public partial class ResultLogic {
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
             int index = _characterHandler.GetWhitelistIndex(playerName);
-            DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier == DynamicTier.Tier4 && _characterHandler.playerChar._allowUsingPatterns[index]) {
                 // execute the stored toy pattern
@@ -152,7 +152,7 @@ public partial class ResultLogic {
         if(_characterHandler.IsPlayerInWhitelist(playerName)) {
             // get the dynamictier and index
             int index = _characterHandler.GetWhitelistIndex(playerName);
-            DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
+            DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier == DynamicTier.Tier4 || tier == DynamicTier.Tier3) {
                 // toogle the boolean for if their toybox UI is locked or not.

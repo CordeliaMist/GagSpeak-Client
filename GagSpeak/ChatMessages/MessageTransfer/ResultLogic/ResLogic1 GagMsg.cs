@@ -135,7 +135,7 @@ public partial class ResultLogic {
             isHandled = true; return LogError("[MsgResultLogic]: Cannot toggle live chat garbler for non-whitelisted player.");
         }
         // get the dynamic tier of your relation with that person
-        DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
+        DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
         // make sure we have a valid tier to do this
         if(tier != DynamicTier.Tier4) {
             isHandled = true; return LogError($"[MsgResultLogic]: {playerName} tried to toggle your live chat garbler but failed. Your dynamic is not strong enough.");
@@ -162,7 +162,7 @@ public partial class ResultLogic {
             isHandled = true; return LogError("[MsgResultLogic]: Cannot toggle live chat garbler lock for non-whitelisted player.");
         }
         // get the dynamic tier
-        DynamicTier tier = _characterHandler.GetDynamicTier(playerName);
+        DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
         // if our tier is not strong enough, exit.
         if(tier < DynamicTier.Tier3) {
             isHandled = true; return LogError($"[MsgResultLogic]: {playerName} failed to lock your direct garbler, Your dynamic is not strong enough.");

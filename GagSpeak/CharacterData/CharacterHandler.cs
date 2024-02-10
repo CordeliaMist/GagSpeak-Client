@@ -612,10 +612,16 @@ public class CharacterHandler : ISavable
         _saveService.QueueSave(this);
     }
 
-    public DynamicTier GetDynamicTier(string playerName) {
+    public DynamicTier GetDynamicTierClient(string playerName) {
         return whitelistChars
                 .FirstOrDefault(x => x._name == playerName)
-                ?.GetDynamicTier() ?? DynamicTier.Tier0;
+                ?.GetDynamicTierClient() ?? DynamicTier.Tier0;
+    }
+
+    public DynamicTier GetDynamicTierNonClient(string playerName) {
+        return whitelistChars
+                .FirstOrDefault(x => x._name == playerName)
+                ?.GetDynamicTierNonClient() ?? DynamicTier.Tier0;
     }
 
     public string GetRoleLeanString(RoleLean role) => role.ToString();

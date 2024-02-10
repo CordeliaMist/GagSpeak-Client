@@ -22,7 +22,7 @@ public partial class WhitelistPlayerPermissions {
         ImGui.PopFont();
 
         // store their dynamic tier for edit purposes
-        DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTier();
+        DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTierClient();
 
         // draw out the table for our permissions
         using (var tableOverrideSettings = ImRaii.Table("RelationsManagerTable", 4, ImGuiTableFlags.RowBg)) {
