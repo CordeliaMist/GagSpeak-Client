@@ -50,8 +50,8 @@ public partial class ResultLogic {
             RoleLean yourLean = _characterHandler.GetRoleLeanFromString(decodedMessageMediator.theirDynamicLean);
             RoleLean theirLean = _characterHandler.GetRoleLeanFromString(decodedMessageMediator.dynamicLean);
             // now the variables are arranged correctly for you, so update
-            _characterHandler.UpdateTheirStatusToYou(Idx, yourLean);
-            _characterHandler.UpdateYourStatusToThem(Idx, theirLean);
+            _characterHandler.UpdateYourStatusToThem(Idx, yourLean);
+            _characterHandler.UpdateTheirStatusToYou(Idx, theirLean);
             _characterHandler.SetWhitelistSafewordUsed(Idx, decodedMessageMediator.safewordUsed);
             _characterHandler.SetWhitelistGrantExtendedLockTimes(Idx, decodedMessageMediator.extendedLockTimes);
             _characterHandler.SetWhitelistDirectChatGarblerActive(Idx, decodedMessageMediator.directChatGarblerActive);

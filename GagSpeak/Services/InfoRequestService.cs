@@ -45,14 +45,14 @@ public class InfoRequestService : IDisposable
 
     // this can be done more effectively with tasks and await but dont want to risk breaking gamework thread
     private async void SendInformationPartOne(object sender, InfoRequestEventArgs e) {
-        GagSpeak.Log.Debug("[Whitelist]: Received Player Info Request, Verifying if player is in your whitelist and we are accepting info requests at the moment...");
+        GagSpeak.Log.Debug("[InfoRequestService]: Received Player Info Request, Verifying if player is in your whitelist and we are accepting info requests at the moment...");
         // we are setting sender info here so that we know who we are sending this info off to
         string senderName = _config.sendInfoName.Substring(0, _config.sendInfoName.IndexOf('@'));
         _config.SetprocessingInfoRequest(true);
         if (_characterHandler.IsPlayerInWhitelist(senderName))
         {
             _config.SetAcceptInfoRequests(false);
-            GagSpeak.Log.Debug("[Whitelist]: Player is in your whitelist, sending info...");
+            GagSpeak.Log.Debug("[InfoRequestService]: Player is in your whitelist, sending info...");
             await Task.Run(() => InfoSendAndRequestHelpers.SendInfoToPlayer(_characterHandler, _chatManager, _encoder, _clientState, _chatGui, _config, senderName));
             await Task.Run(() => InfoSendAndRequestHelpers.SendInfoToPlayer2(_characterHandler, _chatManager, _encoder, _clientState, _chatGui, _config, senderName));
             await Task.Run(() => InfoSendAndRequestHelpers.SendInfoToPlayer3(_characterHandler, _chatManager, _encoder, _clientState, _chatGui, _config, senderName));

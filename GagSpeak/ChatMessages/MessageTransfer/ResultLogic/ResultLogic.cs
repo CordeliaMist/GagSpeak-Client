@@ -49,14 +49,16 @@ public partial class ResultLogic {
         var commandType = decodedMessageMediator.encodedCmdType.ToLowerInvariant();
         var _ = commandType switch
         {
-            "apply"             => HandleApplyMessage(decodedMessageMediator, ref isHandled),
-            "lock"              => HandleLockMessage(decodedMessageMediator, ref isHandled),
-            "lockpassword"      => HandleLockMessage(decodedMessageMediator, ref isHandled),
-            "locktimerpassword" => HandleLockMessage(decodedMessageMediator, ref isHandled),
-            "unlock"            => HandleUnlockMessage(decodedMessageMediator, ref isHandled),
-            "unlockpassword"    => HandleUnlockMessage(decodedMessageMediator, ref isHandled),
-            "remove"            => HandleRemoveMessage(decodedMessageMediator, ref isHandled),
-            "removeall"         => HandleRemoveAllMessage(decodedMessageMediator, ref isHandled),
+            "apply"                     => HandleApplyMessage(decodedMessageMediator, ref isHandled),
+            "lock"                      => HandleLockMessage(decodedMessageMediator, ref isHandled),
+            "lockpassword"              => HandleLockMessage(decodedMessageMediator, ref isHandled),
+            "locktimerpassword"         => HandleLockMessage(decodedMessageMediator, ref isHandled),
+            "unlock"                    => HandleUnlockMessage(decodedMessageMediator, ref isHandled),
+            "unlockpassword"            => HandleUnlockMessage(decodedMessageMediator, ref isHandled),
+            "remove"                    => HandleRemoveMessage(decodedMessageMediator, ref isHandled),
+            "removeall"                 => HandleRemoveAllMessage(decodedMessageMediator, ref isHandled),
+            "toggleLiveChatGarbler"     => HandleToggleLiveChatGarbler(decodedMessageMediator, ref isHandled),
+            "toggleLiveChatGarblerLock" => HandleToggleLiveChatGarblerLock(decodedMessageMediator, ref isHandled),
             _                => LogError("Invalid Order message parse, If you see this report it to cordy ASAP.")
         };
         return true;
