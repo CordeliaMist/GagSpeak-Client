@@ -33,7 +33,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
 
     ////////////////////////////////////////////////// PROTECTED FIELDS ////////////////////////////////////////////////////
     
-    public WhitelistedCharacterInfo() : this("None", "None") { }
+    public WhitelistedCharacterInfo() : this("None None", "None") { }
     public WhitelistedCharacterInfo(string name, string homeworld) {
         _name = name;
         _homeworld = homeworld;

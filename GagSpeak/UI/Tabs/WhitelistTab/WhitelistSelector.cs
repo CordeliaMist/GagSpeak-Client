@@ -99,7 +99,7 @@ public class WhitelistSelector
                     // And now, if the player is not already in our _characterHandler.whitelistChars, we will add them. Otherwise just do nothing.
                     if (!_characterHandler.whitelistChars.Any(item => item._name == targetName)) {
                         GagSpeak.Log.Debug($"[Whitelist]: Adding targeted player to _characterHandler.whitelistChars {_clientState.LocalPlayer.TargetObject})");
-                        if(_characterHandler.whitelistChars.Count == 1 && _characterHandler.whitelistChars[0]._name == "None") { // If our _characterHandler.whitelistChars just shows none, replace it with first addition.
+                        if(_characterHandler.whitelistChars.Count == 1 && _characterHandler.whitelistChars[0]._name == "None None") { // If our _characterHandler.whitelistChars just shows none, replace it with first addition.
                             _characterHandler.ReplaceWhitelistItem(0, targetName, worldName);
                         } else {
                             _characterHandler.AddNewWhitelistItem(targetName, worldName); // Add the player to the _characterHandler.whitelistChars

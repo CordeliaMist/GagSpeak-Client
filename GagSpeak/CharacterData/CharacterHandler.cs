@@ -7,6 +7,7 @@ using System.IO;
 using Newtonsoft.Json;
 using GagSpeak.ToyboxandPuppeteer;
 using GagSpeak.Gagsandlocks;
+using GagSpeak.Utility;
 
 /*
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -440,12 +441,12 @@ public class CharacterHandler : ISavable
             whitelistChars[Idx]._selectedGagPadlockPassword[0] = Passwords[0];
             whitelistChars[Idx]._selectedGagPadlockPassword[1] = Passwords[1];
             whitelistChars[Idx]._selectedGagPadlockPassword[2] = Passwords[2];
-            whitelistChars[Idx]._selectedGagPadlockTimer[0] = DateTimeOffset.Parse(Timers[0]);
-            whitelistChars[Idx]._selectedGagPadlockTimer[1] = DateTimeOffset.Parse(Timers[1]);
-            whitelistChars[Idx]._selectedGagPadlockTimer[2] = DateTimeOffset.Parse(Timers[2]);
+            whitelistChars[Idx]._selectedGagPadlockTimer[0] = UIHelpers.GetEndTime(Timers[0]);
+            whitelistChars[Idx]._selectedGagPadlockTimer[1] = UIHelpers.GetEndTime(Timers[1]);
+            whitelistChars[Idx]._selectedGagPadlockTimer[2] = UIHelpers.GetEndTime(Timers[2]);
             whitelistChars[Idx]._selectedGagPadlockAssigner[0] = Assigners[0];
             whitelistChars[Idx]._selectedGagPadlockAssigner[1] = Assigners[1];
-            whitelistChars[Idx]._selectedGagPadlockAssigner[2] = Assigners[2];
+            whitelistChars[Idx]._selectedGagPadlockAssigner[2] = Assigners[2]; 
         }
         _saveService.QueueSave(this);
     }

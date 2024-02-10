@@ -89,7 +89,7 @@ public partial class MessageDecoder {
                         decodedMessageMediator.layerGagName[i] = "None";
                         decodedMessageMediator.layerPadlock[i] = "None";
                         decodedMessageMediator.layerTimer[i] = "";
-                        decodedMessageMediator.layerAssigner[i] = "";
+                        decodedMessageMediator.layerAssigner[i] = "0s";
                     } else {
                         // otherwise, check what the gagtype was.
                         decodedMessageMediator.layerGagName[i] = layerInfo.Split("she had a ")[1].Split(" fastened in good and tight")[0].Trim();
@@ -145,7 +145,11 @@ public partial class MessageDecoder {
                 decodedMessageMediator.isPuppeteerEnabled = match.Groups["allowPuppeteer"].Value.Trim() == "loyal as ever when" ? true : false;                
                 // puppeteer trigger
                 string puppeteerTrigger = match.Groups["puppeteerTrigger"].Value.Trim();
-                decodedMessageMediator.triggerPhrase = puppeteerTrigger.Substring(1, puppeteerTrigger.Length - 2);
+                if(puppeteerTrigger.Length > 2) {
+                    decodedMessageMediator.triggerPhrase = puppeteerTrigger.Substring(1, puppeteerTrigger.Length - 2);
+                } else {
+                    decodedMessageMediator.triggerPhrase = string.Empty;
+                }
                 decodedMessageMediator.triggerStartChar = puppeteerTrigger[0].ToString();
                 decodedMessageMediator.triggerEndChar = puppeteerTrigger[puppeteerTrigger.Length - 1].ToString();
                 // sit request state

@@ -216,7 +216,7 @@ public partial class WhitelistPlayerPermissions {
             _chatManager.SendRealMessage(_messageEncoder.EncodeRequestDominantStatus(playerPayload, targetPlayer, dynamicRole));
         } 
         // if the dynamic role is a submissive role
-        else if(dynamicRole == RoleLean.Pet || dynamicRole == RoleLean.Slave) {
+        else if(dynamicRole == RoleLean.Submissive || dynamicRole == RoleLean.Pet || dynamicRole == RoleLean.Slave) {
             _chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}, to see if they would like you to become their {dynamicRole}.").AddItalicsOff().BuiltString);
