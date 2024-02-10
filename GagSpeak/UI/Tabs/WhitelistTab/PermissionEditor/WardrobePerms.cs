@@ -131,7 +131,6 @@ public partial class WhitelistPlayerPermissions {
             }
 
             // Force Enable a Restraint Set option, if the permission is enabled
-            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets) { ImGui.BeginDisabled(); }
             ImGui.AlignTextToFramePadding();
             ImGuiUtil.DrawFrameColumn($"Enable Set:");
             ImGui.TableNextColumn();
@@ -145,6 +144,7 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableNextColumn();
             ImGuiUtil.Center("2");
             ImGui.TableNextColumn();
+            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets) { ImGui.BeginDisabled(); }
             if(ImGuiUtil.DrawDisabledButton("Enable##EnableRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
                 EnableRestraintSetByName(_restraintSetToEnable);

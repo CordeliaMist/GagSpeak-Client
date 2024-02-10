@@ -88,8 +88,8 @@ public partial class MessageDecoder {
                     if (layerInfo.Contains("nothing present")) {
                         decodedMessageMediator.layerGagName[i] = "None";
                         decodedMessageMediator.layerPadlock[i] = "None";
-                        decodedMessageMediator.layerTimer[i] = "";
-                        decodedMessageMediator.layerAssigner[i] = "0s";
+                        decodedMessageMediator.layerTimer[i] = "0s";
+                        decodedMessageMediator.layerAssigner[i] = "";
                     } else {
                         // otherwise, check what the gagtype was.
                         decodedMessageMediator.layerGagName[i] = layerInfo.Split("she had a ")[1].Split(" fastened in good and tight")[0].Trim();

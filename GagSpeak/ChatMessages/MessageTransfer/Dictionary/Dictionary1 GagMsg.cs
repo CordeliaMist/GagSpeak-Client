@@ -44,25 +44,23 @@ public partial class MessageDictionary {
         }
 
         // Encapsulated Gag Unlock Dictionary Lookup, [ ID == 5,6 ]
-        if (textVal.Contains("from") && textVal.Contains("reaches behind your neck")
-        && // and also either
-        ((textVal.Contains("and sets the password to") && textVal.Contains("on your") && textVal.Contains("layer gagstrap, unlocking it.*"))
-        || // or
-        (textVal.Contains(", taking off the lock that was keeping your") && textVal.Contains("gag layer fastened nice and tight.*")))
-        ) {
+        if (textVal.Contains("from") && textVal.Contains("reaches behind your neck"))
+        {
             // The Unlock Gag Message [ ID == 6 // unlockPassword ]
             if(textVal.Contains("and sets the password to") && textVal.Contains("on your") && textVal.Contains("layer gagstrap, unlocking it.*")) {
                 GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag unlock password command");
                 decodedMessageMediator.encodedMsgIndex = 6;
                 decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
+                return true;
             }
             // The Unlock Gag Message [ ID == 5 // unlock ]
-            else {
+            if(textVal.Contains("taking off the lock that was keeping your") && textVal.Contains("gag layer fastened nice and tight")) {
                 GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag unlock command");
                 decodedMessageMediator.encodedMsgIndex = 5;
                 decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
+                return true;
             }
-        } 
+        }
         
         // The gag remove message [ ID == 7 // remove ]
         if (textVal.Contains("from")

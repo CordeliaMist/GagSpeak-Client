@@ -211,6 +211,7 @@ public class ConfigSettingsTab : ITab
                 // See If the UIHelpers.Checkbox is clicked, If not, add to the list of enabled channels, otherwise, remove it.
                 if (enabled) _config.ChannelsGagSpeak.Add(e);
                 else _config.ChannelsGagSpeak.Remove(e);
+                _config.Save();
             }
 
             ImGui.SameLine();

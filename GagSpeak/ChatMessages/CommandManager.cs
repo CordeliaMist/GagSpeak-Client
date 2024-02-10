@@ -167,7 +167,7 @@ public class CommandManager : IDisposable // Our main command list manager
                     _characterHandler.playerChar._selectedGagPadlocks[layerIndex] = Padlocks.None;
                     _characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = "";
                     _characterHandler.playerChar._selectedGagPadlockAssigner[layerIndex] = "";
-                }
+                }               
                 _gagStorageManager.ResetEverythingDueToSafeword();
                 _restriantSetManager.ResetEverythingDueToSafeword();
                 _timerService.ClearRestraintSetTimer();
@@ -186,6 +186,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 _safewordCommandEvent.Invoke();
                 // fire the safewordUsed bool to true so that we set the cooldown
                 _characterHandler.playerChar._safewordUsed = true;
+                _characterHandler.Save();
                 _timerService.StartTimer("SafewordUsed", "5s", 1000, () => _characterHandler.playerChar._safewordUsed = false);
             }
             // otherwise inform the user that the cooldown for safeword being used is still present

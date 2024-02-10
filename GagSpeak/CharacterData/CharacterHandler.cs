@@ -192,7 +192,6 @@ public class CharacterHandler : ISavable
             playerChar._allowAllCommands[activeListIdx] = value;
         }
     }
-
     public void AddNewAliasEntry(AliasTrigger alias) {
         playerChar._triggerAliases[activeListIdx]._aliasTriggers.Add(alias);
         _saveService.QueueSave(this);
@@ -645,6 +644,9 @@ public class CharacterHandler : ISavable
         j.Formatting = Formatting.Indented;
         Serialize().WriteTo(j);
     }
+
+    public void Quicksave()
+        => _saveService.QueueSave(this);
 
     public void Save()
         => _saveService.DelaySave(this);

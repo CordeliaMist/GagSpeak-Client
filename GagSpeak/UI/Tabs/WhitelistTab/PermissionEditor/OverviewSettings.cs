@@ -195,7 +195,7 @@ public partial class WhitelistPlayerPermissions {
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Live Chat Garbler Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
         _characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerActive = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerActive;
-        _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleEnableToyboxOption(playerPayload, targetPlayer));
+        _chatManager.SendRealMessage(_messageEncoder.GagOrderToggleLiveChatGarbler(playerPayload, targetPlayer));
     }
 
     public void TogglePlayerLiveChatGarblerLock() {
@@ -210,7 +210,7 @@ public partial class WhitelistPlayerPermissions {
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Live Chat Garbler Lock Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
         _characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerLocked = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerLocked;
-        _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleEnableToyboxOption(playerPayload, targetPlayer));
+        _chatManager.SendRealMessage(_messageEncoder.GagOrderToggleLiveChatGarblerLock(playerPayload, targetPlayer));
     }
 
 #endregion ButtonHelpers

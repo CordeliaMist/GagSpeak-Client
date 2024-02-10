@@ -226,6 +226,7 @@ public class GagListingsDrawer : IDisposable
         
         if(prevItem != _characterHandler.playerChar._selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
             GagSpeak.Log.Debug($"[GagListingsDrawer]: Personal GagType Changed, firing itemAuto-Equip event for gag {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
+            _characterHandler.Quicksave();
             _itemAutoEquipEvent.Invoke(_characterHandler.playerChar._selectedGagTypes[layerIndex], "self");
         }
 
@@ -238,7 +239,7 @@ public class GagListingsDrawer : IDisposable
                 // reset the _wasEquippedBy to empty
                 _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
                 // save config
-                _config.Save();
+                _characterHandler.Quicksave();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
         }
@@ -270,6 +271,7 @@ public class GagListingsDrawer : IDisposable
                 _characterHandler.playerChar._selectedGagPadlocks[layerIndex]= Padlocks.None; // to the first option, none
                 _characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = "";
                 _characterHandler.playerChar._selectedGagPadlockAssigner[layerIndex] = "";
+                _characterHandler.Quicksave();
                 config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
@@ -297,7 +299,7 @@ public class GagListingsDrawer : IDisposable
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
                 gagLabel = _gagService._gagTypes.First()._gagName;
-                _config.Save();
+                _characterHandler.Quicksave();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
         }
@@ -325,6 +327,7 @@ public class GagListingsDrawer : IDisposable
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
                 lockLabel = "None";
+                _characterHandler.Quicksave();
                 _config.Save();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");

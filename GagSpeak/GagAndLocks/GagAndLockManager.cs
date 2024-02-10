@@ -57,6 +57,7 @@ public class GagAndLockManager : IDisposable
     public void ApplyGag(int layerIndex, string gagType, string assignerName = "self") {
         // apply the gag information to anywhere where it should be applied to within our code
         _characterHandler.playerChar._selectedGagTypes[layerIndex] = gagType;
+        _characterHandler.Save();
         
         // Trigger the event letting our wardrobe manager know a gag is equipped
         _gagItemEquippedEvent.Invoke(gagType, assignerName);
@@ -78,6 +79,7 @@ public class GagAndLockManager : IDisposable
         _config.padlockIdentifier[layerIndex].ClearPasswords();
         _config.padlockIdentifier[layerIndex].UpdateConfigPadlockInfo(layerIndex, true, _characterHandler);
         // we dont worry about removing timers because if no lock, no timer.
+        _characterHandler.Save();
     }
 
     /// <summary> This method is used to handle removing all of the gags through the command and UI interaction button
