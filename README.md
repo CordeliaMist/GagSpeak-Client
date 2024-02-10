@@ -1,6 +1,11 @@
 # Dalamud-GagSpeak 
 ![Banner Image](images/promopic.png)
-My biggest project Ever....
+## GagSpeak Overview
+Its Finally here, after like 3 months of coding and begging literally everyone I knew for help!
+
+For those who just want to install the plugin:
+
+**Repo Link:** ```https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json```
 
 # Overview
 GagSpeak is made with the intent of being more than just a one-sided translator. Gagspeak will allow the user to muffle their speech using a sophisticated garbler algorithm, based on real life gag sound data, to accurately garble speech for each individual gag in their own unique way.
@@ -20,31 +25,9 @@ Not only does the plugin do this, but it also implements
 - over 50 types of gags
 - equip up to 3 gags at once
 - chat garbler will be able to make new garbler messages by combining the garbling properties of each gag equipped together!
-- Link glamour items to every type of gag
-- Enable / Disable the automatic application of each gag individually or collectively
-- Set up unique restraint sets that act as overlays ontop of existing glamours
-- Toggle restraint sets between overlay and overwrite states
-- lock restraint sets for certain times
-- Force enable or lock restraint sets on others if they have the options enabled
-- highly sophisticated and configurable whitelist interaction screen, interact with your other whitelisted users with over 5 different tiers of dynamics and over 40 interactions
-- Use the puppeteer component to force your whitelisted people to execute commands or actions or sitting commands
-- create custom start and end brackets to enclose commands in
-- alias your commands to common words to embed sneakily into normal messages
-- set unique trigger phrases for each indivdual
-- connect and sync your lovenese or connectable sex toys with the new toybox tab
-- create patterns, copy patterns, and share patterns with others to play!
-- Pattern data contains customized names and descriptions, displays duration, and can be configured to loop and cycle.
-- All pattern data is transferred when sharing via copy pasting the information
-- New patterns can be made in game through GagSpeak's own toybox workshop, meant to be a 100% and beyond replica of the lovense pattern creator interface, but now with way better pattern sharing and saving capabilities!
-- Has functional playback for existing patterns
-- Force execute patterns on whitelisted people
-- Force execute certain intensities on whitelisted people
-- Now you can gain total control over your sub!
-- Much more...
+- So much more....
 
 I invested way to much time into safety, security, privacy, and features for this plugin, and I'm very happy with how far things have come.
-# Plugin Install:
-**Repo Link:** ```https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json```
 
 ## Notice:
 Not all gags were able to get ALL of their data in time, as such, some are incomplete, or have no data. At the moment, the ball gag will give you the most accurate realism, and the others may need some fine tuning.
