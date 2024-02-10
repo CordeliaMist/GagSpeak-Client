@@ -1,6 +1,5 @@
 # Dalamud-GagSpeak 
 ![Banner Image](images/promopic.png)
-## GagSpeak Overview
 My biggest project Ever....
 
 # Overview
