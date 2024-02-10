@@ -14,7 +14,6 @@ namespace GagSpeak.UI.Equipment;
 /// <summary> This class is used to handle the gag type filter combo box. </summary>
 public sealed class GagTypeFilterCombo 
 {
-    private GagSpeakConfig          _config;            // the config for the plugin
     private GagService              _gagService;        // the gag service
     private string                  _comboSearchText;   // the search text for the combo box
     private List<Gag>               _gagTypes;          // the gag types
@@ -26,10 +25,9 @@ public sealed class GagTypeFilterCombo
     /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
     /// <item><c>gagTypes</c><param name="gagTypes"> - The gag types.</param></item>
     /// </list> </summary>
-    public GagTypeFilterCombo(GagService gagService, GagSpeakConfig config) {
+    public GagTypeFilterCombo(GagService gagService) {
         _comboSearchText = string.Empty;
         _gagService = gagService;
-        _config = config;
         // set the gagtypes temp dictionary
         _gagTypes = _gagService._gagTypes;
     }
@@ -79,7 +77,6 @@ public sealed class GagTypeFilterCombo
                             _comboSearchText = string.Empty;
                             _gagTypes = _gagService._gagTypes;
                             ImGui.CloseCurrentPopup();
-                            _config.Save();
                             return;
                         }
                     }

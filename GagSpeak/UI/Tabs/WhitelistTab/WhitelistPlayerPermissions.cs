@@ -50,9 +50,9 @@ public partial class WhitelistPlayerPermissions {
         _layer = 0;
         // draw out our gagtype filter combo listings
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
-            new GagTypeFilterCombo(_gagService, _config),
-            new GagTypeFilterCombo(_gagService, _config),
-            new GagTypeFilterCombo(_gagService, _config)
+            new GagTypeFilterCombo(_gagService),
+            new GagTypeFilterCombo(_gagService),
+            new GagTypeFilterCombo(_gagService)
         };
         // draw out our gagpadlock filter combo listings
         _gagLockFilterCombo = new GagLockFilterCombo[] {

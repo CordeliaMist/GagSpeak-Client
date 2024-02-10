@@ -43,9 +43,9 @@ public class GeneralTab : ITab, IDisposable
         _gagService = gagService;
 
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
-            new GagTypeFilterCombo(_gagService, _config),
-            new GagTypeFilterCombo(_gagService, _config),
-            new GagTypeFilterCombo(_gagService, _config)
+            new GagTypeFilterCombo(_gagService),
+            new GagTypeFilterCombo(_gagService),
+            new GagTypeFilterCombo(_gagService)
         };
         // draw out our gagpadlock filter combo listings
         _gagLockFilterCombo = new GagLockFilterCombo[] {

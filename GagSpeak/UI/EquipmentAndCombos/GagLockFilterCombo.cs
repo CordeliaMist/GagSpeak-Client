@@ -49,7 +49,6 @@ public sealed class GagLockFilterCombo
                             label = item.ToString(); // update label
                             _comboSearchText = string.Empty;
                             ImGui.CloseCurrentPopup();
-                            _config.Save();
                             return;
                         }
                     }
