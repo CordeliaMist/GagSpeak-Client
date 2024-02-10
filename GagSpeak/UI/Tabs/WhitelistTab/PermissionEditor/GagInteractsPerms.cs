@@ -129,7 +129,7 @@ public partial class WhitelistPlayerPermissions {
     IChatGui chatGui) {
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (characterHandler.IsIndexWithinBounds(listIdx)) { return; }
+        if (!characterHandler.IsIndexWithinBounds(listIdx)) { return; }
         // print to chat so the player has a log of what they did
         if(characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer] != "None")
         {
@@ -156,7 +156,7 @@ public partial class WhitelistPlayerPermissions {
         // get payload
         PlayerPayload playerPayload;
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (characterHandler.IsIndexWithinBounds(listIdx)) { return; }
+        if (!characterHandler.IsIndexWithinBounds(listIdx)) { return; }
         // only continues if selected whitelisted player info says they already have a gag on, and it has no padlock
         if (characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] == Padlocks.None
          && characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer] != "None")
@@ -261,7 +261,7 @@ public partial class WhitelistPlayerPermissions {
         // get payload
         PlayerPayload playerPayload;
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (characterHandler.IsIndexWithinBounds(listIdx)) { return; }
+        if (!characterHandler.IsIndexWithinBounds(listIdx)) { return; }
         // get player string
         string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
         // check which gag it is
@@ -358,7 +358,7 @@ public partial class WhitelistPlayerPermissions {
     IChatGui chatGui) {    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (characterHandler.IsIndexWithinBounds(listIdx)) { return; }
+        if (!characterHandler.IsIndexWithinBounds(listIdx)) { return; }
         // check if the current selected player's gag layer has a lock that isnt none. If it doesnt, unlock the gag, otherwise, let the player know they couldnt remove it
         if (characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] != Padlocks.None)
         {
@@ -386,7 +386,7 @@ public partial class WhitelistPlayerPermissions {
     {    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
-        if (characterHandler.IsIndexWithinBounds(listIdx)) { return; }
+        if (!characterHandler.IsIndexWithinBounds(listIdx)) { return; }
         // if any gags have locks on them, then done extcute this logic
         for (int i = 0; i < characterHandler.whitelistChars[listIdx]._selectedGagTypes.Count; i++) {
             if (characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[i] != Padlocks.None) {

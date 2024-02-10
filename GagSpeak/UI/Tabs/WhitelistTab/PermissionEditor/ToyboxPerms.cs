@@ -171,7 +171,7 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
         string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
@@ -186,7 +186,7 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
         string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
@@ -201,7 +201,7 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
         string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
@@ -215,7 +215,7 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
         string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
@@ -229,7 +229,7 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
         string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(

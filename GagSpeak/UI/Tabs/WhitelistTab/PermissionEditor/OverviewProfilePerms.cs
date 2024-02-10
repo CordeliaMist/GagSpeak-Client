@@ -204,7 +204,7 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (_characterHandler.activeListIdx < 0 || _characterHandler.activeListIdx >= _characterHandler.whitelistChars.Count) { return; }
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
         string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
         // print to chat that you sent the request
         if(dynamicRole == RoleLean.Owner || dynamicRole == RoleLean.Master || dynamicRole == RoleLean.Mistress) {
@@ -238,7 +238,7 @@ public partial class WhitelistPlayerPermissions {
         // get player payload
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (_characterHandler.activeListIdx < 0 || _characterHandler.activeListIdx >= _characterHandler.whitelistChars.Count) { return; }
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Removing Relation Status "+

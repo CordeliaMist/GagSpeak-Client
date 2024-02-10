@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
