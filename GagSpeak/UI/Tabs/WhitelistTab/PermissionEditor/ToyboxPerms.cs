@@ -67,7 +67,7 @@ public partial class WhitelistPlayerPermissions {
                 }
             }
             // Lock Gag Storage on Gag Lock option
-            ImGuiUtil.DrawFrameColumn($"Connected Toy Active:");
+            ImGuiUtil.DrawFrameColumn($"Allow Change Toy State:");
 
             ImGui.TableNextColumn();
             var toyStatePerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState 
@@ -90,29 +90,29 @@ public partial class WhitelistPlayerPermissions {
                 }
             }
             // turn the toy on / off
-            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) {
-                ImGuiUtil.DrawFrameColumn($"Toy Active:");
-                ImGui.TableNextColumn();
-                var toyActivePerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive 
-                                             : _characterHandler.playerChar._isToyActive;
-                using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                    ImGuiUtil.Center((toyActivePerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
-                }
-                ImGui.TableNextColumn();
-                ImGuiUtil.Center("");
-                ImGui.TableNextColumn();
-                if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyActiveState", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-                string.Empty, _viewMode && !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState)) {
-                    if(_viewMode) {
-                        // toggle the whitelisted players permission to allow changing toy state
-                        TogglePlayersIsToyActiveOption();
-                        _interactOrPermButtonEvent.Invoke();
-                    } else {
-                        // toggles if this person can change your toy state
-                        _characterHandler.ToggleToyState();
-                    }
+            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.BeginDisabled(); }
+            ImGuiUtil.DrawFrameColumn($"Toy Active:");
+            ImGui.TableNextColumn();
+            var toyActivePerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive 
+                                            : _characterHandler.playerChar._isToyActive;
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
+                ImGuiUtil.Center((toyActivePerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+            }
+            ImGui.TableNextColumn();
+            ImGuiUtil.Center("");
+            ImGui.TableNextColumn();
+            if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyActiveState", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+            string.Empty, _viewMode && !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState)) {
+                if(_viewMode) {
+                    // toggle the whitelisted players permission to allow changing toy state
+                    TogglePlayersIsToyActiveOption();
+                    _interactOrPermButtonEvent.Invoke();
+                } else {
+                    // toggles if this person can change your toy state
+                    _characterHandler.ToggleToyState();
                 }
             }
+            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.EndDisabled(); }
 
 
             // Enable Restraint Sets option
@@ -165,7 +165,7 @@ public partial class WhitelistPlayerPermissions {
                 UpdatePlayerToyIntensity(_vibratorIntensity);
                 _interactOrPermButtonEvent.Invoke();
             }
-
+            ImGui.TableNextColumn();
             // then draw the input box
             string patternResult = _vibePatternName;
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
@@ -175,8 +175,6 @@ public partial class WhitelistPlayerPermissions {
             }
             // then go over and draw the execute button
             ImGui.TableNextColumn();
-            yPos = ImGui.GetCursorPosY();
-            ImGui.SetCursorPosY(yPos + 26*ImGuiHelpers.GlobalScale);
             if(ImGuiUtil.DrawDisabledButton("Execute##ExecuteToyPattern", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, !(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsUsingPatterns == true))) {
                 ExecutePlayerToyPattern(_vibePatternName);
