@@ -37,7 +37,7 @@ public partial class MessageEncoder {
     public string EncodeWardrobeRestraintSetLock(PlayerPayload playerPayload, string targetPlayer, string restraintSetName, string timer) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
-        "took out a timed padlock, and fastned it around the "+
+        "took out a timed padlock, and fastened it around the "+
         $"{restraintSetName} "+
         "on its focal point, setting its duration to "+
         $"{timer}"+

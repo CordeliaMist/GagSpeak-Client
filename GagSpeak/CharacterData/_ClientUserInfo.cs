@@ -47,7 +47,7 @@ public class ClientUserInfo : IDisposable
     private readonly IFramework _framework;
     private readonly IObjectTable _objectTable;
     private readonly GagSpeakConfig _config;
-    private readonly CharacterHandler _characterDataManager;
+    private readonly CharacterHandler _characterHandler;
     private readonly JobChangedEvent _jobChangedEvent;
     private CancellationTokenSource? _clearCts = new(); // used for clearing the character data
     //============= Personal Variable Assignment =================//
@@ -78,7 +78,7 @@ public class ClientUserInfo : IDisposable
     public Lazy<Dictionary<ushort, string>> WorldData { get; private set; } // contains world data if we ever need it at any point
 
     public ClientUserInfo(IChatGui chat, IClientState clientState, ICondition condition, IDataManager gameData,
-    IFramework framework, IObjectTable objectTable, GagSpeakConfig config, CharacterHandler characterDataManager,
+    IFramework framework, IObjectTable objectTable, GagSpeakConfig config, CharacterHandler characterHandler,
     JobChangedEvent jobChangedEvent) {
         _chat = chat;
         _clientState = clientState;
@@ -87,12 +87,12 @@ public class ClientUserInfo : IDisposable
         _framework = framework;
         _objectTable = objectTable;
         _config = config;
-        _characterDataManager = characterDataManager;
+        _characterHandler = characterHandler;
         _jobChangedEvent = jobChangedEvent;
         // set variables that are unassigned
         Address = GetPlayerPointerAsync().GetAwaiter().GetResult();
         WorldData = new(() => {
-            return gameData.GetExcelSheet<Lumina.Excel.GeneratedSheets.World>(Dalamud.ClientLanguage.English)!
+            return _gameData.GetExcelSheet<Lumina.Excel.GeneratedSheets.World>(Dalamud.ClientLanguage.English)!
                 .Where(w => w.IsPublic && !w.Name.RawData.IsEmpty)
                 .ToDictionary(w => (ushort)w.RowId, w => w.Name.ToString());
         });
@@ -140,7 +140,7 @@ public class ClientUserInfo : IDisposable
         if (_sentBetweenAreas) {
             GagSpeak.Log.Debug($"[ZoneSwitch]  Zone switch/Gpose end");
             // let user know on launch of their direct chat garbler is still enabled
-            if (_characterDataManager.playerChar._directChatGarblerActive)
+            if (_characterHandler.playerChar._directChatGarblerActive && _characterHandler.playerChar._liveGarblerWarnOnZoneChange)
                 _chat.PrintError("[Notice] Direct Chat Garbler is still enabled. A Friendly reminder encase you forgot <3");
             // update the between areas to false
             _sentBetweenAreas = false;

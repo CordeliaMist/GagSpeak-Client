@@ -137,6 +137,13 @@ public class CharacterHandler : ISavable
         }
     }
 
+    public void SetWhitelistSelectedGagPadlockTimer(int index, int timerIndex, DateTimeOffset endTimeOfTimerLock) {
+        if(whitelistChars[index]._selectedGagPadlockTimer[timerIndex] != endTimeOfTimerLock) {
+            whitelistChars[index]._selectedGagPadlockTimer[timerIndex] = endTimeOfTimerLock;
+            _saveService.QueueSave(this);
+        }
+    }
+
     public void SetWhitelistSelectedGagPadlockAssigner(int index, int assignerIndex, string AssignerName) {
         if(whitelistChars[index]._selectedGagPadlockAssigner[assignerIndex] != AssignerName) {
             whitelistChars[index]._selectedGagPadlockAssigner[assignerIndex] = AssignerName;

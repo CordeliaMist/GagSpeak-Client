@@ -100,7 +100,7 @@ public class GlamourerFunctions : IDisposable
         // Will be unessisary until after glamourer does its stateChanged update and more inclusion with IPC
         // CONDITION ONE: Make sure it is from the local player, and not another player
         if (address != _charaDataHelpers.Address) {
-            GagSpeak.Log.Verbose($"[GlamourerChanged]: Change not from Character / In Dom Mode, IGNORING");
+            GagSpeak.Log.Verbose($"[GlamourerChanged]: Change not from Character, IGNORING");
             return;
         }
         // CONDITION TWO: _characterHandler.playerChar._enableWardrobe is false, meaning we shouldnt process any of these

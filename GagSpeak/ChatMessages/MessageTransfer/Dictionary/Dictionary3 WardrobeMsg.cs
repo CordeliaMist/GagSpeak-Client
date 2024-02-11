@@ -31,8 +31,8 @@ public partial class MessageDictionary {
         }
 
         // The message for enabling a particular restraint set [ ID == 24 // enable restraint set by name ]
-        if(textVal.Contains("opens up the compartment of restraints from their wardrobe, taking out the "+
-        "and brought it back over to their slut to help secure them inside it."))
+        if(textVal.Contains("opens up the compartment of restraints from their wardrobe, taking out the")
+        && textVal.Contains("and brought it back over to their slut to help secure them inside it."))
         {
             decodedMessageMediator.encodedMsgIndex = 24;
             decodedMessageMediator.msgType = DecodedMessageType.Wardrobe;
@@ -40,8 +40,8 @@ public partial class MessageDictionary {
         }
 
         // The message for locking an active restraint set if enabled [ ID == 25 // lock restraint set ]
-        if(textVal.Contains("took out a timed padlock, and fastned it around the ")
-        && textVal.Contains("on its focal point, setting its duration to "))
+        if(textVal.Contains("took out a timed padlock, and fastned it around the")
+        && textVal.Contains("on its focal point, setting its duration to"))
         {
             decodedMessageMediator.encodedMsgIndex = 25;
             decodedMessageMediator.msgType = DecodedMessageType.Wardrobe;

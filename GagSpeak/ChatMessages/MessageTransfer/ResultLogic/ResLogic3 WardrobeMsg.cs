@@ -126,8 +126,6 @@ public partial class ResultLogic {
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Restraint Set {decodedMessageMediator.setToLockOrUnlock} has been enabled.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for enabling restraint set");
-                // update our apperance
-                _jobChangedEvent.Invoke(); // filler until i become less lazy
                 return true;
             } else {
                 isHandled = true;

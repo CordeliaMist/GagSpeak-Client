@@ -143,11 +143,11 @@ public partial class WhitelistPlayerPermissions {
         {
             chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Applying a "+ gagType+
-                $"to {characterHandler.whitelistChars[listIdx]._name}").AddItalicsOff().BuiltString);
+                $" to {characterHandler.whitelistChars[listIdx]._name}").AddItalicsOff().BuiltString);
             // update information and send message
             string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
             chatManager.SendRealMessage(gagMessages.GagEncodedApplyMessage(playerPayload, targetPlayer, gagType, (layer+1).ToString()));
-            characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer] = gagType; // note that this wont always be accurate, and is why request info exists.
+            characterHandler.SetWhitelistSelectedGagTypes(listIdx, layer, gagType); // note that this wont always be accurate, and is why request info exists.
         }
     }
 #region LockButtons
@@ -186,11 +186,11 @@ public partial class WhitelistPlayerPermissions {
                 $"'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
                 
                 GagSpeak.Log.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] = _config.whitelistPadlockIdentifier._padlockType;
+                characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, _config.whitelistPadlockIdentifier._padlockType);
                 if(_config.whitelistPadlockIdentifier._padlockType == Padlocks.FiveMinutesPadlock) {
-                    characterHandler.whitelistChars[listIdx]._selectedGagPadlockTimer[layer] = UIHelpers.GetEndTime("5m");
+                    characterHandler.SetWhitelistSelectedGagPadlockTimer(listIdx, layer, UIHelpers.GetEndTime("5m"));
                 } else if(_config.whitelistPadlockIdentifier._padlockType == Padlocks.MistressPadlock) {
-                    characterHandler.whitelistChars[listIdx]._selectedGagPadlockAssigner[layer] = playerPayload.PlayerName;
+                    characterHandler.SetWhitelistSelectedGagPadlockAssigner(listIdx, layer, playerPayload.PlayerName);
                 }
             }
             // this requires mistress status and a timer
@@ -203,9 +203,9 @@ public partial class WhitelistPlayerPermissions {
                 $"'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
                 
                 GagSpeak.Log.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] = _config.whitelistPadlockIdentifier._padlockType;
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlockAssigner[layer] = playerPayload.PlayerName;
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlockTimer[layer] = UIHelpers.GetEndTime(_config.whitelistPadlockIdentifier._inputTimer);
+                characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, _config.whitelistPadlockIdentifier._padlockType);
+                characterHandler.SetWhitelistSelectedGagPadlockAssigner(listIdx, layer, playerPayload.PlayerName);
+                characterHandler.SetWhitelistSelectedGagPadlockTimer(listIdx, layer, UIHelpers.GetEndTime(_config.whitelistPadlockIdentifier._inputTimer));
             }
             // for combination padlock
             else if (_config.whitelistPadlockIdentifier._padlockType == Padlocks.CombinationPadlock)
@@ -217,8 +217,8 @@ public partial class WhitelistPlayerPermissions {
                 $"'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
                 
                 GagSpeak.Log.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] = _config.whitelistPadlockIdentifier._padlockType;
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlockPassword[layer] = _config.whitelistPadlockIdentifier._inputCombination;
+                characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, _config.whitelistPadlockIdentifier._padlockType);
+                characterHandler.SetWhitelistSelectedGagPadlockPassword(listIdx, layer, _config.whitelistPadlockIdentifier._inputCombination);
             }
             // for password padlock
             else if (_config.whitelistPadlockIdentifier._padlockType == Padlocks.PasswordPadlock)
@@ -231,8 +231,8 @@ public partial class WhitelistPlayerPermissions {
                 $"with a {lockLabel} padlock").AddItalicsOff().BuiltString);
                 
                 GagSpeak.Log.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] = _config.whitelistPadlockIdentifier._padlockType;
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlockPassword[layer] = _config.whitelistPadlockIdentifier._inputPassword;
+                characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, _config.whitelistPadlockIdentifier._padlockType);
+                characterHandler.SetWhitelistSelectedGagPadlockPassword(listIdx, layer, _config.whitelistPadlockIdentifier._inputPassword);
             }
             // for timer password padlocks
             else if (_config.whitelistPadlockIdentifier._padlockType == Padlocks.TimerPasswordPadlock)
@@ -245,9 +245,9 @@ public partial class WhitelistPlayerPermissions {
                 $"with a {lockLabel} padlock").AddItalicsOff().BuiltString);
                 
                 GagSpeak.Log.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] = _config.whitelistPadlockIdentifier._padlockType;
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlockPassword[layer] = _config.whitelistPadlockIdentifier._inputPassword;
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlockTimer[layer] = UIHelpers.GetEndTime(_config.whitelistPadlockIdentifier._inputTimer);
+                characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, _config.whitelistPadlockIdentifier._padlockType);
+                characterHandler.SetWhitelistSelectedGagPadlockPassword(listIdx, layer, _config.whitelistPadlockIdentifier._inputPassword);
+                characterHandler.SetWhitelistSelectedGagPadlockTimer(listIdx, layer, UIHelpers.GetEndTime(_config.whitelistPadlockIdentifier._inputTimer));
             }
         } else {
             chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Cannot lock {characterHandler.whitelistChars[listIdx]._name}"+
@@ -284,17 +284,17 @@ public partial class WhitelistPlayerPermissions {
                 .AddItalicsOff().BuiltString);
                 // send it
                 chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString()));
-                characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] = Padlocks.None;
+                characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, Padlocks.None);
                 // set if appropriate
                 if(_config.whitelistPadlockIdentifier._padlockType == Padlocks.FiveMinutesPadlock)
                 {
-                    characterHandler.whitelistChars[listIdx]._selectedGagPadlockTimer[layer] = DateTimeOffset.Now;
+                    characterHandler.SetWhitelistSelectedGagPadlockTimer(listIdx, layer, DateTimeOffset.Now);
                 }
                 if(_config.whitelistPadlockIdentifier._padlockType == Padlocks.MistressPadlock
                 || _config.whitelistPadlockIdentifier._padlockType == Padlocks.MistressTimerPadlock)
                 {
-                    characterHandler.whitelistChars[listIdx]._selectedGagPadlockTimer[layer] = DateTimeOffset.Now;
-                    characterHandler.whitelistChars[listIdx]._selectedGagPadlockAssigner[layer] = "";
+                    characterHandler.SetWhitelistSelectedGagPadlockTimer(listIdx, layer, DateTimeOffset.Now);
+                    characterHandler.SetWhitelistSelectedGagPadlockAssigner(listIdx, layer, "");
                 }
             }
         }
@@ -313,8 +313,8 @@ public partial class WhitelistPlayerPermissions {
                     chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(),
                     _config.whitelistPadlockIdentifier._inputCombination));
                     // update whitelist info
-                    characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] = Padlocks.None;
-                    characterHandler.whitelistChars[listIdx]._selectedGagPadlockPassword[layer] = "";
+                    characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, Padlocks.None);
+                    characterHandler.SetWhitelistSelectedGagPadlockAssigner(listIdx, layer, "");
 
                 } else {
                     chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Incorrect combination for "+
@@ -336,13 +336,12 @@ public partial class WhitelistPlayerPermissions {
                     $"{characterHandler.whitelistChars[listIdx]._name}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} gag")
                     .AddItalicsOff().BuiltString);
                     
-                    chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(),
-                    _config.whitelistPadlockIdentifier._inputPassword));
-                    characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] = Padlocks.None;
-                    characterHandler.whitelistChars[listIdx]._selectedGagPadlockPassword[layer] = "";
+                    chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(), _config.whitelistPadlockIdentifier._inputPassword));
+                    characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, Padlocks.None);
+                    characterHandler.SetWhitelistSelectedGagPadlockPassword(listIdx, layer, "");
                     // set if appropriate
                     if(_config.whitelistPadlockIdentifier._padlockType == Padlocks.TimerPasswordPadlock) {
-                        characterHandler.whitelistChars[listIdx]._selectedGagPadlockTimer[layer] = DateTimeOffset.Now;
+                        characterHandler.SetWhitelistSelectedGagPadlockTimer(listIdx, layer, DateTimeOffset.Now);
                     }
                 } else {
                     chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Incorrect password for "+
@@ -375,10 +374,10 @@ public partial class WhitelistPlayerPermissions {
             // update information and send message
             string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
             chatManager.SendRealMessage(gagMessages.GagEncodedRemoveMessage(playerPayload, targetPlayer, (layer+1).ToString()));
-            characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer] = "None";
-            characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] = Padlocks.None;
-            characterHandler.whitelistChars[listIdx]._selectedGagPadlockPassword[layer] = "";
-            characterHandler.whitelistChars[listIdx]._selectedGagPadlockAssigner[layer] = "";
+            characterHandler.SetWhitelistSelectedGagTypes(listIdx, layer, "None");
+            characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, Padlocks.None);
+            characterHandler.SetWhitelistSelectedGagPadlockPassword(listIdx, layer, "");
+            characterHandler.SetWhitelistSelectedGagPadlockAssigner(listIdx, layer, "");
         }
     }
 
@@ -390,7 +389,7 @@ public partial class WhitelistPlayerPermissions {
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         if (!characterHandler.IsIndexWithinBounds(listIdx)) { return; }
         // if any gags have locks on them, then done extcute this logic
-        for (int i = 0; i < characterHandler.whitelistChars[listIdx]._selectedGagTypes.Count; i++) {
+        for (int i = 0; i < 3; i++) {
             if (characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[i] != Padlocks.None) {
                 chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Cannot remove "+
                 $"{characterHandler.whitelistChars[listIdx]._name}'s gags, one or more of them are locked!").AddItalicsOff().BuiltString);
@@ -404,10 +403,10 @@ public partial class WhitelistPlayerPermissions {
         string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
         chatManager.SendRealMessage(gagMessages.GagEncodedRemoveAllMessage(playerPayload, targetPlayer));
         for (int i = 0; i < characterHandler.whitelistChars[listIdx]._selectedGagTypes.Count; i++) {
-            characterHandler.whitelistChars[listIdx]._selectedGagTypes[i] = "None";
-            characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[i] = Padlocks.None;
-            characterHandler.whitelistChars[listIdx]._selectedGagPadlockPassword[i] = "";
-            characterHandler.whitelistChars[listIdx]._selectedGagPadlockAssigner[i] = "";
+            characterHandler.SetWhitelistSelectedGagTypes(listIdx, i, "None");
+            characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, i, Padlocks.None);
+            characterHandler.SetWhitelistSelectedGagPadlockPassword(listIdx, i, "");
+            characterHandler.SetWhitelistSelectedGagPadlockAssigner(listIdx, i, "");
         }
     }
 #endregion RemoveGagButton

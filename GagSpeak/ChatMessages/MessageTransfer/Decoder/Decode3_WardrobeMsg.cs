@@ -36,7 +36,7 @@ public partial class MessageDecoder {
             // check if the match is sucessful
             if (match.Success) {
                 // command type
-                decodedMessageMediator.encodedCmdType = "toggle EnableRestraintSetsOption"; // assign "toggleGagStorageSecurity" to decodedMessage[0]
+                decodedMessageMediator.encodedCmdType = "toggleEnableRestraintSetsOption"; // assign "toggleGagStorageSecurity" to decodedMessage[0]
                 // player info
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
@@ -71,7 +71,7 @@ public partial class MessageDecoder {
         // decoder message for enabling a certain restraint set onto the player [ ID == 24 ]
         else if(decodedMessageMediator.encodedMsgIndex == 24) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) opens up the compartment of restraints from their wardrobe\, taking out the (?<restraintSetName>.+) and brought it back over to their honny to help secure them inside it\.$";
+            string pattern = @"^\*(?<playerInfo>.+) opens up the compartment of restraints from their wardrobe\, taking out the (?<restraintSetName>.+) and brought it back over to their slut to help secure them inside it\.$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -94,7 +94,7 @@ public partial class MessageDecoder {
         // decoder message for locking the restraint set onto the player [ ID == 25 ]
         else if(decodedMessageMediator.encodedMsgIndex == 25) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) took out a timed padlock\, and fastned it around the (?<restraintSetName>.+) on its focal point\, setting its duration to (?<timer>.+)\*$";
+            string pattern = @"^\*(?<playerInfo>.+) took out a timed padlock\, and fastened it around the (?<restraintSetName>.+) on its focal point\, setting its duration to (?<timer>.+)\*$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful

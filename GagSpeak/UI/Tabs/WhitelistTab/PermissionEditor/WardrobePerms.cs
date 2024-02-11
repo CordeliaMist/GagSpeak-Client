@@ -169,7 +169,7 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.Center("1");
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Lock##LockRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, dynamicTier >= DynamicTier.Tier1)) {
+            string.Empty, !(dynamicTier >= DynamicTier.Tier1))) {
                 LockRestraintSetToPlayer(_restraintSetToEnable, _restraintSetLockDuration);
                 _interactOrPermButtonEvent.Invoke();
             }

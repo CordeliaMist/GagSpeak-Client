@@ -64,9 +64,8 @@ public partial class MessageDictionary {
         
         // The gag remove message [ ID == 7 // remove ]
         if (textVal.Contains("from")
-        && textVal.Contains("reaches behind your neck")
-        && textVal.Contains("and unfastens the buckle of your")
-        && textVal.Contains("gag layer strap, allowing your voice to be a little clearer*"))
+        && textVal.Contains("reaches behind your neck and unfastens the buckle of your")
+        && textVal.Contains("gag layer strap, allowing your voice to be a little clearer"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag remove command");
             decodedMessageMediator.encodedMsgIndex = 7;

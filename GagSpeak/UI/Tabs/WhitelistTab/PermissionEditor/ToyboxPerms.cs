@@ -101,7 +101,7 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableNextColumn();
             ImGuiUtil.Center("");
             ImGui.TableNextColumn();
-            if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyActiveState", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+            if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyActive", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, _viewMode && !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState)) {
                 if(_viewMode) {
                     // toggle the whitelisted players permission to allow changing toy state

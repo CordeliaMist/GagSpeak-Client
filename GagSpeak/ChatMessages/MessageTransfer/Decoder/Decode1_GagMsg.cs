@@ -167,7 +167,7 @@ public partial class MessageDecoder {
         // decode the /gag remove message [ ID == 7 // remove ]
         else if (decodedMessageMediator.encodedMsgIndex == 7) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck and unfastens the buckle of your (?<layer>first|second|third) gagstrap\, allowing your voice to be a little clearer\*$";
+            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck and unfastens the buckle of your (?<layer>first|second|third) gag layer strap\, allowing your voice to be a little clearer\*$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
