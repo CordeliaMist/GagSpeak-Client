@@ -115,15 +115,16 @@ public class RestraintSetManager : ISavable
 
     /// <summary> Sets the IsEnabled for a restraint set spesified by index if it exists. </summary>
     public void ChangeRestraintSetEnabled(int restraintSetIdx, bool isEnabled) {
-        bool anyOtherEnabled = false;
-        for (int i = 0; i < _restraintSets.Count; i++) {
-            if (i != restraintSetIdx) {
-                _restraintSets[i]._enabled = false;
-                anyOtherEnabled = anyOtherEnabled || _restraintSets[i]._enabled;
+        // if we are wanting to enable this set, be sure to disable all other sets first
+        if(isEnabled) {
+            foreach (var set in _restraintSets) {
+                if (set._enabled) {
+                    set._enabled = false;
+                }
             }
         }
-        // make sure its the only one left enabled
-        _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled && anyOtherEnabled);
+        // otherwise, just set it to disabled, (or enabled, it wont matter at this point
+        _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled);
         _saveService.QueueSave(this);
     }
 

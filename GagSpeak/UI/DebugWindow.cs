@@ -17,6 +17,7 @@ using Penumbra.GameData.Data;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.CharacterData;
+using GagSpeak.Wardrobe;
 
 namespace GagSpeak.UI;
 // probably can remove this later, atm it is literally just used for the debug window
@@ -41,6 +42,7 @@ public class DebugWindow : Window //, IDisposable
 {
     private          GagSpeakConfig         _config;                        // for retrieving the config data to display to the window
     private readonly CharacterHandler       _characterHandler;
+    private readonly RestraintSetManager    _restraintSetManager;           // for knowing the information in the currently equipped restraints
     private readonly IpaParserEN_FR_JP_SP   _translatorLanguage;            // creates an instance of the EnglishToIPA class
     private readonly GagGarbleManager       _gagManager;                    // for knowing what gags are equipped
     private readonly GagListingsDrawer      _gagListingsDrawer;             // for knowing the information in the currently equipped gags
@@ -53,7 +55,7 @@ public class DebugWindow : Window //, IDisposable
     private          string?                _translatedMessageSpaced ="";   // stores the translated message for the test translation system
     private          string?                _translatedMessageOutput ="";   // stores the translated message for the test translation system
 
-    public DebugWindow(DalamudPluginInterface pluginInt, FontService fontService, GagService gagService,
+    public DebugWindow(DalamudPluginInterface pluginInt, FontService fontService, GagService gagService, RestraintSetManager restraintSetManager,
     IpaParserEN_FR_JP_SP translatorLanguage, GagSpeakConfig config, CharacterHandler characterHandler,
     GagGarbleManager GagGarbleManager, GagListingsDrawer gagListingsDrawer, ItemAutoEquipEvent itemAutoEquipEvent,
     ItemData itemData) : base(GetLabel()) {
@@ -73,25 +75,15 @@ public class DebugWindow : Window //, IDisposable
         _gagListingsDrawer = gagListingsDrawer;
         _translatorLanguage = translatorLanguage;
         _itemData = itemData;
+        _restraintSetManager = restraintSetManager;
     }
 
 
     public override void Draw() {
-        // temp
-        ImGui.Text($"Whitelist Count: {_characterHandler.whitelistChars.Count()}");
-        ImGui.Text($"AliasCount: {_characterHandler.playerChar._triggerAliases.Count()}");
-        ImGui.Text($"Extended Lock Times Count: {_characterHandler.playerChar._grantExtendedLockTimes.Count()}");
-        ImGui.Text($"Trigger Phrase Count: {_characterHandler.playerChar._triggerPhraseForPuppeteer.Count()}");
-        ImGui.Text($"Allow Sit Requests Count: {_characterHandler.playerChar._allowSitRequests.Count()}");
-        ImGui.Text($"Allow Motion Requests Count: {_characterHandler.playerChar._allowMotionRequests.Count()}");
-        ImGui.Text($"Allow All Commands Count: {_characterHandler.playerChar._allowAllCommands.Count()}");
-        ImGui.Text($"Allow Changing Toy State Count: {_characterHandler.playerChar._allowChangingToyState.Count()}");
-        ImGui.Text($"Allow Using Patterns Count: {_characterHandler.playerChar._allowUsingPatterns.Count()}");
-        ImGui.Text($"Active whitelist idx {_characterHandler.activeListIdx}");
         DrawPlayerCharInfo();
+        DrawWhitelistCharactersAndLocks();
+        DrawRestraintSetOverview();
         DrawAdvancedGarblerInspector();
-        DrawDebugInformationBasic();
-        DrawDebugInformationWhitelistAndLocks();
         DrawPhoneticDebugInformation();
         DrawCachedCharacterInformation();
     }
@@ -140,61 +132,21 @@ public class DebugWindow : Window //, IDisposable
     // basic string function to get the label of title for the window
     private static string GetLabel() => "GagSpeakDebug###GagSpeakDebug";    
 
-
-    /// <summary> Draws the advanced garbler inspector. </summary>
-    public void DrawAdvancedGarblerInspector() {
-        // create a collapsing header for this.
-        if(!ImGui.CollapsingHeader("Advanced Garbler Debug Testing")) { return; }
-        // create a input text field here, that stores the result into a string. On the same line, have a button that says garble message. It should display the garbled message in text on the next l
-        var testMessage  = _tempTestMessage ?? ""; // temp storage to hold until we de-select the text input
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
-        if (ImGui.InputText("##GarblerTesterField", ref testMessage, 400, ImGuiInputTextFlags.None))
-            _tempTestMessage = testMessage;
-
-        ImGui.SameLine();
-        if (ImGui.Button("Garble Message")) {
-            // Use the EnglishToIPA instance to translate the message
-            try {
-                _translatedMessage       = _translatorLanguage.ToIPAStringDisplay(testMessage);
-                _translatedMessageSpaced = _translatorLanguage.ToIPAStringSpacedDisplay(testMessage);
-                _translatedMessageOutput = _gagManager.ProcessMessage(testMessage);
-            } catch (Exception ex) {
-                GagSpeak.Log.Debug($"An error occurred while attempting to parse phonetics: {ex.Message}");
-            }
-        }
-        // DISPLAYS THE ORIGINAL MESSAGE STRING
-        ImGui.Text($"Original Message: {testMessage}");
-        // DISPLAYS THE IPA PARSED DEFINED MESSAGE DISPLAY
-        ImGui.Text("Decoded Message: "); ImGui.SameLine();
-        UIHelpers.FontText($"{_translatedMessage}", _fontService.UidFont);
-        // DISPLAYS THE DECODED MESSAGE SPACED
-        ImGui.Text("Decoded Message: "); ImGui.SameLine();
-        UIHelpers.FontText($"{_translatedMessageSpaced}", _fontService.UidFont);   
-        // DISPLAYS THE OUTPUT STRING 
-        ImGui.Text("Output Message: "); ImGui.SameLine();
-        UIHelpers.FontText($"{_translatedMessageOutput}", _fontService.UidFont);
-        // DISPLAYS THE UNIQUE SYMBOLS FOR CURRENT LANGUAGE DIALECT
-        string uniqueSymbolsString = _translatorLanguage.uniqueSymbolsString;
-        ImGui.PushFont(_fontService.UidFont);
-        ImGui.Text($"Unique Symbols for {_config.language} with dialect {_config.languageDialect}: ");
-        ImGui.InputText("##UniqueSymbolsField", ref uniqueSymbolsString, 128, ImGuiInputTextFlags.ReadOnly);
-        ImGui.PopFont();
-    }
-
     /// <summary> Draws the debug information. Needs a serious Massive overhaul </summary>
-    public void DrawDebugInformationBasic() {
-        if(!ImGui.CollapsingHeader("DEBUG INFORMATION")) { return; }
+    public void DrawPlayerCharInfo() {
+        if(!ImGui.CollapsingHeader("PLAYER INFORMATION")) { return; }
         // General plugin information
         ImGui.Text($"Fresh Install?: {_config.FreshInstall}");
         ImGui.Text($"Safeword: {_characterHandler.playerChar._safeword}");
         ImGui.Text($"Has Safeword Been Used?: {_characterHandler.playerChar._safewordUsed}");
-        ImGui.Separator();
-        // configuration tab options & details
-        ImGui.Text($"Allow Commands from Friends?: {_characterHandler.playerChar._doCmdsFromFriends}");
-        ImGui.Text($"Allow Commands from Party Members?: {_characterHandler.playerChar._doCmdsFromParty}");
-        ImGui.Text($"In DirectChatGarbler Mode?: {_characterHandler.playerChar._directChatGarblerActive}");
         ImGui.Text($"Selected Language: {_config.language}");
         ImGui.Text($"Selected Dialect: {_config.languageDialect}");
+        ImGui.Separator();
+        ImGui.Text($"Allow Commands from Friends?: {_characterHandler.playerChar._doCmdsFromFriends}");
+        ImGui.Text($"Allow Commands from Party Members?: {_characterHandler.playerChar._doCmdsFromParty}");
+        ImGui.Text($"Direct Chat Garbler Active: {_characterHandler.playerChar._directChatGarblerActive}");
+        ImGui.Text($"Direct Chat Garbler Locked: {_characterHandler.playerChar._directChatGarblerLocked}");
+        ImGui.Text($"Live Garbler Warning on Zone Change: {_characterHandler.playerChar._liveGarblerWarnOnZoneChange}");
         ImGui.Text($"Translatable Chat Types:");
         foreach (var chanel in _config.ChannelsGagSpeak) { ImGui.SameLine(); ImGui.Text($"{chanel.ToString()}, "); };
         ImGui.Text($"Current ChatBox Channel: {ChatChannel.GetChatChannel()}");
@@ -202,11 +154,17 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Text($"Ready To Accept sending player information?: {_config.acceptingInfoRequests}");
         ImGui.Text($"Processing Info Request?: {_config.processingInfoRequest}");
         ImGui.Separator();
-        // wardrobe details
         ImGui.Text($"Enable Wardrobe?: {_characterHandler.playerChar._enableWardrobe}");
         ImGui.Text($"Enable Item Auto-Equip?: {_characterHandler.playerChar._allowItemAutoEquip}");
         ImGui.Text($"Allow Restraint Locking?: {_characterHandler.playerChar._allowRestraintSetAutoEquip}");
-        // Gag details
+        ImGui.Text($"Lock Gag Storage on Gag Lock: {_characterHandler.playerChar._lockGagStorageOnGagLock}");
+        ImGui.Text($"Enable Restraint Sets: {_characterHandler.playerChar._enableRestraintSets}");
+        ImGui.Text($"Restraint Set Locking: {_characterHandler.playerChar._restraintSetLocking}");
+        ImGui.Separator();
+        ImGui.Text($"Enable Toybox: {_characterHandler.playerChar._enableToybox}");
+        ImGui.Text($"Allow Intensity Control: {_characterHandler.playerChar._allowIntensityControl}");
+        ImGui.Text($"Intensity Level: {_characterHandler.playerChar._intensityLevel}");
+        ImGui.Text($"Allow Toybox Locking: {_characterHandler.playerChar._lockToyboxUI}");
         ImGui.Separator();
         ImGui.Text($"Total Gag List Count: {_gagService._gagTypes.Count}");
         ImGui.Text("Selected GagTypes: ||"); ImGui.SameLine(); foreach (var gagType in _characterHandler.playerChar._selectedGagTypes) { ImGui.SameLine(); ImGui.Text($"{gagType} ||"); };
@@ -214,21 +172,6 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Text("Selected Padlocks Passwords: ||"); ImGui.SameLine(); foreach (var gagPadlockPassword in _characterHandler.playerChar._selectedGagPadlockPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} ||"); };
         ImGui.Text("Selected GagPadlock Timers: ||"); ImGui.SameLine(); foreach (var gagPadlockTimer in _characterHandler.playerChar._selectedGagPadlockTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} ||"); };
         ImGui.Text("Selected Padlocks Assigners: ||"); ImGui.SameLine(); foreach (var gagPadlockAssigner in _characterHandler.playerChar._selectedGagPadlockAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} ||"); };
-    }
-
-    public void DrawPlayerCharInfo() {
-        if(!ImGui.CollapsingHeader("Player Character Info")) { return; }
-
-        // Player character information
-        ImGui.Text("Player Character:");
-        ImGui.Separator();
-        ImGui.Text($"Safeword: {_characterHandler.playerChar._safeword}");
-        ImGui.Text($"Commands from Friends: {_characterHandler.playerChar._doCmdsFromFriends}");
-        ImGui.Text($"Commands from Party: {_characterHandler.playerChar._doCmdsFromParty}");
-        ImGui.Text($"Live Garbler Warning on Zone Change: {_characterHandler.playerChar._liveGarblerWarnOnZoneChange}");
-        ImGui.Text($"Allow Item Auto Equip: {_characterHandler.playerChar._allowItemAutoEquip}");
-        ImGui.Text($"Allow Restraint Set Auto Equip: {_characterHandler.playerChar._allowRestraintSetAutoEquip}");
-        ImGui.Text($"Allow Puppeteer: {_characterHandler.playerChar._allowPuppeteer}");
         ImGui.Separator();
         var triggerlist = _characterHandler.playerChar._triggerAliases[_characterHandler.activeListIdx];
         ImGui.Text($"Trigger Aliases: || "); ImGui.SameLine(); foreach (var alias in triggerlist._aliasTriggers) { ImGui.Text(alias._inputCommand); };
@@ -251,29 +194,42 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Separator();
         ImGui.Text($"Allow Using Patterns: || "); ImGui.SameLine(); foreach (var usingPatterns in _characterHandler.playerChar._allowUsingPatterns) { ImGui.Text(usingPatterns.ToString()); };
         ImGui.Separator();
-        ImGui.Text($"Safeword Used: {_characterHandler.playerChar._safewordUsed}");
-        ImGui.Text($"Direct Chat Garbler Active: {_characterHandler.playerChar._directChatGarblerActive}");
-        ImGui.Text($"Direct Chat Garbler Locked: {_characterHandler.playerChar._directChatGarblerLocked}");
-        ImGui.Separator();
-        ImGui.Text($"Selected GagTypes: || "); ImGui.SameLine(); foreach (var gagType in _characterHandler.playerChar._selectedGagTypes) { ImGui.SameLine(); ImGui.Text(gagType); };
-        ImGui.Text($"Selected Padlocks: || "); ImGui.SameLine(); foreach (Padlocks gagPadlock in _characterHandler.playerChar._selectedGagPadlocks) { ImGui.SameLine(); ImGui.Text($"{gagPadlock.ToString()} || ");};
-        ImGui.Text($"Selected Padlocks Passwords: || "); ImGui.SameLine(); foreach (var gagPadlockPassword in _characterHandler.playerChar._selectedGagPadlockPassword) { ImGui.SameLine(); ImGui.Text($"{gagPadlockPassword} || "); };
-        ImGui.Text($"Selected Padlocks Timers: || "); ImGui.SameLine(); foreach (var gagPadlockTimer in _characterHandler.playerChar._selectedGagPadlockTimer) { ImGui.SameLine(); ImGui.Text($"{UIHelpers.FormatTimeSpan(gagPadlockTimer - DateTimeOffset.Now)} || "); };
-        ImGui.Text($"Selected Padlocks Assigners: || "); ImGui.SameLine(); foreach (var gagPadlockAssigner in _characterHandler.playerChar._selectedGagPadlockAssigner) { ImGui.SameLine(); ImGui.Text($"{gagPadlockAssigner} || "); };
-        ImGui.Separator();
-        ImGui.Text($"Enable Wardrobe: {_characterHandler.playerChar._enableWardrobe}");
-        ImGui.Text($"Lock Gag Storage on Gag Lock: {_characterHandler.playerChar._lockGagStorageOnGagLock}");
-        ImGui.Text($"Enable Restraint Sets: {_characterHandler.playerChar._enableRestraintSets}");
-        ImGui.Text($"Restraint Set Locking: {_characterHandler.playerChar._restraintSetLocking}");
-        ImGui.Separator();
-        ImGui.Text($"Enable Toybox: {_characterHandler.playerChar._enableToybox}");
-        ImGui.Text($"Allow Intensity Control: {_characterHandler.playerChar._allowIntensityControl}");
-        ImGui.Text($"Intensity Level: {_characterHandler.playerChar._intensityLevel}");
-        ImGui.Text($"Allow Toybox Locking: {_characterHandler.playerChar._lockToyboxUI}");
-        ImGui.Separator();
-            }
+    }
 
-    public void DrawDebugInformationWhitelistAndLocks() {
+    public void DrawRestraintSetOverview() {
+        if(!ImGui.CollapsingHeader("Restraint Set Information")) { return; }
+
+        foreach (var restraintSet in _restraintSetManager._restraintSets)
+        {
+            ImGui.Text($"Restraint Set:");
+            ImGui.Text($"Name: {restraintSet._name}");
+            ImGui.Text($"Description: {restraintSet._description}");
+            ImGui.Text($"Enabled: {restraintSet._enabled}");
+            ImGui.Text($"Locked: {restraintSet._locked}");
+            ImGui.Text($"Locked By: {restraintSet._wasLockedBy}");
+            ImGui.Text($"Locked Timer: {UIHelpers.FormatTimeSpan(restraintSet._lockedTimer - DateTimeOffset.Now)}");
+
+            ImGui.Text("Draw Data:");
+            ImGui.Indent();
+            foreach (var pair in restraintSet._drawData)
+            {
+                var equipDrawData = pair.Value;
+                ImGui.Text($"Equip Slot: {pair.Key}");
+                ImGui.Text($"Is Enabled: {equipDrawData._isEnabled}");
+                ImGui.Text($"Equipped By: {equipDrawData._wasEquippedBy}");
+                ImGui.Text($"Locked: {equipDrawData._locked}");
+                ImGui.Text($"Active Slot List Index: {equipDrawData._activeSlotListIdx}");
+                ImGui.Text($"Slot: {equipDrawData._slot}");
+                ImGui.Text($"Game Item: {equipDrawData._gameItem}");
+                ImGui.Text($"Game Stain: {equipDrawData._gameStain}");
+                ImGui.Text($"-----------------------------------------");
+            }
+            ImGui.Unindent();
+            ImGui.Separator();
+        }
+    }
+
+    public void DrawWhitelistCharactersAndLocks() {
         if(!ImGui.CollapsingHeader("Whitelist & Locks Info")) { return; }
         // Whitelist uder information
         ImGui.Text("Whitelist:"); ImGui.Indent();
@@ -327,6 +283,47 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Text($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");ImGui.NextColumn();
         ImGui.Text($"Padlock Assigner: {_config.whitelistPadlockIdentifier._mistressAssignerName}");ImGui.NextColumn();
         ImGui.Columns(1);
+    }
+
+
+    /// <summary> Draws the advanced garbler inspector. </summary>
+    public void DrawAdvancedGarblerInspector() {
+        // create a collapsing header for this.
+        if(!ImGui.CollapsingHeader("Advanced Garbler Debug Testing")) { return; }
+        // create a input text field here, that stores the result into a string. On the same line, have a button that says garble message. It should display the garbled message in text on the next l
+        var testMessage  = _tempTestMessage ?? ""; // temp storage to hold until we de-select the text input
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
+        if (ImGui.InputText("##GarblerTesterField", ref testMessage, 400, ImGuiInputTextFlags.None))
+            _tempTestMessage = testMessage;
+
+        ImGui.SameLine();
+        if (ImGui.Button("Garble Message")) {
+            // Use the EnglishToIPA instance to translate the message
+            try {
+                _translatedMessage       = _translatorLanguage.ToIPAStringDisplay(testMessage);
+                _translatedMessageSpaced = _translatorLanguage.ToIPAStringSpacedDisplay(testMessage);
+                _translatedMessageOutput = _gagManager.ProcessMessage(testMessage);
+            } catch (Exception ex) {
+                GagSpeak.Log.Debug($"An error occurred while attempting to parse phonetics: {ex.Message}");
+            }
+        }
+        // DISPLAYS THE ORIGINAL MESSAGE STRING
+        ImGui.Text($"Original Message: {testMessage}");
+        // DISPLAYS THE IPA PARSED DEFINED MESSAGE DISPLAY
+        ImGui.Text("Decoded Message: "); ImGui.SameLine();
+        UIHelpers.FontText($"{_translatedMessage}", _fontService.UidFont);
+        // DISPLAYS THE DECODED MESSAGE SPACED
+        ImGui.Text("Decoded Message: "); ImGui.SameLine();
+        UIHelpers.FontText($"{_translatedMessageSpaced}", _fontService.UidFont);   
+        // DISPLAYS THE OUTPUT STRING 
+        ImGui.Text("Output Message: "); ImGui.SameLine();
+        UIHelpers.FontText($"{_translatedMessageOutput}", _fontService.UidFont);
+        // DISPLAYS THE UNIQUE SYMBOLS FOR CURRENT LANGUAGE DIALECT
+        string uniqueSymbolsString = _translatorLanguage.uniqueSymbolsString;
+        ImGui.PushFont(_fontService.UidFont);
+        ImGui.Text($"Unique Symbols for {_config.language} with dialect {_config.languageDialect}: ");
+        ImGui.InputText("##UniqueSymbolsField", ref uniqueSymbolsString, 128, ImGuiInputTextFlags.ReadOnly);
+        ImGui.PopFont();
     }
 
     public void DrawPhoneticDebugInformation() {
