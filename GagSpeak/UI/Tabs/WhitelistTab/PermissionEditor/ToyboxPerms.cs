@@ -90,7 +90,7 @@ public partial class WhitelistPlayerPermissions {
                 }
             }
             // turn the toy on / off
-            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.BeginDisabled(); }
+            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.BeginDisabled(); }
             ImGuiUtil.DrawFrameColumn($"Toy Active:");
             ImGui.TableNextColumn();
             var toyActivePerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive 
@@ -112,7 +112,7 @@ public partial class WhitelistPlayerPermissions {
                     _characterHandler.ToggleToyState();
                 }
             }
-            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.EndDisabled(); }
+            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.EndDisabled(); }
 
 
             // Enable Restraint Sets option
