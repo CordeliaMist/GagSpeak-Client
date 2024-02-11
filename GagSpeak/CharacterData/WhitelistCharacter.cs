@@ -203,6 +203,8 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         _pendingRelationRequestFromPlayer = Enum.TryParse(jsonObject["PendingRequestFromPlayer"]?.Value<string>(), out RoleLean requestFromPlayer) ? requestFromPlayer : RoleLean.None;
         _timeOfCommitment = JsonConvert.DeserializeObject<DateTimeOffset>(jsonObject["TimeOfCommitment"]?.Value<string>() ?? "");
         _grantExtendedLockTimes = jsonObject["ExtendedLockTimes"]?.Value<bool>() ?? false;
+        _enableRestraintSets = jsonObject["EnableRestraintSets"]?.Value<bool>() ?? false;
+        _restraintSetLocking = jsonObject["RestraintSetLocking"]?.Value<bool>() ?? false;
         _theirTriggerPhrase = jsonObject["TheirTriggerPhrase"]?.Value<string>() ?? "";
         _theirTriggerStartChar = jsonObject["StartCharForPuppeteerTrigger"]?.Value<string>() ?? "(";
         _theirTriggerEndChar = jsonObject["EndCharForPuppeteerTrigger"]?.Value<string>() ?? ")";

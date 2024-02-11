@@ -44,7 +44,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          List<PadlockIdentifier>                     padlockIdentifier { get; set; }                         // stores the padlock identifier for each gaglisting
     public          PadlockIdentifier                           whitelistPadlockIdentifier {get; set; }                 // stores the padlock identifier for the whitelist
     // stuff for the wardrobemanager
-    public          GlamourerCharacterData                      cachedCharacterData { get; set; }
     public          bool                                        disableGlamChangeEvent { get; set; } = false;           // disables the glam change event
     public          bool                                        finishedDrawingGlamChange { get; set; } = false;        // disables the glamourer
     // stuff for the garbler
@@ -98,10 +97,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         if (this.phoneticSymbolList == null || !this.phoneticSymbolList.Any()) {
             GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
             this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
-        
-        // set default values for the cached character data
-        this.cachedCharacterData = new GlamourerCharacterData();
 
+        disableGlamChangeEvent = false;
         acceptingInfoRequests = true;
         processingInfoRequest = false;
             
@@ -111,17 +108,17 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
 
     public void SetSendInfoName(string name) {
         sendInfoName = name;
-        _saveService.QueueSave(this);
+        Save();
     }
 
     public void SetAcceptInfoRequests(bool value) {
         acceptingInfoRequests = value;
-        _saveService.QueueSave(this);
+        Save();
     }
 
     public void SetprocessingInfoRequest(bool value) {
         processingInfoRequest = value;
-        _saveService.QueueSave(this);
+        Save();
     }
 
 

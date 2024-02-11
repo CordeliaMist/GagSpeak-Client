@@ -151,6 +151,40 @@ public sealed class GlamourerService
         }
     }
 
+    public async Task GlamourerRevertCharacterToAutomation(IntPtr character) {
+        // if the glamourerApi is not active, then return an empty string for the customization
+        if (!CheckGlamourerApi()) return;
+        try
+        {
+            // we spesifically DONT want to wait for character to finish drawing because we want to revert before an automation is applied
+            await _clientUserInfo.RunOnFrameworkThread(async () => {
+                try
+                {
+                    // set the game object to the character
+                    var gameObj = _clientUserInfo.CreateGameObject(character);
+                    // if the game object is the character, then get the customization for it.
+                    if (gameObj is Character c) {
+                        GagSpeak.Log.Verbose("[GlamourRevertIPC] Calling on IPC: GlamourerRevertToAutomationCharacter");
+                        bool result = _RevertToAutomationCharacter.InvokeFunc(c, 1337);
+                        GagSpeak.Log.Verbose($"[GlamourRevertIPC] Revert to automation result: {result}");
+                        if(!result) {
+                            GagSpeak.Log.Warning($"[GlamourRevertIPC] Revert to automation failed, reverting to game instead");
+                            await GlamourerRevertCharacter(character);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    GagSpeak.Log.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
+                }
+            }).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            GagSpeak.Log.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
+        }
+    }
+
     public async Task GlamourerRevertCharacter(IntPtr character) {
         // if the glamourerApi is not active, then return an empty string for the customization
         if (!CheckGlamourerApi()) return;
@@ -182,34 +216,4 @@ public sealed class GlamourerService
         }
     }
 
-    public async Task GlamourerRevertCharacterToAutomation(IntPtr character) {
-        // if the glamourerApi is not active, then return an empty string for the customization
-        if (!CheckGlamourerApi()) return;
-        try
-        {
-            // we spesifically DONT want to wait for character to finish drawing because we want to revert before an automation is applied
-            await _clientUserInfo.RunOnFrameworkThread(() => {
-                try
-                {
-                    // set the game object to the character
-                    var gameObj = _clientUserInfo.CreateGameObject(character);
-                    // if the game object is the character, then get the customization for it.
-                    if (gameObj is Character c) {
-                    //logger.LogDebug("[{appid}] Calling On IPC: GlamourerUnlockName", applicationId);
-                    //_glamourerUnlock.InvokeFunc(name, LockCode);
-                    //logger.LogDebug("[{appid}] Calling On IPC: GlamourerRevert", applicationId);
-                        _RevertToAutomationCharacter.InvokeFunc(c, 1337);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    GagSpeak.Log.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
-                }
-            }).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            GagSpeak.Log.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
-        }
-    }
 }

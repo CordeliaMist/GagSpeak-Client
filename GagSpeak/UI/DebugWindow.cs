@@ -48,16 +48,15 @@ public class DebugWindow : Window //, IDisposable
     private readonly GagListingsDrawer      _gagListingsDrawer;             // for knowing the information in the currently equipped gags
     private readonly FontService            _fontService;                   // for displaying the IPA symbols on the bottom chart
     private readonly GagService             _gagService;                    // for displaying the number of registered gags
-    private readonly ItemData               _itemData;                      // for knowing the item data
+    private readonly GagSpeakGlamourEvent   _gagSpeakGlamourEvent;          // for knowing if the glamour event is executing
     private          string?                _tempTestMessage;               // stores the input password for the test translation system
     private          string?                _translatedMessage = "";        // stores the translated message for the test translation system
     private          string?                _translatedMessageSpaced ="";   // stores the translated message for the test translation system
     private          string?                _translatedMessageOutput ="";   // stores the translated message for the test translation system
 
     public DebugWindow(DalamudPluginInterface pluginInt, FontService fontService, GagService gagService, RestraintSetManager restraintSetManager,
-    IpaParserEN_FR_JP_SP translatorLanguage, GagSpeakConfig config, CharacterHandler characterHandler,
-    GagGarbleManager GagGarbleManager, GagListingsDrawer gagListingsDrawer,
-    ItemData itemData) : base(GetLabel()) {
+    IpaParserEN_FR_JP_SP translatorLanguage, GagSpeakConfig config, CharacterHandler characterHandler, GagSpeakGlamourEvent gagSpeakGlamourEvent,
+    GagGarbleManager GagGarbleManager, GagListingsDrawer gagListingsDrawer) : base(GetLabel()) {
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
         // Next let's set the size of the window
@@ -72,18 +71,20 @@ public class DebugWindow : Window //, IDisposable
         _gagManager = GagGarbleManager;
         _gagListingsDrawer = gagListingsDrawer;
         _translatorLanguage = translatorLanguage;
-        _itemData = itemData;
         _restraintSetManager = restraintSetManager;
+        _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
     }
 
 
     public override void Draw() {
+        ImGui.Text($"IsGagSpeakGlamourEventExecuting: {_gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting}");
+        ImGui.Text($"IsFinishedDrawingGlamChange: {_config.finishedDrawingGlamChange}");
+        ImGui.Text($"DisableGlamChangeEvent: {_config.disableGlamChangeEvent}");
         DrawPlayerCharInfo();
         DrawWhitelistCharactersAndLocks();
         DrawRestraintSetOverview();
         DrawAdvancedGarblerInspector();
         DrawPhoneticDebugInformation();
-        DrawCachedCharacterInformation();
     }
 
     // temp vibe debug stuff
@@ -365,100 +366,5 @@ public class DebugWindow : Window //, IDisposable
             GagSpeak.Log.Error($"Error while fetching config in debug: {e}");
         }
     }
-
-    /// <summary>
-    /// Draws the cached character information.
-    /// </summary>
-    public void DrawCachedCharacterInformation() {
-        if(!ImGui.CollapsingHeader("Cached Character Information")) { return; }
-        // draw all the design data we need to know
-        using var table = ImRaii.Table("##equip", 6, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit);
-        if (!table) { return; }
-        ImGui.TableNextRow();
-        // temp creation for equipment class
-        var properties = typeof(Interop.Equipment).GetProperties().Where(p => p.Name != "Hat" && p.Name != "Visor" && p.Name != "Weapon").ToArray();
-        // display equipment slots:
-        var equipSlots = EquipSlotExtensions.EqdpSlots.Prepend(EquipSlot.OffHand).Prepend(EquipSlot.MainHand);
-        for (int i = 0; i < properties.Length; i++) {
-            try{
-                // get our property
-                var property = properties[i];
-                // get the value of the property
-                dynamic? slot = property.GetValue(_config.cachedCharacterData.Equipment);
-                // get rest of the objects values
-                EquipSlot equipslot = equipSlots.ElementAt(i);
-                CustomItemId itemId = slot?.ItemId;
-                int stain = slot?.Stain;
-                bool apply = slot?.Apply;
-                bool applyStain = slot?.ApplyStain;
-                EquipItem temp = Resolve(equipslot, itemId);
-                // draw them outttt
-                ImGuiUtil.DrawTableColumn(((EquipmentSlotNameByEnum)i).ToString()); // the slot name
-                ImGuiUtil.DrawTableColumn(temp.Name); // the item name
-                ImGuiUtil.DrawTableColumn(itemId.ToString());
-                ImGuiUtil.DrawTableColumn(stain.ToString());
-                ImGuiUtil.DrawTableColumn(apply ? "Apply" : "Keep");
-                ImGuiUtil.DrawTableColumn(applyStain ? "Apply" : "Keep");
-
-            } catch (Exception e) {
-                GagSpeak.Log.Error($"Error while slot property in character print in debug: {e}");
-            }
-        }
-        ImGuiUtil.DrawTableColumn("Hat Visible");
-        ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Hat.Show}");
-        ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Hat.Apply}");
-        ImGui.TableNextRow();
-        ImGuiUtil.DrawTableColumn("Visor Toggled");
-        ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Visor.IsToggled}");
-        ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Visor.Apply}");
-        ImGui.TableNextRow();
-        ImGuiUtil.DrawTableColumn("Weapon Visible");
-        ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Weapon.Show}");
-        ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Equipment.Weapon.Apply}");
-        ImGui.TableNextRow();
-        // customization
-        ImGuiUtil.DrawTableColumn("Model ID");
-        ImGuiUtil.DrawTableColumn(_config.cachedCharacterData.Customize.ModelId.ToString());
-        ImGui.TableNextRow();
-
-        foreach (var index in Enum.GetValues<CustomizeIndex>())
-        {
-            if (index.ToString() == "ModelId") continue; // Skip ModelId
-
-            var property = typeof(Interop.Customize).GetProperty(index.ToString());
-            dynamic? value = property?.GetValue(_config.cachedCharacterData.Customize);
-            int valueInt = value?.Value;
-            bool apply = value?.Apply;
-
-            ImGuiUtil.DrawTableColumn(index.ToString());
-            ImGuiUtil.DrawTableColumn(valueInt.ToString());
-            ImGuiUtil.DrawTableColumn(apply ? "Apply" : "Keep");
-            ImGui.TableNextRow();
-        }
-
-        ImGuiUtil.DrawTableColumn("Is Wet");
-        ImGuiUtil.DrawTableColumn($"{_config.cachedCharacterData.Customize.Wetness.Value}");
-        ImGui.TableNextRow();
-        // finished debugging
-    }
-
-    public EquipItem Resolve(EquipSlot slot, CustomItemId itemId)
-    {
-        slot = slot.ToSlot();
-        if (itemId == ItemIdVars.NothingId(slot))
-            return ItemIdVars.NothingItem(slot);
-        if (itemId == ItemIdVars.SmallclothesId(slot))
-            return ItemIdVars.SmallClothesItem(slot);
-        if (!itemId.IsItem || !_itemData.TryGetValue(itemId.Item, slot, out var item))
-            return EquipItem.FromId(itemId);
-
-        if (item.Type.ToSlot() != slot)
-            return new EquipItem(string.Intern($"Invalid #{itemId}"), itemId, item.IconId, item.PrimaryId, item.SecondaryId, item.Variant, 0, 0,
-                0,
-                0);
-        return item;
-    }
-
-
 }
 

@@ -54,7 +54,7 @@ public class ClientUserInfo : IDisposable
     //============= Personal Variable Assignment =================//
     public IntPtr Address { get; private set; } // player address
     public IntPtr DrawObjectAddress { get; set; } // player draw object address
-    private uint? ClassJobId = 0;  // ID of current job
+    public uint? ClassJobId = 0;  // ID of current job
     public string Name { get; private set; } = string.Empty; // player name
     public byte RaceId { get; private set; } // player race
     public byte Gender { get; private set; } // player gender
@@ -117,7 +117,10 @@ public class ClientUserInfo : IDisposable
     /// </summary>
     private unsafe void FrameworkOnUpdateInternal() {
         // if we are not logged in, or are dead, return
-        if (_clientState.LocalPlayer?.IsDead ?? false) return;
+        if (_clientState.LocalPlayer?.IsDead ?? false) {
+            GagSpeak.Log.Debug($"[FrameworkUpdate]  Player is dead, returning");
+            return;
+        }
         
         // If we are zoning, then we need to halt processing
         if (_condition[ConditionFlag.BetweenAreas] || _condition[ConditionFlag.BetweenAreas51]) {
@@ -168,24 +171,24 @@ public class ClientUserInfo : IDisposable
             _lastGlobalBlockPlayer = string.Empty;
             _lastGlobalBlockReason = string.Empty;
             // if we have finished redrawing, then we can check for drawing again
-            if(_config.finishedDrawingGlamChange){
-                GagSpeak.Log.Debug($"[FrameworkUpdate] GagSpeak Glamour Updates Finished");
-                if(_config.disableGlamChangeEvent) {
-                    GagSpeak.Log.Debug($"[FrameworkUpdate] Disabling Glamour Change Event");
-                    var lastLoggedOccurance = DateTime.Now;
-                    if ((lastLoggedOccurance - _lastLoggedTime).TotalMilliseconds < 100) {
-                        GagSpeak.Log.Debug($"[FrameworkUpdate] Last logged occurance was less than 100ms ago, returning");
-                        _lastLoggedTime = lastLoggedOccurance;
-                        _config.finishedDrawingGlamChange = false;
-                        _config.disableGlamChangeEvent = false;
-                        _gagSpeakGlamourEvent.Invoke(UpdateType.RefreshAll);
-                    } else {
-                        _lastLoggedTime = lastLoggedOccurance;
-                        _config.finishedDrawingGlamChange = false;
-                        _config.disableGlamChangeEvent = false;
-                    }
-                }
-            } 
+            // if(_config.finishedDrawingGlamChange){
+            //     GagSpeak.Log.Debug($"[FrameworkUpdate] GagSpeak Glamour Updates Finished");
+            //     if(_config.disableGlamChangeEvent) {
+            //         GagSpeak.Log.Debug($"[FrameworkUpdate] Disabling Glamour Change Event");
+            //         var lastLoggedOccurance = DateTime.Now;
+            //         if ((lastLoggedOccurance - _lastLoggedTime).TotalMilliseconds < 100) {
+            //             GagSpeak.Log.Debug($"[FrameworkUpdate] Last logged occurance was less than 100ms ago, returning");
+            //             _lastLoggedTime = lastLoggedOccurance;
+            //             _config.finishedDrawingGlamChange = false;
+            //             _config.disableGlamChangeEvent = false;
+            //             _gagSpeakGlamourEvent.Invoke(UpdateType.RefreshAll);
+            //         } else {
+            //             _lastLoggedTime = lastLoggedOccurance;
+            //             _config.finishedDrawingGlamChange = false;
+            //             _config.disableGlamChangeEvent = false;
+            //         }
+            //     }
+            // } 
         }
 
         // if our job is changed, invoke a redraw
@@ -230,6 +233,7 @@ public class ClientUserInfo : IDisposable
     }
 
     /// <summary> Returns if we are being drawn on the framework thread
+    /// 
     public async Task<bool> IsBeingDrawnRunOnFrameworkAsync() {
         return await RunOnFrameworkThread(IsBeingDrawn).ConfigureAwait(false);
     }

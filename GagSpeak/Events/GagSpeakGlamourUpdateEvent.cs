@@ -13,6 +13,12 @@ public enum UpdateType {
     GagUnEquipped,
     // used for updating a characters information in general
     RefreshAll,
+    // used for when we detect a job change
+    JobChange,
+    // used for when we detect a login
+    Login,
+    // used for when we detect a zone change
+    ZoneChange,
 }
 
 public class GagSpeakGlamourEvent
