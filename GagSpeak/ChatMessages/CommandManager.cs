@@ -162,11 +162,11 @@ public class CommandManager : IDisposable // Our main command list manager
                 _characterHandler.playerChar._selectedGagTypes.IsSafewordCommandExecuting = true;
                 _characterHandler.playerChar._selectedGagPadlocks.IsSafewordCommandExecuting = true;
                 // remove all data
-                for (int layerIndex = 0; layerIndex < _characterHandler.playerChar._selectedGagTypes.Count; layerIndex++) {
-                    _characterHandler.playerChar._selectedGagTypes[layerIndex] = "None";
-                    _characterHandler.playerChar._selectedGagPadlocks[layerIndex] = Padlocks.None;
-                    _characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = "";
-                    _characterHandler.playerChar._selectedGagPadlockAssigner[layerIndex] = "";
+                for (int layerIndex = 0; layerIndex < 3; layerIndex++) {
+                    _characterHandler.SetPlayerGagType(layerIndex, "None");
+                    _characterHandler.SetPlayerGagPadlock(layerIndex, Padlocks.None);
+                    _characterHandler.SetPlayerGagPadlockPassword(layerIndex, "");
+                    _characterHandler.SetPlayerGagPadlockAssigner(layerIndex, "");
                 }               
                 _gagStorageManager.ResetEverythingDueToSafeword();
                 _restriantSetManager.ResetEverythingDueToSafeword();

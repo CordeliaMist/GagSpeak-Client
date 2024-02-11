@@ -4,6 +4,7 @@ using OtterGui.Raii;
 using System.Linq;
 using GagSpeak.Events;
 using GagSpeak.Gagsandlocks;
+using GagSpeak.CharacterData;
 
 namespace GagSpeak.UI.Equipment;
 
@@ -23,6 +24,43 @@ public sealed class GagLockFilterCombo
         _config = config;
     } 
 
+
+    /// <summary>
+    /// This function draws the players dropdown combo for the padlocks.
+    /// <list type="bullet">
+    /// <item><c>ID</c><param name="ID"> - The list of items to display in the combo box</param></item>
+    /// <item><c>label</c><param name="label"> - The label to display outside the combo box</param></item>
+    /// <item><c>layerindex</c><param name="layerIndex"> - a list where the stored selection from the list is saved</param></item>
+    /// </list> </summary>
+    public void Draw(int ID, CharacterHandler characterHandler, int layerIndex, int width) {
+        try
+        {
+            ImGui.SetNextItemWidth(width);
+            using( var gagLockCombo = ImRaii.Combo($"##{ID}_Enum",  _config.padlockIdentifier[layerIndex]._padlockType.ToString(), 
+            ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) {
+                if( gagLockCombo ) { // Assign it an ID if combo is sucessful.
+                    // add the popup state
+                    using var id = ImRaii.PushId($"##{ID}_Enum"); // Push an ID for the combo box (based on label / name)
+                    ImGui.SetNextItemWidth(width); // Set filter length to full
+
+                    foreach (var item in Enum.GetValues(typeof(Padlocks)).Cast<Padlocks>()) {
+                        if (ImGui.Selectable(item.ToString(), characterHandler.playerChar._selectedGagPadlocks[layerIndex] == item)) {
+                            _config.padlockIdentifier[layerIndex]._padlockType = item; // update the padlock identifier label
+                            _config.Save();
+                            _comboSearchText = string.Empty;
+                            ImGui.CloseCurrentPopup();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception e) {
+            GagSpeak.Log.Debug(e.ToString());
+        }
+    }
+
+
     /// <summary>
     /// This function draws the whitelisted characters dropdown combo for the padlocks.
     /// <list type="bullet">
@@ -30,7 +68,7 @@ public sealed class GagLockFilterCombo
     /// <item><c>label</c><param name="label"> - The label to display outside the combo box</param></item>
     /// <item><c>layerindex</c><param name="layerIndex"> - a list where the stored selection from the list is saved</param></item>
     /// </list> </summary>
-    public void Draw(int ID, ref string label, WatchList<Padlocks> listing, int layerIndex, int width) {
+    public void Draw(int ID, ref string label, CharacterHandler characterHandler, int whitelistIdx, int layerIndex, int width) {
         try
         {
             // set the next item width to the width we want
@@ -45,7 +83,7 @@ public sealed class GagLockFilterCombo
                     // draw the combo box
                     foreach (var item in Enum.GetValues(typeof(Padlocks)).Cast<Padlocks>()) {
                         // if the item is selected, set the label to the item and save the config
-                        if (ImGui.Selectable(item.ToString(), listing[layerIndex] == item)) {
+                        if (ImGui.Selectable(item.ToString(), characterHandler.whitelistChars[whitelistIdx]._selectedGagPadlocks[layerIndex] == item)) {
                             label = item.ToString(); // update label
                             _comboSearchText = string.Empty;
                             ImGui.CloseCurrentPopup();
@@ -55,41 +93,6 @@ public sealed class GagLockFilterCombo
                 }
             }
         } catch (Exception e) {
-            GagSpeak.Log.Debug(e.ToString());
-        }
-    }
-
-    /// <summary>
-    /// This function draws the players dropdown combo for the padlocks.
-    /// <list type="bullet">
-    /// <item><c>ID</c><param name="ID"> - The list of items to display in the combo box</param></item>
-    /// <item><c>label</c><param name="label"> - The label to display outside the combo box</param></item>
-    /// <item><c>layerindex</c><param name="layerIndex"> - a list where the stored selection from the list is saved</param></item>
-    /// </list> </summary>
-    public void Draw(int ID, WatchList<Padlocks> listing, int layerIndex, int width) {
-        try
-        {
-            ImGui.SetNextItemWidth(width);
-            using( var gagLockCombo = ImRaii.Combo($"##{ID}_Enum",  _config.padlockIdentifier[layerIndex]._padlockType.ToString(), 
-            ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) {
-                if( gagLockCombo ) { // Assign it an ID if combo is sucessful.
-                    // add the popup state
-                    using var id = ImRaii.PushId($"##{ID}_Enum"); // Push an ID for the combo box (based on label / name)
-                    ImGui.SetNextItemWidth(width); // Set filter length to full
-
-                    foreach (var item in Enum.GetValues(typeof(Padlocks)).Cast<Padlocks>()) {
-                        if (ImGui.Selectable(item.ToString(), listing[layerIndex] == item)) {
-                            _config.padlockIdentifier[layerIndex]._padlockType = item; // update the padlock identifier label
-                            _comboSearchText = string.Empty;
-                            ImGui.CloseCurrentPopup();
-                            _config.Save();
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception e) {
             GagSpeak.Log.Debug(e.ToString());
         }
     }

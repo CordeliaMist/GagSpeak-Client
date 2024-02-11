@@ -143,10 +143,10 @@ public class GagListingsDrawer : IDisposable
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + ImGui.GetFrameHeight() / 1.4f);
             }
             // Draw the combos
-            if (DrawGagTypeItemCombo(ID, config, layerIndex, _config.isLocked[layerIndex], width, _gagTypeFilterCombo)) {}
+            if (DrawGagTypeItemCombo(ID, layerIndex, _config.isLocked[layerIndex], width, _gagTypeFilterCombo)) {}
             // Adjust the width of the padlock dropdown to 3/4 of the original width
             int newWidth = (int)(width * 0.75f);
-            if (DrawGagLockItemCombo(ID, config, layerIndex, _config.isLocked[layerIndex], newWidth, _gagLockFilterCombo)) {}
+            if (DrawGagLockItemCombo(ID, layerIndex, _config.isLocked[layerIndex], newWidth, _gagLockFilterCombo)) {}
             // end our disabled fields, if any, here
             if(_config.isLocked[layerIndex]) { ImGui.EndDisabled(); } // end the disabled part here, if it was disabled
             
@@ -203,29 +203,19 @@ public class GagListingsDrawer : IDisposable
             Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"Padlocks/{_characterHandler.playerChar._selectedGagPadlocks[2].ToString()}.png"));
     }   
 
-    /// <summary>
-    /// Draw the combo listing of the gag types
-    /// <list type="bullet">
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// <item><c>gagTypeFilterCombo</c><param name="gagTypeFilterCombo"> - The gag type filter combo.</param></item>
-    /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
-    /// <item><c>locked</c><param name="locked"> - The locked.</param></item>
-    /// <item><c>width</c><param name="width"> - The width.</param></item>
-    /// <item><c>gagtypecombo</c><param name="gagtypecombo"> - The gag type combo.</param></item>
-    /// </list> </summary>
-    /// <returns> True if it succeeds, false if it fails. </returns>
-    public bool DrawGagTypeItemCombo(int ID, GagSpeakConfig config, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
+    /// <summary> FOR THE PLAYER DRAWER </summary>
+    public bool DrawGagTypeItemCombo(int ID, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
         var combo = gagtypecombo; // get the combo
         if (ImGui.IsItemClicked() && !locked)
             UIHelpers.OpenCombo($"{ID}_Type");
         using var disabled = ImRaii.Disabled(locked);
         // draw the thing
-        var dummy = "Dummy"; // used as filler for combos that dont need labels
         var prevItem = _characterHandler.playerChar._selectedGagTypes[layerIndex]; // get the previous item
-        combo.Draw(ID, ref dummy, _characterHandler.playerChar._selectedGagTypes, layerIndex, width);
+        combo.Draw(ID, _characterHandler, layerIndex, width);
         
         if(prevItem != _characterHandler.playerChar._selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
-            GagSpeak.Log.Debug($"[GagListingsDrawer]: Personal GagType Changed, firing itemAuto-Equip event for gag {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
+            GagSpeak.Log.Debug($"=======================[ Padlock Manager : GAG CHANGE ]======================");
+            GagSpeak.Log.Debug($"[GagListingsDrawer]: Firing itemAuto-Equip event for gag {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
             _characterHandler.Quicksave();
             _itemAutoEquipEvent.Invoke(_characterHandler.playerChar._selectedGagTypes[layerIndex], "self");
         }
@@ -235,29 +225,17 @@ public class GagListingsDrawer : IDisposable
                 // get gagtype before clear
                 var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _characterHandler.playerChar._selectedGagTypes[layerIndex]);
                 // clear the gag item from the selectedGagTypes list, resetting it to none
-                _characterHandler.playerChar._selectedGagTypes[layerIndex] = _gagService._gagTypes.First()._gagName;
+                _characterHandler.SetPlayerGagType(layerIndex, _gagService._gagTypes.First()._gagName);
                 // reset the _wasEquippedBy to empty
                 _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
-                // save config
-                _characterHandler.Quicksave();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
         }
         return true;
     }
 
-    /// <summary>
-    /// Draw the combo listing of the gag locks
-    /// <list type="bullet">
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// <item><c>gagLockFilterCombo</c><param name="gagLockFilterCombo"> - The gag lock filter combo.</param></item>
-    /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
-    /// <item><c>locked</c><param name="locked"> - The locked.</param></item>
-    /// <item><c>width</c><param name="width"> - The width.</param></item>
-    /// <item><c>gaglockcombo</c><param name="gaglockcombo"> - The gag lock combo.</param></item>
-    /// </list> </summary>
-    /// <returns> True if it succeeds, false if it fails. </returns>
-    public bool DrawGagLockItemCombo(int ID, GagSpeakConfig config, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
+    /// <summary> FOR THE PLAYER DRAWER </summary>
+    public bool DrawGagLockItemCombo(int ID, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
         var combo = gaglockcombo; // get the combo
         // if we left click and it is unlocked, open it
         if (ImGui.IsItemClicked() && !locked)
@@ -265,73 +243,46 @@ public class GagListingsDrawer : IDisposable
         // using the var disabled, disable this if it is locked.
         using var disabled = ImRaii.Disabled(locked);
         // draw the thing
-        combo.Draw(ID, _characterHandler.playerChar._selectedGagPadlocks, layerIndex, width);
+        combo.Draw(ID, _characterHandler, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                _characterHandler.playerChar._selectedGagPadlocks[layerIndex]= Padlocks.None; // to the first option, none
-                _characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = "";
-                _characterHandler.playerChar._selectedGagPadlockAssigner[layerIndex] = "";
-                _characterHandler.Quicksave();
-                config.Save();
+                _characterHandler.SetPlayerGagPadlock(layerIndex, Padlocks.None); // to the first option, none
+                _characterHandler.SetPlayerGagPadlockPassword(layerIndex, ""); // clear the password
+                _characterHandler.SetPlayerGagPadlockAssigner(layerIndex, ""); // clear the assigner
+                
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
         }
         return true;
     }
 
-    /// <summary>
-    /// Draw the combo listing of the gag types for the whitelisted character
-    /// <list type="bullet">
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// <item><c>gagTypeFilterCombo</c><param name="gagTypeFilterCombo"> - The gag type filter combo.</param></item>
-    /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
-    /// <item><c>locked</c><param name="locked"> - The locked.</param></item>
-    /// <item><c>width</c><param name="width"> - The width.</param></item>
-    /// <item><c>gagtypecombo</c><param name="gagtypecombo"> - The gag type combo.</param></item>
-    /// </list> </summary>
-    /// <returns> True if it succeeds, false if it fails. </returns>
-    public bool DrawGagTypeItemCombo(int ID,  int whitelistIdx, ref string gagLabel, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
+    /// <summary> FOR THE WHITELIST DRAWER </summary>
+    public bool DrawGagTypeItemCombo(int ID, int whitelistIdx, ref string gagLabel, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
         var combo = gagtypecombo; // get the combo
         if (ImGui.IsItemClicked() && !locked)
             UIHelpers.OpenCombo($"{ID}_Type");
         using var disabled = ImRaii.Disabled(locked);
-        combo.Draw(ID, ref gagLabel, _characterHandler.whitelistChars[whitelistIdx]._selectedGagTypes, layerIndex, width);
+        combo.Draw(ID, ref gagLabel, _characterHandler, whitelistIdx, layerIndex, width);
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
                 gagLabel = _gagService._gagTypes.First()._gagName;
-                _characterHandler.Quicksave();
             }
             ImGuiUtil.HoverTooltip("Right-click to clear.");
         }
         return true;
     }
 
-    /// <summary>
-    /// Draw the combo listing of the gag locks for the whitelisted character
-    /// <list type="bullet">
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// <item><c>gagLockFilterCombo</c><param name="gagLockFilterCombo"> - The gag lock filter combo.</param></item>
-    /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
-    /// <item><c>locked</c><param name="locked"> - The locked.</param></item>
-    /// <item><c>width</c><param name="width"> - The width.</param></item>
-    /// <item><c>gaglockcombo</c><param name="gaglockcombo"> - The gag lock combo.</param></item>
-    /// </list> </summary>
-    /// <returns> True if it succeeds, false if it fails. </returns>
-    public bool DrawGagLockItemCombo(int ID, int whitelistIdx, ref string lockLabel, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
+    /// <summary> FOR THE WHITELIST DRAWER </summary>
+    public bool DrawGagLockItemCombo(int ID, int whitelistIdx, ref string lockLabel, int layerIndex, int width, GagLockFilterCombo gaglockcombo) {
         // This code is a shadow copy of the function above, used for accepting WhitelistCharData as a type
         var combo = gaglockcombo;
-        if (ImGui.IsItemClicked() && !locked)
+        if (ImGui.IsItemClicked())
             UIHelpers.OpenCombo($"{ID}_Enum");
-        using var disabled = ImRaii.Disabled(locked);
-        combo.Draw(ID, ref lockLabel, _characterHandler.whitelistChars[whitelistIdx]._selectedGagPadlocks, layerIndex, width);
-        if (!locked) { // if we right click on it, clear the selection
-            if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
-                lockLabel = "None";
-                _characterHandler.Quicksave();
-                _config.Save();
-            }
-            ImGuiUtil.HoverTooltip("Right-click to clear.");
+        combo.Draw(ID, ref lockLabel, _characterHandler, whitelistIdx, layerIndex, width);
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
+            lockLabel = "None";
         }
+        ImGuiUtil.HoverTooltip("Right-click to clear.");
         return true;
     }
 }

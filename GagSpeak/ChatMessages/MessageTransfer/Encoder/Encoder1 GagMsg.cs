@@ -84,7 +84,7 @@ public partial class MessageEncoder {
             $"{password} "+
             "on your "+
             $"{layer} "+
-            "layer gagstrap, unlocking it.*";
+            "layer gagstrap, unlocking it*";
         } 
         // no password unlock [ ID5 ]
         else
@@ -93,7 +93,7 @@ public partial class MessageEncoder {
             $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
             "reaches behind your neck, taking off the lock that was keeping your "+
             $"{layer} "+
-            "gag layer fastened nice and tight.*";
+            "gag layer fastened nice and tight*";
         }
     }
 
@@ -104,14 +104,14 @@ public partial class MessageEncoder {
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
         "reaches behind your neck and unfastens the buckle of your "+
         $"{layer} "+
-        "gag layer strap, allowing your voice to be a little clearer.*";
+        "gag layer strap, allowing your voice to be a little clearer*";
     }
 
     // The Remove All Gags Message [ ID == 8 // removeAll ]
     public string GagEncodedRemoveAllMessage(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
-        "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.*";
+        "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more*";
     }
 
     // The gag order "Toggle Live Garbler State" Message [ ID == 9 // toggleLiveChatGarbler ]

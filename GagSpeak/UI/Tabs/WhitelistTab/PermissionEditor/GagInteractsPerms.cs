@@ -17,9 +17,9 @@ using Dalamud.Plugin.Services;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 public partial class WhitelistPlayerPermissions {
+    protected   int                     _layer;
     protected   string                  _gagLabel;
     protected   string                  _lockLabel;
-    protected   int                     _layer;
     protected   GagTypeFilterCombo[]    _gagTypeFilterCombo;        // create an array of item combos
     protected   GagLockFilterCombo[]    _gagLockFilterCombo;        // create an array of item combos
 
@@ -59,7 +59,7 @@ public partial class WhitelistPlayerPermissions {
             // set up a temp password storage field here.
             ImGui.Text("Select Gag Lock Type:");
             width = (int)(ImGui.GetContentRegionAvail().X * 0.95f);
-            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, _characterHandler.activeListIdx, ref _lockLabel, layer, false, width, _gagLockFilterCombo[layer]);
+            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, _characterHandler.activeListIdx, ref _lockLabel, layer, width, _gagLockFilterCombo[layer]);
             
             
             // display the password field, if any.
@@ -73,14 +73,16 @@ public partial class WhitelistPlayerPermissions {
             // now draw the gag buttons
             ImGui.TableNextColumn();
             ImGui.Spacing();
-            if (ImGui.Button("Apply Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale))) {
+            if (ImGuiUtil.DrawDisabledButton("Apply Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale), 
+            "Applies the selected gag to the player", _gagLabel == "None")) {
                 // execute the generation of the apply gag layer string
                 ApplyGagOnPlayer(layer, _gagLabel, _characterHandler.activeListIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
                 _interactOrPermButtonEvent.Invoke();
             }
-            if (ImGui.Button("Lock Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale))) {
+            if (ImGuiUtil.DrawDisabledButton("Lock Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale), 
+            "Applies the selected gag to the player", _lockLabel == "None")) {
                 LockGagOnPlayer(layer, _lockLabel, _characterHandler.activeListIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui, _config);
                 // Start a 5-second cooldown timer

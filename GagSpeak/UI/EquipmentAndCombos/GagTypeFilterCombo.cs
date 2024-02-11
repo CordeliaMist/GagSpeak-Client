@@ -8,6 +8,7 @@ using Dalamud.Interface.Utility;
 using GagSpeak.Events;
 using GagSpeak.Services;
 using GagSpeak.Gagsandlocks;
+using GagSpeak.CharacterData;
 
 namespace GagSpeak.UI.Equipment;
 
@@ -40,12 +41,53 @@ public sealed class GagTypeFilterCombo
     /// <item><c>layerindex</c><param name="layerIndex"> - a list where the stored selection from the list is saved</param></item>
     /// </list>
     /// </summary>
-    public void Draw(int ID, ref string label, WatchList<string> listing, int layerIndex, int width) {
-        // distinguish between general tab appliers, and whitelist ones
-        if(label == "Dummy") { 
-            label = listing[layerIndex];
-            isDummy = true;
+    public void Draw(int ID, CharacterHandler characterHandler, int layerIndex, int width) {
+        try
+        {
+            ImGui.SetNextItemWidth(width);
+            using( var gagTypeCombo = ImRaii.Combo($"##{ID}_Type", characterHandler.playerChar._selectedGagTypes[layerIndex],
+            ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLargest)) { 
+                if( gagTypeCombo ) { // Assign it an ID if combo is sucessful.
+                    // add the popup state
+                    using var id = ImRaii.PushId($"##{ID}_Type"); // Push an ID for the combo box (based on label / name)
+                    ImGui.SetNextItemWidth(width); // Set filter length to full
+                    if( ImGui.InputTextWithHint("##filter", "Filter...", ref _comboSearchText, 255 ) ) { // Draw filter bar
+                        // If the search bar is empty, display all the types from the strings in contentList, otherwise, display only search matches
+                        _gagTypes = string.IsNullOrEmpty(_comboSearchText) ? (
+                            _gagService._gagTypes
+                        ) : (
+                            _gagService._gagTypes.Where(gag => gag._gagName.ToLower().Contains(_comboSearchText.ToLower())).ToList()
+                        );
+                    }
+                    // Now that we have our results, so draw the childs
+                    var       height = ImGui.GetTextLineHeightWithSpacing() * 12 - ImGui.GetFrameHeight() - ImGui.GetStyle().WindowPadding.Y;
+                    using var child = ImRaii.Child("Child", new Vector2( width, 200),true);
+                    using var indent = ImRaii.PushIndent(ImGuiHelpers.GlobalScale);
+
+                    // draw list
+                    foreach( var item in _gagTypes ) { // We will draw out one selectable for each item.
+                        // If our item is selected, set it and break
+                        if( ImGui.Selectable( item._gagName, item._gagName == characterHandler.playerChar._selectedGagTypes[layerIndex]) ) {
+                            characterHandler.SetPlayerGagType(layerIndex, item._gagName);
+                            GagSpeak.Log.Debug($"Selected Gag Type: {item._gagName}");
+                            _comboSearchText = string.Empty;
+                            _gagTypes = _gagService._gagTypes;
+                            ImGui.CloseCurrentPopup();
+                            return;
+                        }
+                    }
+                }
+            }
         }
+        catch (Exception e)
+        {
+            GagSpeak.Log.Debug(e.ToString());
+        }
+    }
+
+
+
+    public void Draw(int ID, ref string label, CharacterHandler characterHandler, int whitelistIdx, int layerIndex, int width) {
         try
         {
             ImGui.SetNextItemWidth(width);
@@ -69,9 +111,10 @@ public sealed class GagTypeFilterCombo
 
                     // draw list
                     foreach( var item in _gagTypes ) { // We will draw out one selectable for each item.
-                        if( ImGui.Selectable( item._gagName, item._gagName == listing[layerIndex] ) ) { // If our item is selected, set it and break
+                        // If our item is selected, set it and break
+                        if( ImGui.Selectable( item._gagName, item._gagName == characterHandler.whitelistChars[whitelistIdx]._selectedGagTypes[layerIndex]) ) {
                             if(isDummy) { 
-                                listing[layerIndex] = item._gagName;
+                                characterHandler.SetWhitelistSelectedGagTypes(whitelistIdx, layerIndex, item._gagName);
                             } // update data (if for generaltab)
                             label = item._gagName; // update label
                             _comboSearchText = string.Empty;

@@ -250,13 +250,13 @@ public class TimerService : IDisposable
                GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                _config.isLocked[0] = false;
                _config.padlockIdentifier[0].ClearPasswords();
-               _config.padlockIdentifier[0].UpdateConfigPadlockInfo(0, !_config.isLocked[0], _characterHandler);
+               _config.padlockIdentifier[0].UpdatePadlockInfo(0, !_config.isLocked[0], _characterHandler);
             } else {
                GagSpeak.Log.Debug($"[Timer Service]: Restoring {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _config.isLocked[0] = false;
                   _config.padlockIdentifier[0].ClearPasswords();
-                  _config.padlockIdentifier[0].UpdateConfigPadlockInfo(0, !_config.isLocked[0], _characterHandler);
+                  _config.padlockIdentifier[0].UpdatePadlockInfo(0, !_config.isLocked[0], _characterHandler);
                });
             }
          } else if(timerName.Contains("_Identifier1")) {
@@ -265,14 +265,14 @@ public class TimerService : IDisposable
                GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                _config.isLocked[1] = false;
                _config.padlockIdentifier[1].ClearPasswords();
-               _config.padlockIdentifier[1].UpdateConfigPadlockInfo(1, !_config.isLocked[1], _characterHandler);
+               _config.padlockIdentifier[1].UpdatePadlockInfo(1, !_config.isLocked[1], _characterHandler);
             } else {
                // Check to see if the timer expired while we were offline, if it is, clear the respective data
                GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _config.isLocked[1] = false;
                   _config.padlockIdentifier[1].ClearPasswords();
-                  _config.padlockIdentifier[1].UpdateConfigPadlockInfo(1, !_config.isLocked[1], _characterHandler);
+                  _config.padlockIdentifier[1].UpdatePadlockInfo(1, !_config.isLocked[1], _characterHandler);
                });
             }
          } else if(timerName.Contains("_Identifier2")) {
@@ -281,14 +281,14 @@ public class TimerService : IDisposable
                GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                _config.isLocked[2] = false;
                _config.padlockIdentifier[2].ClearPasswords();
-               _config.padlockIdentifier[2].UpdateConfigPadlockInfo(2, !_config.isLocked[2], _characterHandler);
+               _config.padlockIdentifier[2].UpdatePadlockInfo(2, !_config.isLocked[2], _characterHandler);
             } else {
                // Check to see if the timer expired while we were offline, if it is, clear the respective data
                GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _config.isLocked[2] = false;
                   _config.padlockIdentifier[2].ClearPasswords();
-                  _config.padlockIdentifier[2].UpdateConfigPadlockInfo(2, !_config.isLocked[2], _characterHandler);
+                  _config.padlockIdentifier[2].UpdatePadlockInfo(2, !_config.isLocked[2], _characterHandler);
                });
             }
          }

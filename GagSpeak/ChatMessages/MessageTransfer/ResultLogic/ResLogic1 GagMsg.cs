@@ -46,6 +46,7 @@ public partial class ResultLogic {
             string assignerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
             // assign our lock type to the padlock identifier
             _config.padlockIdentifier[decodedMessageMediator.layerIdx].SetType(parsedLockType);
+            _config.Save();
             // now attempt to lock the padlock. If the lock fails for any reason, the lock manager should let you know.
             _lockManager.Lock(decodedMessageMediator.layerIdx, assignerName, decodedMessageMediator.layerPassword[0], decodedMessageMediator.layerTimer[0], playerPayload.PlayerName);
             // if we reached this point, it means we sucessfully locked the layer

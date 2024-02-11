@@ -393,37 +393,37 @@ public class PadlockIdentifier
     /// <item><c>isUnlocking</c><param name="isUnlocking"> - if we are unlocking the padlock or not.</param></item>
     /// <item><c>_config</c><param name="_config"> - The GagSpeak configuration.</param></item>
     /// </list> </summary>
-    public void UpdateConfigPadlockInfo(int layerIndex, bool isUnlocking, CharacterHandler characterHandler) {
+    public void UpdatePadlockInfo(int layerIndex, bool isUnlocking, CharacterHandler characterHandler) {
         Padlocks padlockType = _padlockType;
         if (isUnlocking) { _padlockType = Padlocks.None; GagSpeak.Log.Debug("[Padlock] Unlocking Padlock");}
         // timers are handled by the timer service so we dont need to worry about it.
         switch (padlockType) {
             case Padlocks.MetalPadlock:
-                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
+                characterHandler.SetPlayerGagPadlock(layerIndex, _padlockType);
                 break;
             case Padlocks.CombinationPadlock:
-                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
-                characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = _storedCombination;
+                characterHandler.SetPlayerGagPadlock(layerIndex, _padlockType);
+                characterHandler.SetPlayerGagPadlockPassword(layerIndex, _storedCombination);
                 break;
             case Padlocks.PasswordPadlock:
-                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
-                characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = _storedPassword;
+                characterHandler.SetPlayerGagPadlock(layerIndex, _padlockType);
+                characterHandler.SetPlayerGagPadlockPassword(layerIndex, _storedPassword);
                 break;
             case Padlocks.FiveMinutesPadlock:
-                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
+                characterHandler.SetPlayerGagPadlock(layerIndex, _padlockType);
                 break;
             case Padlocks.TimerPasswordPadlock:
-                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
-                characterHandler.playerChar._selectedGagPadlockPassword[layerIndex] = _storedPassword;
+                characterHandler.SetPlayerGagPadlock(layerIndex, _padlockType);
+                characterHandler.SetPlayerGagPadlockPassword(layerIndex, _storedPassword);
                 break;
             case Padlocks.MistressPadlock:
                 // handle MistressPadlock case
-                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
-                characterHandler.playerChar._selectedGagPadlockAssigner[layerIndex] = _mistressAssignerName;
+                characterHandler.SetPlayerGagPadlock(layerIndex, _padlockType);
+                characterHandler.SetPlayerGagPadlockAssigner(layerIndex, _mistressAssignerName);
                 break;
             case Padlocks.MistressTimerPadlock:
-                characterHandler.playerChar._selectedGagPadlocks[layerIndex] = _padlockType;
-                characterHandler.playerChar._selectedGagPadlockAssigner[layerIndex] = _mistressAssignerName;
+                characterHandler.SetPlayerGagPadlock(layerIndex, _padlockType);
+                characterHandler.SetPlayerGagPadlockAssigner(layerIndex, _mistressAssignerName);
                 break;
             default:
                 // No password field should be displayed
@@ -445,31 +445,31 @@ public class PadlockIdentifier
         // timers are handled by the timer service so we dont need to worry about it.
         switch (padlockType) {
             case Padlocks.MetalPadlock:
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
+                characterHandler.SetWhitelistSelectedGagPadlocks(playerIdx, layer, _padlockType);
                 break;
             case Padlocks.CombinationPadlock:
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlockPassword[layer] = _storedCombination;
+                characterHandler.SetWhitelistSelectedGagPadlocks(playerIdx, layer, _padlockType);
+                characterHandler.SetWhitelistSelectedGagPadlockPassword(playerIdx, layer, _storedCombination);
                 break;
             case Padlocks.PasswordPadlock:
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlockPassword[layer] = _storedPassword;
+                characterHandler.SetWhitelistSelectedGagPadlocks(playerIdx, layer, _padlockType);
+                characterHandler.SetWhitelistSelectedGagPadlockPassword(playerIdx, layer, _storedPassword);
                 break;
             case Padlocks.FiveMinutesPadlock:
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
+                characterHandler.SetWhitelistSelectedGagPadlocks(playerIdx, layer, _padlockType);
                 break;
             case Padlocks.TimerPasswordPadlock:
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlockPassword[layer] = _storedPassword;
+                characterHandler.SetWhitelistSelectedGagPadlocks(playerIdx, layer, _padlockType);
+                characterHandler.SetWhitelistSelectedGagPadlockPassword(playerIdx, layer, _storedPassword);
                 break;
             case Padlocks.MistressPadlock:
                 // handle MistressPadlock case
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlockAssigner[layer] = _mistressAssignerName;
+                characterHandler.SetWhitelistSelectedGagPadlocks(playerIdx, layer, _padlockType);
+                characterHandler.SetWhitelistSelectedGagPadlockAssigner(playerIdx, layer, _mistressAssignerName);
                 break;
             case Padlocks.MistressTimerPadlock:
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlocks[layer] = _padlockType;
-                characterHandler.whitelistChars[playerIdx]._selectedGagPadlockAssigner[layer] = _mistressAssignerName;
+                characterHandler.SetWhitelistSelectedGagPadlocks(playerIdx, layer, _padlockType);
+                characterHandler.SetWhitelistSelectedGagPadlockAssigner(playerIdx, layer, _mistressAssignerName);
                 break;
             default:
                 // No password field should be displayed

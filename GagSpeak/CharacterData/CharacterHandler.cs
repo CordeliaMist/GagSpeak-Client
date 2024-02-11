@@ -46,6 +46,105 @@ public class CharacterHandler : ISavable
 
         // ensure all lists have the correct sizes
     }
+#region Gag Setters
+    public void SetPlayerGagType(int index, string gagName) {
+        if(playerChar._selectedGagTypes[index] != gagName) {
+            playerChar._selectedGagTypes[index] = gagName;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetPlayerGagPadlock(int index, string padlockName) {
+        Padlocks lockToAssign = Enum.TryParse(padlockName, out Padlocks padlockType) ? padlockType : Padlocks.None;
+        if(playerChar._selectedGagPadlocks[index] != lockToAssign) {
+            playerChar._selectedGagPadlocks[index] = lockToAssign;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetPlayerGagPadlock(int index, Padlocks padlockName) {
+        if(playerChar._selectedGagPadlocks[index] != padlockName) {
+            playerChar._selectedGagPadlocks[index] = padlockName;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetPlayerGagPadlockPassword(int index, string password) {
+        if(playerChar._selectedGagPadlockPassword[index] != password) {
+            playerChar._selectedGagPadlockPassword[index] = password;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetPlayerGagPadlockTimer(int index, string endTimeOfTimerLock) {
+        DateTimeOffset value = UIHelpers.GetEndTime(endTimeOfTimerLock);
+        if(playerChar._selectedGagPadlockTimer[index] != value) {
+            playerChar._selectedGagPadlockTimer[index] = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void ResetPlayerGagTimers() {
+        playerChar._selectedGagPadlockTimer = new List<DateTimeOffset> {
+            DateTimeOffset.Now,
+            DateTimeOffset.Now,
+            DateTimeOffset.Now
+        };
+        _saveService.QueueSave(this);
+    }
+
+    public void SetPlayerGagPadlockAssigner(int index, string AssignerName) {
+        if(playerChar._selectedGagPadlockAssigner[index] != AssignerName) {
+            playerChar._selectedGagPadlockAssigner[index] = AssignerName;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagTypes(int index, int gagIndex, string gagName) {
+        if(whitelistChars[index]._selectedGagTypes[gagIndex] != gagName) {
+            whitelistChars[index]._selectedGagTypes[gagIndex] = gagName;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagPadlocks(int index, int padlockIndex, string padlockName) {
+        Padlocks lockToAssign = Enum.TryParse(padlockName, out Padlocks padlockType) ? padlockType : Padlocks.None;
+        if(whitelistChars[index]._selectedGagPadlocks[padlockIndex] != lockToAssign) {
+            whitelistChars[index]._selectedGagPadlocks[padlockIndex] = lockToAssign;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagPadlocks(int index, int padlockIndex, Padlocks padlockName) {
+        if(whitelistChars[index]._selectedGagPadlocks[padlockIndex] != padlockName) {
+            whitelistChars[index]._selectedGagPadlocks[padlockIndex] = padlockName;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagPadlockPassword(int index, int passwordIndex, string password) {
+        if(whitelistChars[index]._selectedGagPadlockPassword[passwordIndex] != password) {
+            whitelistChars[index]._selectedGagPadlockPassword[passwordIndex] = password;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagPadlockTimer(int index, int timerIndex, string endTimeOfTimerLock) {
+        DateTimeOffset value = UIHelpers.GetEndTime(endTimeOfTimerLock);
+        if(whitelistChars[index]._selectedGagPadlockTimer[timerIndex] != value) {
+            whitelistChars[index]._selectedGagPadlockTimer[timerIndex] = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistSelectedGagPadlockAssigner(int index, int assignerIndex, string AssignerName) {
+        if(whitelistChars[index]._selectedGagPadlockAssigner[assignerIndex] != AssignerName) {
+            whitelistChars[index]._selectedGagPadlockAssigner[assignerIndex] = AssignerName;
+            _saveService.QueueSave(this);
+        }
+    }
+#endregion Gag Setters
+
 #region PlayerChar Handler Functions
     public void ToggleCmdFromFriends() {
         playerChar._doCmdsFromFriends = !playerChar._doCmdsFromFriends;
@@ -65,6 +164,16 @@ public class CharacterHandler : ISavable
     public void ToggleDirectChatGarblerLock() {
         playerChar._directChatGarblerLocked = !playerChar._directChatGarblerLocked;
         _saveService.QueueSave(this);
+    }
+
+    public void SetDirectChatGarblerLock(bool value) {
+        if(playerChar._directChatGarblerLocked != value) {
+            playerChar._directChatGarblerLocked = value;
+            _saveService.QueueSave(this);
+        }
+        else {
+            playerChar._directChatGarblerLocked = value;
+        }
     }
 
     public void ToggleExtendedLockTimes() {
@@ -387,42 +496,6 @@ public class CharacterHandler : ISavable
         }
     }
 
-    public void SetWhitelistSelectedGagTypes(int index, int gagIndex, string gagName) {
-        if(whitelistChars[index]._selectedGagTypes[gagIndex] != gagName) {
-            whitelistChars[index]._selectedGagTypes[gagIndex] = gagName;
-            _saveService.QueueSave(this);
-        }
-    }
-
-    public void SetWhitelistSelectedGagPadlocks(int index, int padlockIndex, string padlockName) {
-        Padlocks lockToAssign = Enum.TryParse(padlockName, out Padlocks padlockType) ? padlockType : Padlocks.None;
-        if(whitelistChars[index]._selectedGagPadlocks[padlockIndex] != lockToAssign) {
-            whitelistChars[index]._selectedGagPadlocks[padlockIndex] = lockToAssign;
-            _saveService.QueueSave(this);
-        }
-    }
-
-    public void SetWhitelistSelectedGagPadlockPassword(int index, int passwordIndex, string password) {
-        if(whitelistChars[index]._selectedGagPadlockPassword[passwordIndex] != password) {
-            whitelistChars[index]._selectedGagPadlockPassword[passwordIndex] = password;
-            _saveService.QueueSave(this);
-        }
-    }
-
-    public void SetWhitelistSelectedGagPadlockTimer(int index, int timerIndex, string endTimeOfTimerLock) {
-        DateTimeOffset timeToAssign = DateTimeOffset.Parse(endTimeOfTimerLock) is DateTimeOffset value ? value : DateTimeOffset.MinValue;
-        if(whitelistChars[index]._selectedGagPadlockTimer[timerIndex] != timeToAssign) {
-            whitelistChars[index]._selectedGagPadlockTimer[timerIndex] = timeToAssign;
-            _saveService.QueueSave(this);
-        }
-    }
-
-    public void SetWhitelistSelectedGagPadlockAssigner(int index, int assignerIndex, string AssignerName) {
-        if(whitelistChars[index]._selectedGagPadlockAssigner[assignerIndex] != AssignerName) {
-            whitelistChars[index]._selectedGagPadlockAssigner[assignerIndex] = AssignerName;
-            _saveService.QueueSave(this);
-        }
-    }
 
     // for not spamming the save service during info request transfer, do it all in bulk
     public void UpdateWhitelistGagInfo(string whitelistName, string[] GagTypes, string[] Padlocks, string[] Passwords, string[] Timers, string[] Assigners) {
