@@ -68,7 +68,7 @@ public partial class WhitelistPlayerPermissions {
 
 
             // Enable Restraint Sets option
-            ImGuiUtil.DrawFrameColumn($"Enable Restraint Sets:");
+            ImGuiUtil.DrawFrameColumn($"Allow Toggling Restraint Sets:");
             ImGui.TableNextColumn();
             var enableRestraintSets = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets 
                                                 : _characterHandler.playerChar._enableRestraintSets[_characterHandler.activeListIdx];
@@ -81,7 +81,7 @@ public partial class WhitelistPlayerPermissions {
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleEnableRestraintSetsButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
                 if(_viewMode) {
-                    TogglePlayerEnableRestraintSetOption();
+                    TogglePlayerAllowToggleRestraintSets();
                     _interactOrPermButtonEvent.Invoke();
                 } else {
                     _characterHandler.ToggleEnableRestraintSets(_characterHandler.activeListIdx);
@@ -132,7 +132,7 @@ public partial class WhitelistPlayerPermissions {
 
             // Force Enable a Restraint Set option, if the permission is enabled
             ImGui.AlignTextToFramePadding();
-            ImGuiUtil.DrawFrameColumn($"Enable Set:");
+            ImGuiUtil.DrawFrameColumn($"Toggle Set:");
             ImGui.TableNextColumn();
             string restraintSetResult = _restraintSetToEnable; // get the input timer storage
             ImGui.AlignTextToFramePadding();
@@ -145,9 +145,9 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.Center("2");
             ImGui.TableNextColumn();
             if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets) { ImGui.BeginDisabled(); }
-            if(ImGuiUtil.DrawDisabledButton("Enable##EnableRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+            if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
-                EnableRestraintSetByName(_restraintSetToEnable);
+                ToggleRestraintSetByName(_restraintSetToEnable);
                 _interactOrPermButtonEvent.Invoke();
             }
             // end the disabled state
@@ -216,11 +216,11 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s GagStorageUILock state!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockGagStorageOnGagLock = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockGagStorageOnGagLock;
+        _characterHandler.SetWhitelistLockGagStorageOnGagLock(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockGagStorageOnGagLock);
         _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeGagStorageUiLockToggle(playerPayload, targetPlayer));
     }
 
-    public void TogglePlayerEnableRestraintSetOption() {
+    public void TogglePlayerAllowToggleRestraintSets() {
         // get the player payload
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
@@ -229,10 +229,10 @@ public partial class WhitelistPlayerPermissions {
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+
-            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Enable RestraintSets Option!").AddItalicsOff().BuiltString);
+            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Allow RestraintSet Toggling Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets;
-        _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeEnableRestraintSetsOption(playerPayload, targetPlayer));
+        _characterHandler.SetWhitelistEnableRestraintSets(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets);
+        _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeToggleRestraintSetsOption(playerPayload, targetPlayer));
     }
 
     public void TogglePlayerRestraintSetLockingOption() {
@@ -246,11 +246,11 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s allow RestraintSet Locking Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking;
-        _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeEnableRestraintSetLockingOption(playerPayload, targetPlayer));
+        _characterHandler.SetWhitelistRestraintSetLocking(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking);
+        _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeToggleRestraintSetLockingOption(playerPayload, targetPlayer));
     }
 
-    public void EnableRestraintSetByName(string restraintSetNameToApply) {
+    public void ToggleRestraintSetByName(string restraintSetNameToApply) {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
@@ -258,10 +258,10 @@ public partial class WhitelistPlayerPermissions {
         string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
-            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Now attempting to enable "+
+            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Now attempting to toggle "+
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s {restraintSetNameToApply} restraint set.").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
-        _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeEnableRestraintSet(playerPayload, targetPlayer, restraintSetNameToApply));
+        _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeToggleRestraintSet(playerPayload, targetPlayer, restraintSetNameToApply));
     }
 
     public void LockRestraintSetToPlayer(string restraintSetNameToApply, string timeToLock) {

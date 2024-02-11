@@ -111,7 +111,7 @@ public partial class MessageEncoder {
     public string GagEncodedRemoveAllMessage(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
-        "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more*";
+        "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more.*";
     }
 
     // The gag order "Toggle Live Garbler State" Message [ ID == 9 // toggleLiveChatGarbler ]

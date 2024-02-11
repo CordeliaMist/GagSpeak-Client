@@ -38,34 +38,35 @@ public class GlamourerFunctions : IDisposable
     private readonly    RestraintSetManager             _restraintSetManager;   // the restraint set manager
     private readonly    CharacterHandler                _characterHandler;      // the character handler for managing player and whitelist info
     private readonly    GlamourerService                _Interop;               // the glamourer interop class
-    private readonly    ItemAutoEquipEvent              _itemAutoEquipEvent;    // the item auto equip event class
     private readonly    JobChangedEvent                 _jobChangedEvent;       // for whenever we change jobs
+    private readonly    GagSpeakGlamourEvent            _gagSpeakGlamourEvent;  // for whenever glamourer changes
     private readonly    ClientUserInfo                  _charaDataHelpers;      // character data updates/helpers (framework based)
     private             Action<int, nint, Lazy<string>> _ChangedDelegate;       // delgate for  GlamourChanged, so it is subscribed and disposed properly
     private             string?                         _lastCustomizationData; // store the last customization data
     private             CancellationTokenSource         _cts;
 
     public GlamourerFunctions(GagSpeakConfig gagSpeakConfig, RestraintSetManager restraintSetManager, CharacterHandler characterHandler,
-    ClientUserInfo ClientUserInfo, GlamourerService GlamourerService, ItemAutoEquipEvent itemAutoEquipEvent,
-    JobChangedEvent jobChangedEvent, GagStorageManager gagStorageManager) {
+    ClientUserInfo ClientUserInfo, GlamourerService GlamourerService, JobChangedEvent jobChangedEvent,
+    GagStorageManager gagStorageManager, GagSpeakGlamourEvent gagSpeakGlamourEvent) {
         // initialize the glamourer interop class
         _config = gagSpeakConfig;
         _characterHandler = characterHandler;
         _Interop = GlamourerService;
-        _itemAutoEquipEvent = itemAutoEquipEvent;
-        _charaDataHelpers = ClientUserInfo;
         _jobChangedEvent = jobChangedEvent;
+        _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
+        _charaDataHelpers = ClientUserInfo;
         _gagStorageManager = gagStorageManager;
         _restraintSetManager = restraintSetManager;
+
 
         // initialize delegate for the glamourer changed event
         _ChangedDelegate = (type, address, customize) => GlamourerChanged(type, address);
         _lastCustomizationData = "";
         _cts = new CancellationTokenSource(); // for handling gearset changes
         
-        _Interop._StateChangedSubscriber.Subscribe(_ChangedDelegate);   // to know when glamourer state changes
-        _itemAutoEquipEvent.GagItemEquipped += OnGagEquippedEvent;      // common sense
-        _jobChangedEvent.JobChanged += SwitchedJobsEvent;                  // to know when the model is finished drawing
+        _Interop._StateChangedSubscriber.Subscribe(_ChangedDelegate);    // to know when glamourer state changes
+        _jobChangedEvent.JobChanged += SwitchedJobsEvent;                // to know when the model is finished drawing
+        _gagSpeakGlamourEvent.GlamourEventFired += GlamourEventFired;    // to know when we update any setting that should trigger a particular glamour refresh.
     
         GagSpeak.Log.Debug($"[GlamourerService]: GlamourerFunctions initialized!");
         _ = Task.Run(WaitForPlayerToLoad); // wait for player load, then get the player object
@@ -74,8 +75,8 @@ public class GlamourerFunctions : IDisposable
     public void Dispose() {
         GagSpeak.Log.Debug($"[GlamourerService]: Disposing of GlamourerService");
         _Interop._StateChangedSubscriber.Unsubscribe(_ChangedDelegate);
-        _itemAutoEquipEvent.GagItemEquipped -= OnGagEquippedEvent;
         _jobChangedEvent.JobChanged -= SwitchedJobsEvent;
+        _gagSpeakGlamourEvent.GlamourEventFired -= GlamourEventFired;
     }
 
     private async Task WaitForPlayerToLoad() {
@@ -109,7 +110,7 @@ public class GlamourerFunctions : IDisposable
             return;
         }
         // CONDITION THREE: we were just executing an ItemAuto-Equip event, so we dont need to worry about it
-        if(_itemAutoEquipEvent.IsItemAutoEquipEventExecuting == true || _config.disableGlamChangeEvent == true) {
+        if(_gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting || _config.disableGlamChangeEvent) {
             GagSpeak.Log.Verbose($"[GlamourerChanged]: Blocked due to request variables");
             return;
         }
@@ -168,6 +169,88 @@ public class GlamourerFunctions : IDisposable
         await UpdateCachedCharacterData(_lastCustomizationData);
         await Task.Delay(200);
         _config.finishedDrawingGlamChange = true;
+    }
+
+    public async void GlamourEventFired(object sender, GagSpeakGlamourEventArgs e) {
+        // will work for now because glamourer IPC is not updated
+        if(!_characterHandler.playerChar._enableWardrobe) {
+            GagSpeak.Log.Debug($"[GlamourEventFired]: Wardrobe is disabled, so we wont be updating/applying any gag items");
+            return;
+        }
+        // Otherwise, fire the events!
+        _cts.Cancel();
+        _config.disableGlamChangeEvent = true;
+        GagSpeak.Log.Debug($"================= [ "+ e.UpdateType.ToString().ToUpper()+" GLAMOUR EVENT FIRED ] ====================");
+        // conditionals:
+        // condition 1 --> It was an update restraint set event. In this case, we should recall the restraint set applier
+        try{
+            if(e.UpdateType == UpdateType.UpdateRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip) {
+                GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Restraint Set Update");
+                await ApplyRestrainSetToCachedCharacterData(); // correct
+            }
+            // condition 2 --> it was an disable restraint set event, we should revert back to automation, but then reapply the gags
+            if(e.UpdateType == UpdateType.DisableRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip) {
+                try{
+                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Restraint Set Disable, reverting to automation");
+                    await _Interop.GlamourerRevertCharacterToAutomation(_charaDataHelpers.Address);
+                    // dont know how to tell if it was successful, so we will just assume it was
+                } catch (Exception) {
+                    GagSpeak.Log.Error($"Error reverting glamourer to automation");
+                }
+                // now reapply the gags
+                if(_characterHandler.playerChar._allowItemAutoEquip) {
+                    await ApplyGagItemsToCachedCharacterData();
+                }
+            }
+            if(e.UpdateType == UpdateType.GagEquipped && _characterHandler.playerChar._allowItemAutoEquip) {
+                GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Gag Equipped");
+                if(e.GagType != "None") {
+                    await EquipWithSetItem(e.GagType, e.AssignerName);
+                }
+                // otherwise, do the same as the unequip function
+                else {
+                    GagSpeak.Log.Debug($"[GlamourEventFired]: GagType is None, not setting item.");
+                    // if it is none, then do the same as the unequip function.
+                     var gagType = Enum.GetValues(typeof(GagList.GagType))
+                                    .Cast<GagList.GagType>()
+                                    .FirstOrDefault(g => g.GetGagAlias() == e.GagType);
+                     // unequip it
+                    await _Interop.SetItemToCharacterAsync(
+                            _charaDataHelpers.Address,
+                            Convert.ToByte(_gagStorageManager._gagEquipData[gagType]._slot),
+                            ItemIdVars.NothingItem(_gagStorageManager._gagEquipData[gagType]._slot).Id.Id,
+                            0,
+                            0
+                    );
+                }
+            }
+            // condition 4 --> it was an disable gag type event, we should take the gag type, and replace it with a nothing item
+            if(e.UpdateType == UpdateType.GagUnEquipped && _characterHandler.playerChar._allowItemAutoEquip) {
+                // get the gagtype
+                GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Gag UnEquipped");
+                var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(g => g.GetGagAlias() == e.GagType);
+                // this should replace it with nothing
+                await _Interop.SetItemToCharacterAsync(
+                        _charaDataHelpers.Address,
+                        Convert.ToByte(_gagStorageManager._gagEquipData[gagType]._slot),
+                        ItemIdVars.NothingItem(_gagStorageManager._gagEquipData[gagType]._slot).Id.Id,
+                        0,
+                        0
+                );
+            }
+            // condition 5 --> it was a refresh all event, we should reapply all the gags and restraint sets
+            if(e.UpdateType == UpdateType.RefreshAll) {
+                GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Refresh All");
+                await UpdateCachedCharacterData();
+            }
+        } catch (Exception ex) {
+            GagSpeak.Log.Error($"[GlamourEventFired]: Error processing glamour event: {ex.Message}");
+        } finally {
+            GagSpeak.Log.Debug($"[GlamourEventFired]: re-allowing GlamourChangedEvent");
+            await Task.Delay(200);
+            _gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting = false;
+            _config.finishedDrawingGlamChange = true;
+        }
     }
 
 
@@ -239,14 +322,13 @@ public class GlamourerFunctions : IDisposable
             if (restraintSet._enabled) {
                 // Iterate over each EquipDrawData in the restraint set
                 foreach (var pair in restraintSet._drawData) {
-                    GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: Applying Restraint Set to Cached Character Data: {pair.Key} : {pair.Value}");
                     // see if the item is enabled or not (controls it's visibility)
                     if(pair.Value._isEnabled) {
                         // because it is enabled, we will still apply nothing items
                         await _Interop.SetItemToCharacterAsync(
                             _charaDataHelpers.Address, 
                             Convert.ToByte(pair.Key), // the key (EquipSlot)
-                            ItemIdVars.NothingItem(pair.Value._slot).Id.Id, // The _drawData._gameItem.Id.Id
+                            pair.Value._gameItem.Id.Id, // Set this slot to nothing (naked)
                             pair.Value._gameStain.Id, // The _drawData._gameStain.Id
                             0);
                     } else {
@@ -260,7 +342,7 @@ public class GlamourerFunctions : IDisposable
                                 pair.Value._gameStain.Id, // The _drawData._gameStain.Id
                                 0);
                         } else {
-                            GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: EquipDrawData for {pair.Key} is a nothing item, skipping!");
+                            GagSpeak.Log.Debug($"[ApplyRestrainSetToData] Skipping over {pair.Key}!");
                         }
                     }
                 }
@@ -275,7 +357,6 @@ public class GlamourerFunctions : IDisposable
     /// <summary> Applies the gag items to the cached character data. </summary>
     public async Task ApplyGagItemsToCachedCharacterData() {
         GagSpeak.Log.Debug($"[ApplyGagItems]: Applying Gag Items to Cached Character Data");
-        
         // temporary code until glamourer update's its IPC changes
         await EquipWithSetItem(_characterHandler.playerChar._selectedGagTypes[0], "self");
         await EquipWithSetItem(_characterHandler.playerChar._selectedGagTypes[1], "self");
@@ -378,36 +459,17 @@ public class GlamourerFunctions : IDisposable
         }
     }
 
-    public async void OnGagEquippedEvent(object sender, ItemAutoEquipEventArgs e) {
-        try {
-            // know if we can even do anything anyways
-            if(!(_characterHandler.playerChar._enableWardrobe && _characterHandler.playerChar._allowItemAutoEquip)) {
-                GagSpeak.Log.Debug($"[OnGagEquippedEvent]: ItemAutoEquip Permissions not granted. Not setting item.");
-                return;
-            }
-            // otherwise, equip the set item
-            await EquipWithSetItem(e.GagType, e.AssignerName);
-        }
-        catch (Exception ex) {
-            GagSpeak.Log.Error($"[OnGagEquippedEvent]: Error in OnGagEquippedEvent: {ex.Message}");
-        }
-        finally {
-            // release ItemAutoEquipping once done.
-            _itemAutoEquipEvent.IsItemAutoEquipEventExecuting = false;
-        }
-    }
-
     public async Task EquipWithSetItem(string gagName, string assignerName = "") {
         // if the gagName is none, then just dont set it and return
         if(gagName == "None") {
-            GagSpeak.Log.Debug($"[OnGagEquippedEvent]: GagType is None, not setting item.");
+            GagSpeak.Log.Debug($"[OnGagEquippedEvent]: GagLayer Not Equipped.");
             return;
         }
         // Get the gagtype (enum) where it's alias matches the gagName
         var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(g => g.GetGagAlias() == gagName);
         // See if the GagType is in our dictionary & that the gagName is not "None" (because .FirstOrDefault() would make gagType==BallGag when gagName==None)
         if(_gagStorageManager._gagEquipData[gagType]._isEnabled == false) {
-            GagSpeak.Log.Debug($"[OnGagEquippedEvent]: GagType {gagName} is not enabled, so not setting item.");
+            GagSpeak.Log.Debug($"[Interop - SetItem]: GagType {gagName} is not enabled, so not setting item.");
             return;
         }
         // otherwise let's do the rest of the stuff
@@ -423,13 +485,13 @@ public class GlamourerFunctions : IDisposable
                                                        _gagStorageManager._gagEquipData[gagType]._gameStain.Id,
                                                        0
                 );
-                GagSpeak.Log.Debug($"[OnGagEquippedEvent]: Set item {_gagStorageManager._gagEquipData[gagType]._gameItem} to slot {_gagStorageManager._gagEquipData[gagType]._slot} for gag {gagName}");
+                GagSpeak.Log.Debug($"[Interop - SetItem]: Set item {_gagStorageManager._gagEquipData[gagType]._gameItem} to slot {_gagStorageManager._gagEquipData[gagType]._slot} for gag {gagName}");
             }
             catch (TargetInvocationException ex) {
-                GagSpeak.Log.Error($"[OnGagEquippedEvent]: Error setting item: {ex.InnerException}");
+                GagSpeak.Log.Error($"[Interop - SetItem]: Error setting item: {ex.InnerException}");
             } 
         } else {
-            GagSpeak.Log.Debug($"[OnGagEquippedEvent]: Assigner {assignerName} is not valid, so not setting item.");
+            GagSpeak.Log.Debug($"[Interop - SetItem]: Assigner {assignerName} is not valid, so not setting item.");
         }
     }
 

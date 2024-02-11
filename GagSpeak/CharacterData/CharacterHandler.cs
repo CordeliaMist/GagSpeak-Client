@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using GagSpeak.ToyboxandPuppeteer;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.Utility;
+using GagSpeak.Events;
 
 /*
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,9 +35,12 @@ public class CharacterHandler : ISavable
 
     [JsonIgnore]
     private readonly SaveService _saveService;
+    [JsonIgnore]
+    private readonly GagSpeakGlamourEvent _gagSpeakGlamourEvent;
 
-    public CharacterHandler(SaveService saveService) {
+    public CharacterHandler(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent) {
         _saveService = saveService;
+        _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
         // initialize blank data
         playerChar = new PlayerCharacterInfo();
         whitelistChars = new List<WhitelistedCharacterInfo>();
@@ -51,6 +55,10 @@ public class CharacterHandler : ISavable
         if(playerChar._selectedGagTypes[index] != gagName) {
             playerChar._selectedGagTypes[index] = gagName;
             _saveService.QueueSave(this);
+        }
+        // see if we reset it to none, and if so, we should remove our glamoured gag item
+        if(gagName == "None") {
+            _gagSpeakGlamourEvent.Invoke(UpdateType.GagUnEquipped);
         }
     }
 

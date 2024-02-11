@@ -49,6 +49,7 @@ public class ClientUserInfo : IDisposable
     private readonly GagSpeakConfig _config;
     private readonly CharacterHandler _characterHandler;
     private readonly JobChangedEvent _jobChangedEvent;
+    private readonly GagSpeakGlamourEvent _gagSpeakGlamourEvent;
     private CancellationTokenSource? _clearCts = new(); // used for clearing the character data
     //============= Personal Variable Assignment =================//
     public IntPtr Address { get; private set; } // player address
@@ -79,7 +80,7 @@ public class ClientUserInfo : IDisposable
 
     public ClientUserInfo(IChatGui chat, IClientState clientState, ICondition condition, IDataManager gameData,
     IFramework framework, IObjectTable objectTable, GagSpeakConfig config, CharacterHandler characterHandler,
-    JobChangedEvent jobChangedEvent) {
+    JobChangedEvent jobChangedEvent, GagSpeakGlamourEvent gagSpeakGlamourEvent) {
         _chat = chat;
         _clientState = clientState;
         _condition = condition;
@@ -89,6 +90,7 @@ public class ClientUserInfo : IDisposable
         _config = config;
         _characterHandler = characterHandler;
         _jobChangedEvent = jobChangedEvent;
+        _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
         // set variables that are unassigned
         Address = GetPlayerPointerAsync().GetAwaiter().GetResult();
         WorldData = new(() => {
@@ -176,7 +178,7 @@ public class ClientUserInfo : IDisposable
                         _lastLoggedTime = lastLoggedOccurance;
                         _config.finishedDrawingGlamChange = false;
                         _config.disableGlamChangeEvent = false;
-                        _jobChangedEvent.Invoke();
+                        _gagSpeakGlamourEvent.Invoke(UpdateType.RefreshAll);
                     } else {
                         _lastLoggedTime = lastLoggedOccurance;
                         _config.finishedDrawingGlamChange = false;
@@ -185,7 +187,6 @@ public class ClientUserInfo : IDisposable
                 }
             } 
         }
-
 
         // if our job is changed, invoke a redraw
         if (_jobChanged) {

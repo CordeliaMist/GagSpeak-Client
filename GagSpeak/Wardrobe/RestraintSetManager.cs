@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Penumbra.GameData.Structs;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.Events;
+using Dalamud.Plugin.Services;
 
 namespace GagSpeak.Wardrobe;
 
@@ -16,16 +17,18 @@ public class RestraintSetManager : ISavable
 {
     public List<RestraintSet> _restraintSets = []; // stores the restraint sets
     public int _selectedIdx = 0;
-    
-
 
     [JsonIgnore]
     private readonly SaveService _saveService;
     [JsonIgnore]
-    private readonly JobChangedEvent _jobChangedEvent;
-    public RestraintSetManager(SaveService saveService, JobChangedEvent jobChangedEvent) {
+    private readonly GagSpeakGlamourEvent _glamourEvent;
+    [JsonIgnore]
+    private readonly IClientState _clientState;
+    public RestraintSetManager(SaveService saveService,
+    GagSpeakGlamourEvent gagSpeakGlamourEvent, IClientState clientState) {
         _saveService = saveService;
-        _jobChangedEvent = jobChangedEvent;
+        _clientState = clientState;
+        _glamourEvent = gagSpeakGlamourEvent;
         
         // load the information from our storage file
         Load();
@@ -114,41 +117,30 @@ public class RestraintSetManager : ISavable
 
 
     /// <summary> Sets the IsEnabled for a restraint set spesified by index if it exists. </summary>
-    public void ChangeRestraintSetEnabled(int restraintSetIdx, bool isEnabled) {
+    public void ChangeRestraintSetState(int restraintSetIdx, bool isEnabled) {
         // if we are wanting to enable this set, be sure to disable all other sets first
         if(isEnabled) {
+            // we want to set this to true, so first disable all other sets
             foreach (var set in _restraintSets) {
                 if (set._enabled) {
                     set._enabled = false;
                 }
             }
+            // then set this one to true
+            _restraintSets[restraintSetIdx].SetIsEnabled(true);
+            // and update our restraint set
+            _glamourEvent.Invoke(UpdateType.UpdateRestraintSet);            
         }
-        // otherwise, just set it to disabled, (or enabled, it wont matter at this point
-        _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled);
+        // OTHERWISE, we want to set it to false, so just disable it 
+        else {
+            // disable it
+            _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled);
+            // then fire a disable restraint set event to revert to automation
+            _glamourEvent.Invoke(UpdateType.DisableRestraintSet);
+        }
         _saveService.QueueSave(this);
     }
 
-    /// <summary> Toggles the enabled state of a restraint set spesified by index if it exists. </summary>
-    public void ToggleRestraintSetEnabled(int restraintSetIdx) {
-        // if we are trying to disable the restraint set
-        if (_restraintSets[restraintSetIdx]._enabled) {
-            // disable it
-            _restraintSets[restraintSetIdx].SetIsEnabled(false);
-        } // otherwise, if we are trying to enable the restraint set 
-        else {
-            // iterate through every single set
-            for (int i = 0; i < _restraintSets.Count; i++) {
-                // if the set is not our current set, disable it
-                if (i != restraintSetIdx) {
-                    _restraintSets[i].SetIsEnabled(false);
-                }
-            }
-            // then enable the current set
-            _restraintSets[restraintSetIdx].SetIsEnabled(true);
-        }
-        _jobChangedEvent.Invoke();
-        _saveService.QueueSave(this);
-    }
 
     /// <summary> Toggle the enabled state of a slot piece in a spesified restraint set if it exists. </summary>
     public void ToggleRestraintSetPieceEnabledState(int restraintSetIdx, EquipSlot slot) {

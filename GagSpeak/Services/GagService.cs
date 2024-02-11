@@ -35,7 +35,6 @@ public class GagService : IDisposable
 			_gagData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, string>>>>(json) 
                                                         ?? new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
 			// let log know that the file was read
-			GagSpeak.Log.Debug($"[IPA Parser] File read: {jsonFilePath}");
 		}
 		catch (FileNotFoundException) {
 			// If the file does not exist, log an error and initialize obj as an empty dictionary

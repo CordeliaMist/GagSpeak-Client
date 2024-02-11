@@ -31,7 +31,6 @@ public class IpaParserCantonese
 			// deserialize the json into the obj dictionary
 			obj = JsonConvert.DeserializeObject<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
 			// let log know that the file was read
-			GagSpeak.Log.Debug($"[IPA Parser] File read: {jsonFilePath}");
 		}
 		catch (FileNotFoundException) {
 			// If the file does not exist, log an error and initialize obj as an empty dictionary

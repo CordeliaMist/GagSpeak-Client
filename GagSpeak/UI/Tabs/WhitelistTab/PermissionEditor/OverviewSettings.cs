@@ -179,7 +179,7 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Extended Lock Times Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._grantExtendedLockTimes = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._grantExtendedLockTimes;
+        _characterHandler.SetWhitelistGrantExtendedLockTimes(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._grantExtendedLockTimes);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleEnableToyboxOption(playerPayload, targetPlayer));
     }
 
@@ -194,7 +194,7 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Live Chat Garbler Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerActive = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerActive;
+        _characterHandler.SetWhitelistDirectChatGarblerActive(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerActive);
         _chatManager.SendRealMessage(_messageEncoder.GagOrderToggleLiveChatGarbler(playerPayload, targetPlayer));
     }
 
@@ -209,7 +209,7 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Live Chat Garbler Lock Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerLocked = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerLocked;
+        _characterHandler.SetWhitelistDirectChatGarblerLocked(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerLocked);
         _chatManager.SendRealMessage(_messageEncoder.GagOrderToggleLiveChatGarblerLock(playerPayload, targetPlayer));
     }
 

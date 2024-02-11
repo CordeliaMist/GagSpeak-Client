@@ -23,12 +23,13 @@ public partial class ResultLogic {
     private readonly    GagAndLockManager      _lockManager;           // used to get the lock manager
     private readonly    GagService             _gagService;            // used to get the gag service
     private readonly    TimerService           _timerService;          // used to get the timer service
-    private readonly    JobChangedEvent        _jobChangedEvent;       // for whenever we change jobs
+    private readonly    GagSpeakGlamourEvent   _gagSpeakGlamourEvent;  // used to get the glamour event
     private readonly    PlugService            _plugService;           // used to get the plug service
 
     public ResultLogic(IChatGui clientChat, IClientState clientState, GagSpeakConfig config, CharacterHandler characterHandler,
-    PatternHandler patternHandler, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager, PlugService plugService,
-    GagAndLockManager lockManager, GagService gagService, TimerService timerService, JobChangedEvent jobChangedEvent) {
+    PatternHandler patternHandler, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager, 
+    PlugService plugService, GagAndLockManager lockManager, GagService gagService, TimerService timerService,
+    GagSpeakGlamourEvent gagSpeakGlamourEvent) {
         _clientChat = clientChat;
         _clientState = clientState;
         _config = config;
@@ -40,7 +41,7 @@ public partial class ResultLogic {
         _gagService = gagService;
         _timerService = timerService;
         _plugService = plugService;
-        _jobChangedEvent = jobChangedEvent;
+        _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
     }
     /// <summary> This function is used to handle the message result logic for decoded messages involing your player in the GagSpeak plugin. </summary>
     /// <returns>Whether or not the message has been handled.</returns>
@@ -96,7 +97,7 @@ public partial class ResultLogic {
             "toggleGagStorageUiLock"            => ReslogicToggleGagStorageUiLock(decodedMessageMediator, ref isHandled),
             "toggleEnableRestraintSetsOption"   => ResLogicToggleEnableRestraintSetsOption(decodedMessageMediator, ref isHandled),
             "toggleAllowRestraintLockingOption" => ResLogicToggleAllowRestraintLockingOption(decodedMessageMediator, ref isHandled),
-            "enableRestraintSet"                => ResLogicEnableRestraintSet(decodedMessageMediator, ref isHandled),
+            "enableRestraintSet"                => ResLogicToggleRestraintSetState(decodedMessageMediator, ref isHandled),
             "lockRestraintSet"                  => ResLogicLockRestraintSet(decodedMessageMediator, ref isHandled),
             "unlockRestraintSet"                => ResLogicRestraintSetUnlockMessage(decodedMessageMediator, ref isHandled),
             _                                   => LogError("Invalid Wardrobe message parse, If you see this report it to cordy ASAP.")

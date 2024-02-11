@@ -85,7 +85,7 @@ public class MainWindow : Window
         if (TabBar.Draw("##tabs", ImGuiTabBarFlags.None, ToLabel(SelectTab), out var currentTab, () => { }, _tabs)) {
             SelectTab           = TabType.None; // set the selected tab to none
             _config.SelectedTab = FromLabel(currentTab); // set the config selected tab to the current tab
-            _config.Save(); // FIND OUT HOW TO USE SaveConfig(); ACROSS CLASSES LATER.
+            _config.Save();
         }
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
         ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 6f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));

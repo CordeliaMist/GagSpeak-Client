@@ -26,13 +26,13 @@ public class GagAndLockManager : IDisposable
     private readonly IClientState           _clientState;           // for player payload
     private readonly TimerService           _timerService;          // for timers
     private readonly SafewordUsedEvent      _safewordUsedEvent;     // for safeword event
-    private readonly ItemAutoEquipEvent     _gagItemEquippedEvent;  // for gag item equipped event
+    private readonly GagSpeakGlamourEvent   _gagSpeakGlamourEvent;  // for glamour event
 
     /// <summary> Initializes a new instance of the <see cref="GagAndLockManager"/> class. </summary>
     public GagAndLockManager(GagSpeakConfig config, GagStorageManager gagStorageManager,
     RestraintSetManager restraintSetManager, CharacterHandler characterHandler, IChatGui clientChat,
     IClientState clientState, TimerService timerService, SafewordUsedEvent safewordUsedEvent,
-    ItemAutoEquipEvent gagItemEquippedEvent) {
+    GagSpeakGlamourEvent gagSpeakGlamourEvent) {
         _config = config;
         _gagStorageManager = gagStorageManager;
         _restraintSetManager = restraintSetManager;
@@ -41,7 +41,7 @@ public class GagAndLockManager : IDisposable
         _clientState = clientState;
         _timerService = timerService;
         _safewordUsedEvent = safewordUsedEvent;
-        _gagItemEquippedEvent = gagItemEquippedEvent;
+        _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
 
         // subscribe to the safeword event
         _safewordUsedEvent.SafewordCommand += CleanupVariables;
@@ -59,7 +59,7 @@ public class GagAndLockManager : IDisposable
         _characterHandler.SetPlayerGagType(layerIndex, gagType);
         
         // Trigger the event letting our wardrobe manager know a gag is equipped
-        _gagItemEquippedEvent.Invoke(gagType, assignerName);
+        _gagSpeakGlamourEvent.Invoke(UpdateType.GagEquipped, gagType, assignerName);
     }
 
     /// <summary> This method is used to handle individual gag removing command and UI presses
@@ -78,8 +78,9 @@ public class GagAndLockManager : IDisposable
         _config.padlockIdentifier[layerIndex].ClearPasswords();
         _config.padlockIdentifier[layerIndex].UpdatePadlockInfo(layerIndex, true, _characterHandler);
         // we dont worry about removing timers because if no lock, no timer.
-        _characterHandler.Save();
         _config.Save();
+        // fire the glamour update for the gag type
+        _gagSpeakGlamourEvent.Invoke(UpdateType.GagUnEquipped, gagType.GetGagAlias()); // we send in the gag type instead of none, so we can get the slot from gag storage
     }
 
     /// <summary> This method is used to handle removing all of the gags through the command and UI interaction button

@@ -29,7 +29,7 @@ public class GagListingsDrawer : IDisposable
     private readonly    CharacterHandler        _characterHandler;              // used to get the character handler
     private             GagService              _gagService;                    // used to get the gag service
     private             TimerService            _timerService;                  // used to get the timer service
-    private readonly    ItemAutoEquipEvent      _itemAutoEquipEvent;            // used to get the item auto equip event
+    private readonly    GagSpeakGlamourEvent    _glamourEvent;                  // used to get the glamour event
     private             float                   _requiredComboWidthUnscaled;    // used to determine the required width of the combo
     private             float                   _requiredComboWidth;            // used to determine the width of the combo
     private             string                  _buttonLabel = "";              // used to display the button label
@@ -39,15 +39,15 @@ public class GagListingsDrawer : IDisposable
     
     public GagListingsDrawer(DalamudPluginInterface dalamudPluginInterface, GagSpeakConfig config, GagStorageManager gagStorageManager,
     GagAndLockManager lockManager, CharacterHandler characterHandler, GagService gagService, TimerService timerService,
-    ItemAutoEquipEvent itemAutoEquipEvent) {
+    GagSpeakGlamourEvent glamourEvent) {
         _pluginInterface = dalamudPluginInterface;
         _config = config;
         _characterHandler = characterHandler;
         _timerService = timerService;
         _lockManager = lockManager;
         _gagService = gagService;
-        _itemAutoEquipEvent = itemAutoEquipEvent;
         _gagStorageManager = gagStorageManager;
+        _glamourEvent = glamourEvent;
         // draw textures for the gag and padlock listings //
         textureWrap1 = _pluginInterface.UiBuilder.LoadImage(
             Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, $"ItemMouth\\{_characterHandler.playerChar._selectedGagTypes[0]}.png"));
@@ -214,10 +214,8 @@ public class GagListingsDrawer : IDisposable
         combo.Draw(ID, _characterHandler, layerIndex, width);
         
         if(prevItem != _characterHandler.playerChar._selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
-            GagSpeak.Log.Debug($"=======================[ Padlock Manager : GAG CHANGE ]======================");
-            GagSpeak.Log.Debug($"[GagListingsDrawer]: Firing itemAuto-Equip event for gag {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
             _characterHandler.Quicksave();
-            _itemAutoEquipEvent.Invoke(_characterHandler.playerChar._selectedGagTypes[layerIndex], "self");
+            _glamourEvent.Invoke(UpdateType.GagEquipped, _characterHandler.playerChar._selectedGagTypes[layerIndex], "self");
         }
 
         if (!locked) { // if we right click on it, clear the selection

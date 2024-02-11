@@ -212,7 +212,7 @@ public partial class MessageDecoder {
         // decode the toggle for enabling live garbler [ ID == 9 // toggleLiveChatGarbler ]
         else if (decodedMessageMediator.encodedMsgIndex == 9) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) brushes her finger overtop the gag resting over your mouth\.* ""Now be a good girl and be sure to give me those sweet muffled sounds whenever you speak\~""$";
+            string pattern = @"^\*(?<playerInfo>.+) brushes her finger overtop the gag resting over your mouth\.\* ""Now be a good girl and be sure to give me those sweet muffled sounds whenever you speak\~""$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
@@ -233,7 +233,7 @@ public partial class MessageDecoder {
         // decode the toggle for locking live garbler [ ID == 10 // toggleLiveChatGarblerLock ]
         else if (decodedMessageMediator.encodedMsgIndex == 10) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) chuckles in delight of seeing their gagged submissive below them\, a smile formed across their lips\.* ""Look's like you'll be stuck speaking in muffled moans for some time now\~""$";
+            string pattern = @"^\*(?<playerInfo>.+) chuckles in delight of seeing their gagged submissive below them\, a smile formed across their lips\.\* ""Look's like you'll be stuck speaking in muffled moans for some time now\~""$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful

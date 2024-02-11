@@ -105,9 +105,9 @@ public static class ServiceHandler
         => services.AddSingleton<SafewordUsedEvent>()
             .AddSingleton<InfoRequestEvent>()
             .AddSingleton<InteractOrPermButtonEvent>()
-            .AddSingleton<ItemAutoEquipEvent>()
             .AddSingleton<JobChangedEvent>()
             .AddSingleton<LanguageChangedEvent>()
+            .AddSingleton<GagSpeakGlamourEvent>()
             .AddSingleton<ActiveDeviceChangedEvent>();
 
     /// <summary> Classes to add to the service collection from the [GagsAndLocks] folder </summary>

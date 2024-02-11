@@ -142,7 +142,7 @@ public class RestraintSetSelector
                           ? "ACTIVE" : "INACTIVE";
         // the enabled toggle button
         if (ImGui.Button($"{lambdaText}", buttonWidth)) {
-            _restraintSetManager.ToggleRestraintSetEnabled(_restraintSetManager._selectedIdx);
+            _restraintSetManager.ChangeRestraintSetState(_restraintSetManager._selectedIdx, !_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._enabled);
         }
         // draw the input for the lock timer
         ImGui.SameLine();

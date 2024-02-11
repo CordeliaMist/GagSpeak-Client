@@ -102,7 +102,7 @@ public partial class ResultLogic {
 
     // decoder message for enabling a restraint set [ ID == 24 ]
     // [0] = commandtype, [1] = playerMsgWasSentFrom, [8] = restraintSetName
-    public bool ResLogicEnableRestraintSet(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
+    public bool ResLogicToggleRestraintSetState(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
@@ -122,7 +122,7 @@ public partial class ResultLogic {
                     LogError($"[MsgResultLogic]: A restraint set is currently locked. Cannot enable a new set.");
                 }
                 // if it is, then set that restraint sets enabled flag to true.
-                _restraintSetManager.ChangeRestraintSetEnabled(setIdx, true);
+                _restraintSetManager.ChangeRestraintSetState(setIdx, !_restraintSetManager._restraintSets[setIdx]._enabled);
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Restraint Set {decodedMessageMediator.setToLockOrUnlock} has been enabled.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for enabling restraint set");

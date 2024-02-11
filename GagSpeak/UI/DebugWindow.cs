@@ -48,7 +48,6 @@ public class DebugWindow : Window //, IDisposable
     private readonly GagListingsDrawer      _gagListingsDrawer;             // for knowing the information in the currently equipped gags
     private readonly FontService            _fontService;                   // for displaying the IPA symbols on the bottom chart
     private readonly GagService             _gagService;                    // for displaying the number of registered gags
-    private readonly ItemAutoEquipEvent     _itemAutoEquipEvent;            // for knowing when a gag is equipped
     private readonly ItemData               _itemData;                      // for knowing the item data
     private          string?                _tempTestMessage;               // stores the input password for the test translation system
     private          string?                _translatedMessage = "";        // stores the translated message for the test translation system
@@ -57,7 +56,7 @@ public class DebugWindow : Window //, IDisposable
 
     public DebugWindow(DalamudPluginInterface pluginInt, FontService fontService, GagService gagService, RestraintSetManager restraintSetManager,
     IpaParserEN_FR_JP_SP translatorLanguage, GagSpeakConfig config, CharacterHandler characterHandler,
-    GagGarbleManager GagGarbleManager, GagListingsDrawer gagListingsDrawer, ItemAutoEquipEvent itemAutoEquipEvent,
+    GagGarbleManager GagGarbleManager, GagListingsDrawer gagListingsDrawer,
     ItemData itemData) : base(GetLabel()) {
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
@@ -68,7 +67,6 @@ public class DebugWindow : Window //, IDisposable
         };
         _config = config;
         _characterHandler = characterHandler;
-        _itemAutoEquipEvent = itemAutoEquipEvent;
         _fontService = fontService;
         _gagService = gagService;
         _gagManager = GagGarbleManager;

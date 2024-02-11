@@ -155,7 +155,7 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Allow Sit Requests Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsSitRequests = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsSitRequests;
+        _characterHandler.SetWhitelistAllowSitRequests(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsSitRequests);
         _chatManager.SendRealMessage(_messageEncoder.EncodePuppeteerToggleOnlySitRequestOption(playerPayload, targetPlayer));
     }
 
@@ -170,7 +170,7 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Allow Motion Requests Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsMotionRequests = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsMotionRequests;
+        _characterHandler.SetWhitelistAllowMotionRequests(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsMotionRequests);
         _chatManager.SendRealMessage(_messageEncoder.EncodePuppeteerToggleOnlyMotionRequestOption(playerPayload, targetPlayer));
     }
     public void TogglePlayerAllCommandsOption() {
@@ -184,7 +184,7 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Allow All Commands Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsAllCommands = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsAllCommands;
+        _characterHandler.SetWhitelistAllowAllCommands(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsAllCommands);
         _chatManager.SendRealMessage(_messageEncoder.EncodePuppeteerToggleAllCommandsOption(playerPayload, targetPlayer));
     }
 #endregion ButtonHelpers

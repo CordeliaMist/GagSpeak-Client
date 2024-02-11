@@ -199,7 +199,7 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Enable Toybox Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableToybox = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableToybox;
+        _characterHandler.SetWhitelistEnableToybox(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableToybox);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleEnableToyboxOption(playerPayload, targetPlayer));
     }
 
@@ -214,7 +214,7 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Toy State!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState;
+        _characterHandler.SetWhitelistAllowChangingToyState(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleActiveToyboxOption(playerPayload, targetPlayer));
     }
 
@@ -244,6 +244,7 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating  "+ 
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Toy Intensity to {newIntensityLevel}!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
+        _characterHandler.SetWhitelistIntensityLevel(_characterHandler.activeListIdx, (byte)newIntensityLevel);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxUpdateActiveToyIntensity(playerPayload, targetPlayer, newIntensityLevel));
     }
 
@@ -272,7 +273,7 @@ public partial class WhitelistPlayerPermissions {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Toybox Lock Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockToyboxUI = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockToyboxUI;
+        _characterHandler.SetWhitelistAllowToyboxLocking(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockToyboxUI);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleLockToyboxUI(playerPayload, targetPlayer));
     }
 #endregion ButtonHelpers

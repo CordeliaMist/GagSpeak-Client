@@ -83,7 +83,7 @@ public unsafe class ChatInputProcessor : IDisposable {
     /// <returns> The <see cref="byte"/>. </returns>
     /// <exception cref="Exception"> Thrown when an exception error condition of any kind occurs. </exception>
     private unsafe byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3) {
-        GagSpeak.Log.Debug("[Chat Processor]: Detouring Chat Input Message");
+        GagSpeak.Log.Information("[Chat Processor]: Detouring Chat Input Message");
         // try the following
         try {
             var bc = 0; // start the bit counter
@@ -107,7 +107,7 @@ public unsafe class ChatInputProcessor : IDisposable {
             
             var inputString = Encoding.UTF8.GetString(*message, bc);
             var matchedCommand = "";
-            GagSpeak.Log.Debug($"[Chat Processor]: Detouring Message: {inputString}"); // see our message
+            GagSpeak.Log.Information($"[Chat Processor]: Detouring Message: {inputString}"); // see our message
             // first let's make sure its not a command
             if (inputString.StartsWith("/")) {
                 // Check if command is not one of configured channels commands
@@ -116,7 +116,7 @@ public unsafe class ChatInputProcessor : IDisposable {
                 if (matchedCommand.IsNullOrEmpty())
                 {
                     // if it is isn't a command, we can just return the original message
-                    GagSpeak.Log.Debug("[Chat Processor]: Ignoring Message as it is a command");
+                    GagSpeak.Log.Information("[Chat Processor]: Ignoring Message as it is a command");
                     return processChatInputHook.Original(uiModule, message, a3);
                 }
                 // if tell command is matched, need extra step to protect target name

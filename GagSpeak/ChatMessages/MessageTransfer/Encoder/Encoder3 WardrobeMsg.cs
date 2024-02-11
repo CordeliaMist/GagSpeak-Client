@@ -11,21 +11,21 @@ public partial class MessageEncoder {
     }
 
     // Encodes the message that allows the dominant to toggle the permission to allow enabling restraint sets [ ID == 22 ]
-    public string EncodeWardrobeEnableRestraintSetsOption(PlayerPayload playerPayload, string targetPlayer) {
+    public string EncodeWardrobeToggleRestraintSetsOption(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
         "looked down at their companion before walking ove to their wardrobe, \"Now you'll be a good slut and not resist any restraint sets I try putting you in, understand?~\"";
     }
 
     // Encodes the message that allows the dominant to toggle the permission to allow locking restraint sets [ ID == 23 ]
-    public string EncodeWardrobeEnableRestraintSetLockingOption(PlayerPayload playerPayload, string targetPlayer) {
+    public string EncodeWardrobeToggleRestraintSetLockingOption(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
         "looked down at their companion before walking ove to their wardrobe, \"Now you'll be a good slut and not resist any locks I try putting on your restraints, understand?~\"";
     }
         
     // Encodes a message for enabling the restraint set onto the player [ ID == 24 ]
-    public string EncodeWardrobeEnableRestraintSet(PlayerPayload playerPayload, string targetPlayer, string restraintSetName) {
+    public string EncodeWardrobeToggleRestraintSet(PlayerPayload playerPayload, string targetPlayer, string restraintSetName) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
         "opens up the compartment of restraints from their wardrobe, taking out the "+
