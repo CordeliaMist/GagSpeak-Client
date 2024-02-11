@@ -10,6 +10,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Common.Math;
+using GagSpeak.CharacterData;
 using GagSpeak.Services;
 using GagSpeak.ToyboxandPuppeteer;
 using ImGuiNET;
@@ -26,6 +27,7 @@ public class ToyboxWorkshopSubtab : IDisposable
     private readonly    PlugService _plugService;
     private readonly    WorkshopMediator _mediator;
     private             SavePatternWindow _SavePatternWindow;
+    private readonly    CharacterHandler _characterHandler;
     private TimerRecorder _timerRecorder;
     private TimerRecorder _storedRecordedData;
     private List<double> recordedPositions = new List<double>();  // The recorded Y positions of the circle, this is used for the realtime feedback, temporary
@@ -41,24 +43,17 @@ public class ToyboxWorkshopSubtab : IDisposable
     public float yAxisLimitUpper = 100;
     public double[] positions = { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };  // The positions of the ticks
     public string[] labels = { "0%", "", "", "", "", "", "", "", "", "", "100%" };  // The labels of the ticks
-    public Vector4 lushPinkLine = new Vector4(.806f, .102f, .407f, 1);
-    public Vector4 lushPinkButton = new Vector4(1, .051f, .462f, 1);
-    public Vector4 lovenseScrollingBG = new Vector4(0.042f, 0.042f, 0.042f, 0.930f);
-    public Vector4 lovenseDragButtonBG = new Vector4(0.110f, 0.110f, 0.110f, 0.930f);
-    public Vector4 lovenseDragButtonBGAlt = new Vector4(0.1f, 0.1f, 0.1f, 0.930f);
-    public Vector4 ButtonDrag = new Vector4(0.097f, 0.097f, 0.097f, 0.930f);
-    public Vector4 SideButton = new Vector4(0.451f, 0.451f, 0.451f, 1);
-    public Vector4 SideButtonBG = new Vector4(0.451f, 0.451f, 0.451f, .25f);
     #endregion Attributes
 
 
     public ToyboxWorkshopSubtab(FontService fontService, UiBuilder uiBuilder, SavePatternWindow savePatternWindow,
-    DalamudPluginInterface pluginInterface, PlugService plugService, WorkshopMediator mediator) {
+    DalamudPluginInterface pluginInterface, PlugService plugService, WorkshopMediator mediator, CharacterHandler characterHandler) {
         _fontService = fontService;
         _uiBuilder = uiBuilder;
         _plugService = plugService;
         _mediator = mediator;
         _SavePatternWindow = savePatternWindow;
+        _characterHandler = characterHandler;
         
         var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "arrows-spin.png");
         var imagePath2 = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "circle-dot.png");
@@ -102,8 +97,8 @@ public class ToyboxWorkshopSubtab : IDisposable
         ImGui.SetCursorPos(new Vector2(xPos - ImGuiHelpers.GlobalScale * 10, yPos - ImGuiHelpers.GlobalScale * 10));
         var width = ImGui.GetContentRegionAvail().X + ImGuiHelpers.GlobalScale * 10;
         // set up the color map for our plots.
-        ImPlot.PushStyleColor(ImPlotCol.Line, lushPinkLine);
-        ImPlot.PushStyleColor(ImPlotCol.PlotBg, lovenseScrollingBG);
+        ImPlot.PushStyleColor(ImPlotCol.Line, ColorId.LushPinkLine.Value());
+        ImPlot.PushStyleColor(ImPlotCol.PlotBg, ColorId.LovenseScrollingBG.Value());
         // draw the waveform
         ImPlot.SetNextAxesLimits(- 150, 0, -5, 110, ImPlotCond.Always);
         if(ImPlot.BeginPlot("##Waveform", new System.Numerics.Vector2(width, 100), ImPlotFlags.NoBoxSelect | ImPlotFlags.NoMenus
@@ -132,7 +127,7 @@ public class ToyboxWorkshopSubtab : IDisposable
             ImGui.TableSetupColumn("InteractionButtons",        ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Time Remainingmmm..").X);
             ImGui.TableNextColumn();
             // create styles for the next plot
-            ImPlot.PushStyleColor(ImPlotCol.PlotBg, lovenseDragButtonBG);
+            ImPlot.PushStyleColor(ImPlotCol.PlotBg, ColorId.LovenseDragButtonBG.Value());
             // Draw the first row of the table
             // Draw a thin line with a timer to show the current position of the circle
             width = ImGui.GetContentRegionAvail().X;
@@ -148,16 +143,16 @@ public class ToyboxWorkshopSubtab : IDisposable
                     ImPlotAxisFlags.NoGridLines | ImPlotAxisFlags.NoLabel | ImPlotAxisFlags.NoTickLabels | ImPlotAxisFlags.NoTickMarks | ImPlotAxisFlags.NoMenus | ImPlotAxisFlags.NoHighlight,
                     ImPlotAxisFlags.NoGridLines | ImPlotAxisFlags.NoMenus | ImPlotAxisFlags.NoLabel | ImPlotAxisFlags.NoHighlight);
                 ImPlot.SetupAxisTicks(ImAxis.Y1, ref positions[0], 11, labels);
-                ImPlot.DragPoint(0, ref circlePos[0], ref circlePos[1], lushPinkButton, 20, ImPlotDragToolFlags.NoCursors);
+                ImPlot.DragPoint(0, ref circlePos[0], ref circlePos[1], ColorId.LushPinkButton.Value(), 20, ImPlotDragToolFlags.NoCursors);
                 
                 // if the mouse button is released, while we are looping and dragging turn dragging off
-                if (isLooping && isDragging && ImGui.IsMouseReleased(ImGuiMouseButton.Left)) {
+                if (isDragging && ImGui.IsMouseReleased(ImGuiMouseButton.Left)) {
                     isDragging = false;
                     loopIndex = 0; // reset the index
                     GagSpeak.Log.Debug("Dragging Period Ended!");
                 }
                 // if our mouse is down...
-                if (isLooping && ImGui.IsMouseDown(ImGuiMouseButton.Left)) {
+                if (ImGui.IsMouseDown(ImGuiMouseButton.Left)) {
 
                     // if we are not yet marked as dragging, and the positions are different, then mark that we are dragging
                     if (!isDragging && PreviousPos != circlePos[1]) {
@@ -219,7 +214,7 @@ public class ToyboxWorkshopSubtab : IDisposable
         // push our styles
         using var styleColor = ImRaii.PushColor(ImGuiCol.Button, new Vector4(.2f,.2f,.2f,.2f))
             .Push(ImGuiCol.ButtonHovered, new Vector4(.3f,.3f,.3f,.4f))
-            .Push(ImGuiCol.ButtonActive, lushPinkButton);
+            .Push(ImGuiCol.ButtonActive, ColorId.LushPinkButton.Value());
         using var styleVar = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 40);
         // push the table 
         using (var table3 = ImRaii.Table("ThePatternCreationButtonsTable", 1, ImGuiTableFlags.None, new Vector2(-1,-ImGui.GetTextLineHeight()*2))) {
@@ -254,7 +249,7 @@ public class ToyboxWorkshopSubtab : IDisposable
                 }
                 ImGui.SetCursorPos(new Vector2(xPos + (ImGui.GetContentRegionAvail().X - 80*ImGuiHelpers.GlobalScale )/ 2*ImGuiHelpers.GlobalScale, yPos+ 5f*ImGuiHelpers.GlobalScale));
                 // now go back overtop the button and draw an image
-                Vector4 buttonColor = isLooping ? lushPinkButton : SideButton;
+                Vector4 buttonColor = isLooping ? ColorId.LushPinkButton.Value() : ColorId.SideButton.Value();
                 ImGui.Image(_spinningArrowTextureWrap.ImGuiHandle, new Vector2(80*ImGuiHelpers.GlobalScale, 80*ImGuiHelpers.GlobalScale),
                 Vector2.Zero, Vector2.One, buttonColor);
             } catch (Exception e) {
@@ -273,7 +268,7 @@ public class ToyboxWorkshopSubtab : IDisposable
                 }
                 ImGui.SetCursorPos(new Vector2(xPos + (ImGui.GetContentRegionAvail().X - 80*ImGuiHelpers.GlobalScale )/ 2*ImGuiHelpers.GlobalScale, yPos+ 5f*ImGuiHelpers.GlobalScale));
                 // now go back overtop the button and draw an image
-                Vector4 buttonColor = isFloating ? lushPinkButton : SideButton;
+                Vector4 buttonColor = isFloating ? ColorId.LushPinkButton.Value() : ColorId.SideButton.Value();
                 ImGui.Image(_floatingDotTextureWrap.ImGuiHandle, new Vector2(80*ImGuiHelpers.GlobalScale, 80*ImGuiHelpers.GlobalScale),
                 Vector2.Zero, Vector2.One, buttonColor);
             } catch (Exception e) {
@@ -323,9 +318,8 @@ public class ToyboxWorkshopSubtab : IDisposable
         _mediator.isRecording = false;
         _mediator.finishedRecording = true;
         // send a command to switch the vibe back down to 0
-        _ = _plugService.ToyboxVibrateAsync(0, 10);
+        _ = _plugService.ToyboxVibrateAsync((byte)((_characterHandler.playerChar._intensityLevel/(double)_plugService.stepCount)*100), 10);
         // Open the popup
-        ImGui.OpenPopup("Save Pattern");
     }
 
     // Then, in your main rendering loop:

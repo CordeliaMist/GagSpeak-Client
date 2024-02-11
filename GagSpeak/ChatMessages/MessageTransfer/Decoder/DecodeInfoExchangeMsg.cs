@@ -29,7 +29,7 @@ public partial class MessageDecoder {
         // decoder for sharing info about player (part 1)
         else if (decodedMessageMediator.encodedMsgIndex == 38) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+)\, their (?<theirStatusToYou>.+)\'s (?<yourStatusToThem>.+) nodded in agreement\, informing their partner of how when they last played together\, (?<safewordUsed>.+)\. (?<extendedLocks>.+)\, (?<gaggedVoice>.+)\, (?<sealedLips>.+)\. \-\>$";
+            string pattern = @"^\*(?<playerInfo>(?:[^,]*))\, their (?<theirStatusToYou>(?:[^']*))\'s (?<yourStatusToThem>(?:[^,]*)) nodded in agreement\, informing their partner of how when they last played together\, (?<safewordUsed>(?:[^,]*))\. (?<extendedLocks>(?:[^,]*))\, (?<gaggedVoice>(?:[^,]*))\, (?<sealedLips>(?:[^.]*))\. \-\>$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -92,17 +92,17 @@ public partial class MessageDecoder {
                         decodedMessageMediator.layerAssigner[i] = "";
                     } else {
                         // otherwise, check what the gagtype was.
-                        decodedMessageMediator.layerGagName[i] = layerInfo.Split("she had a ")[1].Split(" fastened in good and tight")[0].Trim();
+                        decodedMessageMediator.layerGagName[i] = layerInfo.Split("she had a ")[1].Split(" fastened in good and tight, ")[0].Trim();
                         // if it was locked, then we need to get the lock type
                         if (layerInfo.Contains("locked with a")) {
-                            decodedMessageMediator.layerPadlock[i] = layerInfo.Split("locked with a")[1].Trim().Split(",")[0].Trim();
+                            decodedMessageMediator.layerPadlock[i] = layerInfo.Split("locked with a")[1].Trim().Split(", ")[0].Trim();
                             // if it was locked, we need to get the assigner
                             if (layerInfo.Contains("which had been secured by")) {
-                                decodedMessageMediator.layerAssigner[i] = layerInfo.Split("which had been secured by")[1].Trim().Split("with")[0].Trim();
+                                decodedMessageMediator.layerAssigner[i] = layerInfo.Split("which had been secured by")[1].Trim().Split(", ")[0].Trim();
                             }
                             // if it was locked with a timer, then we need to get the timer
                             if (layerInfo.Contains("with") && layerInfo.Contains("remaining")) {
-                                decodedMessageMediator.layerTimer[i] = layerInfo.Split("with")[1].Trim().Split("remaining")[0].Trim();
+                                decodedMessageMediator.layerTimer[i] = layerInfo.Split("with")[1].Trim().Split("remaining, ")[0].Trim();
                             }
                             // if it was locked with a password, then we need to get the password
                             if(layerInfo.Contains("with the password")) {
@@ -174,7 +174,7 @@ public partial class MessageDecoder {
                 // decoder for our sharing info about player (part 4)
         else if (decodedMessageMediator.encodedMsgIndex == 41) {
             // get the pattern
-            string pattern = @"^\|\|\s*(?<toyboxEnabled>.+?)\.\s*Within the drawer there\s*(?<toggleToyState>.+?),\s*(?<canControlIntensity>.+?)\s*currently set to\s*(?<intensityLevel>\d+)\.\s*(?<toyPatternState>.+?)\,\s*(?<toyboxLockState>.+?)\.\s*(?<toyActiveState>.+?)$";
+            string pattern = @"^\|\|\s*(?<toyboxEnabled>.+?)\.\s*Within the drawer there\s*(?<toggleToyState>.+?),\s*(?<canControlIntensity>.+?)\s*currently set to\s*(?<intensityLevel>\d+)\.\s*(?<toyPatternState>.+?)\,\s*(?<toyboxLockState>.+?)\.\s*(?<toyActiveState>.+?)\s*with\s*(?<toyStepCount>.+?)\s*notches on the slider\.$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -195,6 +195,8 @@ public partial class MessageDecoder {
                 decodedMessageMediator.isToyboxLockingAllowed = match.Groups["toyboxLockState"].Value.Trim() == "with the viberator strapped tight to their skin" ? true : false;
                 // toy active state
                 decodedMessageMediator.toyState = match.Groups["toyActiveState"].Value.Trim() == "Left on to buzz away" ? true : false;
+                // toy step count
+                decodedMessageMediator.toyStepCount = int.Parse(match.Groups["toyStepCount"].Value.Trim());
                 // debug result
                 GagSpeak.Log.Debug($"[Message Decoder]: share info4: (Type) {decodedMessageMediator.encodedCmdType} || (ToggleToyState) {decodedMessageMediator.isChangingToyStateAllowed} || "+
                 $"(CanControlIntensity) {decodedMessageMediator.isIntensityControlAllowed} || (IntensityLevel) {decodedMessageMediator.intensityLevel} || "+

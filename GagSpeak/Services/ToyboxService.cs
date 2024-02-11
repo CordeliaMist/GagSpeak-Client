@@ -33,6 +33,7 @@ public class PlugService : IDisposable
     public bool isScanning;         // to know if we are scanning
     public double stepInterval;         // know the step size of our active device
     public int stepCount;           // know the step count of our active device
+    public double batteryLevel;     // know the battery level of our active device
     public PlugService(CharacterHandler characterHandler, IChatGui chatGui,
     ActiveDeviceChangedEvent activeDeviceChangedEvent) {
         _characterHandler = characterHandler;
@@ -42,6 +43,8 @@ public class PlugService : IDisposable
         anyDeviceConnected = false;
         isScanning = false;
         deviceIndex = -1;
+        stepCount = 0;
+        batteryLevel = 0;
         ////// STEP ONE /////////
         // connect to client
         client = new ButtplugClient("GagSpeak");
@@ -78,11 +81,13 @@ public class PlugService : IDisposable
         if(client.Devices.Count() > 0 && anyDeviceConnected == false) {
             activeDevice = client.Devices.First();
             GetstepIntervalForActiveDevice();
+            GetBatteryLevelForActiveDevice();
             anyDeviceConnected = true;
         }
         if(anyDeviceConnected) {
             activeDevice = client.Devices.First();
             GetstepIntervalForActiveDevice();
+            GetBatteryLevelForActiveDevice();
         }
     }
 
@@ -108,6 +113,8 @@ public class PlugService : IDisposable
         isScanning = false;
         deviceIndex = -1;
         activeDevice = null;
+        stepCount = 0;
+        batteryLevel = 0;
         GagSpeak.Log.Debug("[Toybox Service][Event Handler] Server Disconnected");
     }
 
@@ -122,6 +129,7 @@ public class PlugService : IDisposable
             activeDevice = client.Devices.ElementAt(deviceIndex);
             // get the step size for the new device
             GetstepIntervalForActiveDevice();
+            GetBatteryLevelForActiveDevice();
         } else {
             GagSpeak.Log.Error($"[Toybox Service][Event Handler] Active Device Index {e.DeviceIndex} out of bounds, not updating.");
         }
@@ -159,8 +167,14 @@ public class PlugService : IDisposable
                         // set our active device to the first device in the list
                         activeDevice = client.Devices.First();
                         GetstepIntervalForActiveDevice();
+                        GetBatteryLevelForActiveDevice();
                         // we should also set our device index to 0
                         deviceIndex = 0;
+                        // activate the vibe
+                        if(_characterHandler.playerChar._isToyActive) {
+                            GagSpeak.Log.Debug($"[Toybox Service] Active Device: {activeDevice.Name}, is enabled! Vibrating with intensity: {(byte)((_characterHandler.playerChar._intensityLevel/(double)stepCount)*100)}");
+                            await ToyboxVibrateAsync((byte)((_characterHandler.playerChar._intensityLevel/(double)stepCount)*100), 100);
+                        }
                     }
                     // if we meet here, it's fine, it just means we are connected and dont yet have anything to display.
                     // So we will wait until a device is added to set anyDeviceConnected to true
@@ -251,6 +265,25 @@ public class PlugService : IDisposable
         }
     }
 
+    public async void GetBatteryLevelForActiveDevice() {
+        try {
+            if (client.Connected && activeDevice != null) {
+                if (activeDevice.HasBattery) {
+                    // try get to get the battery level
+                    try{
+                        batteryLevel = await activeDevice.BatteryAsync();
+                    }
+                    catch (Exception ex) {
+                        GagSpeak.Log.Error($"[Toybox Service] Error in getting battery level: {ex.ToString()}");
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            GagSpeak.Log.Error($"[Toybox Service] Error in getting battery level: {ex.ToString()}");
+        }
+    }
+
+
     // Vibrate the device for a set amount of time and strength
     public async Task ToyboxVibrateAsync(byte intensity, int msUntilTaskComplete = 100) {
         // when this is recieved, attempt to:
@@ -269,6 +302,9 @@ public class PlugService : IDisposable
                 // wait for the set amount of seconds
                 await Task.Delay(msUntilTaskComplete);
                 #pragma warning restore CS8602 // Dereference of a possibly null reference.
+            } else {
+                GagSpeak.Log.Error("[Toybox Service] No device connected or device index is out of bounds, cannot vibrate.");
+            
             }
         }
         // if at any point we fail here, throw an exception

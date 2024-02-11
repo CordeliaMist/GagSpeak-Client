@@ -48,7 +48,10 @@ public class SavePatternWindow : Window //, IDisposable
         ImGui.SameLine();
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         if (ImGui.Button("Discard", new Vector2(ImGui.GetContentRegionAvail().X, -1))) {
-            _workshopMediator.finishedRecording = false;                        
+            _workshopMediator.finishedRecording = false;  
+            _workshopMediator.recordingStopwatch.Reset();  // Reset the stopwatch
+            _workshopMediator.patternName = "";
+            Toggle();                      
         }
         ImGui.PopFont();
     }

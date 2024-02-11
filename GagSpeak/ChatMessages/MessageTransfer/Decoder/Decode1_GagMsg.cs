@@ -60,7 +60,7 @@ public partial class MessageDecoder {
         // decode the /gag lock (password) message [ ID == 3 // lockPassword ]
         else if (decodedMessageMediator.encodedMsgIndex == 3) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) takes out a (?<lockType>.+) from (?<player>.+)\'s pocket and sets the password to (?<password>.+)\, locking your (?<layer>first|second|third) layer gag\*$";
+            string pattern = @"^\*(?<playerInfo>.+) takes out a (?<lockType>.+) from her pocket and sets the password to (?<password>.+)\, locking your (?<layer>first|second|third) layer gag\*$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful

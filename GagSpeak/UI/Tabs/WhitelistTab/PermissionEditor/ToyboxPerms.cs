@@ -153,7 +153,9 @@ public partial class WhitelistPlayerPermissions {
             // then draw the slider
             int intensityResult = _vibratorIntensity;
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            if(ImGui.SliderInt("##ToyIntensity", ref intensityResult, 0, 10)) {
+            // default to a range of 10, but otherwise, display the toy's active step size
+            var maxSliderVal = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize==0 ? 10 : _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize;
+            if(ImGui.SliderInt("##ToyIntensity", ref intensityResult, 0, maxSliderVal)) {
                 _vibratorIntensity = intensityResult;
             }
 

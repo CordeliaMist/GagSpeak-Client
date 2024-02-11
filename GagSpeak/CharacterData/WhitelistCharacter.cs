@@ -29,7 +29,6 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
     public bool             _allowsIntensityControl { get; set; } = false;   // [TIER 3] Basically says "This person can adjust the intensity slider"
     public bool             _allowsUsingPatterns { get; set; } = false;      // [TIER 0] Do they allow you to execute stored patterns
     public  int             _activeToystepSize { get; set; } = 0;            // [TIER 0] the step count of the vibe
-    public  double          _activeToystepInterval { get; set; } = 0;        // [TIER 0] step size interval of the vibe
 
     ////////////////////////////////////////////////// PROTECTED FIELDS ////////////////////////////////////////////////////
     
@@ -180,7 +179,6 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
                 ["AllowIntensityControl"] = _allowsIntensityControl,
                 ["AllowsUsingPatterns"] = _allowsUsingPatterns,
                 ["ActiveToystepSize"] = _activeToystepSize,
-                ["ActiveToystepInterval"] = _activeToystepInterval
             };
             // merge with the base serialization
             JObject baseSerialized = base.Serialize();
@@ -215,7 +213,6 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         _allowsIntensityControl = jsonObject["AllowIntensityControl"]?.Value<bool>() ?? false;
         _allowsUsingPatterns = jsonObject["AllowsUsingPatterns"]?.Value<bool>() ?? false;
         _activeToystepSize = jsonObject["ActiveToystepSize"]?.Value<int>() ?? 0;
-        _activeToystepInterval = jsonObject["ActiveToystepInterval"]?.Value<double>() ?? 0;
     }
 
 #endregion Serialization and Deserialization

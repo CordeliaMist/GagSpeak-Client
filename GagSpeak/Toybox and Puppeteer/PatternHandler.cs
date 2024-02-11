@@ -75,6 +75,7 @@ public class PatternHandler : ISavable
 
     // add a new pattern by passing in a pattern object
     public void AddNewPattern(PatternData newPattern) {
+        newPattern._name = GenerateUniqueName(newPattern._name);
         _patterns.Add(newPattern);
         // set the pattern index to the first index if it is -1
         if (_activePatternIndex == -1) {

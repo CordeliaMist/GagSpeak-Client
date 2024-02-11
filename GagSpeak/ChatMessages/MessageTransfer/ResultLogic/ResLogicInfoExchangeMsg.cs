@@ -42,6 +42,7 @@ public partial class ResultLogic {
         if(_characterHandler.IsPlayerInWhitelist(senderName)) {
             Idx = _characterHandler.GetWhitelistIndex(senderName);
         }
+        _config.SetSendInfoName(_characterHandler.whitelistChars[Idx]._name + "@" + _characterHandler.whitelistChars[Idx]._homeworld);
         // we have the index, so now we can update with the variables.
         if(Idx != -1) {
             // i know this is confusing, but remember, when they send the message to them, they were sending their lean to you,
@@ -133,6 +134,7 @@ public partial class ResultLogic {
             _characterHandler.SetWhitelistAllowUsingPatterns(Idx, decodedMessageMediator.isUsingPatternsAllowed);
             _characterHandler.SetWhitelistAllowToyboxLocking(Idx, decodedMessageMediator.isToyboxLockingAllowed);
             _characterHandler.SetWhitelistToyIsActive(Idx, decodedMessageMediator.toyState);
+            _characterHandler.SetWhitelistToyStepSize(Idx, decodedMessageMediator.toyStepCount);
             GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 4 message");
             // we have finished revcieving info from this person, make sure to clear the sendInfoName
             _config.SetSendInfoName("");

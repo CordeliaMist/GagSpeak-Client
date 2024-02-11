@@ -43,7 +43,7 @@ public class RestraintSetEditor
         _itemData = itemData;
         _stainData = stainData;
         _restraintSetManager = restraintSetManager;
-        _iconSize    = ImGuiHelpers.ScaledVector2(48);
+        _iconSize    = ImGuiHelpers.ScaledVector2(48*ImGuiHelpers.GlobalScale);
         _eyeIcon = new string[EquipSlotExtensions.EqdpSlots.Count];
         // create a new gameItemCombo for each equipment piece type, then store them into the array.
         _gameItemCombo = EquipSlotExtensions.EqdpSlots.Select(e => new GameItemCombo(_gameData, e, _itemData, GagSpeak.Log)).ToArray();
@@ -79,7 +79,7 @@ public class RestraintSetEditor
                 _eyeIcon[i] = _restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._drawData[slot]._isEnabled 
                         ? FontAwesomeIcon.Eye.ToIconString() : FontAwesomeIcon.EyeSlash.ToIconString();
                 // display either eyeslash or eye based on if it is enabled or not
-                if(ImGuiUtil.DrawDisabledButton($"{_eyeIcon[i]}##{slot}VisibilityButton", new Vector2(ImGui.GetContentRegionAvail().X, 48),
+                if(ImGuiUtil.DrawDisabledButton($"{_eyeIcon[i]}##{slot}VisibilityButton", new Vector2(ImGui.GetContentRegionAvail().X, 48*ImGuiHelpers.GlobalScale),
                 "Enable or Disable this piece from being visible. [[ Does nothing right now ]]", false, true)) {
                     // if we click this, we should toggle between states with a visable eye icon
                     _restraintSetManager.ToggleRestraintSetPieceEnabledState(_restraintSetManager._selectedIdx, slot);

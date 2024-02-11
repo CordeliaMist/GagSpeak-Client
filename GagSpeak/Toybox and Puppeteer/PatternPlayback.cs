@@ -6,6 +6,7 @@ using System.Timers;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Common.Math;
+using GagSpeak.CharacterData;
 using GagSpeak.Services;
 using GagSpeak.ToyboxandPuppeteer;
 using ImGuiNET;
@@ -14,18 +15,20 @@ using ImPlotNET;
 namespace GagSpeak.UI.Tabs.ToyboxTab;
 public class PatternPlayback : IDisposable
 {
+    private readonly PlugService        _plugService;
+    private readonly CharacterHandler   _characterHandler;
     private PatternData _tempStoredPattern;
     private TimerRecorder _timerRecorder;
     public Stopwatch _recordingStopwatch;
-    private readonly PlugService    _plugService;
     private List<byte> storedRecordedPositions = new List<byte>(); // the stored pattern data to playback
     private double[] currentPos = new double[2];  // The plotted points position on the wavelength graph
     private bool _isPlaybackActive;  // Whether the playback is active
     private int _patternIdx;  // The index of the pattern being played back
 
 
-    public PatternPlayback(PlugService plugService) {
+    public PatternPlayback(PlugService plugService, CharacterHandler characterHandler) {
         _plugService = plugService;
+        _characterHandler = characterHandler;
         _isPlaybackActive = false;
         _playbackIndex = 0;
         _patternIdx = -1;
@@ -133,7 +136,7 @@ public void Draw() {
         _timerRecorder.Stop();
         _recordingStopwatch.Stop();
         _recordingStopwatch.Reset();
-        _ = _plugService.ToyboxVibrateAsync(0, 10);
+        _ = _plugService.ToyboxVibrateAsync((byte)((_characterHandler.playerChar._intensityLevel/(double)_plugService.stepCount)*100), 10);
     }
 
     private int _playbackIndex;  // The current index of the playback

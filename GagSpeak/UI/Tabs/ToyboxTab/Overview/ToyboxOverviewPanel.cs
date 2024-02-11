@@ -109,13 +109,20 @@ public class ToyboxOverviewPanel
         xPos = ImGui.GetCursorPosX();
         ImGui.SetCursorPosX(xPos + 5*ImGuiHelpers.GlobalScale);
         // draw out the checkmarks
-        var activationText = _charHandler.playerChar._isToyActive ? "Active" : "Inactive";
-        if(ImGuiUtil.DrawDisabledButton($"{activationText}", new Vector2(ImGui.CalcTextSize("Inactiven").X,0), "Toggles the active state of your toy", false)) {
+        var activationText = _charHandler.playerChar._isToyActive ? "Turn Off" : "Turn On";
+        // draw the button for turning on or off the toy
+        if(ImGuiUtil.DrawDisabledButton($"{activationText}", new Vector2(ImGui.CalcTextSize("Turn offmm").X,0), "Toggles the active state of your toy", false)) {
             _charHandler.ToggleToyState();
+            // see what the new state is, and update the vibe accordingly
+            if(_charHandler.playerChar._isToyActive) {
+                _ = _plugService.ToyboxVibrateAsync((byte)((_charHandler.playerChar._intensityLevel/(double)_plugService.stepCount)*100), 20);
+            } else {
+                _ = _plugService.ToyboxVibrateAsync(0, 20);
+            }
         }
         ImGui.SameLine();
         ImGui.AlignTextToFramePadding();
-        UIHelpers.CheckboxNoConfig("Changing State",
+        UIHelpers.CheckboxNoConfig("Toy State",
         $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} is able to enable / disable your toy",
         _charHandler.playerChar._allowChangingToyState[_charHandler.activeListIdx],
         v => _charHandler.ToggleChangeToyState(_charHandler.activeListIdx)
@@ -147,7 +154,8 @@ public class ToyboxOverviewPanel
             ImGui.TableSetupColumn("PatternList", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("PatternListingsmmmmmmm").X);
             // and print the current plug name
             ImGui.TableNextColumn();
-            // within this cell, restore the padding
+            // get the fixed Y position we want for the table
+            var fixedY = ImGui.GetCursorPosY() + 160*ImGuiHelpers.GlobalScale;
             // check if the device exists
             try{
                 xPos = ImGui.GetCursorPosX();
@@ -155,7 +163,6 @@ public class ToyboxOverviewPanel
                 ImGui.SetCursorPos(new Vector2(xPos+5*ImGuiHelpers.GlobalScale, yPos - 5*ImGuiHelpers.GlobalScale));
                 if(!_plugService.anyDeviceConnected) { 
                     DisplayText("No Device Connected!");
-                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 110*ImGuiHelpers.GlobalScale);
                 }
                 else {
                     #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -169,24 +176,20 @@ public class ToyboxOverviewPanel
                     // print all the juicy info about your currently active toy
                     var width = ImGui.GetContentRegionAvail().X;
                     ImGui.Columns(2, "ToyInfo", false);
-                    ImGui.SetColumnWidth(0, width*0.7f);
+                    ImGui.SetColumnWidth(0, width*0.65f);
                     if (_plugService.activeDevice != null)
                     {
                         
                         ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + 3*ImGuiHelpers.GlobalScale, ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale));
-                        ImGui.PushStyleColor(ImGuiCol.Text, ColorId.LushPinkLine.Value());
                         ImGui.Text($"Name: {_plugService.activeDevice.Name}");
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3*ImGuiHelpers.GlobalScale);
-                        ImGui.Text($"Display Name: {_plugService.activeDevice.DisplayName}");
-                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3*ImGuiHelpers.GlobalScale);
-                        ImGui.Text($"Message Timing Gap: {_plugService.activeDevice.MessageTimingGap}");
+                        ImGui.Text($"Disp. Name: {_plugService.activeDevice.DisplayName}");
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3*ImGuiHelpers.GlobalScale);
                         ImGui.Text($"Step Size: {100/(100*_plugService.stepInterval)}");
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3*ImGuiHelpers.GlobalScale);
                         ImGui.Text($"Step Interval: {_plugService.stepInterval}");
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3*ImGuiHelpers.GlobalScale);
-                        ImGui.Text($"Battery?: {_plugService.activeDevice.HasBattery}");
-                        ImGui.PopStyleColor();
+                        ImGui.Text($"Battery Level: {_plugService.batteryLevel*100}%%");
                     }
                     ImGui.NextColumn();
                     // draw out the slider here
@@ -194,9 +197,9 @@ public class ToyboxOverviewPanel
                     int maxVal = _plugService.stepCount;
                     int intensityResult = _charHandler.playerChar._intensityLevel;
                     if(_patternCollection.GetActiveIdx() != -1 && _patternCollection._patterns[_patternCollection._activePatternIndex]._isActive) { ImGui.BeginDisabled(); }
-                    if(ImGui.VSliderInt("##VertSliderToy", new Vector2(width,ImGuiHelpers.GlobalScale*120), ref intensityResult, 0, maxVal)) {
+                    if(ImGui.VSliderInt("##VertSliderToy", new Vector2(width,ImGuiHelpers.GlobalScale*175), ref intensityResult, 0, maxVal)) {
                         //  (byte)(intensityResult*_plugService.stepCount); formats it back into the same value stored by patterns for fast calculations
-                        _charHandler.playerChar._intensityLevel = intensityResult;
+                        _charHandler.UpdateIntensityLevel(intensityResult);
                         //GagSpeak.Log.Debug($"[Toybox Overview Panel] Intensity Level: {_charHandler.playerChar._intensityLevel}");
                         // update the intensity on our device if it is set to active
                         if(_plugService.activeDevice != null && _tempSliderValue != intensityResult) {
@@ -212,11 +215,8 @@ public class ToyboxOverviewPanel
                 }
                 // draw info of selected Pattern, if one is selected
                 if (_patternCollection._activePatternIndex >=0) {
-                    if(!_plugService.anyDeviceConnected) {
-                        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - ImGuiHelpers.GlobalScale);
-                    } else {
-                        ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX(), ImGui.GetCursorPosY() - 15*ImGuiHelpers.GlobalScale));
-                    }
+                    ImGui.SetCursorPos(new Vector2(xPos, fixedY));
+                
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5*ImGuiHelpers.GlobalScale);
                     ImGui.PushFont(_fontService.UidFont);
                     string newPatternName = _patternCollection._patterns[_patternCollection._activePatternIndex]._name;

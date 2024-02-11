@@ -165,6 +165,14 @@ public class CharacterHandler : ISavable
         playerChar._revertStyle = style;
         _saveService.QueueSave(this);
     }
+
+    public void UpdateIntensityLevel(int intensity) {
+        if(playerChar._intensityLevel != intensity) {
+            playerChar._intensityLevel = intensity;
+            Save();
+        }
+    }
+
     public void ToggleCmdFromFriends() {
         playerChar._doCmdsFromFriends = !playerChar._doCmdsFromFriends;
         _saveService.QueueSave(this);
@@ -511,6 +519,13 @@ public class CharacterHandler : ISavable
     public void SetWhitelistToyIsActive(int index, bool value) {
         if(whitelistChars[index]._isToyActive != value) {
             whitelistChars[index]._isToyActive = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
+    public void SetWhitelistToyStepSize(int index, int value) {
+        if(whitelistChars[index]._activeToystepSize != value) {
+            whitelistChars[index]._activeToystepSize = value;
             _saveService.QueueSave(this);
         }
     }

@@ -93,6 +93,8 @@ public partial class ResultLogic {
                 if(_characterHandler.playerChar._allowChangingToyState[index] && _characterHandler.playerChar._allowIntensityControl[index]) {
                     // they have the permission to do it, so do it
                     _ = _plugService.ToyboxVibrateAsync((byte)((decodedMessageMediator.intensityLevel/(double)_plugService.stepCount)*100), 20);
+                    // set the new intensity level
+                    _characterHandler.SetWhitelistIntensityLevel(index, (byte)decodedMessageMediator.intensityLevel);
                     GagSpeak.Log.Debug($"[Message Decoder]: {playerName} had its intensity updated "+
                     $"to lv.{decodedMessageMediator.intensityLevel}");
                     return true;

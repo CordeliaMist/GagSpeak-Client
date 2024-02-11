@@ -53,7 +53,8 @@ public class DecodedMessageMediator
     public bool isChangingToyStateAllowed { get; set; } // state of active toy? ((or pending state update)) [ TIER 1 ]
     public bool isIntensityControlAllowed { get; set; } // does messageSender allow adjusting intensity of toy? [ TIER 3 ]
     public bool toyState { get; set; }                  // state of toy? (is it on) [ Dependant permission on isChangingToyStateAllowed ]
-    public int intensityLevel { get; set; }             // current intensity level of active toy ((or new intensity level being sent)) [ TIER 2 ]   
+    public int intensityLevel { get; set; }             // current intensity level of active toy ((or new intensity level being sent)) [ TIER 2 ]
+    public int toyStepCount { get; set; }               // current step count of active toy ((or new step count being sent)) [ TIER 2 ]
     public bool isUsingPatternsAllowed { get; set; }    // does messageSender allow you to execute storedToyPatterns? [ TIER 4 ]
     public string patternNameToExecute { get; set; }    // name of pattern to execute (not given in infoRequests) (STRING)
     public bool isToyboxLockingAllowed { get; set; }    // does messageSender allow you to lock the toybox UI? [ TIER 3 ]
@@ -114,6 +115,7 @@ public class DecodedMessageMediator
         isIntensityControlAllowed = false;
         toyState = false;
         intensityLevel = 0;
+        toyStepCount = 0;
         isUsingPatternsAllowed = false;
         patternNameToExecute = "";
         isToyboxLockingAllowed = false;

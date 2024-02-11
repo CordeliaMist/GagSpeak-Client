@@ -2,10 +2,15 @@ using GagSpeak.Utility;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using System;
 using GagSpeak.CharacterData;
+using GagSpeak.Services;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
 public partial class MessageEncoder {
+    private readonly PlugService _plugService;
+    public MessageEncoder(PlugService plugService) {
+        _plugService = plugService;
+    }
     // for making sure we can interface with the character Handler
     
     /// <summary> For requesting for information from another user in the whitelist </summary>
@@ -101,22 +106,21 @@ public partial class MessageEncoder {
             }
             // layer {i} gag name if it WAS NOT "None"
             else {
-                baseString += $"she had a {_characterHandler.playerChar._selectedGagTypes[i]} fastened in good and tight";
+                baseString += $"she had a {_characterHandler.playerChar._selectedGagTypes[i]} fastened in good and tight, ";
                 // layer {i} padlock type IF A PADLOCK IS PRESENT
                 if (_characterHandler.playerChar._selectedGagPadlocks[i].ToString() != "None") {
-                    baseString += $", locked with a {_characterHandler.playerChar._selectedGagPadlocks[i].ToString()}"; // [11, 12, 13]
+                    baseString += $"locked with a {_characterHandler.playerChar._selectedGagPadlocks[i].ToString()}, ";
                     // layer {i} padlock assigner IF IT EXISTS
                     if (!string.IsNullOrEmpty(_characterHandler.playerChar._selectedGagPadlockAssigner[i])) {
-                        baseString += $" which had been secured by {_characterHandler.playerChar._selectedGagPadlockAssigner[i]}";
+                        baseString += $" which had been secured by {_characterHandler.playerChar._selectedGagPadlockAssigner[i]}, ";
                     }
                     //  layer {i} timer for padlock IF IT EXISTS
                     if (_characterHandler.playerChar._selectedGagPadlockTimer[i] - DateTimeOffset.Now > TimeSpan.Zero) {
-                        baseString += $" with {UIHelpers.FormatTimeSpan(
-                            _characterHandler.playerChar._selectedGagPadlockTimer[i] - DateTimeOffset.Now)} remaining";
+                        baseString += $"with {UIHelpers.FormatTimeSpan(_characterHandler.playerChar._selectedGagPadlockTimer[i] - DateTimeOffset.Now)} remaining, ";
                     }
 
                     if (_characterHandler.playerChar._selectedGagPadlockPassword[i] != null) {
-                        baseString += $", with the password {_characterHandler.playerChar._selectedGagPadlockPassword[i]} on the lock";
+                        baseString += $"with the password {_characterHandler.playerChar._selectedGagPadlockPassword[i]} on the lock";
                     }
                 }
             }
@@ -245,6 +249,11 @@ public partial class MessageEncoder {
         // for toy state
         baseString +=  _characterHandler.playerChar._isToyActive
         ? "Left on to buzz away" : "Left powered off";
+
+        // for toy steps
+        baseString += " with ";
+        baseString += _plugService.stepCount;
+        baseString += " notches on the slider.";
 
         return baseString;
     }
