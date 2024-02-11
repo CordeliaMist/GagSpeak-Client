@@ -8,6 +8,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Penumbra.GameData.Structs;
 using GagSpeak.Gagsandlocks;
+using GagSpeak.Events;
 
 namespace GagSpeak.Wardrobe;
 
@@ -15,13 +16,16 @@ public class RestraintSetManager : ISavable
 {
     public List<RestraintSet> _restraintSets = []; // stores the restraint sets
     public int _selectedIdx = 0;
+    
 
 
     [JsonIgnore]
     private readonly SaveService _saveService;
-
-    public RestraintSetManager(SaveService saveService) {
+    [JsonIgnore]
+    private readonly JobChangedEvent _jobChangedEvent;
+    public RestraintSetManager(SaveService saveService, JobChangedEvent jobChangedEvent) {
         _saveService = saveService;
+        _jobChangedEvent = jobChangedEvent;
         
         // load the information from our storage file
         Load();
@@ -141,6 +145,7 @@ public class RestraintSetManager : ISavable
             // then enable the current set
             _restraintSets[restraintSetIdx].SetIsEnabled(true);
         }
+        _jobChangedEvent.Invoke();
         _saveService.QueueSave(this);
     }
 

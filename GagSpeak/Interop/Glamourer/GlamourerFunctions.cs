@@ -239,6 +239,7 @@ public class GlamourerFunctions : IDisposable
             if (restraintSet._enabled) {
                 // Iterate over each EquipDrawData in the restraint set
                 foreach (var pair in restraintSet._drawData) {
+                    GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: Applying Restraint Set to Cached Character Data: {pair.Key} : {pair.Value}");
                     // see if the item is enabled or not (controls it's visibility)
                     if(pair.Value._isEnabled) {
                         // because it is enabled, we will still apply nothing items

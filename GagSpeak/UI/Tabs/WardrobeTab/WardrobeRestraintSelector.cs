@@ -9,8 +9,6 @@ using OtterGui;
 using Dalamud.Interface;
 using GagSpeak.Services;
 using GagSpeak.Utility;
-using Dalamud.Interface.Utility;
-using Penumbra.GameData.Enums;
 
 namespace GagSpeak.UI.Tabs.WardrobeTab;
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>
