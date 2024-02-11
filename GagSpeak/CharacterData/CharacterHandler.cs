@@ -161,6 +161,10 @@ public class CharacterHandler : ISavable
 #endregion Gag Setters
 
 #region PlayerChar Handler Functions
+    public void SetRevertStyle(RevertStyle style) {
+        playerChar._revertStyle = style;
+        _saveService.QueueSave(this);
+    }
     public void ToggleCmdFromFriends() {
         playerChar._doCmdsFromFriends = !playerChar._doCmdsFromFriends;
         _saveService.QueueSave(this);

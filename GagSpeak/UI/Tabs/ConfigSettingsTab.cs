@@ -78,19 +78,7 @@ public class ConfigSettingsTab : ITab
         // define our spacing
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
-        ImGui.Columns(2,"ConfigColumns", false);
-        ImGui.SetColumnWidth(0, ImGui.GetWindowWidth() / 2 - 10);
 
-        UIHelpers.CheckboxNoConfig("Commands From Friends", 
-            "Commands & Interactions from other players are only recieved by GagSpeak if in your Friend List.",
-            _characterHandler.playerChar._doCmdsFromFriends,
-            v => _characterHandler.ToggleCmdFromFriends()
-        );
-        UIHelpers.CheckboxNoConfig("Commands From Party",
-            "Commands & Interactions from other players are only recieved by GagSpeak if in the Party List.",
-            _characterHandler.playerChar._doCmdsFromParty,
-            v => _characterHandler.ToggleCmdFromParty()
-        );
         if(_characterHandler.playerChar._directChatGarblerLocked) {ImGui.BeginDisabled();}
         UIHelpers.CheckboxNoConfig("Direct Chat Garbler",
             "AUTOMATICALLY Translate any NON-COMMAND chat message to gagspeak.\n\n"+
@@ -100,44 +88,15 @@ public class ConfigSettingsTab : ITab
             v => _characterHandler.ToggleDirectChatGarbler()
         );
         if(_characterHandler.playerChar._directChatGarblerLocked) {ImGui.EndDisabled();}
-
+        ImGui.SameLine();
         UIHelpers.CheckboxNoConfig("Garbler Zone Warnings",
             "Sends a warning to your chat every time you switch zones when direct chat garbler is enabled.\n",
             _characterHandler.playerChar._liveGarblerWarnOnZoneChange,
             v => _characterHandler.ToggleZoneWarnings()
         );
-        UIHelpers.CheckboxNoConfig("Enable Wardrobe",
-            "Must be enabled for anything in the Kink Wardrobe component of GagSpeak to function.",
-            _characterHandler.playerChar._enableWardrobe,
-            v => _characterHandler.ToggleEnableWardrobe()
-        );
-        UIHelpers.CheckboxNoConfig("Gag Items Auto-Equip",
-            "If this option is enabled, anyone in your whitelist that applies a gag to you, applies the GagStorage item as well.\n"+
-            ">> This does not happen regardless if that item is disabled in your GagStorage.",
-            _characterHandler.playerChar._allowItemAutoEquip,
-            v => _characterHandler.ToggleGagItemAutoEquip()
-        );
-        UIHelpers.CheckboxNoConfig("Restraint Sets Auto-Equip",
-            "If enabled, anyone in your whitelist, any restraint set that is enabled will auto equip.\n"+
-            ">> You can manually disable this in the wardrobe tab so they only auto equip when you want them to.",
-            _characterHandler.playerChar._allowRestraintSetAutoEquip,
-            v => _characterHandler.ToggleRestraintSetAutoEquip()
-        );
-        UIHelpers.CheckboxNoConfig("Enable Puppeteer",
-            "Allows the use of the Puppeteer Module of GagSpeak.\n"+
-            ">> This will allow anyone in your whitelist to use the Puppeteer Module on you who is allowed.",
-            _characterHandler.playerChar._allowPuppeteer,
-            v => _characterHandler.TogglePuppeteer()
-        );
-        UIHelpers.CheckboxNoConfig("Enable Toybox", 
-            "Allows the use of the Toybox Module of GagSpeak.\n"+
-            ">> This will allow anyone in your whitelist to use the Toybox Module on you who is allowed.",
-            _characterHandler.playerChar._enableToybox,
-            v => _characterHandler.ToggleEnableToybox()
-        );
-        
+        ImGui.SameLine();
         // Create the language dropdown
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X/2);
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X*.65f);
         string prevLang = _config.language; // to only execute code to update data once it is changed
         if (ImGui.BeginCombo("##Language", _config.language)) {
             foreach (var language in _languages.Keys.ToArray()) {
@@ -152,7 +111,9 @@ public class ConfigSettingsTab : ITab
             }
             ImGui.EndCombo();
         }
-        
+        if(ImGui.IsItemHovered()) {
+            ImGui.SetTooltip("Select the language you want to use for GagSpeak.");
+        }
         //update if changed 
         if (prevLang != _config.language) { // set the language to the newly selected language once it is changed
             _currentDialects = _languages[_config.language]; // update the dialects for the new language
@@ -162,7 +123,7 @@ public class ConfigSettingsTab : ITab
         }
         ImGui.SameLine(); 
         // Create the dialect dropdown
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X-25);
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         string[] dialects = _languages[_config.language];
         string prevDialect = _activeDialect; // to only execute code to update data once it is changed
         if (ImGui.BeginCombo("##Dialect", _activeDialect)) {
@@ -177,11 +138,78 @@ public class ConfigSettingsTab : ITab
             }
             ImGui.EndCombo();
         }
+        if(ImGui.IsItemHovered()) {
+            ImGui.SetTooltip("Select the Dialect you want to use for GagSpeak.");
+        }
         //update if changed
         if (prevDialect != _activeDialect) { // set the dialect to the newly selected dialect once it is changed
             SetConfigDialectFromDialect(_activeDialect);
             _config.Save();
         }
+        ImGui.Separator();
+        ImGui.Columns(2,"ConfigColumns", false);
+        ImGui.SetColumnWidth(0, ImGui.GetWindowWidth() / 2 - 10);
+        UIHelpers.CheckboxNoConfig("Commands From Friends", 
+            "Commands & Interactions from other players are only recieved by GagSpeak if in your Friend List.",
+            _characterHandler.playerChar._doCmdsFromFriends,
+            v => _characterHandler.ToggleCmdFromFriends()
+        );
+        UIHelpers.CheckboxNoConfig("Commands From Party",
+            "Commands & Interactions from other players are only recieved by GagSpeak if in the Party List.",
+            _characterHandler.playerChar._doCmdsFromParty,
+            v => _characterHandler.ToggleCmdFromParty()
+        );
+        UIHelpers.CheckboxNoConfig("Enable Wardrobe",
+            "Must be enabled for anything in the Kink Wardrobe component of GagSpeak to function.",
+            _characterHandler.playerChar._enableWardrobe,
+            v => _characterHandler.ToggleEnableWardrobe()
+        );
+
+        UIHelpers.CheckboxNoConfig("Gag Items Auto-Equip",
+            "If this option is enabled, anyone in your whitelist that applies a gag to you, applies the GagStorage item as well.\n"+
+            ">> This does not happen regardless if that item is disabled in your GagStorage.",
+            _characterHandler.playerChar._allowItemAutoEquip,
+            v => _characterHandler.ToggleGagItemAutoEquip()
+        );
+
+        UIHelpers.CheckboxNoConfig("Restraint Sets Auto-Equip",
+            "If enabled, anyone in your whitelist, any restraint set that is enabled will auto equip.\n"+
+            ">> You can manually disable this in the wardrobe tab so they only auto equip when you want them to.",
+            _characterHandler.playerChar._allowRestraintSetAutoEquip,
+            v => _characterHandler.ToggleRestraintSetAutoEquip()
+        );
+
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X*.7f);
+        RevertStyle prevRevertStyle = _characterHandler.playerChar._revertStyle; // to only execute code to update data once it is changed
+        if (ImGui.BeginCombo("##RevertStyle", _characterHandler.playerChar._revertStyle.ToString())) {
+            foreach (RevertStyle style in Enum.GetValues(typeof(RevertStyle))) {
+                bool isSelected = (_characterHandler.playerChar._revertStyle == style);
+                if (ImGui.Selectable(style.ToString(), isSelected)) {
+                    _characterHandler.SetRevertStyle(style);
+                    GagSpeak.Log.Debug($"[ConfigSettingsTab] RevertStyle changed to: {_characterHandler.playerChar._revertStyle}");
+                }
+                if (isSelected) {
+                    ImGui.SetItemDefaultFocus();
+                }
+            }
+            ImGui.EndCombo();
+        }
+        if(ImGui.IsItemHovered()) {
+            ImGui.SetTooltip("Select how you want your attire to revert when a restraint set is removed.");
+        }
+        UIHelpers.CheckboxNoConfig("Enable Puppeteer",
+            "Allows the use of the Puppeteer Module of GagSpeak.\n"+
+            ">> This will allow anyone in your whitelist to use the Puppeteer Module on you who is allowed.",
+            _characterHandler.playerChar._allowPuppeteer,
+            v => _characterHandler.TogglePuppeteer()
+        );
+        UIHelpers.CheckboxNoConfig("Enable Toybox", 
+            "Allows the use of the Toybox Module of GagSpeak.\n"+
+            ">> This will allow anyone in your whitelist to use the Toybox Module on you who is allowed.",
+            _characterHandler.playerChar._enableToybox,
+            v => _characterHandler.ToggleEnableToybox()
+        );
+        
 
         // channel listings
         ImGui.NextColumn();
@@ -190,7 +218,7 @@ public class ConfigSettingsTab : ITab
         // you might normally want to embed resources and load them from the manifest stream
         ImGui.Image(_dalamudTextureWrap.ImGuiHandle, new Vector2(_dalamudTextureWrap.Width, _dalamudTextureWrap.Height));
         ImGui.Columns(1);
-
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 10);
         // Show Debug Menu when Debug logging is enabled
         if(_characterHandler.playerChar._directChatGarblerLocked == true) {ImGui.BeginDisabled();}
         ImGui.Text("Enabled Channels:"); ImGui.Separator();

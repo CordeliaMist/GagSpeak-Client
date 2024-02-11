@@ -180,7 +180,23 @@ public class GlamourerFunctions : IDisposable
                 if(e.UpdateType == UpdateType.DisableRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip) {
                     try{
                         GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Restraint Set Disable, reverting to automation");
-                        await _Interop.GlamourerRevertCharacterToAutomation(_charaDataHelpers.Address);
+                        // revert based on our setting
+                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToAutomationOnly)
+                        {
+                            // if we want to just revert to automation, then do just that.
+                            await _Interop.GlamourerRevertCharacterToAutomation(_charaDataHelpers.Address);
+                        }
+                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToGameOnly)
+                        {
+                            // if we want to always revert to game, then do just that
+                            await _Interop.GlamourerRevertCharacter(_charaDataHelpers.Address);
+                        }
+                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToGameThenAutomation)
+                        {
+                            // finally, if we want to revert to the game, then to any automation for this class after, then do just that
+                            await _Interop.GlamourerRevertCharacter(_charaDataHelpers.Address);
+                            await _Interop.GlamourerRevertCharacterToAutomation(_charaDataHelpers.Address);
+                        }
                         // dont know how to tell if it was successful, so we will just assume it was
                     } catch (Exception) {
                         GagSpeak.Log.Error($"Error reverting glamourer to automation");

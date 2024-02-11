@@ -40,7 +40,7 @@ public partial class MessageDictionary {
         }
 
         // The message for locking an active restraint set if enabled [ ID == 25 // lock restraint set ]
-        if(textVal.Contains("took out a timed padlock, and fastned it around the")
+        if(textVal.Contains("took out a timed padlock, and fastened it around the")
         && textVal.Contains("on its focal point, setting its duration to"))
         {
             decodedMessageMediator.encodedMsgIndex = 25;
