@@ -82,13 +82,39 @@ public partial class WhitelistPlayerPermissions {
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier1))) {
                 if(_viewMode) {
                     // toggle the whitelisted players permission to allow changing toy state
-                    TogglePlayerToggleToyState();
+                    TogglePlayerToggleChangeToyState();
                     _interactOrPermButtonEvent.Invoke();
                 } else {
                     // toggles if this person can change your toy state
                     _characterHandler.ToggleChangeToyState(_characterHandler.activeListIdx);
                 }
             }
+            // turn the toy on / off
+            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) {
+                ImGuiUtil.DrawFrameColumn($"Toy Active:");
+                ImGui.TableNextColumn();
+                var toyActivePerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive 
+                                             : _characterHandler.playerChar._isToyActive;
+                using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
+                    ImGuiUtil.Center((toyActivePerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                }
+                ImGui.TableNextColumn();
+                ImGuiUtil.Center("");
+                ImGui.TableNextColumn();
+                if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyActiveState", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+                string.Empty, _viewMode && !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState)) {
+                    if(_viewMode) {
+                        // toggle the whitelisted players permission to allow changing toy state
+                        TogglePlayersIsToyActiveOption();
+                        _interactOrPermButtonEvent.Invoke();
+                    } else {
+                        // toggles if this person can change your toy state
+                        _characterHandler.ToggleToyState();
+                    }
+                }
+            }
+
+
             // Enable Restraint Sets option
             ImGuiUtil.DrawFrameColumn($"Can Control Intensity:");
             ImGui.TableNextColumn();
@@ -140,9 +166,6 @@ public partial class WhitelistPlayerPermissions {
                 _interactOrPermButtonEvent.Invoke();
             }
 
-
-            // execute patterns
-            ImGuiUtil.DrawFrameColumn($"Execute Pattern:");
             // then draw the input box
             string patternResult = _vibePatternName;
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
@@ -182,7 +205,7 @@ public partial class WhitelistPlayerPermissions {
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleEnableToyboxOption(playerPayload, targetPlayer));
     }
 
-    public void TogglePlayerToggleToyState() {
+    public void TogglePlayerToggleChangeToyState() {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
@@ -195,6 +218,21 @@ public partial class WhitelistPlayerPermissions {
         //update information to be the new toggled state and send message
         _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState = !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState;
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleActiveToyboxOption(playerPayload, targetPlayer));
+    }
+
+    public void TogglePlayersIsToyActiveOption() {
+        // get the player payload    
+        PlayerPayload playerPayload; // get player payload
+        UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+        string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        // print to chat that you sent the request
+        _chatGui.Print(
+            new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
+            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Toy Active Option!").AddItalicsOff().BuiltString);
+        //update information to be the new toggled state and send message
+        _characterHandler.SetWhitelistToyIsActive(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive);
+        _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleToyOnOff(playerPayload, targetPlayer));
     }
 
     public void UpdatePlayerToyIntensity(int newIntensityLevel) {
