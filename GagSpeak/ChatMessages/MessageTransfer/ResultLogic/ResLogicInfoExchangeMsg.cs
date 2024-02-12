@@ -58,6 +58,15 @@ public partial class ResultLogic {
             _characterHandler.SetWhitelistGrantExtendedLockTimes(Idx, decodedMessageMediator.extendedLockTimes);
             _characterHandler.SetWhitelistDirectChatGarblerActive(Idx, decodedMessageMediator.directChatGarblerActive);
             _characterHandler.SetWhitelistDirectChatGarblerLocked(Idx, decodedMessageMediator.directChatGarblerLocked);
+            // update with gag info
+            _characterHandler.UpdateWhitelistGagInfoPart1(
+                senderName,
+                decodedMessageMediator.layerGagName,
+                decodedMessageMediator.layerPadlock,
+                decodedMessageMediator.layerPassword,
+                decodedMessageMediator.layerTimer,
+                decodedMessageMediator.layerAssigner
+            );
             GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 1 message");
             return true;
         }
@@ -76,7 +85,7 @@ public partial class ResultLogic {
         // we have the index, so now we can update with the variables.
         if(Idx != -1) {
             // this prevents our saveservive from being spammed with 15+ requests
-            _characterHandler.UpdateWhitelistGagInfo(
+            _characterHandler.UpdateWhitelistGagInfoPart2(
                 senderName,
                 decodedMessageMediator.layerGagName,
                 decodedMessageMediator.layerPadlock,

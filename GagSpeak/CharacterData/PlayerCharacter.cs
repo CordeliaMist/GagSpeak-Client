@@ -39,7 +39,6 @@ public class PlayerCharacterInfo : CharacterInfoBase
     public  List<bool>      _allowChangingToyState { get; set; }                        // [TIER 1] Basically, "They can turn on my vibe, at my selected slider position"
     public  List<bool>      _allowIntensityControl { get; set; }                        // [TIER 3] Basically says "This person can adjust the intensity slider"
     public  List<bool>      _allowUsingPatterns { get; set; }                           // [TIER 4] if the whitelisted player is allowed to execute stored patterns
-
     public PlayerCharacterInfo() {
         _revertStyle = RevertStyle.ToAutomationOnly;
         _triggerAliases = new List<AliasList>() { new AliasList() };

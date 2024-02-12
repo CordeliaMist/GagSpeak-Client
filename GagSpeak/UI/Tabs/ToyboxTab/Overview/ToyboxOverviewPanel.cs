@@ -53,7 +53,7 @@ public class ToyboxOverviewPanel
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing)
                             .Push(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
-        using var child = ImRaii.Child("ToyboxOverviewPanelChild", new Vector2(ImGui.GetContentRegionAvail().X, -ImGui.GetFrameHeight()-ImGuiHelpers.GlobalScale), true);
+        using var child = ImRaii.Child("ToyboxOverviewPanelChild", new Vector2(ImGui.GetContentRegionAvail().X, -ImGui.GetFrameHeight()-ImGuiHelpers.GlobalScale), true, ImGuiWindowFlags.NoScrollbar);
         if (!child) { return;}
         var xPos = ImGui.GetCursorPosX();
         var yPos = ImGui.GetCursorPosY();
@@ -150,8 +150,8 @@ public class ToyboxOverviewPanel
         using (var InfoPatTable = ImRaii.Table("InfoAndPatterns", 2, ImGuiTableFlags.NoPadInnerX | ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.BordersV, new Vector2(-1, -90))) {
             if (!InfoPatTable) { return; }
             // Create the headers for the table;
-            ImGui.TableSetupColumn("Plug and Pattern Info", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn("PatternList", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("PatternListingsmmmmmmm").X);
+            ImGui.TableSetupColumn("Plug and Pattern Info", ImGuiTableColumnFlags.WidthFixed, 220*ImGuiHelpers.GlobalScale);
+            ImGui.TableSetupColumn("PatternList", ImGuiTableColumnFlags.WidthStretch);
             // and print the current plug name
             ImGui.TableNextColumn();
             // get the fixed Y position we want for the table
@@ -197,7 +197,7 @@ public class ToyboxOverviewPanel
                     int maxVal = _plugService.stepCount;
                     int intensityResult = _charHandler.playerChar._intensityLevel;
                     if(_patternCollection.GetActiveIdx() != -1 && _patternCollection._patterns[_patternCollection._activePatternIndex]._isActive) { ImGui.BeginDisabled(); }
-                    if(ImGui.VSliderInt("##VertSliderToy", new Vector2(width,ImGuiHelpers.GlobalScale*175), ref intensityResult, 0, maxVal)) {
+                    if(ImGui.VSliderInt("##VertSliderToy", new Vector2(width,ImGuiHelpers.GlobalScale*125), ref intensityResult, 0, maxVal)) {
                         //  (byte)(intensityResult*_plugService.stepCount); formats it back into the same value stored by patterns for fast calculations
                         _charHandler.UpdateIntensityLevel(intensityResult);
                         //GagSpeak.Log.Debug($"[Toybox Overview Panel] Intensity Level: {_charHandler.playerChar._intensityLevel}");

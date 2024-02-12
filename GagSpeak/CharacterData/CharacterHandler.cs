@@ -47,7 +47,6 @@ public class CharacterHandler : ISavable
         activeListIdx = 0;
         // load the information from our storage file stuff
         Load();
-
         // ensure all lists have the correct sizes
     }
 #region Gag Setters
@@ -530,27 +529,53 @@ public class CharacterHandler : ISavable
         }
     }
 
+    // import list stuff
+    public void StoreRestraintListForPlayer(int index, List<string> restraintList) {
+        whitelistChars[index]._storedRestraintSets = restraintList;
+        _saveService.QueueSave(this);
+    }
+
+    public void StoredAliasDetailsForPlayer(int index, Dictionary<string,string> aliasDetails) {
+        whitelistChars[index]._storedAliases = aliasDetails;
+        _saveService.QueueSave(this);
+    }
+
+    public void StorePatternNames(int index, List<string> patternNames) {
+        whitelistChars[index]._storedPatternNames = patternNames;
+        _saveService.QueueSave(this);
+    }
+
 
     // for not spamming the save service during info request transfer, do it all in bulk
-    public void UpdateWhitelistGagInfo(string whitelistName, string[] GagTypes, string[] Padlocks, string[] Passwords, string[] Timers, string[] Assigners) {
+    public void UpdateWhitelistGagInfoPart1(string whitelistName, string[] GagTypes, string[] Padlocks, string[] Passwords, string[] Timers, string[] Assigners) {
         int Idx = -1;
         if(IsPlayerInWhitelist(whitelistName)){
             Idx = GetWhitelistIndex(whitelistName);
         }
         if(Idx != -1) {
             whitelistChars[Idx]._selectedGagTypes[0] = GagTypes[0];
+            whitelistChars[Idx]._selectedGagPadlocks[0] = Enum.TryParse(Padlocks[0], out Padlocks padlockType) ? padlockType : Gagsandlocks.Padlocks.None;
+            whitelistChars[Idx]._selectedGagPadlockPassword[0] = Passwords[0];
+            whitelistChars[Idx]._selectedGagPadlockTimer[0] = UIHelpers.GetEndTime(Timers[0]);
+            whitelistChars[Idx]._selectedGagPadlockAssigner[0] = Assigners[0];
+        }
+        _saveService.QueueSave(this);
+    }
+
+    public void UpdateWhitelistGagInfoPart2(string whitelistName, string[] GagTypes, string[] Padlocks, string[] Passwords, string[] Timers, string[] Assigners) {
+        int Idx = -1;
+        if(IsPlayerInWhitelist(whitelistName)){
+            Idx = GetWhitelistIndex(whitelistName);
+        }
+        if(Idx != -1) {
             whitelistChars[Idx]._selectedGagTypes[1] = GagTypes[1];
             whitelistChars[Idx]._selectedGagTypes[2] = GagTypes[2];
-            whitelistChars[Idx]._selectedGagPadlocks[0] = Enum.TryParse(Padlocks[0], out Padlocks padlockType) ? padlockType : Gagsandlocks.Padlocks.None;
             whitelistChars[Idx]._selectedGagPadlocks[1] = Enum.TryParse(Padlocks[1], out Padlocks padlockType2) ? padlockType2 : Gagsandlocks.Padlocks.None;
             whitelistChars[Idx]._selectedGagPadlocks[2] = Enum.TryParse(Padlocks[2], out Padlocks padlockType3) ? padlockType3 : Gagsandlocks.Padlocks.None;
-            whitelistChars[Idx]._selectedGagPadlockPassword[0] = Passwords[0];
             whitelistChars[Idx]._selectedGagPadlockPassword[1] = Passwords[1];
             whitelistChars[Idx]._selectedGagPadlockPassword[2] = Passwords[2];
-            whitelistChars[Idx]._selectedGagPadlockTimer[0] = UIHelpers.GetEndTime(Timers[0]);
             whitelistChars[Idx]._selectedGagPadlockTimer[1] = UIHelpers.GetEndTime(Timers[1]);
             whitelistChars[Idx]._selectedGagPadlockTimer[2] = UIHelpers.GetEndTime(Timers[2]);
-            whitelistChars[Idx]._selectedGagPadlockAssigner[0] = Assigners[0];
             whitelistChars[Idx]._selectedGagPadlockAssigner[1] = Assigners[1];
             whitelistChars[Idx]._selectedGagPadlockAssigner[2] = Assigners[2]; 
         }

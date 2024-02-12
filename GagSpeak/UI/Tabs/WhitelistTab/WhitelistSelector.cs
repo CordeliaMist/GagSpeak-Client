@@ -1,12 +1,19 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Interface;
+using Dalamud.Interface.Internal.Windows.Data.Widgets;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
+using GagSpeak.Interop;
 using GagSpeak.Utility;
 using ImGuiNET;
+using Newtonsoft.Json;
+using OtterGui;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 
@@ -44,7 +51,7 @@ public class WhitelistSelector
     }
 
     private void DrawWhitelistSelector(float width) {
-        using var child = ImRaii.Child("##WhitelistSelector", new Vector2(width, -(2*ImGui.GetFrameHeight() + ImGuiHelpers.GlobalScale)), true);
+        using var child = ImRaii.Child("##WhitelistSelector", new Vector2(width, -(3*ImGui.GetFrameHeight() + 2*ImGuiHelpers.GlobalScale)), true);
         if (!child)
             return;
 
@@ -123,7 +130,78 @@ public class WhitelistSelector
             if (newIdx < 0) { newIdx = 0; }
             _characterHandler.activeListIdx = newIdx;
         }
+        xPos = ImGui.GetCursorPosX();
+        yPos = ImGui.GetCursorPosY();
+        ImGui.SetCursorPos(new Vector2(xPos, yPos + ImGuiHelpers.GlobalScale));
+        // display the three buttons for pasting in restraint set data, alias commands, and pattern lists
+        buttonWidth = new Vector2(width/3, 0);
+        if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Handcuffs.ToIconString(), buttonWidth,
+        $"Paste {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s copied restraint set list", false, true)) {
+            GagSpeak.Log.Debug($"[Whitelist]: Pasting in restraint set list for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}");
+            ImportRestraintSetList();
+        }
+        ImGui.SameLine();
+        if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.FilePen.ToIconString(), buttonWidth,
+        $"Paste {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s copied alias command list", false, true)) {
+            GagSpeak.Log.Debug($"[Whitelist]: Pasting in alias command list for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}");
+            ImportAliasCommandList();
+        }
+        ImGui.SameLine();
+        if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.FileMedicalAlt.ToIconString(), buttonWidth,
+        $"Paste {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s copied pattern list", false, true)) {
+            GagSpeak.Log.Debug($"[Whitelist]: Pasting in pattern list for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}");
+            ImportPatternList();
+        }
         // pop style
         style.Pop();
     }
+
+
+    public void ImportRestraintSetList() {
+        try {
+            // Get the base64 string from the clipboard
+            string base64 = ImGui.GetClipboardText();
+            // Decode the base64 string back to a byte array
+            var bytes = Convert.FromBase64String(base64);
+            // Decompress the byte array back to a regular string
+            var version = bytes[0];
+            version = bytes.DecompressToString(out var decompressed);
+            // Deserialize the string back to a list
+            List<string> restraintSetList = JsonConvert.DeserializeObject<List<string>>(decompressed) ?? new List<string>();
+            // Set the restraint set list
+            _characterHandler.StoreRestraintListForPlayer(_characterHandler.activeListIdx, restraintSetList);
+            GagSpeak.Log.Debug($"Set restraint set list from clipboard");
+        } catch (Exception ex) {
+            GagSpeak.Log.Warning($"{ex.Message} Could not set restraint set list from clipboard.");
+        }
+    }
+
+    public void ImportAliasCommandList() {
+        try {
+            string base64 = ImGui.GetClipboardText();
+            var bytes = Convert.FromBase64String(base64);
+            var version = bytes[0];
+            version = bytes.DecompressToString(out var decompressed);
+            Dictionary<string, string> aliasCommandList = JsonConvert.DeserializeObject<Dictionary<string, string>>(decompressed) ?? new Dictionary<string, string>();
+            _characterHandler.StoredAliasDetailsForPlayer(_characterHandler.activeListIdx, aliasCommandList);
+            GagSpeak.Log.Debug($"Set alias command list from clipboard");
+        } catch (Exception ex) {
+            GagSpeak.Log.Warning($"{ex.Message} Could not set alias command list from clipboard.");
+        }
+    }
+
+    public void ImportPatternList() {
+        try {
+            string base64 = ImGui.GetClipboardText();
+            var bytes = Convert.FromBase64String(base64);
+            var version = bytes[0];
+            version = bytes.DecompressToString(out var decompressed);
+            List<string> patternList = JsonConvert.DeserializeObject<List<string>>(decompressed) ?? new List<string>();
+            _characterHandler.StorePatternNames(_characterHandler.activeListIdx, patternList);
+            GagSpeak.Log.Debug($"Set pattern list from clipboard");
+        } catch (Exception ex) {
+            GagSpeak.Log.Warning($"{ex.Message} Could not set pattern list from clipboard.");
+        }
+    }
+
 }

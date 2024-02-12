@@ -14,6 +14,7 @@ public partial class WhitelistPlayerPermissions {
     public string _restraintSetToEnable = "";
     public string _restraintSetLockDuration = "";
     public string _resrtaintSetToUnlock = "";
+    public int _activeStoredSetListIdx = 0;
 
 #region DrawWardrobePerms
     public void DrawWardrobePerms(ref bool _viewMode) {
@@ -37,7 +38,7 @@ public partial class WhitelistPlayerPermissions {
             // Create the headers for the table
             ImGui.TableSetupColumn("Setting",  ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("State",     ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("State").X);
-            ImGui.TableSetupColumn("Req. Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Req. Tier").X);
+            ImGui.TableSetupColumn("Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Tier").X);
             ImGui.AlignTextToFramePadding();
             ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemm").X);
             ImGui.TableHeadersRow();
@@ -120,8 +121,8 @@ public partial class WhitelistPlayerPermissions {
             if (!tableWardrobe) return;
             // Create the headers for the table
             ImGui.TableSetupColumn("WardrobeOption",ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn("RestraintInput",        ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("restraintNameWhoawhoa").X);
-            ImGui.TableSetupColumn("Req. Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Req. Tier").X);
+            ImGui.TableSetupColumn("RestraintInput",        ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("mmmmrestraintNameWhoawhoa").X);
+            ImGui.TableSetupColumn("Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Tier").X);
             ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemm").X);
 
             // None of the editable states should be enabled if the wardrobe is not enabled
@@ -187,16 +188,31 @@ public partial class WhitelistPlayerPermissions {
                 _resrtaintSetToUnlock = restraintSetUnlockResult;
             }
             ImGui.TableNextColumn();
+            ImGuiUtil.Center("0");
             ImGui.TableNextColumn();
             if(ImGui.Button("Unlock##UnlockRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
                 UnlockRestraintSetToPlayer(_resrtaintSetToUnlock);
                 _interactOrPermButtonEvent.Invoke();
             }
+            if(_viewMode) {
+                ImGuiUtil.DrawFrameColumn("Stored Sets: ");
+                ImGui.TableNextColumn();
+                // Create a combo box with the stored restraint data (had to convert to array because am dumb)
+                string[] restraintData = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._storedRestraintSets.ToArray();
+                int currentRestraintIndex = _activeStoredSetListIdx==0 ? 0 : _activeStoredSetListIdx; // This should be the current selected index
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                if (ImGui.Combo("##storedRestraintData", ref currentRestraintIndex, restraintData, restraintData.Length)) {
+                    // If an item is selected from the dropdown, update the restraint set name field
+                    _restraintSetToEnable = restraintData[currentRestraintIndex];
+                    // update the index to display
+                    _activeStoredSetListIdx = currentRestraintIndex;
 
-            // end the disabled state
-            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _viewMode==false)
-            {
-                ImGui.EndDisabled();
+                }
+
+                // end the disabled state
+                if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _viewMode==false) {
+                    ImGui.EndDisabled();
+                }
             }
         }
         

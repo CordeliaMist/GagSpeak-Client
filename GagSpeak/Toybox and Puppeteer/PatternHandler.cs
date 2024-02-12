@@ -28,6 +28,11 @@ public class PatternHandler : ISavable
         if (_activePatternIndex >= _patterns.Count) {
             _activePatternIndex = -1;
         }
+
+        // if any patterns were marked as being active, deactivate them
+        foreach (var pattern in _patterns) {
+            pattern._isActive = false;
+        }
     }
     
     public int GetActiveIdx() => _activePatternIndex;

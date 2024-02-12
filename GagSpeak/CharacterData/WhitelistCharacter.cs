@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GagSpeak.Gagsandlocks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -29,6 +30,10 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
     public bool             _allowsIntensityControl { get; set; } = false;   // [TIER 3] Basically says "This person can adjust the intensity slider"
     public bool             _allowsUsingPatterns { get; set; } = false;      // [TIER 0] Do they allow you to execute stored patterns
     public  int             _activeToystepSize { get; set; } = 0;            // [TIER 0] the step count of the vibe
+    //////////////////// FIELDS TO BE USED TO STORE THIS PERSONS LIST NAMES ////////////////////
+    public List<string>                 _storedRestraintSets { get; set; }   // contains the list of restraint set names (if imported)
+    public Dictionary<string, string>   _storedAliases { get; set; }         // contains the list of gag types (if imported)
+    public List<string>                 _storedPatternNames { get; set; }    // contains the list of pattern names (if imported) 
 
     ////////////////////////////////////////////////// PROTECTED FIELDS ////////////////////////////////////////////////////
     
@@ -41,6 +46,10 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         _pendingRelationRequestFromPlayer = RoleLean.None;
         _pendingRelationRequestFromYou = RoleLean.None;
         _timeOfCommitment = DateTimeOffset.Now;
+        // create new lists for the stored items
+        _storedRestraintSets = new List<string>();
+        _storedAliases = new Dictionary<string, string>();
+        _storedPatternNames = new List<string>();
     }
 #region General Interactions
     public bool IsRoleLeanDominant(RoleLean roleLean) {
@@ -179,6 +188,10 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
                 ["AllowIntensityControl"] = _allowsIntensityControl,
                 ["AllowsUsingPatterns"] = _allowsUsingPatterns,
                 ["ActiveToystepSize"] = _activeToystepSize,
+                // our list storage stuff
+                ["StoredRestraintSets"] = JToken.FromObject(_storedRestraintSets),
+                ["StoredAliases"] = JToken.FromObject(_storedAliases),
+                ["StoredPatternNames"] = JToken.FromObject(_storedPatternNames),
             };
             // merge with the base serialization
             JObject baseSerialized = base.Serialize();
@@ -213,6 +226,10 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         _allowsIntensityControl = jsonObject["AllowIntensityControl"]?.Value<bool>() ?? false;
         _allowsUsingPatterns = jsonObject["AllowsUsingPatterns"]?.Value<bool>() ?? false;
         _activeToystepSize = jsonObject["ActiveToystepSize"]?.Value<int>() ?? 0;
+        // our list storage stuff
+        _storedRestraintSets = jsonObject["StoredRestraintSets"]?.ToObject<List<string>>() ?? new List<string>();
+        _storedAliases = jsonObject["StoredAliases"]?.ToObject<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+        _storedPatternNames = jsonObject["StoredPatternNames"]?.ToObject<List<string>>() ?? new List<string>();
     }
 
 #endregion Serialization and Deserialization

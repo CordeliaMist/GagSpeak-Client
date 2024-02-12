@@ -1,8 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using GagSpeak.CharacterData;
+using GagSpeak.Interop;
 using ImGuiNET;
+using Newtonsoft.Json;
+using OtterGui;
 
 namespace GagSpeak.UI.Tabs.PuppeteerTab;
 public class PuppeteerSelector
@@ -24,12 +31,14 @@ public class PuppeteerSelector
             .Push(ImGuiStyleVar.FrameRounding, 0); // and make them recantuclar instead of rounded buttons
         DrawPuppeteerHeader(width);
         DrawPuppeteerSelector(width, height);
+        DrawWhitelistButtons(width);
         style.Pop();
         }
     }
 
     private void DrawPuppeteerSelector(float width, float height) {
-        using var child = ImRaii.Child("##PuppeteerSelectorChild", new Vector2(width, height), true);
+        using var child = ImRaii.Child("##PuppeteerSelectorChild", 
+        new Vector2(width, height-(ImGui.GetTextLineHeightWithSpacing()+5*ImGuiHelpers.GlobalScale)), true);
         if (!child) { return; }
 
         using var style     = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, _defaultItemSpacing);
@@ -45,6 +54,47 @@ public class PuppeteerSelector
         {
             // update the active list index
             _characterHandler.activeListIdx = _characterHandler.GetWhitelistIndex(characterInfo._name);
+        }
+    }
+
+    // Draw the buttons for adding and removing players from the whitelist
+    private void DrawWhitelistButtons(float width) {
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero)
+            .Push(ImGuiStyleVar.FrameRounding, 0);
+        var buttonWidth = new Vector2(width, ImGui.GetFrameHeight());
+        if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Copy.ToIconString(), buttonWidth,
+        $"Copy alias list for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} to the clipboard", false, true)) {
+            CopyAliasDataToClipboard();
+        }
+        style.Pop();
+    }
+
+
+    private void CopyAliasDataToClipboard() {
+        try
+        {
+            // Check if there is an active pattern
+            if (_characterHandler.playerChar._triggerAliases[_characterHandler.activeListIdx]._aliasTriggers.Count() == 0) {
+                GagSpeak.Log.Warning("No Aliases to copy.");
+                return;
+            }
+            // create a dictionary<string,string> where the key stores the input, and the value stores the output
+            var aliasData = new Dictionary<string, string>();
+            // add the alias data to the dictionary
+            foreach (var alias in _characterHandler.playerChar._triggerAliases[_characterHandler.activeListIdx]._aliasTriggers) {
+                aliasData.Add(alias._inputCommand, alias._outputCommand);
+            }
+            // Serialize the alias data to a string
+            string json = JsonConvert.SerializeObject(aliasData);
+            // Encode the string to a base64 string
+            var compressed = json.Compress(6);
+            string base64 = Convert.ToBase64String(compressed);
+            // Copy the base64 string to the clipboard
+            ImGui.SetClipboardText(base64);
+            GagSpeak.Log.Debug($"Copied aliases to clipboard");
+        }
+        catch (Exception ex) {
+            GagSpeak.Log.Warning($"{ex.Message} Could not copy alias data to clipboard.");
         }
     }
 }

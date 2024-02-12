@@ -94,30 +94,13 @@ public class GeneralTab : ITab, IDisposable
     private void DrawHeader()
         => WindowHeader.Draw("Gag Selections / Inspector", 0, ImGui.GetColorU32(ImGuiCol.FrameBg), 0, ImGui.GetContentRegionAvail().X-ImGuiHelpers.GlobalScale);
 
-    /// <summary>
-    /// This function draws the general tab contents
-    /// </summary>
-    /// 
-    private void TestRegex(){
-        string testString = "";
-
-        string pattern = @"^\|\|\s*(?<wardrobeState>.+?)\.\s*(?<gagStorageState>.+?)\,\s*(?<restraintSetEnable>.+?)\.\s*(?<restraintLock>.+?)\,\s*(?<allowPuppeteer>.+?)\s*their partner whispered\s*(?<puppeteerTrigger>.*?)\s*causing them to\s*(?<sitRequestState>.+?)\.\s*(?<motionRequestState>.+?)\,\s*(?<allCommandsState>.+?)\.\s*\-\>$";
-            // use regex to match the pattern
-        Match match = Regex.Match(testString, pattern);
-            // check if the match is sucessful
-            if (match.Success) {
-                GagSpeak.Log.Debug($"[Message Decoder]: Matched groups: {match.Groups["wardrobeState"].Value}, {match.Groups["gagStorageState"].Value}, {match.Groups["restraintSetEnable"].Value}, {match.Groups["restraintLock"].Value}, {match.Groups["allowPuppeteer"].Value}, {match.Groups["puppeteerTrigger"].Value}, {match.Groups["sitRequestState"].Value}, {match.Groups["motionRequestState"].Value}, {match.Groups["allCommandsState"].Value}");
-                GagSpeak.Log.Debug($"[Message Decoder]: share info: Sucessfully decoded message: {testString}");
-            } else {
-                GagSpeak.Log.Error($"[Message Decoder]: share info: Failed to decode message: {testString}");
-            }
-        }
-
 
     private void DrawGeneral() {
         // let's start by drawing the outline for the container
         using var child = ImRaii.Child("GeneralTabPanel", -Vector2.One, true);
         // Let's create a table in this panel
+        var xPos = ImGui.GetCursorPosX();
+        var yPos = ImGui.GetCursorPosY();
         using (var table = ImRaii.Table("Main Declarations", 3)) {
             if(!table) { return; } // make sure our table was made
             // Identify our columns.
@@ -159,25 +142,20 @@ public class GeneralTab : ITab, IDisposable
         if(_characterHandler.playerChar._safewordUsed) { ImGui.BeginDisabled(); }
 
         // before we go down, lets draw the changelog button on the top right
-        var yPos = ImGui.GetCursorPosY();
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 9f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 5.25f * ImGui.GetFrameHeight(), yPos + ImGuiHelpers.GlobalScale));
         ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
         ImGui.Text(" ");
         ImGui.SameLine();
-        if (ImGui.Button("Changelog")) {
+        if (ImGui.Button("Changelog", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
             // force open the changelog here
             _changelog.Changelog.ForceOpen = true;
-        }
-        ImGui.SameLine();
-        if(ImGui.Button("Test Regex")) {
-            TestRegex();
         }
         // pop off the colors we pushed
         ImGui.PopStyleColor(3);
 
-        
+        ImGui.NewLine();
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
         int width2 = (int)(ImGui.GetContentRegionAvail().X / 2);
@@ -202,9 +180,6 @@ public class GeneralTab : ITab, IDisposable
                                                 "Harness Panel Gag, Hook Gag, Inflatable Hood, Latex/Leather Hoods, Plug Gag\n"+
                                                 "Pump Gag, Sensory Deprivation Hood, Spider Gag, Tenticle Gag.");
     }
-    
-    /// <summary> This function is used to draw the changelog window. </summary>
-    private void DrawChangeLog(Changelog changelog) => changelog.ForceOpen = true;
 
     /// <summary>
     /// outputs the remaining time on timers each time the millisecond elapsed time passes.

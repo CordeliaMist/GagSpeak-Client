@@ -29,7 +29,7 @@ public partial class MessageDecoder {
         // decoder for sharing info about player (part 1)
         else if (decodedMessageMediator.encodedMsgIndex == 38) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>(?:[^,]*))\, their (?<theirStatusToYou>(?:[^']*))\'s (?<yourStatusToThem>(?:[^,]*)) nodded in agreement\, informing their partner of how when they last played together\, (?<safewordUsed>(?:[^,]*))\. (?<extendedLocks>(?:[^,]*))\, (?<gaggedVoice>(?:[^,]*))\, (?<sealedLips>(?:[^.]*))\. \-\>$";
+            string pattern = @"^\*(?<playerInfo>(?:[^,]*))\, their (?<theirStatusToYou>(?:[^']*))\'s (?<yourStatusToThem>(?:[^,]*)) nodded in agreement\, describing how (?<safewordUsed>(?:[^,]*)) endured (?<extendedLocks>(?:[^,]*))\, (?<gaggedVoice>(?:[^,]*)) through (?<sealedLips>(?:[^.]*))\. On her undermost layer, (?<layerInfo>.*?) \-\>$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -47,14 +47,44 @@ public partial class MessageDecoder {
                 // your status to them
                 decodedMessageMediator.dynamicLean = match.Groups["yourStatusToThem"].Value.Trim();
                 // safeword used
-                decodedMessageMediator.safewordUsed = match.Groups["safewordUsed"].Value.Trim() == "they had used their safeword" ? true : false;
+                decodedMessageMediator.safewordUsed = match.Groups["safewordUsed"].Value.Trim() == "they carefully" ? true : false;
                 // extended locks
-                decodedMessageMediator.extendedLockTimes = match.Groups["extendedLocks"].Value.Trim() == "They didnt mind the enduring binds" ? true : false;
+                decodedMessageMediator.extendedLockTimes = match.Groups["extendedLocks"].Value.Trim() == "strong bindings" ? true : false;
                 // gagged voice
-                decodedMessageMediator.directChatGarblerActive = match.Groups["gaggedVoice"].Value.Trim() == "and they certain enjoyed their gagged voice" ? true : false;
+                decodedMessageMediator.directChatGarblerActive = match.Groups["gaggedVoice"].Value.Trim() == "muffling out" ? true : false;
                 // sealed lips
-                decodedMessageMediator.directChatGarblerLocked = match.Groups["sealedLips"].Value.Trim() == "for even now their lips were sealed tight" ? true : false;
-                // debug result
+                decodedMessageMediator.directChatGarblerLocked = match.Groups["sealedLips"].Value.Trim() == "gagged lips" ? true : false;
+                // layer info
+                string layerInfo = match.Groups["layerInfo"].Value.Trim();
+                GagSpeak.Log.Debug($"[Message Decoder]: share info2: layerInfo: {layerInfo}");
+                // if it contains nothing present, then we know we have a blank entry.
+                if (layerInfo.Contains("nothing present")) {
+                    decodedMessageMediator.layerGagName[0] = "None";
+                    decodedMessageMediator.layerPadlock[0] = "None";
+                    decodedMessageMediator.layerTimer[0] = "0s";
+                    decodedMessageMediator.layerAssigner[0] = "";
+                } else {
+                    // otherwise, check what the gagtype was.
+                    decodedMessageMediator.layerGagName[0] = layerInfo.Split("she had a ")[1].Split(" fastened in good and tight, ")[0].Trim();
+                    // if it was locked, then we need to get the lock type
+                    if (layerInfo.Contains("locked with a")) {
+                        decodedMessageMediator.layerPadlock[0] = layerInfo.Split("locked with a")[1].Trim().Split(", ")[0].Trim();
+                        // if it was locked, we need to get the assigner
+                        if (layerInfo.Contains("which had been secured by")) {
+                            decodedMessageMediator.layerAssigner[0] = layerInfo.Split("which had been secured by")[1].Trim().Split(", ")[0].Trim();
+                        }
+                        // if it was locked with a timer, then we need to get the timer
+                        if (layerInfo.Contains("with") && layerInfo.Contains("remaining")) {
+                            decodedMessageMediator.layerTimer[0] = layerInfo.Split("with")[1].Trim().Split("remaining, ")[0].Trim();
+                        }
+                        // if it was locked with a password, then we need to get the password
+                        if(layerInfo.Contains("with the password")) {
+                            decodedMessageMediator.layerPassword[0] = layerInfo.Split("with the password")[1].Trim().Split("on the lock")[0].Trim();
+                        }
+                    }
+                }
+
+                // debug info
                 GagSpeak.Log.Debug($"[Message Decoder]: share info1: (Type) {decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} || "+
                 $"(YourStatusToThem) {decodedMessageMediator.dynamicLean} || (TheirStatusToYou) {decodedMessageMediator.theirDynamicLean} || "+
                 $"(SafewordUsed) {decodedMessageMediator.safewordUsed} || (ExtendedLocks) {decodedMessageMediator.extendedLockTimes} || "+
@@ -67,7 +97,7 @@ public partial class MessageDecoder {
         // decoder for sharing info about player (part 2)
         else if (decodedMessageMediator.encodedMsgIndex == 39) {
             // Split the message into substrings for each layer
-            string pattern = @"^\|\| When they had last played\, (?<layerInfo>.*?) \-\>$";
+            string pattern = @"^\|\| (?<layerInfo>.*?) \-\>$";
             Regex regex = new Regex(pattern);
             Match match = regex.Match(recievedMessage);
 
@@ -77,10 +107,9 @@ public partial class MessageDecoder {
                 // split the layer info into the sub sections for each part
                 string[] layerInfoParts = match.Groups["layerInfo"].Value.Trim().Split(". ");
                 // loop through each layer
-                for (int i = 0; i < 3; i++) {
+                for (int i = 0; i < 2; i++) {
                     // store the parts we want to look for
-                    string layerName = i == 0 ? "undermost" : i == 1 ? "main" : "uppermost";
-                    string startingWords = i == 0 ? "On her " + layerName + " layer, " : i == 1 ? "Over their mouths " + layerName + " layer, " : "Finally on her " + layerName + " layer, ";
+                    string startingWords = i == 0 ? "Over their mouths main layer, " : "Finally on her uppermost layer, ";
                     // store the current regex for this section
                     string layerInfo = layerInfoParts[i];
                     GagSpeak.Log.Debug($"[Message Decoder]: share info2: layerInfo: {layerInfo}");
@@ -112,12 +141,10 @@ public partial class MessageDecoder {
                     }
                 }
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: share info2: (gagtype[0]) = {decodedMessageMediator.layerGagName[0]} || (gagtype[1]) {decodedMessageMediator.layerGagName[1]} "+
-                $"|| (gagtype[2]) {decodedMessageMediator.layerGagName[2]} || (gagpadlock[0]) {decodedMessageMediator.layerPadlock[0]} || (gagpadlock[1]) {decodedMessageMediator.layerPadlock[1]} "+
-                $"|| (gagpadlock[2]) {decodedMessageMediator.layerPadlock[2]} || (gagtimer[0]) {decodedMessageMediator.layerTimer[0]} || (gagtimer[1]) {decodedMessageMediator.layerTimer[1]} "+
-                $"|| (gagtimer[2]) {decodedMessageMediator.layerTimer[2]} || (gagAssigner[0]) {decodedMessageMediator.layerAssigner[0]} || (gagAssigner[1]) {decodedMessageMediator.layerAssigner[1]} "+
-                $"|| (gagAssigner[2]) {decodedMessageMediator.layerAssigner[2]} || (gagPassword[0]) {decodedMessageMediator.layerPassword[0]} || (gagPassword[1]) {decodedMessageMediator.layerPassword[1]} "+
-                $"|| (gagPassword[2]) {decodedMessageMediator.layerPassword[2]}");
+                GagSpeak.Log.Debug($"[Message Decoder]: share info2: (gagtype[1]) {decodedMessageMediator.layerGagName[1]} || (gagtype[2]) {decodedMessageMediator.layerGagName[2]} "+
+                $"|| (gagpadlock[1]) {decodedMessageMediator.layerPadlock[1]} || (gagpadlock[2]) {decodedMessageMediator.layerPadlock[2]} || (gagtimer[1]) {decodedMessageMediator.layerTimer[1]} "+
+                $"|| (gagtimer[2]) {decodedMessageMediator.layerTimer[2]} || (gagAssigner[1]) {decodedMessageMediator.layerAssigner[1]} || (gagAssigner[2]) {decodedMessageMediator.layerAssigner[2]} "+
+                $"|| (gagPassword[1]) {decodedMessageMediator.layerPassword[1]} || (gagPassword[2]) {decodedMessageMediator.layerPassword[2]}");
             } else {
                 GagSpeak.Log.Error($"[Message Decoder]: share info2: Failed to decode message: {recievedMessage}");
             }

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.Text;
 using GagSpeak.Interop;
+using Dalamud.Interface.Utility;
 
 namespace GagSpeak.UI.Tabs.ToyboxTab;
 public partial class ToyboxPatternTable {
@@ -44,31 +45,33 @@ public partial class ToyboxPatternTable {
     private void DrawPatternsTable() {
         ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(ImGui.GetStyle().CellPadding.X * 0.2f, ImGui.GetStyle().CellPadding.Y)); // Modify the X padding
         try{
-            using (var table = ImRaii.Table("UniquePatternListCreator", 3, ImGuiTableFlags.RowBg, new Vector2(-1, -1))) {
-                if (!table) { return; }
-                // draw the header row
-                ImGui.AlignTextToFramePadding();
-                ImGui.TableSetupColumn("##Delete", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
-                ImGui.TableSetupColumn("Pattern Name", ImGuiTableColumnFlags.WidthStretch);
-                ImGui.TableSetupColumn("Use##", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
-                ImGui.TableHeadersRow();
-                // Replace this with your actual data
-                foreach (var (pattern, idx) in _patternHandler._patterns.Select((value, index) => (value, index)))
-                {
-                    using var id = ImRaii.PushId(idx);
-                    bool shouldRemove = DrawAssociatedPatternRow(pattern, idx);
-                    if(shouldRemove) {
-                        itemsToRemove.Add(idx);
+            if(ImGui.BeginChild("PatternContent", new Vector2(0, -85*ImGuiHelpers.GlobalScale), false, ImGuiWindowFlags.NoScrollbar)) {
+                using (var table = ImRaii.Table("UniquePatternListCreator", 3, ImGuiTableFlags.RowBg, new Vector2(0, -1*ImGuiHelpers.GlobalScale))) {
+                    if (!table) { return; }
+                    // draw the header row
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.TableSetupColumn("##Delete", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
+                    ImGui.TableSetupColumn("Pattern Name", ImGuiTableColumnFlags.WidthStretch);
+                    ImGui.TableSetupColumn("Use##", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
+                    ImGui.TableHeadersRow();
+                    // Replace this with your actual data
+                    foreach (var (pattern, idx) in _patternHandler._patterns.Select((value, index) => (value, index))) {
+                        using var id = ImRaii.PushId(idx);
+                        bool shouldRemove = DrawAssociatedPatternRow(pattern, idx);
+                        if(shouldRemove) {
+                            itemsToRemove.Add(idx);
+                        }
                     }
+                    // now remove any items before we draw our mod rows
+                    foreach (var item in itemsToRemove) {
+                        _patternHandler.RemovePattern(item);
+                    }
+                    // clear the items
+                    itemsToRemove.Clear();
+                    // draw the rows
+                    DrawNewPatternRow();
                 }
-                // now remove any items before we draw our mod rows
-                foreach (var item in itemsToRemove) {
-                    _patternHandler.RemovePattern(item);
-                }
-                // clear the items
-                itemsToRemove.Clear();
-                // draw the rows
-                DrawNewPatternRow();
+                ImGui.EndChild();
             }
         } catch (System.Exception e) {
             GagSpeak.Log.Debug($"{e} Error drawing the pattern table");
@@ -123,7 +126,7 @@ public partial class ToyboxPatternTable {
         => new()
         {
             Description =
-                "Try to apply a design from your clipboard.",
+                "Paste a pattern from your clipboard.",
             Icon     = FontAwesomeIcon.Clipboard,
             OnClick  = SetFromClipboard,
             Visible  = true,
@@ -134,7 +137,7 @@ public partial class ToyboxPatternTable {
         => new()
         {
             Description =
-                "Copy the current design to your clipboard.",
+                "Store the selected pattern to your clipboard.",
             Icon    = FontAwesomeIcon.Copy,
             OnClick = ExportToClipboard,
             Visible  = true,

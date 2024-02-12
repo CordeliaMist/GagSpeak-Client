@@ -8,6 +8,11 @@ using Dalamud.Interface.Utility;
 using GagSpeak.Services;
 using OtterGui;
 using System;
+using Dalamud.Interface;
+using System.Linq;
+using System.Collections.Generic;
+using GagSpeak.Interop;
+using Newtonsoft.Json;
 
 namespace GagSpeak.UI.Tabs.PuppeteerTab;
 public partial class PuppeteerPanel
@@ -88,7 +93,7 @@ public partial class PuppeteerPanel
             if (!table) { return; }
             width = ImGui.GetContentRegionAvail().X;
             ImGui.TableSetupColumn("##TriggerPhrase", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 290);
-            ImGui.TableSetupColumn("##Options", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Start Charmmmmm").X);
+            ImGui.TableSetupColumn("##Options", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Start Charmmmmmm").X);
             ImGui.TableSetupColumn("##Checkboxes", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
@@ -109,7 +114,7 @@ public partial class PuppeteerPanel
                     _tempTriggerPhrase = null;
                 }
             } catch (Exception e) {
-                GagSpeak.Log.Error($"[PuppeteerPanel]: Error drawing trigger phrase: {e}");
+                GagSpeak.Log.Error($"[PuppeteerPanel]: Error drawing trigger phrase: {e.Message}");
             } finally {
                 ImGui.PopFont();
             }
@@ -138,6 +143,7 @@ public partial class PuppeteerPanel
                 _tempEndParameter = null;
             }
             ImGuiUtil.LabeledHelpMarker("End Char", "Sets a custom start character for enclosing what gets executed after your trigger word");
+        
             // go to the next column
             ImGui.TableNextColumn();
             // draw out the permissions
@@ -171,5 +177,4 @@ public partial class PuppeteerPanel
         // draw the table on the next line
         _aliasTable.Draw();
     }
-
 }

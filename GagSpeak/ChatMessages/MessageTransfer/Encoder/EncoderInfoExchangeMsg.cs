@@ -48,33 +48,63 @@ public partial class MessageEncoder {
         // Example: "their Master's Pet." or "their Pet's Mistress"
         
         // fulfills their
-        baseString += $"{_characterHandler.whitelistChars[Idx]._theirStatusToYou.ToString()}"+
-        "'s "+
+        baseString += $"{_characterHandler.whitelistChars[Idx]._theirStatusToYou.ToString()}";
+        baseString += "'s ";
 
         // fulfills your lean
-        $"{_characterHandler.whitelistChars[Idx]._yourStatusToThem} ";
-        baseString += "nodded in agreement, informing their partner of how when they last played together, ";
+        baseString += $"{_characterHandler.whitelistChars[Idx]._yourStatusToThem} ";
+        baseString += "nodded in agreement, described how";
         
         // if the safeword is used or not (BOOL)
         baseString += _characterHandler.playerChar._safewordUsed
-        ? "they had used their safeword" : "they had no need to use a safeword";
-        baseString += ". ";
+        ? "they carefully" : "they easily";
+        baseString += " endured ";
 
         // if they allow extendedLockTimes (BOOL)
         baseString += _characterHandler.playerChar._grantExtendedLockTimes[Idx]
-        ? "They didnt mind the enduring binds" : "Preferring to avoid long term binds";
+        ? "strong bindings" : "weak bindings";
         baseString += ", ";
         
         //  if the direct chat garbler is active (BOOL)
         baseString += _characterHandler.playerChar._directChatGarblerActive
-        ? "and they certain enjoyed their gagged voice" : "and not wishing to keep a gagged voice";
-        baseString += ", ";
+        ? "muffling out" : "speaking out";
+        baseString += " through ";
         
         // if the direct chat garbler is locked (BOOL)
         baseString += _characterHandler.playerChar._directChatGarblerLocked
-        ? "for even now their lips were sealed tight" : "but as of now, their lips were not sealed fully";
+        ? "gagged lips" : "parted lips";
+        baseString += ". ";
 
-        baseString += ". ->";
+        // include the first iteration of the gag here.
+        baseString += $"On her undermost layer, ";
+        // layer 0 gag name if it WAS "None"
+        if (_characterHandler.playerChar._selectedGagTypes[0] == "None") {
+            baseString += $"there was nothing present";
+        }
+        // layer 0 gag name if it WAS NOT "None"
+        else {
+            baseString += $"was a {_characterHandler.playerChar._selectedGagTypes[0]} fastened in good and tight, ";
+            // layer 0 padlock type IF A PADLOCK IS PRESENT
+            if (_characterHandler.playerChar._selectedGagPadlocks[0].ToString() != "None") {
+                baseString += $"locked with a {_characterHandler.playerChar._selectedGagPadlocks[0].ToString()}, ";
+                // layer 0 padlock assigner IF IT EXISTS
+                if (!string.IsNullOrEmpty(_characterHandler.playerChar._selectedGagPadlockAssigner[0])) {
+                    baseString += $" which had been secured by {_characterHandler.playerChar._selectedGagPadlockAssigner[0]}, ";
+                }
+                //  layer 0 timer for padlock IF IT EXISTS
+                if (_characterHandler.playerChar._selectedGagPadlockTimer[0] - DateTimeOffset.Now > TimeSpan.Zero) {
+                    baseString += $"with {UIHelpers.FormatTimeSpan(_characterHandler.playerChar._selectedGagPadlockTimer[0] - DateTimeOffset.Now)} remaining, ";
+                }
+                // password if it exists
+                if (_characterHandler.playerChar._selectedGagPadlockPassword[0] != null) {
+                        baseString += $"with the password {_characterHandler.playerChar._selectedGagPadlockPassword[0]} on the lock";
+                    }
+                }
+            }
+            baseString += ".";
+
+
+        baseString += " ->";
         // POTENTIAL MESSAGE SPLIT
         return baseString;
     }
@@ -91,12 +121,10 @@ public partial class MessageEncoder {
         // if we reach here, it is successful, and we can begin to encode the message.
         string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[Idx]._homeworld;
 
-
-        string baseString = $"/tell {targetPlayerFormatted} || When they had last played, ";
-        // we need to create a large lambda function or conditional function that can be easily reversible by a regex.
-        for (int i = 0; i < 3; i++) {
-            string layerName = i == 0 ? "undermost" : i == 1 ? "main" : "uppermost";
-            string startingWords = i == 0 ? $"On her {layerName} layer, " : i == 1 ? $"Over their mouths {layerName} layer, " : $"Finally on her {layerName} layer, ";
+        string baseString = $"/tell {targetPlayerFormatted} || ";
+        // captures the second and third layer of the gag details
+        for (int i = 0; i < 2; i++) {
+            string startingWords = i == 0 ? $"Over their mouths main layer, " : $"Finally on her uppermost layer, ";
             // begin with our starting words
             baseString += startingWords;
             
@@ -119,7 +147,7 @@ public partial class MessageEncoder {
                         baseString += $"with {UIHelpers.FormatTimeSpan(_characterHandler.playerChar._selectedGagPadlockTimer[i] - DateTimeOffset.Now)} remaining, ";
                     }
 
-                    if (_characterHandler.playerChar._selectedGagPadlockPassword[i] != null) {
+                    if (!string.IsNullOrWhiteSpace(_characterHandler.playerChar._selectedGagPadlockPassword[i])) {
                         baseString += $"with the password {_characterHandler.playerChar._selectedGagPadlockPassword[i]} on the lock";
                     }
                 }

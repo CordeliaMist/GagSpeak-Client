@@ -9,6 +9,10 @@ using OtterGui;
 using Dalamud.Interface;
 using GagSpeak.Services;
 using GagSpeak.Utility;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using GagSpeak.Interop;
+using Dalamud.Interface.Utility;
 
 namespace GagSpeak.UI.Tabs.WardrobeTab;
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>
@@ -17,6 +21,7 @@ public class RestraintSetSelector
     private readonly    RestraintSetManager _restraintSetManager; // for getting the restraint sets
     private readonly    FontService         _fontService;         // for getting the font service
     private readonly    TimerService        _timerService;        // for getting the timer service
+    private readonly    ListCopier          _listCopier;          // for getting the list copier
     private             string              _inputTimer = "";     // for getting the input timer
     private             Vector2             _defaultItemSpacing;
 
@@ -26,6 +31,7 @@ public class RestraintSetSelector
         _restraintSetManager = restraintSetManager;
         _fontService = fontService;
         _timerService = timerService;
+        _listCopier = new ListCopier(new List<string>());
 
         _timerService.RemainingTimeChanged += OnRemainingTimeChanged;
     }
@@ -60,10 +66,20 @@ public class RestraintSetSelector
         OtterGui.ImGuiClip.DrawEndDummy(remainder, ImGui.GetTextLineHeight());
     }
 
+    private void DrawSelectable(RestraintSet restraintSet) {
+        var equals = _restraintSetManager._selectedIdx == _restraintSetManager.GetRestraintSetIndex(restraintSet._name);
+        if (ImGui.Selectable(restraintSet._name, equals) && !equals)
+        {
+            // update the selected index in our restraint set manager
+            _restraintSetManager._selectedIdx = _restraintSetManager.GetRestraintSetIndex(restraintSet._name);
+        }
+    }
+
+
     private void DrawSelectionButtons(float width) {
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero)
             .Push(ImGuiStyleVar.FrameRounding, 0);
-        var buttonWidth = new Vector2(width / 2, 0);
+        var buttonWidth = new Vector2(((width / 2) - ImGui.GetTextLineHeight()), 0);
 
         if (ImGui.Button("Add Set", buttonWidth)) {
             _restraintSetManager.AddNewRestraintSet();
@@ -73,22 +89,27 @@ public class RestraintSetSelector
             // if the set only has one item, just replace it with a blank template
             if (_restraintSetManager._restraintSets.Count == 1) {
                 _restraintSetManager._restraintSets[0] = new RestraintSet();
+                _restraintSetManager.Save();
                 _restraintSetManager._selectedIdx = 0;
             } else {
                 _restraintSetManager.DeleteRestraintSet(_restraintSetManager._selectedIdx);
                 _restraintSetManager._selectedIdx = 0;
             }
         }
+        ImGui.SameLine();
+        // copy restraint set list button
+        if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Copy.ToIconString(), new Vector2(2*ImGui.GetTextLineHeight(),0),
+        $"Copy Your Restraint Set List to the Clipboard", false, true)) {
+            ImGui.OpenPopup("Copy Restraint Set List");
+            // it should open the list copier here with the correct parameters and stuff
+        }
+
+        _listCopier.UpdateListInfo(_restraintSetManager._restraintSets.Select(x => x._name).ToList());
+        // list copier should draw the button here with the correct parameters
+        _listCopier.DrawCopyButton("Copy Restraint Set List", "Copied Restraint Set List to clipboard",
+        "Could not copy Restraint Set List to clipboard");
     }
 
-    private void DrawSelectable(RestraintSet restraintSet) {
-        var equals = _restraintSetManager._selectedIdx == _restraintSetManager.GetRestraintSetIndex(restraintSet._name);
-        if (ImGui.Selectable(restraintSet._name, equals) && !equals)
-        {
-            // update the selected index in our restraint set manager
-            _restraintSetManager._selectedIdx = _restraintSetManager.GetRestraintSetIndex(restraintSet._name);
-        }
-    }
 #endregion RestraintSetSelector
 #region RestraintSetOverview
     private void DrawRestraintSetOverview(float height) {

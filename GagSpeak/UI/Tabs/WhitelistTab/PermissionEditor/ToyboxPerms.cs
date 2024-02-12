@@ -14,6 +14,7 @@ namespace GagSpeak.UI.Tabs.WhitelistTab;
 public partial class WhitelistPlayerPermissions {
     public int _vibratorIntensity = 1;
     public string _vibePatternName = "";
+    public int _activeStoredPatternListIdx = 0;
 
 #region DrawWardrobePerms
     public void DrawToyboxPerms(ref bool _viewMode) {
@@ -23,15 +24,36 @@ public partial class WhitelistPlayerPermissions {
 
         if(_characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
 
-        ImGui.PushFont(_fontService.UidFont);
-        var name = _viewMode ? $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}'s" : "Your";
-        ImGui.Text($"{name} Toybox Settings");
-        ImGui.PopFont();
+        using (var ToyBoxHeaderTable = ImRaii.Table("ToyBoxHeaderTable", 2)) {
+            if (!ToyBoxHeaderTable) { return; }
 
+            ImGui.TableSetupColumn("##ToyboxHeader", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("##ToyboxHeaderButton", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("ToyTogglemmmmm").X);
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
+            ImGui.PushFont(_fontService.UidFont);
+            var name = _viewMode ? $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}'s" : "Your";
+            ImGui.Text($"{name} Toybox Settings");
+            ImGui.PopFont();
+            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.BeginDisabled(); }
+
+            ImGui.TableNextColumn();
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 5*ImGuiHelpers.GlobalScale);
+            ImGui.Text($"Toy State:");
+            ImGui.SameLine();
+            var text = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive ? "On" : "Off";
+            if(ImGuiUtil.DrawDisabledButton($"{text}##ToggleToyActive", new Vector2(ImGui.GetContentRegionAvail().X, 20*ImGuiHelpers.GlobalScale),
+            string.Empty, _viewMode && !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState)) {
+                TogglePlayersIsToyActiveOption();
+                _interactOrPermButtonEvent.Invoke();
+            }
+            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.EndDisabled(); }
+        }
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 3*ImGuiHelpers.GlobalScale);
         // store their dynamic tier for edit purposes
         DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTierClient();
-        // store the hovered var for tooltips
-        var hovered  = ImGui.IsItemHovered();
         
         // draw out the table for our permissions
         using (var tableOverrideSettings = ImRaii.Table("ToyboxManagerTable", 4, ImGuiTableFlags.RowBg)) {
@@ -89,33 +111,7 @@ public partial class WhitelistPlayerPermissions {
                     _characterHandler.ToggleChangeToyState(_characterHandler.activeListIdx);
                 }
             }
-            // turn the toy on / off
-            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.BeginDisabled(); }
-            ImGuiUtil.DrawFrameColumn($"Toy Active:");
-            ImGui.TableNextColumn();
-            var toyActivePerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive 
-                                            : _characterHandler.playerChar._isToyActive;
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((toyActivePerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
-            }
-            ImGui.TableNextColumn();
-            ImGuiUtil.Center("");
-            ImGui.TableNextColumn();
-            if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyActive", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, _viewMode && !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState)) {
-                if(_viewMode) {
-                    // toggle the whitelisted players permission to allow changing toy state
-                    TogglePlayersIsToyActiveOption();
-                    _interactOrPermButtonEvent.Invoke();
-                } else {
-                    // toggles if this person can change your toy state
-                    _characterHandler.ToggleToyState();
-                }
-            }
-            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.EndDisabled(); }
-
-
-            // Enable Restraint Sets option
+            // Can Control Intensity
             ImGuiUtil.DrawFrameColumn($"Can Control Intensity:");
             ImGui.TableNextColumn();
             var toyIntensityPerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsIntensityControl 
@@ -135,22 +131,40 @@ public partial class WhitelistPlayerPermissions {
                     _characterHandler.ToggleAllowIntensityControl(_characterHandler.activeListIdx);
                 }
             }
+            // Enable Restraint Sets option
+            ImGuiUtil.DrawFrameColumn($"Can Execute Patterns:");
+            ImGui.TableNextColumn();
+            var patternExecuttionPerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsUsingPatterns 
+                                            : _characterHandler.playerChar._allowUsingPatterns[_characterHandler.activeListIdx];
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
+                ImGuiUtil.Center((patternExecuttionPerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+            }
+            ImGui.TableNextColumn();
+            ImGuiUtil.Center("0");
+            ImGui.TableNextColumn();
+            if(_viewMode) {
+                ImGuiUtil.Center("ReadOnly");
+            } else {
+                if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleAllowingPatternExecution", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+                string.Empty, false)) {
+                    // toggles if this person can change your toy state
+                    _characterHandler.ToggleAllowPatternExecution(_characterHandler.activeListIdx);
+                }
+            }
         }
-        // seperate the table and sliders
-        ImGui.Separator();
         if(!_viewMode) { ImGui.BeginDisabled(); }
-        // now make a table of 2 columns
-        using (var toyboxPlaytimeTable = ImRaii.Table("ToyboxManagerPlaytimeTable", 2)) {
-            if (!toyboxPlaytimeTable) return;
+        // seperate the table and sliders
+        using (var toyboxDisplayList = ImRaii.Table("ToyboxManagerDisplayTable", 3, ImGuiTableFlags.RowBg)) {
+            if (!toyboxDisplayList) return;
             // Create the headers for the table
-            ImGui.TableSetupColumn("Input",     ImGuiTableColumnFlags.WidthStretch);
+            var text = _viewMode ? "Setting" : $"Permission Setting for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}";
+            ImGui.TableSetupColumn("Setting",  ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Stored Patternmm").X);
+            ImGui.TableSetupColumn("Adjuster",     ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemm").X);
             ImGui.TableNextRow();
-            ImGui.TableNextColumn();
 
-            // draw the intensity level
-            ImGui.Text("Intensity Level");
-            // then draw the slider
+            ImGuiUtil.DrawFrameColumn("Intensity Level: ");
+            ImGui.TableNextColumn();
             int intensityResult = _vibratorIntensity;
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             // default to a range of 10, but otherwise, display the toy's active step size
@@ -158,17 +172,16 @@ public partial class WhitelistPlayerPermissions {
             if(ImGui.SliderInt("##ToyIntensity", ref intensityResult, 0, maxSliderVal)) {
                 _vibratorIntensity = intensityResult;
             }
-
             ImGui.TableNextColumn();
-            var yPos = ImGui.GetCursorPosY();
-            ImGui.SetCursorPosY(yPos + 20*ImGuiHelpers.GlobalScale);
             if(ImGuiUtil.DrawDisabledButton("Update##UpdateToyIntensity", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
                 UpdatePlayerToyIntensity(_vibratorIntensity);
                 _interactOrPermButtonEvent.Invoke();
             }
+
+            // pattern executtion section
+            ImGuiUtil.DrawFrameColumn("Pattern Name: ");
             ImGui.TableNextColumn();
-            // then draw the input box
             string patternResult = _vibePatternName;
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             ImGui.AlignTextToFramePadding();
@@ -181,6 +194,26 @@ public partial class WhitelistPlayerPermissions {
             string.Empty, !(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsUsingPatterns == true))) {
                 ExecutePlayerToyPattern(_vibePatternName);
                 _interactOrPermButtonEvent.Invoke();
+            }
+
+            // stored pattern list
+            if(_viewMode) {
+                ImGuiUtil.DrawFrameColumn("Stored Patterns: ");
+                ImGui.TableNextColumn();
+                // Create a combo box with the stored restraint data (had to convert to array because am dumb)
+                string[] patternData = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._storedPatternNames.ToArray();
+                int currentPatternIndex = _activeStoredPatternListIdx==0 ? 0 : _activeStoredPatternListIdx; // This should be the current selected index
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                if (ImGui.Combo("##storedPatternData", ref currentPatternIndex, patternData, patternData.Length)) {
+                    // If an item is selected from the dropdown, update the restraint set name field
+                    _vibePatternName = patternData[currentPatternIndex];
+                    // update the index to display
+                    _activeStoredPatternListIdx = currentPatternIndex;
+                }
+                // end the disabled state
+                if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _viewMode==false) {
+                    ImGui.EndDisabled();
+                }
             }
         }
         if(!_viewMode) { ImGui.EndDisabled(); }

@@ -12,11 +12,11 @@ public partial class MessageDictionary {
 
         // The sharing of information (part 1) [ ID == 38 ]
         if(textVal.Contains("from") && textVal.Contains(", their ") &&
-        textVal.Contains("nodded in agreement, informing their partner of how when they last played together")
-        && (textVal.Contains("they had used their safeword") || textVal.Contains("they had no need to use a safeword"))
-        && (textVal.Contains("They didnt mind the enduring binds") || textVal.Contains("Preferring to avoid long term binds"))
-        && (textVal.Contains("and they certain enjoyed their gagged voice") || textVal.Contains("and not wishing to keep a gagged voice"))
-        && (textVal.Contains("for even now their lips were sealed tight") || textVal.Contains("but as of now, their lips were not sealed fully")))
+        textVal.Contains("nodded in agreement, described how") && textVal.Contains("On her undermost layer,")
+        && (textVal.Contains("they carefully") || textVal.Contains("they easily"))
+        && (textVal.Contains("strong bindings") || textVal.Contains("weak bindings"))
+        && (textVal.Contains("muffling out") || textVal.Contains("speaking out"))
+        && (textVal.Contains("gagged lips") || textVal.Contains("parted lips")))
         {
             decodedMessageMediator.encodedMsgIndex = 38;
             decodedMessageMediator.msgType = DecodedMessageType.InfoExchange;
@@ -24,7 +24,7 @@ public partial class MessageDictionary {
         }
 
         // The sharing of information (part 2) [ ID == 39 ]
-        if(textVal.Contains("|| When they had last played,") && textVal.Contains("On her undermost layer,") && textVal.Contains("Over their mouths main layer,")
+        if(textVal.Contains("|| ") && textVal.Contains("Over their mouths main layer,")
         && textVal.Contains("Finally on her uppermost layer,") && textVal.Contains("->"))
         {
             decodedMessageMediator.encodedMsgIndex = 39;

@@ -8,6 +8,7 @@ using OtterGui.Classes;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface;
 using GagSpeak.CharacterData;
+using Dalamud.Interface.Utility;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 public partial class WhitelistPlayerPermissions {
@@ -137,6 +138,23 @@ public partial class WhitelistPlayerPermissions {
                     // its us pressing it, so just toggle the state
                     _characterHandler.ToggleAllowAllCommands(_characterHandler.activeListIdx);
                 }
+            }
+        }
+        // draw out the table for our permissions
+        using (var ImportedAliasTable = ImRaii.Table("ImportedAliasTable", 2, ImGuiTableFlags.RowBg)) {
+            if (!ImportedAliasTable) return;
+            // Create the headers for the table
+            ImGui.TableSetupColumn("Stored Aliases", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Stored Aliasesmmmmm").X);
+            ImGui.TableSetupColumn("Output",        ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableHeadersRow();
+            ImGui.TableNextRow();
+
+            // draw out the alias list
+            foreach (var alias in _characterHandler.whitelistChars[_characterHandler.activeListIdx]._storedAliases) {
+                ImGui.TableNextColumn();
+                ImGui.Text(alias.Key);
+                ImGui.TableNextColumn();
+                ImGui.Text(alias.Value);
             }
         }
         // pop the style

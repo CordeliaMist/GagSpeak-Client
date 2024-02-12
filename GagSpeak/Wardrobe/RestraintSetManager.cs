@@ -260,7 +260,7 @@ public class RestraintSetManager : ISavable
         Serialize().WriteTo(j);
     }
 
-    private void Save()
+    public void Save()
         => _saveService.DelaySave(this);
 
     public JObject Serialize() {
