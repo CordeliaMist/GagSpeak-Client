@@ -10,7 +10,7 @@ using Penumbra.GameData.Structs;
 
 namespace GagSpeak.UI.Equipment;
 public sealed class StainColorCombo(float _comboWidth, DictStain _stains)
-    : FilterComboColors(_comboWidth, CreateFunc(_stains), GagSpeak.Log)
+    : FilterComboColors(_comboWidth, MouseWheelType.Unmodified, CreateFunc(_stains), GagSpeak.Log)
 {
     protected override bool DrawSelectable(int globalIdx, bool selected)
     {
