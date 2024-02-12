@@ -206,13 +206,12 @@ public partial class WhitelistPlayerPermissions {
                     _restraintSetToEnable = restraintData[currentRestraintIndex];
                     // update the index to display
                     _activeStoredSetListIdx = currentRestraintIndex;
-
                 }
+            }
 
-                // end the disabled state
-                if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _viewMode==false) {
-                    ImGui.EndDisabled();
-                }
+            // end the disabled state
+            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _viewMode==false) {
+                ImGui.EndDisabled();
             }
         }
         
