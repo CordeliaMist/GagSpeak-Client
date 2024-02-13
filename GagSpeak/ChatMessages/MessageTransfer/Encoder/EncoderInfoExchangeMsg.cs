@@ -53,7 +53,7 @@ public partial class MessageEncoder {
 
         // fulfills your lean
         baseString += $"{_characterHandler.whitelistChars[Idx]._yourStatusToThem} ";
-        baseString += "nodded in agreement, described how";
+        baseString += "nodded in agreement, describing how ";
         
         // if the safeword is used or not (BOOL)
         baseString += _characterHandler.playerChar._safewordUsed
@@ -83,7 +83,7 @@ public partial class MessageEncoder {
         }
         // layer 0 gag name if it WAS NOT "None"
         else {
-            baseString += $"was a {_characterHandler.playerChar._selectedGagTypes[0]} fastened in good and tight, ";
+            baseString += $"there was a {_characterHandler.playerChar._selectedGagTypes[0]} fastened in good and tight, ";
             // layer 0 padlock type IF A PADLOCK IS PRESENT
             if (_characterHandler.playerChar._selectedGagPadlocks[0].ToString() != "None") {
                 baseString += $"locked with a {_characterHandler.playerChar._selectedGagPadlocks[0].ToString()}, ";
@@ -129,26 +129,26 @@ public partial class MessageEncoder {
             baseString += startingWords;
             
             // layer {i} gag name if it WAS "None"
-            if (_characterHandler.playerChar._selectedGagTypes[i] == "None") {
+            if (_characterHandler.playerChar._selectedGagTypes[i+1] == "None") {
                 baseString += $"there was nothing present";
             }
             // layer {i} gag name if it WAS NOT "None"
             else {
-                baseString += $"she had a {_characterHandler.playerChar._selectedGagTypes[i]} fastened in good and tight, ";
+                baseString += $"there was a {_characterHandler.playerChar._selectedGagTypes[i+1]} fastened in good and tight, ";
                 // layer {i} padlock type IF A PADLOCK IS PRESENT
-                if (_characterHandler.playerChar._selectedGagPadlocks[i].ToString() != "None") {
-                    baseString += $"locked with a {_characterHandler.playerChar._selectedGagPadlocks[i].ToString()}, ";
+                if (_characterHandler.playerChar._selectedGagPadlocks[i+1].ToString() != "None") {
+                    baseString += $"locked with a {_characterHandler.playerChar._selectedGagPadlocks[i+1].ToString()}, ";
                     // layer {i} padlock assigner IF IT EXISTS
-                    if (!string.IsNullOrEmpty(_characterHandler.playerChar._selectedGagPadlockAssigner[i])) {
-                        baseString += $" which had been secured by {_characterHandler.playerChar._selectedGagPadlockAssigner[i]}, ";
+                    if (!string.IsNullOrEmpty(_characterHandler.playerChar._selectedGagPadlockAssigner[i+1])) {
+                        baseString += $" which had been secured by {_characterHandler.playerChar._selectedGagPadlockAssigner[i+1]}, ";
                     }
                     //  layer {i} timer for padlock IF IT EXISTS
-                    if (_characterHandler.playerChar._selectedGagPadlockTimer[i] - DateTimeOffset.Now > TimeSpan.Zero) {
-                        baseString += $"with {UIHelpers.FormatTimeSpan(_characterHandler.playerChar._selectedGagPadlockTimer[i] - DateTimeOffset.Now)} remaining, ";
+                    if (_characterHandler.playerChar._selectedGagPadlockTimer[i+1] - DateTimeOffset.Now > TimeSpan.Zero) {
+                        baseString += $"with {UIHelpers.FormatTimeSpan(_characterHandler.playerChar._selectedGagPadlockTimer[i+1] - DateTimeOffset.Now)} remaining, ";
                     }
 
-                    if (!string.IsNullOrWhiteSpace(_characterHandler.playerChar._selectedGagPadlockPassword[i])) {
-                        baseString += $"with the password {_characterHandler.playerChar._selectedGagPadlockPassword[i]} on the lock";
+                    if (!string.IsNullOrWhiteSpace(_characterHandler.playerChar._selectedGagPadlockPassword[i+1])) {
+                        baseString += $"with the password {_characterHandler.playerChar._selectedGagPadlockPassword[i+1]} on the lock";
                     }
                 }
             }

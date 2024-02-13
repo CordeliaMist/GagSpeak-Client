@@ -12,7 +12,7 @@ public partial class MessageDictionary {
 
         // The sharing of information (part 1) [ ID == 38 ]
         if(textVal.Contains("from") && textVal.Contains(", their ") &&
-        textVal.Contains("nodded in agreement, described how") && textVal.Contains("On her undermost layer,")
+        textVal.Contains("nodded in agreement, describing how") && textVal.Contains("On her undermost layer,")
         && (textVal.Contains("they carefully") || textVal.Contains("they easily"))
         && (textVal.Contains("strong bindings") || textVal.Contains("weak bindings"))
         && (textVal.Contains("muffling out") || textVal.Contains("speaking out"))

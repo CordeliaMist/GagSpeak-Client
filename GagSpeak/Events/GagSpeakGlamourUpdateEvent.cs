@@ -19,6 +19,8 @@ public enum UpdateType {
     Login,
     // used for when we detect a zone change
     ZoneChange,
+    // for safeword
+    Safeword,
 }
 
 public class GagSpeakGlamourEvent

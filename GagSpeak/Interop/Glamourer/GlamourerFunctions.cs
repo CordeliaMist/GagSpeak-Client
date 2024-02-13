@@ -250,11 +250,18 @@ public class GlamourerFunctions : IDisposable
                     await Task.Run(() => _charaDataHelpers.RunOnFrameworkThread(UpdateCachedCharacterData));
                 }
 
-                // condition 5 --> it was a refresh all event, we should reapply all the gags and restraint sets
+                // condition 6 --> it was a refresh all event, we should reapply all the gags and restraint sets
                 if(e.UpdateType == UpdateType.RefreshAll || e.UpdateType == UpdateType.ZoneChange || e.UpdateType == UpdateType.Login) {
                     GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Refresh All // Zone Change // Login // Job Change");
                     UpdateCachedCharacterData();
                 }
+                // condition 7 --> it was a safeword event, we should revert to the game, then to game and disable toys
+                if(e.UpdateType == UpdateType.Safeword) {
+                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Safeword");
+                    await _Interop.GlamourerRevertCharacter(_charaDataHelpers.Address);
+                    // disable all toys
+                }
+
             } catch (Exception ex) {
                 GagSpeak.Log.Error($"[GlamourEventFired]: Error processing glamour event: {ex.Message}");
             } finally {

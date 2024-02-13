@@ -60,7 +60,7 @@ public partial class PuppeteerPanel
             // See if it is already enabled by default
             var enabled = _config.ChannelsPuppeteer.Contains(e);
             // Create a new line after every 4 columns
-            if (i != 0 && (i==5 || i==9 || i==13 || i==17 || i == 21)) {
+            if (i != 0 && (i==4 || i==7 || i==11 || i==15 || i == 19)) {
                 ImGui.NewLine();
                 //i = 0;
             }

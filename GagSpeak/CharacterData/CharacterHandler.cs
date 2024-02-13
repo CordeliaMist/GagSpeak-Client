@@ -172,6 +172,13 @@ public class CharacterHandler : ISavable
         }
     }
 
+    public void SetSafewordUsed(bool value) {
+        if(playerChar._safewordUsed != value) {
+            playerChar._safewordUsed = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
     public void ToggleCmdFromFriends() {
         playerChar._doCmdsFromFriends = !playerChar._doCmdsFromFriends;
         _saveService.QueueSave(this);
@@ -556,7 +563,7 @@ public class CharacterHandler : ISavable
             whitelistChars[Idx]._selectedGagTypes[0] = GagTypes[0];
             whitelistChars[Idx]._selectedGagPadlocks[0] = Enum.TryParse(Padlocks[0], out Padlocks padlockType) ? padlockType : Gagsandlocks.Padlocks.None;
             whitelistChars[Idx]._selectedGagPadlockPassword[0] = Passwords[0];
-            whitelistChars[Idx]._selectedGagPadlockTimer[0] = UIHelpers.GetEndTime(Timers[0]);
+            whitelistChars[Idx]._selectedGagPadlockTimer[0] = string.IsNullOrEmpty(Timers[0]) ? DateTimeOffset.Now : UIHelpers.GetEndTime(Timers[0]);
             whitelistChars[Idx]._selectedGagPadlockAssigner[0] = Assigners[0];
         }
         _saveService.QueueSave(this);
@@ -574,8 +581,8 @@ public class CharacterHandler : ISavable
             whitelistChars[Idx]._selectedGagPadlocks[2] = Enum.TryParse(Padlocks[2], out Padlocks padlockType3) ? padlockType3 : Gagsandlocks.Padlocks.None;
             whitelistChars[Idx]._selectedGagPadlockPassword[1] = Passwords[1];
             whitelistChars[Idx]._selectedGagPadlockPassword[2] = Passwords[2];
-            whitelistChars[Idx]._selectedGagPadlockTimer[1] = UIHelpers.GetEndTime(Timers[1]);
-            whitelistChars[Idx]._selectedGagPadlockTimer[2] = UIHelpers.GetEndTime(Timers[2]);
+            whitelistChars[Idx]._selectedGagPadlockTimer[1] = string.IsNullOrEmpty(Timers[1]) ? DateTimeOffset.Now : UIHelpers.GetEndTime(Timers[1]);
+            whitelistChars[Idx]._selectedGagPadlockTimer[2] = string.IsNullOrEmpty(Timers[2]) ? DateTimeOffset.Now : UIHelpers.GetEndTime(Timers[2]);
             whitelistChars[Idx]._selectedGagPadlockAssigner[1] = Assigners[1];
             whitelistChars[Idx]._selectedGagPadlockAssigner[2] = Assigners[2]; 
         }

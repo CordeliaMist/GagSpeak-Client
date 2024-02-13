@@ -18,6 +18,7 @@ using GagSpeak.ChatMessages.MessageTransfer;
 using System.Runtime.CompilerServices;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;
+using GagSpeak.ToyboxandPuppeteer;
 
 namespace GagSpeak.ChatMessages;
 
@@ -27,7 +28,7 @@ public class CommandManager : IDisposable // Our main command list manager
     private const string MainCommandString      = "/gagspeak"; // The primary command used for & displays
     private const string ActionsCommandString   = "/gag"; // subcommand for more in-depth actions.
     private const string TranslateCommandString = "/gsm"; // convient subcommand for translating messages
-    private const string WardrobeCommandString  = "/restraintset"; // subcommand for more in-depth actions.
+    private const string SafewordCommandString  = "/safeword"; // subcommand for safeword
     private readonly    MessageEncoder          _gagMessages;
     private readonly    ICommandManager         _commands;
     private readonly    MainWindow              _mainWindow;
@@ -45,16 +46,19 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly    GlamourerService        _glamourerInterop;
     private readonly    CharacterHandler        _characterHandler;
     private readonly    SafewordUsedEvent       _safewordCommandEvent;
+    private readonly    GagSpeakGlamourEvent    _glamourEvent;
 
     // Constructor for the command manager
     public CommandManager(ICommandManager command, MainWindow mainwindow, DebugWindow debugWindow,
-    RestraintSetManager restraintSetManager, IChatGui chat, GagSpeakConfig config, ChatManager chatManager,
-    IClientState clientState, GlamourerService GlamourerService, GagService gagService, CharacterHandler characterHandler,
+    GagSpeakGlamourEvent glamourEvent, RestraintSetManager restraintSetManager,
+    IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState,
+    GlamourerService GlamourerService, GagService gagService, CharacterHandler characterHandler,
     GagGarbleManager GagGarbleManager, RealChatInteraction realchatinteraction, TimerService timerService,
     SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder, GagStorageManager gagStorageManager)
     {
         // set the private readonly's to the passed in data of the respective names
         _commands = command;
+        _glamourEvent = glamourEvent;
         _mainWindow = mainwindow;
         _debugWindow = debugWindow;
         _chat = chat;
@@ -78,19 +82,18 @@ public class CommandManager : IDisposable // Our main command list manager
             ShowInHelp = true
         });
         _commands.AddHandler(ActionsCommandString, new CommandInfo(OnGag) {
-            HelpMessage = "Displays the list of GagSpeak commands. Use with 'help' or '?' for extended help.",
+            HelpMessage = "All commands for gag interactions fall under this.",
             ShowInHelp = true
         });
-
         _commands.AddHandler(TranslateCommandString, new CommandInfo(OnGSM) {
             HelpMessage = "Translates everything after /gsm into GagSpeak into currently selected chat type in the chat box.",
             ShowInHelp = true
         });
-
-        _commands.AddHandler(WardrobeCommandString, new CommandInfo(OnRestraintSet) {
-            HelpMessage = "Interacts with the wardrobes command functionality. Use with 'help' or '?' for extended info.",
+        _commands.AddHandler(SafewordCommandString, new CommandInfo(OnSafeword) {
+            HelpMessage = "revert all settings to false and disable any active components. For emergency uses.",
             ShowInHelp = true
         });
+
         // let user know on launch of their direct chat garbler is still enabled
         if (_characterHandler.playerChar._directChatGarblerActive) {
             _chat.PrintError("Direct Chat Garbler is still enabled. If you don't want this on, remember to disable it!");
@@ -104,7 +107,7 @@ public class CommandManager : IDisposable // Our main command list manager
         _commands.RemoveHandler(MainCommandString);
         _commands.RemoveHandler(ActionsCommandString);
         _commands.RemoveHandler(TranslateCommandString);
-        _commands.RemoveHandler(WardrobeCommandString);
+        _commands.RemoveHandler(SafewordCommandString);
     }
 
 #region GagSpeak Help
@@ -123,8 +126,8 @@ public class CommandManager : IDisposable // Our main command list manager
 
         var argument = argumentList.Length == 2 ? argumentList[1] : string.Empty; // Make arguement be everything after command
         switch(argumentList[0].ToLowerInvariant()) {
-            case "safeword":
-                Safeword(argument);        // when [/gagspeak safeword] is typed
+            case "restraintset":
+                RestraintSet(argument); // when [/gagspeak restraintset] is typed
                 return;
             case "showlist":
                 Showlist(argument);        // when [/gagspeak showlist] is typed
@@ -146,10 +149,10 @@ public class CommandManager : IDisposable // Our main command list manager
         };
     }
 
-    private bool Safeword(string argument) { // Handler for the safeword subcommand
+    private void OnSafeword(string command, string argument) { // Handler for the safeword subcommand
         if (string.IsNullOrWhiteSpace(argument)) { // If no safeword is provided
             _chat.Print("Please provide a safeword. Usage: /gagspeak safeword [your_safeword]"); 
-            return false;
+            return;
         }
 
         // If the safeword is the same as the one we are trying to set and there is no "SafewordUsed" timer
@@ -167,10 +170,11 @@ public class CommandManager : IDisposable // Our main command list manager
                     _characterHandler.SetPlayerGagPadlock(layerIndex, Padlocks.None);
                     _characterHandler.SetPlayerGagPadlockPassword(layerIndex, "");
                     _characterHandler.SetPlayerGagPadlockAssigner(layerIndex, "");
-                }               
+                }         
                 _gagStorageManager.ResetEverythingDueToSafeword();
                 _restriantSetManager.ResetEverythingDueToSafeword();
                 _timerService.ClearRestraintSetTimer();
+                _glamourEvent.Invoke(UpdateType.Safeword); // revert to game state
                 try{
                     IntPtr playerAddress = _clientState.LocalPlayer!.Address;
                     Task.Run(async () => await _glamourerInterop.GlamourerRevertCharacterToAutomation(playerAddress));
@@ -178,16 +182,15 @@ public class CommandManager : IDisposable // Our main command list manager
                     GagSpeak.Log.Error($"Error reverting glamourer to automation: {e.Message}");
                     _chat.PrintError($"Error reverting glamourer to automation upon safeword usage: {e.Message}");
                 }
-                // Re-enable the ObserveList
+                // Re-enable the ObserveList so we can trigger the safeword event
                 _characterHandler.playerChar._selectedGagTypes.IsSafewordCommandExecuting = false;
                 _characterHandler.playerChar._selectedGagPadlocks.IsSafewordCommandExecuting = false;
                 // Fire the safeword command event
                 GagSpeak.Log.Debug($"[Command Manager]: Firing Invoke from CommandManager");
                 _safewordCommandEvent.Invoke();
                 // fire the safewordUsed bool to true so that we set the cooldown
-                _characterHandler.playerChar._safewordUsed = true;
-                _characterHandler.Save();
-                _timerService.StartTimer("SafewordUsed", "5s", 1000, () => _characterHandler.playerChar._safewordUsed = false);
+                _characterHandler.SetSafewordUsed(true);
+                _timerService.StartTimer("SafewordUsed", "5s", 1000, () => _characterHandler.SetSafewordUsed(false));
             }
             // otherwise inform the user that the cooldown for safeword being used is still present
             else {
@@ -198,8 +201,7 @@ public class CommandManager : IDisposable // Our main command list manager
             GagSpeak.Log.Debug($"[Command Manager]: Safeword did not match");
             _chat.Print("Safeword did not match!");
         }
-
-        return true;
+        return;
     }
 
     private bool Showlist(string argument) { // Handler for the showlist subcommand
@@ -722,7 +724,7 @@ public class CommandManager : IDisposable // Our main command list manager
         }
     }
 
-    private void OnRestraintSet(string command, string arguments)
+    private void RestraintSet(string arguments)
     {
         var argumentList = arguments.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (argumentList.Length < 1) {
@@ -751,10 +753,8 @@ public class CommandManager : IDisposable // Our main command list manager
         // print header for help
         _chat.Print(new SeStringBuilder().AddYellow(" -- Arguments for /gagspeak --").BuiltString);
         // print command arguements
-        _chat.Print(new SeStringBuilder().AddCommand("safeword", "Sets your safeword. Use without arguments for help.").BuiltString);
         _chat.Print(new SeStringBuilder().AddCommand("showlist", "Displays the list of padlocks or gags. Use without arguments for help.").BuiltString);
-        _chat.Print(new SeStringBuilder().AddCommand("setmode", "Sets plugin mode to domme or sub. Has Cooldown time. Use without arguments for help.").BuiltString);
-        _chat.Print(new SeStringBuilder().AddCommand("startdebugging", "Opens everything for debugging.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddCommand("restraintset", "Prints help for restraint set commands. Use alone for help.").BuiltString);
         return true;
     }
 

@@ -65,7 +65,7 @@ public partial class MessageDecoder {
                     decodedMessageMediator.layerAssigner[0] = "";
                 } else {
                     // otherwise, check what the gagtype was.
-                    decodedMessageMediator.layerGagName[0] = layerInfo.Split("she had a ")[1].Split(" fastened in good and tight, ")[0].Trim();
+                    decodedMessageMediator.layerGagName[0] = layerInfo.Split("was a ")[1].Split(" fastened in good and tight, ")[0].Trim();
                     // if it was locked, then we need to get the lock type
                     if (layerInfo.Contains("locked with a")) {
                         decodedMessageMediator.layerPadlock[0] = layerInfo.Split("locked with a")[1].Trim().Split(", ")[0].Trim();
@@ -121,7 +121,7 @@ public partial class MessageDecoder {
                         decodedMessageMediator.layerAssigner[i] = "";
                     } else {
                         // otherwise, check what the gagtype was.
-                        decodedMessageMediator.layerGagName[i] = layerInfo.Split("she had a ")[1].Split(" fastened in good and tight, ")[0].Trim();
+                        decodedMessageMediator.layerGagName[i] = layerInfo.Split("there was a ")[1].Split(" fastened in good and tight, ")[0].Trim();
                         // if it was locked, then we need to get the lock type
                         if (layerInfo.Contains("locked with a")) {
                             decodedMessageMediator.layerPadlock[i] = layerInfo.Split("locked with a")[1].Trim().Split(", ")[0].Trim();

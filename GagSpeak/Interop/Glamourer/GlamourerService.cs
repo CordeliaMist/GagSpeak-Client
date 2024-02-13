@@ -26,7 +26,7 @@ public sealed class GlamourerService
     public readonly ICallGateSubscriber<GameObject?, object> _RevertCharacter; // Unlocks yourself, and reverts you back to base game state
     public readonly ICallGateSubscriber<GameObject?, uint, object?> _RevertCharacterLock; // Unlocks yourself, and reverts you back to base game state
     public readonly ICallGateSubscriber<GameObject?, uint, bool> _RevertToAutomationCharacter; // reverts your character to the automation design state of that job.
-    public readonly ICallGateSubscriber<GameObject?, byte, ulong, byte, uint, int> _SetItem; // sets an item to your character
+    public readonly ICallGateSubscriber<GameObject?, byte, ulong, byte, uint, int> _SetItemOnce; // sets an item to your character
     public readonly ICallGateSubscriber<int, nint, Lazy<string>, object?> _StateChangedSubscriber;
 
     public readonly uint LockCode = 0x6D617265; // setting a lock code for our plugin
@@ -49,7 +49,7 @@ public sealed class GlamourerService
         _RevertCharacterLock = _pluginInterface.GetIpcSubscriber<GameObject?, uint, object?>("Glamourer.RevertCharacterLock");
         _RevertToAutomationCharacter = _pluginInterface.GetIpcSubscriber<GameObject?, uint, bool>("Glamourer.RevertToAutomationCharacter");
         // set item callgate
-        _SetItem = _pluginInterface.GetIpcSubscriber<GameObject?, byte, ulong, byte, uint, int>("Glamourer.SetItem"); 
+        _SetItemOnce = _pluginInterface.GetIpcSubscriber<GameObject?, byte, ulong, byte, uint, int>("Glamourer.SetItem"); 
         // also subscribe to the state changed event so we know whenever they try to change an outfit
         _StateChangedSubscriber = _pluginInterface.GetIpcSubscriber<int, nint, Lazy<string>, object?>("Glamourer.StateChanged");
     }
@@ -139,14 +139,15 @@ public sealed class GlamourerService
                 var gameObj = _clientUserInfo.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
-                    GagSpeak.Log.Verbose("[GetCharacterCustomizationAsync] Calling on IPC: GlamourSetItemToCharacter");
-                    _SetItem!.InvokeFunc(c, slot, item, dye, variant);
+                    GagSpeak.Log.Verbose("[SetItemOnceToCharacterAsync] Calling on IPC: GlamourSetItemToCharacter");
+                    _SetItemOnce!.InvokeFunc(c, slot, item, dye, variant);
                 }
                 // otherwise, just return an empty string.
                 return;
             }).ConfigureAwait(false);
         } catch {
             // if at any point this errors, return an empty string as well.
+            GagSpeak.Log.Warning($"[SetItemOnceToCharacterAsync] Failed to set item to character with slot {slot}, item {item}, dye {dye}, and variant {variant}");
             return;
         }
     }

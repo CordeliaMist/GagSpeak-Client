@@ -28,7 +28,7 @@ public static class ChatChannel
         Tell_In = 0,
 
         [EnumOrder(1)]
-        Tell_Out = 17,
+        Tell = 17,
 
         [EnumOrder(2)]
         Say = 1,
@@ -116,13 +116,14 @@ public static class ChatChannel
     public static IEnumerable<ChatChannels> GetOrderedChannels() {
         return Enum.GetValues(typeof(ChatChannels))
                 .Cast<ChatChannels>()
+                .Where(e => e != ChatChannels.Tell_In && e != ChatChannels.NoviceNetwork)
                 .OrderBy(e => GetOrder(e));
     }
 
     // Match Channel types with command aliases for them
     public static string[] GetChannelAlias(this ChatChannels channel) => channel switch
     {
-        ChatChannels.Tell_Out => new[] { "/t", "/tell" },
+        ChatChannels.Tell => new[] { "/t", "/tell" },
         ChatChannels.Say => new[] { "/s", "/say" },
         ChatChannels.Party => new[] { "/p", "/party" },
         ChatChannels.Alliance => new[] { "/a", "/alliance" },
