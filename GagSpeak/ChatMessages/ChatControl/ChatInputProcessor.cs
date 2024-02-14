@@ -136,7 +136,7 @@ public unsafe class ChatInputProcessor : IDisposable {
                     }
                     // Match any other outgoing tell to preserve target name
                     //var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}\S+\s{1}\S+@\S+(?=\s|$)";             
-                    var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}\S+\s{1}\S+@\S+\s(?=\S|\s|$)";
+                    var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}\S+\s{1}\S+@\S+\s?(?=\S|\s|$)";
                     matchedCommand = Regex.Match(inputString, tellRegex).Value;
                 }
             }
