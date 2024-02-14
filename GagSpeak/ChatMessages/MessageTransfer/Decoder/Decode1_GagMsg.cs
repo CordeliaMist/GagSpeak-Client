@@ -191,7 +191,7 @@ public partial class MessageDecoder {
         // decode the /gag removeall message [ ID == 8 // removeall ]
         else if (decodedMessageMediator.encodedMsgIndex == 8) {
             // Define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck and unbuckles all of your gagstraps\, allowing you to speak freely once more\*$";
+            string pattern = @"^\*(?<playerInfo>.+) reaches behind your neck and unbuckles all of your gagstraps\, allowing you to speak freely once more\.\*$";
             // Use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // Check if the match is successful
