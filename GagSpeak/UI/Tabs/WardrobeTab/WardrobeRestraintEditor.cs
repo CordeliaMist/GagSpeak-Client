@@ -22,7 +22,7 @@ namespace GagSpeak.UI.Tabs.WardrobeTab;
 /// <summary> Stores the UI for the restraints shelf of the kink wardrobe. </summary>
 public class RestraintSetEditor
 {
-    private const float DefaultWidth = 177;
+    private const float DefaultWidth = 187;
     private             Vector2                         _VisibilityIconSize;
     private readonly    IDataManager                    _gameData;              // for getting the game data
     private readonly    TextureService                  _textures;              // for getting the textures
@@ -43,7 +43,7 @@ public class RestraintSetEditor
         _itemData = itemData;
         _stainData = stainData;
         _restraintSetManager = restraintSetManager;
-        _iconSize    = ImGuiHelpers.ScaledVector2(48*ImGuiHelpers.GlobalScale);
+        _iconSize    = ImGuiHelpers.ScaledVector2(2*ImGui.GetFrameHeight() + ImGui.GetStyle().ItemSpacing.Y);
         _eyeIcon = new string[EquipSlotExtensions.EqdpSlots.Count];
         // create a new gameItemCombo for each equipment piece type, then store them into the array.
         _gameItemCombo = EquipSlotExtensions.EqdpSlots.Select(e => new GameItemCombo(_gameData, e, _itemData, GagSpeak.Log)).ToArray();
@@ -79,7 +79,8 @@ public class RestraintSetEditor
                 _eyeIcon[i] = _restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._drawData[slot]._isEnabled 
                         ? FontAwesomeIcon.Eye.ToIconString() : FontAwesomeIcon.EyeSlash.ToIconString();
                 // display either eyeslash or eye based on if it is enabled or not
-                if(ImGuiUtil.DrawDisabledButton($"{_eyeIcon[i]}##{slot}VisibilityButton", new Vector2(ImGui.GetContentRegionAvail().X, 48*ImGuiHelpers.GlobalScale),
+                if(ImGuiUtil.DrawDisabledButton($"{_eyeIcon[i]}##{slot}VisibilityButton",
+                new Vector2(ImGui.GetContentRegionAvail().X, 2*ImGui.GetFrameHeight() + ImGui.GetStyle().ItemSpacing.Y),
                 "Enable or Disable this piece from being visible. [[ Does nothing right now ]]", false, true)) {
                     // if we click this, we should toggle between states with a visable eye icon
                     _restraintSetManager.ToggleRestraintSetPieceEnabledState(_restraintSetManager._selectedIdx, slot);
@@ -97,7 +98,8 @@ public class RestraintSetEditor
                 _eyeIcon[i] = _restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._drawData[slot]._isEnabled 
                         ? FontAwesomeIcon.Eye.ToIconString() : FontAwesomeIcon.EyeSlash.ToIconString();
                 // display either eyeslash or eye based on if it is enabled or not
-                if(ImGuiUtil.DrawDisabledButton($"{_eyeIcon[i]}##{slot}VisibilityButton", new Vector2(ImGui.GetContentRegionAvail().X, 48),
+                if(ImGuiUtil.DrawDisabledButton($"{_eyeIcon[i]}##{slot}VisibilityButton",
+                new Vector2(ImGui.GetContentRegionAvail().X, 2*ImGui.GetFrameHeight() + ImGui.GetStyle().ItemSpacing.Y),
                 "Enable or Disable this piece from being visible. [[ Does nothing right now ]]", false, true)) {
                     // if we click this, we should toggle between states with a visable eye icon
                     _restraintSetManager.ToggleRestraintSetPieceEnabledState(_restraintSetManager._selectedIdx, slot);

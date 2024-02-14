@@ -40,7 +40,7 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableSetupColumn("State",     ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("State").X);
             ImGui.TableSetupColumn("Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Tier").X);
             ImGui.AlignTextToFramePadding();
-            ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemm").X);
+            ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglem").X);
             ImGui.TableHeadersRow();
             ImGui.TableNextRow();
 
@@ -123,7 +123,7 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableSetupColumn("WardrobeOption",ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("RestraintInput",        ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("mmmmrestraintNameWhoawhoa").X);
             ImGui.TableSetupColumn("Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Tier").X);
-            ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemm").X);
+            ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglem").X);
 
             // None of the editable states should be enabled if the wardrobe is not enabled
             if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _viewMode==false)

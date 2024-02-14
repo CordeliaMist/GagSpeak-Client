@@ -62,9 +62,9 @@ public partial class WhitelistPlayerPermissions {
             var text = _viewMode ? "Setting" : $"Permission Setting for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}";
             ImGui.TableSetupColumn($"{text}",  ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("State",     ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("State").X);
-            ImGui.TableSetupColumn("Req. Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Req. Tier").X);
+            ImGui.TableSetupColumn("Req. Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Req.Tier").X);
             ImGui.AlignTextToFramePadding();
-            ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemm").X);
+            ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemo").X);
             ImGui.TableHeadersRow();
             ImGui.TableNextRow();
             // Restraint Set Locking option
@@ -160,7 +160,7 @@ public partial class WhitelistPlayerPermissions {
             var text = _viewMode ? "Setting" : $"Permission Setting for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}";
             ImGui.TableSetupColumn("Setting",  ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Stored Patternmm").X);
             ImGui.TableSetupColumn("Adjuster",     ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemm").X);
+            ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemo").X);
             ImGui.TableNextRow();
 
             ImGuiUtil.DrawFrameColumn("Intensity Level: ");

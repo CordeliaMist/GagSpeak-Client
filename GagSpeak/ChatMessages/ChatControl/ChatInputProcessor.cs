@@ -10,6 +10,8 @@ using Dalamud.Utility;
 using GagSpeak.Utility;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;
+using GagSpeak.ChatMessages.MessageTransfer;
+using System.Threading.Channels;
 // I swear to god, if any contributors even attempt to tinker with this file, I will swat you over the head. DO NOT DO IT.
 
 // Signatures located and adopted from sourcecode:
@@ -22,6 +24,7 @@ public unsafe class ChatInputProcessor : IDisposable {
     private readonly    GagSpeakConfig                          _config;                            // for config options
     private readonly    GagGarbleManager                        _gagManager;                        // for gag manager
     private readonly    CharacterHandler                        _characterHandler;                  // for character handler
+    private readonly    MessageDictionary                       _messageDictionary;                 // for message dictionary
     public virtual      bool                                    Ready { get; protected set; }       // see if ready
     public virtual      bool                                    Enabled { get; protected set; }     // set if enabled
     private             nint                                    processChatInputAddress;            // address of the chat input
@@ -32,11 +35,12 @@ public unsafe class ChatInputProcessor : IDisposable {
 
     /// <summary> Initializes a new instance of the <see cref="ChatInputProcessor"/> class. </summary>
     internal ChatInputProcessor(ISigScanner scanner, IGameInteropProvider interop, GagSpeakConfig config, 
-    CharacterHandler characterHandler, GagGarbleManager GagGarbleManager) {
+    CharacterHandler characterHandler, GagGarbleManager GagGarbleManager, MessageDictionary messageDictionary) {
         // initialize interopfromattributes
         _config = config;
         _characterHandler = characterHandler;
         _gagManager = GagGarbleManager;
+        _messageDictionary = messageDictionary;
         _configChannelsCommandsList = _config.ChannelsGagSpeak.GetChatChannelsListAliases();
         interop.InitializeFromAttributes(this);
         // try to get the chatinput address
@@ -83,7 +87,6 @@ public unsafe class ChatInputProcessor : IDisposable {
     /// <returns> The <see cref="byte"/>. </returns>
     /// <exception cref="Exception"> Thrown when an exception error condition of any kind occurs. </exception>
     private unsafe byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3) {
-        GagSpeak.Log.Information("[Chat Processor]: Detouring Chat Input Message");
         // try the following
         try {
             var bc = 0; // start the bit counter
@@ -132,22 +135,34 @@ public unsafe class ChatInputProcessor : IDisposable {
                         return processChatInputHook.Original(uiModule, message, a3);
                     }
                     // Match any other outgoing tell to preserve target name
-                    var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}\S+\s{1}\S+@\S+(?=\s|$)";                    
+                    //var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}\S+\s{1}\S+@\S+(?=\s|$)";             
+                    var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}\S+\s{1}\S+@\S+\s(?=\S|\s|$)";
                     matchedCommand = Regex.Match(inputString, tellRegex).Value;
                 }
             }
 
+            GagSpeak.Log.Debug($"[Chat Processor]: Matched Channel: {ChatChannel.GetChatChannel()}");
+
             // if our current channel is in our list of enabled channels AND we have enabled direct chat translation...
             if ( _config.ChannelsGagSpeak.Contains(ChatChannel.GetChatChannel()) && (_characterHandler.playerChar._directChatGarblerActive == true) ) {
                 // if we satisfy this condition, it means we can try to attempt modifying the message.
-                GagSpeak.Log.Debug($"[Chat Processor]: Modifying Message");
+                GagSpeak.Log.Debug($"[Chat Processor]: Input -> {inputString}, MatchedCommand -> {matchedCommand}");
                 // we can try to attempt modifying the message.
                 try {
-                    GagSpeak.Log.Debug($"[Chat Processor]: Input -> {inputString}, MatchedCommand -> {matchedCommand}");
-
                     //////////////////////// MAIN SECTION WHERE THE MESSAGE IS ACTUALLY TRANSLATED ////////////////////////
-                    // create the output translated text, cutting the command matched before to prevent it getting gargled
-                    var output = _gagManager.ProcessMessage(inputString.Substring(matchedCommand.Length));
+                    // create the output translated text, cutting the command matched before to prevent it getting garbled
+                    var stringToProcess = inputString.Substring(matchedCommand.Length);
+                    // see if this is an outgoing tell, if it is, we must make sure it isnt garbled for encoded messages
+                    if(ChatChannel.GetChatChannel() == ChatChannel.ChatChannels.Tell) {
+                        // it is a tell, we need to make sure it is not garbled if it is an encoded message
+                        if(_messageDictionary.LookupMsgDictionary(stringToProcess)) {
+                            // if it is an encoded message, we need to make sure it is not garbled
+                            GagSpeak.Log.Debug($"[Chat Processor]: Message is an encoded message, skipping garbling");
+                            return processChatInputHook.Original(uiModule, message, a3);
+                        }
+                    }
+                    // otherwise, we can process the message
+                    var output = _gagManager.ProcessMessage(stringToProcess);
                     // adding command back to front
                     output = matchedCommand + output;
                     GagSpeak.Log.Debug($"[Chat Processor]: Output -> {output}");

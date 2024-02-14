@@ -173,7 +173,7 @@ public class ChatManager
                             isHandled = true;
                             // because it is handled now, we should reset the mediators values and do an early escape / return
                             _decodedMessageMediator.ResetAttributes();
-                            return;
+                            return;// early escape prevents puppeteer from being executed
                         }
                         break;
                     case DecodedMessageType.Relationship:
@@ -182,7 +182,7 @@ public class ChatManager
                             isHandled = true;
                             // because it is handled now, we should reset the mediators values and do an early escape / return
                             _decodedMessageMediator.ResetAttributes();
-                            return;
+                            return;// early escape prevents puppeteer from being executed
                         }
                         break;
                     case DecodedMessageType.Wardrobe:
@@ -191,7 +191,7 @@ public class ChatManager
                             isHandled = true;
                             // because it is handled now, we should reset the mediators values and do an early escape / return
                             _decodedMessageMediator.ResetAttributes();
-                            return;
+                            return;// early escape prevents puppeteer from being executed
                         }
                         break;
                     case DecodedMessageType.Puppeteer:
@@ -200,7 +200,7 @@ public class ChatManager
                             isHandled = true;
                             // because it is handled now, we should reset the mediators values and do an early escape / return
                             _decodedMessageMediator.ResetAttributes();
-                            return;
+                            return;// early escape prevents puppeteer from being executed
                         }
                         break;
                     case DecodedMessageType.Toybox:
@@ -209,7 +209,7 @@ public class ChatManager
                             isHandled = true;
                             // because it is handled now, we should reset the mediators values and do an early escape / return
                             _decodedMessageMediator.ResetAttributes();
-                            return; 
+                            return;// early escape prevents puppeteer from being executed
                         }
                         break;
                     case DecodedMessageType.InfoExchange:
@@ -218,14 +218,34 @@ public class ChatManager
                             isHandled = true;
                             // because it is handled now, we should reset the mediators values and do an early escape / return
                             _decodedMessageMediator.ResetAttributes();
-                            return;
+                            return; // early escape prevents puppeteer from being executed
                         }
                         break;
                 }
             } // skipped to this point if not encoded message
         } // skips directly to here if not a tell
 
+
         // at this point, we have determined that it is not an encoded message, and we still have the sender info.
+        // now we should check for if we have enabled global triggerphrase, and abide by all of its options.
+        if(_puppeteerMediator.ContainsGlobalTriggerWord(chatmessage.TextValue, out string globalPuppeteerMessageToSend)) {
+            // contained the trigger word, so process it.
+            if(globalPuppeteerMessageToSend != string.Empty) {
+                SeString messageToSend = globalPuppeteerMessageToSend;
+                // if it does, then our message is valid, but we should also make sure we are in one of our enabled channels
+                if(_config.ChannelsPuppeteer.Contains(ChatChannel.GetChatChannel())
+                && _puppeteerMediator.MeetsGlobalSettingCriteria(messageToSend))
+                {
+                    // if we are in a valid chatchannel, then send it
+                    messageQueue.Enqueue("/" + messageToSend);
+                } else {
+                    GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
+                }
+            } else {
+                GagSpeak.Log.Debug($"[ChatManager] Puppeteer message to send was empty, aborting");
+            }
+        }
+        
         // This Conditional Says it will only meet if the following is true:
         // --- The sender name is not null
         // --- The sender allows puppeteer

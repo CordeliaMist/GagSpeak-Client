@@ -155,7 +155,7 @@ public class ToyboxOverviewPanel
             // and print the current plug name
             ImGui.TableNextColumn();
             // get the fixed Y position we want for the table
-            var fixedY = ImGui.GetCursorPosY() + 160*ImGuiHelpers.GlobalScale;
+            var fixedY = ImGui.GetCursorPosY() + 150*ImGuiHelpers.GlobalScale;
             // check if the device exists
             try{
                 xPos = ImGui.GetCursorPosX();
@@ -189,7 +189,7 @@ public class ToyboxOverviewPanel
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3*ImGuiHelpers.GlobalScale);
                         ImGui.Text($"Step Interval: {_plugService.stepInterval}");
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3*ImGuiHelpers.GlobalScale);
-                        ImGui.Text($"Battery Level: {_plugService.batteryLevel*100}%%");
+                        ImGui.Text($"Battery Level: {(int)(_plugService.batteryLevel*100)}%%");
                     }
                     ImGui.NextColumn();
                     // draw out the slider here
@@ -242,7 +242,7 @@ public class ToyboxOverviewPanel
                     // now draw out the button for starting/stopping a pattern, and a checkbox for if we should loop it or not
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5*ImGuiHelpers.GlobalScale);
                     var width = ImGui.GetContentRegionAvail().X;
-                    if (ImGui.Button("Start / Stop", new Vector2(width/3, 22*ImGuiHelpers.GlobalScale))) {
+                    if (ImGui.Button("Start / Stop", new Vector2(width*.35f, ImGui.GetFrameHeight()))) {
                         if (!_patternCollection._patterns[_patternCollection._activePatternIndex]._isActive) {
                             _patternCollection.ExecutePatternProper();
                         } else {

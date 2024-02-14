@@ -94,7 +94,8 @@ public static class ServiceHandler
                 var config = _.GetRequiredService<GagSpeakConfig>();
                 var charaHandler = _.GetRequiredService<CharacterHandler>();
                 var gagManagerService = _.GetRequiredService<GagGarbleManager>();
-                return new ChatInputProcessor(sigService, interop, config, charaHandler, gagManagerService);})
+                var dictionary = _.GetRequiredService<MessageDictionary>();
+                return new ChatInputProcessor(sigService, interop, config, charaHandler, gagManagerService, dictionary);})
             .AddSingleton<RealChatInteraction>(_ => {
                 var sigService = _.GetRequiredService<ISigScanner>();
                 return new RealChatInteraction(sigService);}
@@ -162,6 +163,7 @@ public static class ServiceHandler
             .AddSingleton<ToyboxWorkshopSubtab>()
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HelpPageTab>()
+            .AddSingleton<TutorialWindow>()
             .AddSingleton<UserProfileWindow>()
             .AddSingleton<SavePatternWindow>()
             .AddSingleton<TestingPhaseWarningWindow>()

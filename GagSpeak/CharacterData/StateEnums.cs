@@ -9,6 +9,7 @@ public enum RoleLean {
     Slave,
     Pet,
     Submissive,
+    Dominant,
     Mistress,
     Master,
     Owner,

@@ -100,8 +100,6 @@ public class GlamourerFunctions : IDisposable
             while (!await _charaDataHelpers.GetIsPlayerPresentAsync().ConfigureAwait(false)) {
                 await Task.Delay(100).ConfigureAwait(false);
             }
-            // player is loaded, so we can now get the player object
-            GagSpeak.Log.Debug($"[CLIENTSTATE-LOGIN EVENT]: Character logged in! Caching data!");
             // fire the event for a refresh
             _gagSpeakGlamourEvent.Invoke(UpdateType.Login);
         }
@@ -123,7 +121,7 @@ public class GlamourerFunctions : IDisposable
         
         // if the class job is different than the one stored, then we have a class job change (CRITICAL TO UPDATING PROPERLY)
         if (classJob != _charaDataHelpers.ClassJobId) {
-            GagSpeak.Log.Information($"[CHARA HANDLER UPDATE] classjob changed from {_charaDataHelpers.ClassJobId} to {classJob}");
+            GagSpeak.Log.Verbose($"[CHARA HANDLER UPDATE] classjob changed from {_charaDataHelpers.ClassJobId} to {classJob}");
             // update the stored class job
             _charaDataHelpers.ClassJobId = classJob;
             // invoke jobChangedEvent to call the glamourerRevert
@@ -133,7 +131,7 @@ public class GlamourerFunctions : IDisposable
         
         // make sure we have wardrobe enabled
         if(!_characterHandler.playerChar._enableWardrobe) {
-            GagSpeak.Log.Debug($"[GlamourerChanged]: Wardrobe is disabled, so we wont be updating/applying any gag items");
+            GagSpeak.Log.Verbose($"[GlamourerChanged]: Wardrobe is disabled, so we wont be updating/applying any gag items");
             return;
         }
         
@@ -145,7 +143,7 @@ public class GlamourerFunctions : IDisposable
         
         // if it is a design change, then we should reapply the gags and restraint sets
         if(type == (int)StateChangeType.Design) {
-            GagSpeak.Log.Debug($"[GlamourerChanged]: StateChangeType is Design, Re-Applying any Gags or restraint sets configured if conditions are satisfied");
+            GagSpeak.Log.Verbose($"[GlamourerChanged]: StateChangeType is Design, Re-Applying any Gags or restraint sets configured if conditions are satisfied");
             // process the latest glamourerData and append our alterations
             _gagSpeakGlamourEvent.Invoke(UpdateType.RefreshAll);
             return;

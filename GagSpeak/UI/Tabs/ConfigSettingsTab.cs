@@ -29,6 +29,7 @@ public class ConfigSettingsTab : ITab
     private             Dictionary<string, string[]>    _languages;             // the dictionary of languages & dialects 
     private             string[]                        _currentDialects;       // the array of language names
     private             string                          _activeDialect;         // the dialect selected
+    private             string?                         _globalTriggerPhrase;        // the language selected
 
     /// <summary> Initializes a new instance of the <see cref="ConfigSettingsTab"/> class. <summary>
     public ConfigSettingsTab(GagSpeakConfig config, CharacterHandler characterHandler, UiBuilder uiBuilder, DalamudPluginInterface pluginInterface,
@@ -89,9 +90,9 @@ public class ConfigSettingsTab : ITab
             ImGui.TableSetupColumn("ConfigColumn2", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
-
+            var yPos = ImGui.GetCursorPosY();
+            ImGui.SetCursorPosY(yPos - 2*ImGuiHelpers.GlobalScale);
             ///////////////////////////// COMMAND SETTINGS /////////////////////////////
-            ImGui.Text("Command Settings:");
             // should we allow commands from friends not in whitelist?
             UIHelpers.CheckboxNoConfig("Commands From Friends", 
                 "Commands & Interactions from other players are only recieved by GagSpeak if in your Friend List.",
@@ -105,7 +106,6 @@ public class ConfigSettingsTab : ITab
                 v => _characterHandler.ToggleCmdFromParty()
             );
             ///////////////////////////// DIRECT CHAT GARBLER /////////////////////////////
-            ImGui.Spacing();
             ImGui.Text("Direct Chat Garbler:");
             // Direct chat garbler, is it enabled?
             if(_characterHandler.playerChar._directChatGarblerLocked) {ImGui.BeginDisabled();}
@@ -174,7 +174,6 @@ public class ConfigSettingsTab : ITab
                 _config.Save();
             }
             ///////////////////////////// WARDROBE SETTINGS /////////////////////////////
-            ImGui.Spacing();
             ImGui.Text("Wardrobe Settings:");
             UIHelpers.CheckboxNoConfig("Enable Wardrobe",
                 "Must be enabled for anything in the Kink Wardrobe component of GagSpeak to function.",
@@ -215,7 +214,6 @@ public class ConfigSettingsTab : ITab
                 ImGui.SetTooltip("Select how you want your attire to revert when a restraint set is removed.");
             }
             ///////////////////////////// PUPPETEER SETTINGS /////////////////////////////
-            ImGui.Spacing();
             ImGui.Text("Puppeteer Settings:");
             UIHelpers.CheckboxNoConfig("Enable Puppeteer",
                 "Allows the use of the Puppeteer Module of GagSpeak.\n"+
@@ -223,8 +221,42 @@ public class ConfigSettingsTab : ITab
                 _characterHandler.playerChar._allowPuppeteer,
                 v => _characterHandler.TogglePuppeteer()
             );
+            var result = _globalTriggerPhrase ?? _characterHandler.playerChar._globalTriggerPhrase;
+            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*230);
+            if (ImGui.InputTextWithHint("##GlobalTriggerPhrase", "Global Trigger Phrase (Hover me!)", ref result, 64, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                _globalTriggerPhrase = result;
+            }
+            if(ImGui.IsItemDeactivatedAfterEdit()) {
+                _characterHandler.SetGlobalTriggerPhrase(result);
+                _globalTriggerPhrase = null;
+            }
+            if(ImGui.IsItemHovered()) {
+                ImGui.SetTooltip("Set the trigger phrase that is accessable to EVERYONE. (Leave blank to disable)");
+            }
+            // draw out the global permissions
+            var checkbox1Value = _characterHandler.playerChar._globalAllowSitRequests;
+            var checkbox2Value = _characterHandler.playerChar._globalAllowMotionRequests;
+            var checkbox3Value = _characterHandler.playerChar._globalAllowAllCommands;
+            UIHelpers.CheckboxNoConfig("Sit",
+                "Allows sit commands for EVERYONE who uses the global trigger phrase",
+                checkbox1Value,
+                v => _characterHandler.SetGlobalAllowSitRequests(!_characterHandler.playerChar._globalAllowSitRequests)
+            );
+            ImGui.SameLine();
+            UIHelpers.CheckboxNoConfig("Motion",
+                "Allows motion commands for EVERYONE who uses the global trigger phrase",
+                checkbox2Value,
+                v => _characterHandler.SetGlobalAllowMotionRequests(!_characterHandler.playerChar._globalAllowMotionRequests)
+            );
+            ImGui.SameLine();
+            UIHelpers.CheckboxNoConfig("All",
+                "Allows all commands for EVERYONE who uses the global trigger phrase",
+                checkbox3Value,
+                v => _characterHandler.SetGlobalAllowAllCommands(!_characterHandler.playerChar._globalAllowAllCommands)
+            );
+
+
             ///////////////////////////// TOYBOX SETTINGS /////////////////////////////
-            ImGui.Spacing();
             ImGui.Text("Toybox Settings:");
             UIHelpers.CheckboxNoConfig("Enable Toybox", 
                 "Allows the use of the Toybox Module of GagSpeak.\n"+
@@ -238,6 +270,8 @@ public class ConfigSettingsTab : ITab
             ImGui.TableNextColumn();
             // Show Debug Menu when Debug logging is enabled
             if(_characterHandler.playerChar._directChatGarblerLocked == true) {ImGui.BeginDisabled();}
+            yPos = ImGui.GetCursorPosY();
+            ImGui.SetCursorPosY(yPos - 5*ImGuiHelpers.GlobalScale);
             ImGui.Text("Enabled GagSpeak Channels:");
             var i = 0;
             foreach (var e in ChatChannel.GetOrderedChannels()) {

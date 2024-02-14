@@ -163,7 +163,7 @@ public class TimerService : IDisposable
          // Calculate the remaining time in milliseconds
          var remainingTime = UIHelpers.FormatTimeSpan(pair.Value - DateTimeOffset.Now);
          // Print the timer name and remaining time
-         GagSpeak.Log.Debug($"[Timer Service] Config Timer Data: {pair.Key}, Remaining Time: {remainingTime}");
+         //GagSpeak.Log.Debug($"[Timer Service] Config Timer Data: {pair.Key}, Remaining Time: {remainingTime}");
       }
    }
 

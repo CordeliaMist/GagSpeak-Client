@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using GagSpeak.ToyboxandPuppeteer;
@@ -19,6 +20,11 @@ public class PlayerCharacterInfo : CharacterInfoBase
     public  bool            _doCmdsFromParty { get; set; } = false;                     // gives anyone in your party access to use GagSpeak commands on you
     public  bool            _liveGarblerWarnOnZoneChange { get; set; } = false;         // enables or disables the live garbler warning on zone change
     public  RevertStyle     _revertStyle { get; set; } = RevertStyle.ToAutomationOnly;  // determines if you revert to automation or to game
+    public  string          _globalTriggerPhrase { get; set; } = "";                    // the global trigger phrase for the puppeteer
+    public  bool            _globalAllowSitRequests { get; set; } = false;              // if you allow anyone to use sit requests
+    public  bool            _globalAllowMotionRequests { get; set; } = false;           // if you allow anyone to use motion requests
+    public  bool            _globalAllowAllCommands { get; set; } = false;              // if you allow anyone to use all commands on you
+
     ///////////////////////////////////////////// WARDROBE COMPONENT SETTINGS  /////////////////////////////////////////////
     public  bool            _allowItemAutoEquip { get; set; } = false;                  // lets player know if anything in the GagStorage compartment will function
     public  bool            _allowRestraintSetAutoEquip { get; set; } = false;          // lets gagspeak know if anything in the Restraintset compartment will function
@@ -40,7 +46,6 @@ public class PlayerCharacterInfo : CharacterInfoBase
     public  List<bool>      _allowIntensityControl { get; set; }                        // [TIER 3] Basically says "This person can adjust the intensity slider"
     public  List<bool>      _allowUsingPatterns { get; set; }                           // [TIER 4] if the whitelisted player is allowed to execute stored patterns
     public PlayerCharacterInfo() {
-        _revertStyle = RevertStyle.ToAutomationOnly;
         _triggerAliases = new List<AliasList>() { new AliasList() };
         _grantExtendedLockTimes = new List<bool>() { false };
         _enableRestraintSets = new List<bool>() { false };
@@ -63,6 +68,11 @@ public class PlayerCharacterInfo : CharacterInfoBase
             ["DoCmdsFromFriends"] = _doCmdsFromFriends,
             ["DoCmdsFromParty"] = _doCmdsFromParty,
             ["LiveGarblerWarnOnZoneChange"] = _liveGarblerWarnOnZoneChange,
+            ["RevertStyle"] = _revertStyle.ToString(),
+            ["GlobalTriggerPhrase"] = _globalTriggerPhrase,
+            ["GlobalAllowSitRequests"] = _globalAllowSitRequests,
+            ["GlobalAllowMotionRequests"] = _globalAllowMotionRequests,
+            ["GlobalAllowAllCommands"] = _globalAllowAllCommands,
             ["AllowItemAutoEquip"] = _allowItemAutoEquip,
             ["AllowRestraintSetAutoEquip"] = _allowRestraintSetAutoEquip,
             ["TriggerAliasesList"] = new JArray(_triggerAliases.Select(alias => alias.Serialize())),
@@ -102,6 +112,11 @@ public class PlayerCharacterInfo : CharacterInfoBase
             _doCmdsFromFriends = jsonObject["DoCmdsFromFriends"]?.Value<bool>() ?? false;
             _doCmdsFromParty = jsonObject["DoCmdsFromParty"]?.Value<bool>() ?? false;
             _liveGarblerWarnOnZoneChange = jsonObject["LiveGarblerWarnOnZoneChange"]?.Value<bool>() ?? false;
+            _revertStyle = Enum.TryParse(jsonObject["RevertStyle"]?.Value<string>(), out RevertStyle revertstyle) ? revertstyle : RevertStyle.ToAutomationOnly;
+            _globalTriggerPhrase = jsonObject["GlobalTriggerPhrase"]?.Value<string>() ?? "";
+            _globalAllowSitRequests = jsonObject["GlobalAllowSitRequests"]?.Value<bool>() ?? false;
+            _globalAllowMotionRequests = jsonObject["GlobalAllowMotionRequests"]?.Value<bool>() ?? false;
+            _globalAllowAllCommands = jsonObject["GlobalAllowAllCommands"]?.Value<bool>() ?? false;
             _allowItemAutoEquip = jsonObject["AllowItemAutoEquip"]?.Value<bool>() ?? false;
             _allowRestraintSetAutoEquip = jsonObject["AllowRestraintSetAutoEquip"]?.Value<bool>() ?? false;
             _grantExtendedLockTimes = jsonObject["ExtendedLockTimes"]?.Values<bool>().ToList() ?? new List<bool>();

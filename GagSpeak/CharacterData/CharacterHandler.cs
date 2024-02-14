@@ -159,6 +159,44 @@ public class CharacterHandler : ISavable
     }
 #endregion Gag Setters
 
+#region PlayerChar Global Variable Setters
+    public void SetGlobalTriggerPhrase(string newPhrase) {
+        playerChar._globalTriggerPhrase = newPhrase;
+        _saveService.QueueSave(this);
+    }
+
+    public void SetGlobalAllowSitRequests(bool value) {
+        if(playerChar._globalAllowSitRequests != value) {
+            playerChar._globalAllowSitRequests = value;
+            _saveService.QueueSave(this);
+        }
+        else {
+            playerChar._globalAllowSitRequests = value;
+        }
+    }
+
+    public void SetGlobalAllowMotionRequests(bool value) {
+        if(playerChar._globalAllowMotionRequests != value) {
+            playerChar._globalAllowMotionRequests = value;
+            _saveService.QueueSave(this);
+        }
+        else {
+            playerChar._globalAllowMotionRequests = value;
+        }
+    }
+
+    public void SetGlobalAllowAllCommands(bool value) {
+        if(playerChar._globalAllowAllCommands != value) {
+            playerChar._globalAllowAllCommands = value;
+            _saveService.QueueSave(this);
+        }
+        else {
+            playerChar._globalAllowAllCommands = value;
+        }
+    }
+
+#endregion PlayerChar Global Variable Setters
+
 #region PlayerChar Handler Functions
     public void SetRevertStyle(RevertStyle style) {
         playerChar._revertStyle = style;

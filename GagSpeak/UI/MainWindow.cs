@@ -50,8 +50,8 @@ public class MainWindow : Window
 		pluginInt.UiBuilder.DisableGposeUiHide = true;
 		// Next let's set the size of the window
 		SizeConstraints = new WindowSizeConstraints() {
-			MinimumSize = new Vector2(540, 525),     // Minimum size of the window
-			MaximumSize = new Vector2(600, 1000)     // Maximum size of the window
+			MinimumSize = new Vector2(565, 540),     // Minimum size of the window
+			MaximumSize = new Vector2(650, 1000)     // Maximum size of the window
 		};
 
     //Size = new Vector2(540, 525);
@@ -79,7 +79,6 @@ public class MainWindow : Window
 	}
 
     public override void Draw() {
-
         var yPos = ImGui.GetCursorPosY();
         // set the cursor position to the top left of the window
         if (TabBar.Draw("##tabs", ImGuiTabBarFlags.None, ToLabel(SelectTab), out var currentTab, () => { }, _tabs)) {
@@ -88,7 +87,7 @@ public class MainWindow : Window
             _config.Save();
         }
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 6f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 6.15f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
         ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);

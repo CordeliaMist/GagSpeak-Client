@@ -53,14 +53,14 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
     }
 #region General Interactions
     public bool IsRoleLeanDominant(RoleLean roleLean) {
-        if(roleLean == RoleLean.Mistress || roleLean == RoleLean.Master || roleLean == RoleLean.Owner) {
+        if(roleLean == RoleLean.Dominant || roleLean == RoleLean.Mistress || roleLean == RoleLean.Master || roleLean == RoleLean.Owner) {
             return true;
         }
         return false;
     }
 
     public bool IsRoleLeanSubmissive(RoleLean roleLean) {
-        if(roleLean == RoleLean.Pet || roleLean == RoleLean.Slave || roleLean == RoleLean.AbsoluteSlave) {
+        if(roleLean == RoleLean.Submissive || roleLean == RoleLean.Pet || roleLean == RoleLean.Slave || roleLean == RoleLean.AbsoluteSlave) {
             return true;
         }
         return false;
@@ -126,7 +126,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
                 return DynamicTier.Tier1;
         }}
         // If a two way dyanamic is note yet established, then our tier is 0.
-        if (_yourStatusToThem == RoleLean.None || _theirStatusToYou == RoleLean.None || _theirStatusToYou == RoleLean.Submissive) {
+        if (_yourStatusToThem == RoleLean.None || _yourStatusToThem == RoleLean.Dominant || _theirStatusToYou == RoleLean.None || _theirStatusToYou == RoleLean.Submissive) {
                 return DynamicTier.Tier0;
         }
         // we should never make it here, but if we do, set the dynamic to 0 anyways
@@ -156,7 +156,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
                 return DynamicTier.Tier1;
         }}
         // If a two way dyanamic is note yet established, then our tier is 0.
-        if (_theirStatusToYou == RoleLean.None || _yourStatusToThem == RoleLean.None || _yourStatusToThem == RoleLean.Submissive) {
+        if (_theirStatusToYou == RoleLean.None || _theirStatusToYou == RoleLean.Dominant || _yourStatusToThem == RoleLean.None || _yourStatusToThem == RoleLean.Submissive) {
                 return DynamicTier.Tier0;
         }
         // we should never make it here, but if we do, set the dynamic to 0 anyways

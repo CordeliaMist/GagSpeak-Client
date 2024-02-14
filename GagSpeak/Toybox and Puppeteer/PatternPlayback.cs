@@ -136,7 +136,14 @@ public void Draw() {
         _timerRecorder.Stop();
         _recordingStopwatch.Stop();
         _recordingStopwatch.Reset();
-        _ = _plugService.ToyboxVibrateAsync((byte)((_characterHandler.playerChar._intensityLevel/(double)_plugService.stepCount)*100), 10);
+        if(_plugService.HasConnectedDevice() && _plugService.IsClientConnected() && _plugService.anyDeviceConnected) {
+            if(_characterHandler.playerChar._isToyActive) {
+                _ = _plugService.ToyboxVibrateAsync((byte)((_characterHandler.playerChar._intensityLevel/(double)_plugService.stepCount)*100), 10);
+            } else {
+                _ = _plugService.ToyboxVibrateAsync(0, 10);
+            }
+        }
+
     }
 
     private int _playbackIndex;  // The current index of the playback
@@ -162,7 +169,11 @@ public void Draw() {
 
             // Send the vibration command to the device
             if(_plugService.HasConnectedDevice() && _plugService.IsClientConnected() && _plugService.anyDeviceConnected) {
-                _ = _plugService.ToyboxVibrateAsync(storedRecordedPositions[_playbackIndex], 10);
+                if(_characterHandler.playerChar._isToyActive) {
+                    _ = _plugService.ToyboxVibrateAsync(storedRecordedPositions[_playbackIndex], 10);
+                } else {
+                    _ = _plugService.ToyboxVibrateAsync(0, 10);
+                }
             }
         }
     }

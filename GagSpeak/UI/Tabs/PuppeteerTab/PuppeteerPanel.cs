@@ -52,10 +52,11 @@ public partial class PuppeteerPanel
     }
 
     private void DrawEnabledChannels(float height) {
-        using var child = ImRaii.Child("##PuppeteerEnabledChannelsChild", new Vector2(ImGui.GetContentRegionAvail().X, height), true, ImGuiWindowFlags.NoScrollbar);
+        using var child = ImRaii.Child("##PuppeteerEnabledChannelsChild", new Vector2(ImGui.GetContentRegionAvail().X, height+ImGuiHelpers.GlobalScale), true, ImGuiWindowFlags.NoScrollbar);
         if (!child) { return; }
         // draw ourcontent
         var i = 0;
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
         foreach (var e in ChatChannel.GetOrderedChannels()) {
             // See if it is already enabled by default
             var enabled = _config.ChannelsPuppeteer.Contains(e);
@@ -92,8 +93,8 @@ public partial class PuppeteerPanel
         using (var table = ImRaii.Table("UniqueAliasListCreator", 3, ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.BordersInnerV)) {
             if (!table) { return; }
             width = ImGui.GetContentRegionAvail().X;
-            ImGui.TableSetupColumn("##TriggerPhrase", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 290);
-            ImGui.TableSetupColumn("##Options", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Start Charmmmmmm").X);
+            ImGui.TableSetupColumn("##TriggerPhrase", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 310);
+            ImGui.TableSetupColumn("##Options", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 110);
             ImGui.TableSetupColumn("##Checkboxes", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
@@ -105,7 +106,7 @@ public partial class PuppeteerPanel
                 ImGui.Text($"Trigger Phrase for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}:");
                 // store the input text boxes trigger phrase
                 var TriggerPhrase  = _tempTriggerPhrase ?? _characterHandler.playerChar._triggerPhraseForPuppeteer[_characterHandler.activeListIdx];
-                ImGui.SetNextItemWidth(280*ImGuiHelpers.GlobalScale);
+                ImGui.SetNextItemWidth(305*ImGuiHelpers.GlobalScale);
                 if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sTriggerPhrase", ref TriggerPhrase, 64, ImGuiInputTextFlags.EnterReturnsTrue))
                     _tempTriggerPhrase = TriggerPhrase;
                 // will only update our safeword once we click away or enter is pressed
