@@ -650,8 +650,8 @@ public class CharacterHandler : ISavable
         playerChar._enableRestraintSets.Add(false);
         playerChar._restraintSetLocking.Add(false);
         playerChar._triggerPhraseForPuppeteer.Add("");
-        playerChar._StartCharForPuppeteerTrigger.Add("");
-        playerChar._EndCharForPuppeteerTrigger.Add("");
+        playerChar._StartCharForPuppeteerTrigger.Add("(");
+        playerChar._EndCharForPuppeteerTrigger.Add(")");
         playerChar._allowSitRequests.Add(false);
         playerChar._allowMotionRequests.Add(false);
         playerChar._allowAllCommands.Add(false);

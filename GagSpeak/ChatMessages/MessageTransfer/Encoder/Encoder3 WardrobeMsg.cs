@@ -14,14 +14,14 @@ public partial class MessageEncoder {
     public string EncodeWardrobeToggleRestraintSetsOption(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
-        "looked down at their companion before walking ove to their wardrobe, \"Now you'll be a good slut and not resist any restraint sets I try putting you in, understand?~\"";
+        "looked down at their companion before walking over to their wardrobe, \"Now you'll be a good slut and not resist any restraint sets I try putting you in, understand?~\"";
     }
 
     // Encodes the message that allows the dominant to toggle the permission to allow locking restraint sets [ ID == 23 ]
     public string EncodeWardrobeToggleRestraintSetLockingOption(PlayerPayload playerPayload, string targetPlayer) {
         return $"/tell {targetPlayer} "+
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
-        "looked down at their companion before walking ove to their wardrobe, \"Now you'll be a good slut and not resist any locks I try putting on your restraints, understand?~\"";
+        "looked down at their companion before walking over to their wardrobe, \"Now you'll be a good slut and not resist any locks I try putting on your restraints, understand?~\"";
     }
         
     // Encodes a message for enabling the restraint set onto the player [ ID == 24 ]

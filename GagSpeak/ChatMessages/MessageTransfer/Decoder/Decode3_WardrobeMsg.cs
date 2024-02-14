@@ -51,7 +51,7 @@ public partial class MessageDecoder {
         // decoder message for toggling option to allow locking restraint sets [ ID == 23 ]
         else if(decodedMessageMediator.encodedMsgIndex == 23) {
             // define the pattern using regular expressions
-            string pattern = @"^\*(?<playerInfo>.+) looked down at their companion before walking ove to their wardrobe\, ""Now you\'ll be a good slut and not resist any locks I try putting on your restraints\, understand\?\~""$";
+            string pattern = @"^\*(?<playerInfo>.+) looked down at their companion before walking over to their wardrobe\, ""Now you\'ll be a good slut and not resist any locks I try putting on your restraints\, understand\?\~""$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful

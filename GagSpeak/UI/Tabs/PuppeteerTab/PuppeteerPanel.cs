@@ -129,6 +129,9 @@ public partial class PuppeteerPanel
                 _tempStartParameter = tempStartParam;
             }
             if (ImGui.IsItemDeactivatedAfterEdit()) {
+                if(string.IsNullOrEmpty(tempStartParam) || tempStartParam == " ") {
+                    tempStartParam = "(";
+                }
                 _characterHandler.SetNewStartCharForPuppeteerTrigger(tempStartParam);
                 _tempStartParameter = null;
             }
@@ -140,6 +143,9 @@ public partial class PuppeteerPanel
                 _tempEndParameter = tempEndParam;
             }
             if (ImGui.IsItemDeactivatedAfterEdit()) {
+                if(string.IsNullOrEmpty(tempEndParam) || tempEndParam == " ") {
+                    tempEndParam = ")";
+                }
                 _characterHandler.SetNewEndCharForPuppeteerTrigger(tempEndParam);
                 _tempEndParameter = null;
             }

@@ -110,6 +110,7 @@ public unsafe class ChatInputProcessor : IDisposable {
             
             var inputString = Encoding.UTF8.GetString(*message, bc);
             var matchedCommand = "";
+            var isTell = false;
             GagSpeak.Log.Information($"[Chat Processor]: Detouring Message: {inputString}"); // see our message
             // first let's make sure its not a command
             if (inputString.StartsWith("/")) {
@@ -125,6 +126,8 @@ public unsafe class ChatInputProcessor : IDisposable {
                 // if tell command is matched, need extra step to protect target name
                 else if (matchedCommand.StartsWith("/tell") || matchedCommand.StartsWith("/t"))
                 {
+                    // set istell to true
+                    isTell = true;
                     /// Using /gag command on yourself sends /tell which should be caught by this
                     /// Depends on <seealso cref="MsgEncoder.MessageEncoder"/> message to start like :"/tell {targetPlayer} *{playerPayload.PlayerName}"
                     /// Since only outgoing tells are affected, {targetPlayer} and {playerPayload.PlayerName} will be the same
@@ -150,7 +153,7 @@ public unsafe class ChatInputProcessor : IDisposable {
                     // create the output translated text, cutting the command matched before to prevent it getting garbled
                     var stringToProcess = inputString.Substring(matchedCommand.Length);
                     // see if this is an outgoing tell, if it is, we must make sure it isnt garbled for encoded messages
-                    if(ChatChannel.GetChatChannel() == ChatChannel.ChatChannels.Tell) {
+                    if(ChatChannel.GetChatChannel() == ChatChannel.ChatChannels.Tell || isTell) {
                         // it is a tell, we need to make sure it is not garbled if it is an encoded message
                         if(_messageDictionary.LookupMsgDictionary(stringToProcess)) {
                             // if it is an encoded message, we need to make sure it is not garbled
