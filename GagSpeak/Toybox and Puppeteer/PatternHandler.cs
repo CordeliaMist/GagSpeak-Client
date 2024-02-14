@@ -101,6 +101,7 @@ public class PatternHandler : ISavable
             return false;
         }
         // execute the pattern
+        _activePatternIndex = patternIdx;
         ExecutePatternProper();
         return true;
     }

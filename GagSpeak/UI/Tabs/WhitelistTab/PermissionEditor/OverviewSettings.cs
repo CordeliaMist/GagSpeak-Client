@@ -64,7 +64,7 @@ public partial class WhitelistPlayerPermissions {
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
                 if(_viewMode) {
                     TogglePlayerExtendedLockTimes();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     _characterHandler.ToggleExtendedLockTimes();
                 }
@@ -86,7 +86,7 @@ public partial class WhitelistPlayerPermissions {
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
                 if(_viewMode) {
                     TogglePlayerLiveChatGarbler();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     _characterHandler.ToggleDirectChatGarbler();
                 }
@@ -108,7 +108,7 @@ public partial class WhitelistPlayerPermissions {
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier3))) {
                 // This will only allow us to send this if the defined dynamic tier is 3 or higher
                 TogglePlayerLiveChatGarblerLock();
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
             } else {
                 ImGuiUtil.Center("ReadOnly");
@@ -157,7 +157,7 @@ public partial class WhitelistPlayerPermissions {
                 if(ImGuiUtil.DrawDisabledButton("Toggle##ToyboxComponentEnabledButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
                 string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier4))) {
                     TogglePlayersEnableToyboxOption();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 }
             } else {
                 ImGuiUtil.Center("ReadOnly");

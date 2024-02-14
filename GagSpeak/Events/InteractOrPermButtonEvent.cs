@@ -7,13 +7,18 @@ public class InteractOrPermButtonEvent
     public delegate void InteractOrPermButtonEventHandler(object sender, InteractOrPermButtonEventArgs e);
     public event InteractOrPermButtonEventHandler? ButtonPressed;
 
-    public void Invoke() {
+    public void Invoke(int seconds) {
         GagSpeak.Log.Debug($"[InteractOrPermButtonEvent] Invoked");
-        ButtonPressed?.Invoke(this, new InteractOrPermButtonEventArgs());
+        ButtonPressed?.Invoke(this, new InteractOrPermButtonEventArgs(seconds));
     }
 }
 
 public class InteractOrPermButtonEventArgs : EventArgs
 {
-    // You can add properties here to pass additional information about the info request
+    public int Seconds { get; }
+
+    public InteractOrPermButtonEventArgs(int seconds)
+    {
+        Seconds = seconds;
+    }
 }

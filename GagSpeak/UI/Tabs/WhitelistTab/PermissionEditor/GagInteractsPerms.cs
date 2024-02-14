@@ -79,14 +79,14 @@ public partial class WhitelistPlayerPermissions {
                 ApplyGagOnPlayer(layer, _gagLabel, _characterHandler.activeListIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
             if (ImGuiUtil.DrawDisabledButton("Lock Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale), 
             "Applies the selected gag to the player", _lockLabel == "None")) {
                 LockGagOnPlayer(layer, _lockLabel, _characterHandler.activeListIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui, _config);
                 // Start a 5-second cooldown timer
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
             if (ImGui.Button("Unlock Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale))) {
                 // if our selected dropdown lock label doesnt match the currently equipped type of the player, send an error message to the chat
@@ -101,20 +101,20 @@ public partial class WhitelistPlayerPermissions {
                     UnlockGagOnPlayer(layer, _lockLabel, _characterHandler.activeListIdx, _characterHandler,
                     _config, _chatGui, _chatManager, _messageEncoder, _clientState);
                     // Start a 5-second cooldown timer
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 }
             }
             if (ImGui.Button("Remove This Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale))) {
                 RemoveGagFromPlayer(layer, _gagLabel, _characterHandler.activeListIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
             if (ImGui.Button("Remove All Gags", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale))) {
                 RemoveAllGagsFromPlayer(_characterHandler.activeListIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
         } // end our info table
         // pop the spacing

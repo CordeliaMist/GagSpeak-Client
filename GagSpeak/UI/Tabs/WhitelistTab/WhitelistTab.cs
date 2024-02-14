@@ -68,7 +68,8 @@ public class WhitelistTab : ITab, IDisposable
     // automates the startCooldown process across all our classes.
     private void OnInteractOrPermButtonPressed(object sender, InteractOrPermButtonEventArgs e) {
         _enableInteractions = false;
-        _timerService.StartTimer("InteractionCooldown", "5s", 100, () => { _enableInteractions = true; });
+        
+        _timerService.StartTimer("InteractionCooldown", $"{e.Seconds}s", 100, () => { _enableInteractions = true; });
     }
 
     private void OnRemainingTimeChanged(string timerName, TimeSpan remainingTime) {

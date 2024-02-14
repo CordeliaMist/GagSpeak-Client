@@ -60,7 +60,7 @@ public partial class WhitelistPlayerPermissions {
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier1))) {
                 if(_viewMode) {
                     TogglePlayersGagStorageUIState();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     _characterHandler.ToggleLockGagStorageOnGagLock();
                 }
@@ -83,7 +83,7 @@ public partial class WhitelistPlayerPermissions {
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
                 if(_viewMode) {
                     TogglePlayerAllowToggleRestraintSets();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     _characterHandler.ToggleEnableRestraintSets(_characterHandler.activeListIdx);
                 }
@@ -106,7 +106,7 @@ public partial class WhitelistPlayerPermissions {
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier1))) {
                 if(_viewMode) {
                     TogglePlayerRestraintSetLockingOption();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     _characterHandler.ToggleRestraintSetLocking(_characterHandler.activeListIdx);
                 }
@@ -149,7 +149,7 @@ public partial class WhitelistPlayerPermissions {
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
                 ToggleRestraintSetByName(_restraintSetToEnable);
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
             // end the disabled state
             if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets) { ImGui.EndDisabled(); }
@@ -172,7 +172,7 @@ public partial class WhitelistPlayerPermissions {
             if(ImGuiUtil.DrawDisabledButton("Lock##LockRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, !(dynamicTier >= DynamicTier.Tier1))) {
                 LockRestraintSetToPlayer(_restraintSetToEnable, _restraintSetLockDuration);
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
             // end the disabled state
             if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking) { ImGui.EndDisabled(); }
@@ -192,7 +192,7 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableNextColumn();
             if(ImGui.Button("Unlock##UnlockRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
                 UnlockRestraintSetToPlayer(_resrtaintSetToUnlock);
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
             if(_viewMode) {
                 ImGuiUtil.DrawFrameColumn("Stored Sets: ");

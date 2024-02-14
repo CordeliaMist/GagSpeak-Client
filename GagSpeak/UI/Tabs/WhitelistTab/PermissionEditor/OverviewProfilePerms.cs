@@ -72,7 +72,7 @@ public partial class WhitelistPlayerPermissions {
                 GagSpeak.Log.Debug("[Whitelist]: Sending Request to become their mistress");
                 RoleLean selectedRole = (RoleLean)_selectedDynamicIdx;
                 RequestDynamicToPlayer(selectedRole);
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
 
             ImGui.PopStyleVar();

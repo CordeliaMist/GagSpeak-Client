@@ -84,7 +84,7 @@ public partial class WhitelistPlayerPermissions {
                 // how to treat what happens when we press the button
                 if(_viewMode) {
                     TogglePlayersSitRequestOption();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     // its us pressing it, so just toggle the state
                     _characterHandler.ToggleAllowSitRequests(_characterHandler.activeListIdx);
@@ -109,7 +109,7 @@ public partial class WhitelistPlayerPermissions {
                 // how to treat what happens when we press the button
                 if(_viewMode) {
                     TogglePlayerMotionRequestsOption();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     // its us pressing it, so just toggle the state
                     _characterHandler.ToggleAllowMotionRequests(_characterHandler.activeListIdx);
@@ -133,7 +133,7 @@ public partial class WhitelistPlayerPermissions {
                 // how to treat what happens when we press the button
                 if(_viewMode) {
                     TogglePlayerAllCommandsOption();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     // its us pressing it, so just toggle the state
                     _characterHandler.ToggleAllowAllCommands(_characterHandler.activeListIdx);

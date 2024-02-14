@@ -140,9 +140,6 @@ public unsafe class ChatInputProcessor : IDisposable {
                     matchedCommand = Regex.Match(inputString, tellRegex).Value;
                 }
             }
-
-            GagSpeak.Log.Debug($"[Chat Processor]: Matched Channel: {ChatChannel.GetChatChannel()}");
-
             // if our current channel is in our list of enabled channels AND we have enabled direct chat translation...
             if ( _config.ChannelsGagSpeak.Contains(ChatChannel.GetChatChannel()) && (_characterHandler.playerChar._directChatGarblerActive == true) ) {
                 // if we satisfy this condition, it means we can try to attempt modifying the message.

@@ -47,7 +47,7 @@ public partial class WhitelistPlayerPermissions {
             if(ImGuiUtil.DrawDisabledButton($"{text}##ToggleToyActive", new Vector2(ImGui.GetContentRegionAvail().X, 20*ImGuiHelpers.GlobalScale),
             string.Empty, _viewMode && !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState)) {
                 TogglePlayersIsToyActiveOption();
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
             if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.EndDisabled(); }
         }
@@ -82,7 +82,7 @@ public partial class WhitelistPlayerPermissions {
                 if(_viewMode) {
                     // the whitelisted players lock
                     TogglePlayerToyboxLockOption();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     // toggle your lock
                     _characterHandler.ToggleToyboxUILocking();
@@ -105,7 +105,7 @@ public partial class WhitelistPlayerPermissions {
                 if(_viewMode) {
                     // toggle the whitelisted players permission to allow changing toy state
                     TogglePlayerToggleChangeToyState();
-                    _interactOrPermButtonEvent.Invoke();
+                    _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     // toggles if this person can change your toy state
                     _characterHandler.ToggleChangeToyState(_characterHandler.activeListIdx);
@@ -176,7 +176,7 @@ public partial class WhitelistPlayerPermissions {
             if(ImGuiUtil.DrawDisabledButton("Update##UpdateToyIntensity", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
                 UpdatePlayerToyIntensity(_vibratorIntensity);
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(2);
             }
 
             // pattern executtion section
@@ -193,7 +193,7 @@ public partial class WhitelistPlayerPermissions {
             if(ImGuiUtil.DrawDisabledButton("Execute##ExecuteToyPattern", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, !(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsUsingPatterns == true))) {
                 ExecutePlayerToyPattern(_vibePatternName);
-                _interactOrPermButtonEvent.Invoke();
+                _interactOrPermButtonEvent.Invoke(5);
             }
 
             // stored pattern list

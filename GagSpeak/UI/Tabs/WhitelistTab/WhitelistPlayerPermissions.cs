@@ -141,7 +141,7 @@ public partial class WhitelistPlayerPermissions {
             "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld);
             _config.SetAcceptInfoRequests(false);
             // Start a 5-second cooldown timer
-            _interactOrPermButtonEvent.Invoke();
+            _interactOrPermButtonEvent.Invoke(5);
         }
     }
 
