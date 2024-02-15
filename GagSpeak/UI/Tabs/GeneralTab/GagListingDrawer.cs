@@ -223,7 +223,14 @@ public class GagListingsDrawer : IDisposable
                 // get gagtype before clear
                 var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _characterHandler.playerChar._selectedGagTypes[layerIndex]);
                 // clear the gag item from the selectedGagTypes list, resetting it to none
-                _characterHandler.SetPlayerGagType(layerIndex, _gagService._gagTypes.First()._gagName);
+                if(_gagStorageManager._gagEquipData[gagType]._isEnabled) {
+                    // we should also apply the unequip data if the auto equip was on
+                    _characterHandler.SetPlayerGagType(layerIndex, "None", true);
+                }
+                // but otherwise, just clear the item
+                else {
+                    _characterHandler.SetPlayerGagType(layerIndex, "None", false);
+                }
                 // reset the _wasEquippedBy to empty
                 _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
             }

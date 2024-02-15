@@ -145,9 +145,9 @@ public sealed class GlamourerService
                 // otherwise, just return an empty string.
                 return;
             }).ConfigureAwait(false);
-        } catch {
+        } catch(Exception ex) {
             // if at any point this errors, return an empty string as well.
-            GagSpeak.Log.Warning($"[SetItemOnceToCharacterAsync] Failed to set item to character with slot {slot}, item {item}, dye {dye}, and variant {variant}");
+            GagSpeak.Log.Warning($"[SetItemOnceToCharacterAsync] Failed to set item to character with slot {slot}, item {item}, dye {dye}, and variant {variant}, {ex}");
             return;
         }
     }

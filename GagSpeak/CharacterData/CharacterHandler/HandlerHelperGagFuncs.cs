@@ -8,14 +8,29 @@ namespace GagSpeak.CharacterData;
 
 public partial class CharacterHandler
 {
-    public void SetPlayerGagType(int index, string gagName) {
-        if(playerChar._selectedGagTypes[index] != gagName) {
-            playerChar._selectedGagTypes[index] = gagName;
-            _saveService.QueueSave(this);
-        }
+    public void SetPlayerGagType(int index, string gagName, bool invokeGlamourEvent = true) {
         // see if we reset it to none, and if so, we should remove our glamoured gag item
         if(gagName == "None") {
-            _gagSpeakGlamourEvent.Invoke(UpdateType.GagUnEquipped);
+            ResetPlayerGagTypeToNone(index, invokeGlamourEvent);
+        }
+        // otherwise, just change the gag type
+        else {
+            if(playerChar._selectedGagTypes[index] != gagName) {
+                playerChar._selectedGagTypes[index] = gagName;
+                _saveService.QueueSave(this);
+            }
+        }
+    }
+
+    private void ResetPlayerGagTypeToNone(int index, bool invokeGlamourEvent) {
+        var gagTypeName = playerChar._selectedGagTypes[index];
+        if(playerChar._selectedGagTypes[index] != "None") {
+            playerChar._selectedGagTypes[index] = "None";
+            _saveService.QueueSave(this);
+            // if we want to also invoke the event, then invoke it
+            if(invokeGlamourEvent) {
+                _gagSpeakGlamourEvent.Invoke(UpdateType.GagUnEquipped, gagTypeName);
+            }
         }
     }
 
