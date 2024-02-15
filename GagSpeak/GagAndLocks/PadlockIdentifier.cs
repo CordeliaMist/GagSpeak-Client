@@ -286,11 +286,11 @@ public class PadlockIdentifier
 
         // if the target player is us, and we are not in dominant mode, then we are the submissive receieving the mistress padlock from our mistress 
         if(targetPlayerName == YourPlayerName) { // need to fix this later
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the target, and you are not in dom mode");
+            GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the target");
             // at this point we know what relation we are, so now we must verify the relations
             if(characterHandler.whitelistChars.Any(w => assignerPlayerName.Contains(w._name)
             && w.IsRoleLeanSubmissive(w._yourStatusToThem) 
-            &&(w._yourStatusToThem == RoleLean.Mistress || w._yourStatusToThem == RoleLean.Master || w._yourStatusToThem == RoleLean.Owner)))
+            &&(w._theirStatusToYou == RoleLean.Mistress || w._theirStatusToYou == RoleLean.Master || w._theirStatusToYou == RoleLean.Owner)))
             {
                 // if we reached this point we know our dynamic is sucessful and we can accept it.
                 GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the submissive recieving the lock from your mistress, {assignerPlayerName}");
