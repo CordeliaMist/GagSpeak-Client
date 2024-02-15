@@ -76,7 +76,7 @@ public partial class MessageDictionary {
         // The gag remove all message [ ID == 8 // removeAll ]
         if (textVal.Contains("from")
         && textVal.Contains("reaches behind your neck")
-        && textVal.Contains("and unbuckles all of your gagstraps, allowing you to speak freely once more*"))
+        && textVal.Contains("and unbuckles all of your gagstraps, allowing you to speak freely once more.*"))
         {
             GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag remove all command");
             decodedMessageMediator.encodedMsgIndex = 8;
@@ -100,6 +100,13 @@ public partial class MessageDictionary {
             return true;
         }
         
+        if(textVal.Contains("brushes her finger overtop the gag resting over your mouth.* \"Let's make sure you stay for awhile now dearest~\"")) {
+            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing toggle extended lock times command");
+            decodedMessageMediator.encodedMsgIndex = 42;
+            decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;
+            return true;
+        }
+    
         // if no matches are found, go back (or maybe return false?)
         return false;
     }

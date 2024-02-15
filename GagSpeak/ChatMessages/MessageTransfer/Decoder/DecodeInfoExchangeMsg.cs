@@ -115,27 +115,27 @@ public partial class MessageDecoder {
                     GagSpeak.Log.Debug($"[Message Decoder]: share info2: layerInfo: {layerInfo}");
                     // if it contains nothing present, then we know we have a blank entry.
                     if (layerInfo.Contains("nothing present")) {
-                        decodedMessageMediator.layerGagName[i] = "None";
-                        decodedMessageMediator.layerPadlock[i] = "None";
-                        decodedMessageMediator.layerTimer[i] = "0s";
-                        decodedMessageMediator.layerAssigner[i] = "";
+                        decodedMessageMediator.layerGagName[i+1] = "None";
+                        decodedMessageMediator.layerPadlock[i+1] = "None";
+                        decodedMessageMediator.layerTimer[i+1] = "0s";
+                        decodedMessageMediator.layerAssigner[i+1] = "";
                     } else {
                         // otherwise, check what the gagtype was.
-                        decodedMessageMediator.layerGagName[i] = layerInfo.Split("there was a ")[1].Split(" fastened in good and tight, ")[0].Trim();
+                        decodedMessageMediator.layerGagName[i+1] = layerInfo.Split("there was a ")[1].Split(" fastened in good and tight, ")[0].Trim();
                         // if it was locked, then we need to get the lock type
                         if (layerInfo.Contains("locked with a")) {
-                            decodedMessageMediator.layerPadlock[i] = layerInfo.Split("locked with a")[1].Trim().Split(", ")[0].Trim();
+                            decodedMessageMediator.layerPadlock[i+1] = layerInfo.Split("locked with a")[1].Trim().Split(", ")[0].Trim();
                             // if it was locked, we need to get the assigner
                             if (layerInfo.Contains("which had been secured by")) {
-                                decodedMessageMediator.layerAssigner[i] = layerInfo.Split("which had been secured by")[1].Trim().Split(", ")[0].Trim();
+                                decodedMessageMediator.layerAssigner[i+1] = layerInfo.Split("which had been secured by")[1].Trim().Split(", ")[0].Trim();
                             }
                             // if it was locked with a timer, then we need to get the timer
                             if (layerInfo.Contains("with") && layerInfo.Contains("remaining")) {
-                                decodedMessageMediator.layerTimer[i] = layerInfo.Split("with")[1].Trim().Split("remaining, ")[0].Trim();
+                                decodedMessageMediator.layerTimer[i+1] = layerInfo.Split("with")[1].Trim().Split("remaining, ")[0].Trim();
                             }
                             // if it was locked with a password, then we need to get the password
                             if(layerInfo.Contains("with the password")) {
-                                decodedMessageMediator.layerPassword[i] = layerInfo.Split("with the password")[1].Trim().Split("on the lock")[0].Trim();
+                                decodedMessageMediator.layerPassword[i+1] = layerInfo.Split("with the password")[1].Trim().Split("on the lock")[0].Trim();
                             }
                         }
                     }

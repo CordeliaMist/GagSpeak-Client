@@ -35,6 +35,8 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableHeadersRow();
             ImGui.TableNextRow();
 
+            // if our hardcord condition is fullfilled, begin disable
+            if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
 
             // safeword option
             ImGuiUtil.DrawFrameColumn($"Has Used Safeword:");
@@ -69,7 +71,6 @@ public partial class WhitelistPlayerPermissions {
                     _characterHandler.ToggleExtendedLockTimes();
                 }
             }
-            
             
             // draw out the Direct Chat Garbler Active option
             ImGuiUtil.DrawFrameColumn($"Live Chat Garbler:");
@@ -163,6 +164,9 @@ public partial class WhitelistPlayerPermissions {
                 ImGuiUtil.Center("ReadOnly");
             }
         }
+        // if our hardcord condition is fullfilled, end disable
+        if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
+
         // pop the spacing
         ImGui.PopStyleVar();
     }
@@ -180,7 +184,7 @@ public partial class WhitelistPlayerPermissions {
             $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Extended Lock Times Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
         _characterHandler.SetWhitelistGrantExtendedLockTimes(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._grantExtendedLockTimes);
-        _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleEnableToyboxOption(playerPayload, targetPlayer));
+        _chatManager.SendRealMessage(_messageEncoder.OrderToggleExtendedLockTimes(playerPayload, targetPlayer));
     }
 
     public void TogglePlayerLiveChatGarbler() {

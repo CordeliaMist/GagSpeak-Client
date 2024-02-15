@@ -31,12 +31,13 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     // additonal information below
     public          List<ChatChannel.ChatChannels>              ChannelsGagSpeak { get; set; }                          // Which channels are currently enabled / allowed?
     public          List<ChatChannel.ChatChannels>              ChannelsPuppeteer { get; set; }                         // Which channels are currently enabled / allowed?
-    public          TabType                                     SelectedTab { get; set; } = TabType.General; // Default to the general tab
+    public          TabType                                     SelectedTab { get; set; } = TabType.General;            // Default to the general tab
     public          bool                                        viewingRestraintCompartment { get; set; } = false;      // Is viewing the restraint shelf tab in wardrobe?
-    public          bool                                        ToyboxLeftSubTabActive { get; set; } = false;               // Which subtab is active in the toybox?
-    public          string                                      sendInfoName = "";                                      // Name of the person you are sending info to
-    public          bool                                        acceptingInfoRequests = true;                           // Are you accepting info requests? (for cooldowns)//
-    public          bool                                        processingInfoRequest = false;                          // Are you processing an info request?
+    public          bool                                        ToyboxLeftSubTabActive { get; set; } = false;           // Which subtab is active in the toybox?
+    public          string                                      sendInfoName { get; set; } = "";                        // Name of the person you are sending info to
+    public          bool                                        acceptingInfoRequests { get; set; } = true;             // Are you accepting info requests? (for cooldowns)//
+    public          bool                                        processingInfoRequest { get; set; } = false;            // Are you processing an info request?
+    public          bool                                        hardcoreMode { get; set; } = false;                     // Is the plugin in hardcore mode?
     public          Dictionary<string,DateTimeOffset>           timerData { get; set; }                                 // stores the timer data for the plugin
     // stuff for the gaglistingDrawer
     public          List<bool>                                  isLocked { get; set; }                                  // determines if the gaglisting should have its UI locked
@@ -106,19 +107,24 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         GagSpeak.Log.Debug("[Configuration File] Constructor Finished Initializing and setting default values, and previous data restored.");
     }
 
+    public void SetHardcoreMode(bool value) {
+        hardcoreMode = value;
+        _saveService.QueueSave(this);
+    }
+
     public void SetSendInfoName(string name) {
         sendInfoName = name;
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void SetAcceptInfoRequests(bool value) {
         acceptingInfoRequests = value;
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public void SetprocessingInfoRequest(bool value) {
         processingInfoRequest = value;
-        Save();
+        _saveService.QueueSave(this);
     }
 
 

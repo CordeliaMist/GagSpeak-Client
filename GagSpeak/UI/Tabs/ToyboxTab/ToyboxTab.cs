@@ -11,7 +11,7 @@ namespace GagSpeak.UI.Tabs.ToyboxTab;
 public class ToyboxTab : ITab
 {
     private readonly    GagSpeakConfig                  _config;                // for getting the config
-    private readonly    CharacterHandler                _characterHandler;      // for getting the character handler
+
     private readonly    ToyboxOverviewSubtab            _overviewSubtab;        // for getting the overview subtab
     private readonly    ToyboxWorkshopSubtab            _workshopSubtab;        // for getting the workshop subtab
     private Vector4 lovenseDragButtonBGAlt = new Vector4(0.1f, 0.1f, 0.1f, 0.930f);
@@ -25,9 +25,8 @@ public class ToyboxTab : ITab
     } 
 
     public ToyboxTab(GagSpeakConfig config, ToyboxOverviewSubtab overviewSubtab, 
-    ToyboxWorkshopSubtab workshopSubtab, CharacterHandler characterHandler) {
+    ToyboxWorkshopSubtab workshopSubtab) {
         _config         = config;
-        _characterHandler = characterHandler;
         _overviewSubtab = overviewSubtab;
         _workshopSubtab = workshopSubtab;
     }
@@ -36,7 +35,6 @@ public class ToyboxTab : ITab
 
     /// <summary> This Function draws the content for the window of the Toybox Tab </summary>
     public void DrawContent() {
-        if(_characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         DrawShelfSelection();
@@ -49,7 +47,6 @@ public class ToyboxTab : ITab
         else {
             _overviewSubtab.DrawContent();
         }
-        if(_characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); }
     }
 
     /// <summary> Draws out the subtabs for the toybox tab </summary>

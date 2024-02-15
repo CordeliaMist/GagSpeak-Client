@@ -127,5 +127,12 @@ public partial class MessageEncoder {
         $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
         "chuckles in delight of seeing their gagged submissive below them, a smile formed across their lips.* \"Look's like you'll be stuck speaking in muffled moans for some time now~\"";
     }
+
+    // for toggling if they allow extended lock times [ ID == 42 // toggle extended lock times]
+    public string OrderToggleExtendedLockTimes(PlayerPayload playerPayload, string targetPlayer) {
+        return $"/tell {targetPlayer} "+
+        $"*{playerPayload.PlayerName} from {playerPayload.World.Name} "+
+        "brushes her finger overtop the gag resting over your mouth.* \"Let's make sure you stay for awhile now dearest~\"";
+    }
 }
 

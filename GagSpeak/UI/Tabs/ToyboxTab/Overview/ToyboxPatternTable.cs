@@ -45,6 +45,9 @@ public partial class ToyboxPatternTable {
     private void DrawPatternsTable() {
         ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(ImGui.GetStyle().CellPadding.X * 0.2f, ImGui.GetStyle().CellPadding.Y)); // Modify the X padding
         try{
+            if(_patternHandler.GetActiveIdx() != -1 && _patternHandler._patterns[_patternHandler._activePatternIndex]._isActive) { ImGui.BeginDisabled(); }
+            if(_characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); } // end before drawing pattern so that we can make paste button visable
+
             if(ImGui.BeginChild("PatternContent", new Vector2(0, -85*ImGuiHelpers.GlobalScale), false, ImGuiWindowFlags.NoScrollbar)) {
                 using (var table = ImRaii.Table("UniquePatternListCreator", 3, ImGuiTableFlags.RowBg, new Vector2(0, -1*ImGuiHelpers.GlobalScale))) {
                     if (!table) { return; }
@@ -76,6 +79,8 @@ public partial class ToyboxPatternTable {
         } catch (System.Exception e) {
             GagSpeak.Log.Debug($"{e} Error drawing the pattern table");
         } finally {
+            if(_patternHandler.GetActiveIdx() != -1 && _patternHandler._patterns[_patternHandler._activePatternIndex]._isActive) { ImGui.EndDisabled(); }
+            if(_characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); } // end before drawing pattern so that we can make paste button visable
             ImGui.PopStyleVar();
         }
     }

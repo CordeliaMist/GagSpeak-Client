@@ -170,7 +170,8 @@ public class CommandManager : IDisposable // Our main command list manager
                     _characterHandler.SetPlayerGagPadlock(layerIndex, Padlocks.None);
                     _characterHandler.SetPlayerGagPadlockPassword(layerIndex, "");
                     _characterHandler.SetPlayerGagPadlockAssigner(layerIndex, "");
-                }         
+                }
+                _config.SetHardcoreMode(false);
                 _gagStorageManager.ResetEverythingDueToSafeword();
                 _restriantSetManager.ResetEverythingDueToSafeword();
                 _timerService.ClearRestraintSetTimer();

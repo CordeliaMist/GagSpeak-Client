@@ -110,24 +110,26 @@ public unsafe class ChatInputProcessor : IDisposable {
             
             var inputString = Encoding.UTF8.GetString(*message, bc);
             var matchedCommand = "";
-            var isTell = false;
+            var matchedChannelType = "";
             GagSpeak.Log.Information($"[Chat Processor]: Detouring Message: {inputString}"); // see our message
             // first let's make sure its not a command
             if (inputString.StartsWith("/")) {
                 // Check if command is not one of configured channels commands
                 matchedCommand = _configChannelsCommandsList.FirstOrDefault(prefix => inputString.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
                 
-                if (matchedCommand.IsNullOrEmpty())
-                {
+                GagSpeak.Log.Debug($"[Chat Processor]: matchedChannelType: {matchedChannelType}");
+                if (matchedCommand.IsNullOrEmpty()) {
                     // if it is isn't a command, we can just return the original message
                     GagSpeak.Log.Information("[Chat Processor]: Ignoring Message as it is a command");
                     return processChatInputHook.Original(uiModule, message, a3);
                 }
+                // if we reach here, we know it is a channel of some kind
+                matchedChannelType = matchedCommand; // set the matched channel type to the matched command
+
                 // if tell command is matched, need extra step to protect target name
-                else if (matchedCommand.StartsWith("/tell") || matchedCommand.StartsWith("/t"))
+                if (matchedCommand.StartsWith("/tell") || matchedCommand.StartsWith("/t"))
                 {
-                    // set istell to true
-                    isTell = true;
+                    GagSpeak.Log.Debug($"[Chat Processor]: Matched Command is a tell command");
                     /// Using /gag command on yourself sends /tell which should be caught by this
                     /// Depends on <seealso cref="MsgEncoder.MessageEncoder"/> message to start like :"/tell {targetPlayer} *{playerPayload.PlayerName}"
                     /// Since only outgoing tells are affected, {targetPlayer} and {playerPayload.PlayerName} will be the same
@@ -138,13 +140,15 @@ public unsafe class ChatInputProcessor : IDisposable {
                         return processChatInputHook.Original(uiModule, message, a3);
                     }
                     // Match any other outgoing tell to preserve target name
-                    //var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}\S+\s{1}\S+@\S+(?=\s|$)";             
-                    var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}\S+\s{1}\S+@\S+\s?(?=\S|\s|$)";
+                    var tellRegex = @"(?<=^|\s)/t(?:ell)?\s{1}(?:\S+\s{1}\S+@\S+|\<r\>)\s?(?=\S|\s|$)";
                     matchedCommand = Regex.Match(inputString, tellRegex).Value;
                 }
+                GagSpeak.Log.Debug($"[Chat Processor]: Matched Command: {matchedCommand} for matchedChannelType: [{matchedChannelType}]");
             }
             // if our current channel is in our list of enabled channels AND we have enabled direct chat translation...
-            if ( _config.ChannelsGagSpeak.Contains(ChatChannel.GetChatChannel()) && (_characterHandler.playerChar._directChatGarblerActive == true) ) {
+            if ((_config.ChannelsGagSpeak.Contains(ChatChannel.GetChatChannel()) || _config.ChannelsGagSpeak.IsAliasForAnyActiveChannel(matchedChannelType.Trim()))
+                && _characterHandler.playerChar._directChatGarblerActive)
+            {
                 // if we satisfy this condition, it means we can try to attempt modifying the message.
                 GagSpeak.Log.Debug($"[Chat Processor]: Input -> {inputString}, MatchedCommand -> {matchedCommand}");
                 // we can try to attempt modifying the message.
@@ -153,8 +157,9 @@ public unsafe class ChatInputProcessor : IDisposable {
                     // create the output translated text, cutting the command matched before to prevent it getting garbled
                     var stringToProcess = inputString.Substring(matchedCommand.Length);
                     // see if this is an outgoing tell, if it is, we must make sure it isnt garbled for encoded messages
-                    if(ChatChannel.GetChatChannel() == ChatChannel.ChatChannels.Tell || isTell) {
+                    if(ChatChannel.GetChatChannel() == ChatChannel.ChatChannels.Tell || matchedChannelType.Contains("/t") || matchedChannelType.Contains("/tell")) {
                         // it is a tell, we need to make sure it is not garbled if it is an encoded message
+                        GagSpeak.Log.Debug($"[Chat Processor]: Message is a tell message, skipping garbling");
                         if(_messageDictionary.LookupMsgDictionary(stringToProcess)) {
                             // if it is an encoded message, we need to make sure it is not garbled
                             GagSpeak.Log.Debug($"[Chat Processor]: Message is an encoded message, skipping garbling");

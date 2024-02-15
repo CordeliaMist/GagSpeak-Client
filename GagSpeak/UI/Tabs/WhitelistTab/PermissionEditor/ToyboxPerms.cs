@@ -32,6 +32,9 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
 
+            // if our hardcord condition is fullfilled, begin disable
+            if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
+
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
             ImGui.PushFont(_fontService.UidFont);
             var name = _viewMode ? $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}'s" : "Your";
@@ -218,6 +221,9 @@ public partial class WhitelistPlayerPermissions {
         }
         if(!_viewMode) { ImGui.EndDisabled(); }
         if(_characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); }
+
+        // if our hardcord condition is fullfilled, end disable
+        if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
         // pop the style
         ImGui.PopStyleVar();
     }

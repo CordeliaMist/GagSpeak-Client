@@ -250,6 +250,27 @@ public partial class MessageDecoder {
                 GagSpeak.Log.Error($"[Message Decoder]: /gag toggleLiveChatGarblerLock: Failed to decode message: {recievedMessage}");
             }
         }
+
+        // decode the toggle for enabling extended lock times [ ID == 42 // toggleExtendedLockTimes ]
+        else if(decodedMessageMediator.encodedMsgIndex == 42) {
+            // Define the pattern using regular expressions
+            string pattern = @"^\*(?<playerInfo>.+) brushes her finger overtop the gag resting over your mouth\.\* ""Let\'s make sure you stay for awhile now dearest\~""$";
+            // Use regex to match the pattern
+            Match match = Regex.Match(recievedMessage, pattern);
+            // Check if the match is successful
+            if (match.Success) {
+                // command type
+                decodedMessageMediator.encodedCmdType = "toggleExtendedLockTimes";
+                // player info
+                string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
+                decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
+                // debug result
+                GagSpeak.Log.Debug($"[Message Decoder]: /gag toggleExtendedLockTimes: (Type) "+
+                $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
+            } else {
+                GagSpeak.Log.Error($"[Message Decoder]: /gag toggleExtendedLockTimes: Failed to decode message: {recievedMessage}");
+            }
+        }
     }
 }
 

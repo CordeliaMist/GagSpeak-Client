@@ -63,12 +63,15 @@ public class ToyboxOverviewPanel
         using var colorStyle = ImRaii.PushColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF)
                                     .Push(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF)
                                     .Push(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
+        // draw button for connect regardless of lock
         if(ImGuiUtil.DrawDisabledButton("Connect", new Vector2(width2, 20*ImGuiHelpers.GlobalScale),
         "Attempts to connect to the Intiface server", _plugService.IsClientConnected())){
             // attempt to connect to the server
             _plugService.ConnectToServerAsync();
         }
         ImGui.SameLine();
+        // but begin at disabled
+        if(_charHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
         // and disconnect button
         if(ImGuiUtil.DrawDisabledButton("Disconnect", new Vector2(width2, 20*ImGuiHelpers.GlobalScale),
         "disconnects from the Intiface server", !_plugService.IsClientConnected())) {
@@ -263,10 +266,9 @@ public class ToyboxOverviewPanel
             }
             // go to the next row
             ImGui.TableNextColumn();
-            if(_patternCollection.GetActiveIdx() != -1 && _patternCollection._patterns[_patternCollection._activePatternIndex]._isActive) { ImGui.BeginDisabled(); }
+            if(_charHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); } // end before drawing pattern so that we can make paste button visable
             // draw the pattern list
             _patternTable.Draw();
-            if(_patternCollection.GetActiveIdx() != -1 && _patternCollection._patterns[_patternCollection._activePatternIndex]._isActive) { ImGui.EndDisabled(); }
         } // table ends here
         style.Pop(2);
         // draw the pattern playback sampler here

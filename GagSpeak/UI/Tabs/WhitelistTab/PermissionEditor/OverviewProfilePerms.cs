@@ -52,8 +52,7 @@ public partial class WhitelistPlayerPermissions {
             ImGui.AlignTextToFramePadding();
             ImGuiUtil.DrawFrameColumn("Commitment Length: ");
             ImGui.TableNextColumn(); // Next Row (Commitment Length)
-            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None
-            && _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou != RoleLean.None) {
+            if(_characterHandler.HasEstablishedCommitment(_characterHandler.activeListIdx)) {
                 ImGui.Text($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx].GetCommitmentDuration()}");
             } else {
                 ImGui.Text("No Defined Commitment");
@@ -89,7 +88,7 @@ public partial class WhitelistPlayerPermissions {
             {
                 AcceptRequestForDynamicButton();
                 // set the relation request to established
-                _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer = RoleLean.None;
+                _characterHandler.UpdatePendingRelationRequestFromPlayer(_characterHandler.activeListIdx, RoleLean.None);
                 GagSpeak.Log.Debug($"[Whitelist]: Accepting incoming relation request from "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}");
             }
@@ -99,7 +98,7 @@ public partial class WhitelistPlayerPermissions {
             {
                 DeclineRequestForDynamicButton();
                 // set the relation request to none
-                _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer = RoleLean.None;
+                _characterHandler.UpdatePendingRelationRequestFromPlayer(_characterHandler.activeListIdx, RoleLean.None);
                 GagSpeak.Log.Debug($"[Whitelist]: Declining {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s relation request");
             }
         }
@@ -120,23 +119,39 @@ public partial class WhitelistPlayerPermissions {
         // get dynamic
         RoleLean requestedDynamic = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer;
         // send request based on the dynamic
-        if(requestedDynamic == RoleLean.Owner || requestedDynamic == RoleLean.Master || requestedDynamic == RoleLean.Mistress) {
+        if(requestedDynamic == RoleLean.Owner || requestedDynamic == RoleLean.Master || requestedDynamic == RoleLean.Mistress || requestedDynamic == RoleLean.Dominant) {
             _chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name} as your {requestedDynamic}. Updating their whitelist information").AddItalicsOff().BuiltString);
+            // get the var to see if we should set the commitment time
+            bool preventTimerRestart = _characterHandler.CheckForPreventTimeRestart(
+                                            _characterHandler.activeListIdx,
+                                            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem,
+                                            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer);           
             // set the relationship status the player has towards you "They are your Mistress" here, because once you hit accept, both sides agree
             _characterHandler.UpdateTheirStatusToYou(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer);
-            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None) {
+            // reset the timer if we should
+            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None && !preventTimerRestart) {
                 _characterHandler.whitelistChars[_characterHandler.activeListIdx].Set_timeOfCommitment(); // set the commitment time if relationship is now two-way!
             }
+            // send the message
             _chatManager.SendRealMessage(_messageEncoder.EncodeAcceptRequestDominantStatus(playerPayload, targetPlayer, requestedDynamic));
-        } else if(requestedDynamic == RoleLean.Submissive || requestedDynamic == RoleLean.Pet || requestedDynamic == RoleLean.Slave) {
+        }
+        // if the dynamic role is a submissive role
+        else if(requestedDynamic == RoleLean.Submissive || requestedDynamic == RoleLean.Pet || requestedDynamic == RoleLean.Slave)
+        {
             _chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name} as your {requestedDynamic}. Updating their whitelist information").AddItalicsOff().BuiltString);
+            // get the var to see if we should set the commitment time
+            bool preventTimerRestart = _characterHandler.CheckForPreventTimeRestart(
+                                            _characterHandler.activeListIdx,
+                                            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem,
+                                            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer);     
             // set the relationship status the player has towards you "They are your Pet" here, because once you hit accept, both sides agree
             _characterHandler.UpdateTheirStatusToYou(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer);
-            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None) {
+            // reset the timer if we should
+            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None && !preventTimerRestart) {
                 _characterHandler.whitelistChars[_characterHandler.activeListIdx].Set_timeOfCommitment(); // set the commitment time if relationship is now two-way!
             }
             _chatManager.SendRealMessage(_messageEncoder.EncodeAcceptRequestSubmissiveStatus(playerPayload, targetPlayer, requestedDynamic));
@@ -144,9 +159,15 @@ public partial class WhitelistPlayerPermissions {
             _chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now accepted "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name} as your {requestedDynamic}. Updating their whitelist information").AddItalicsOff().BuiltString);
+            // prevert timer restart if we should
+            bool preventTimerRestart = _characterHandler.CheckForPreventTimeRestart(
+                                            _characterHandler.activeListIdx,
+                                            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem,
+                                            _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer);  
             // set the relationship status the player has towards you "They are your Absolute-Slave" here, because once you hit accept, both sides agree
             _characterHandler.UpdateTheirStatusToYou(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer);
-            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None) {
+            // reset the timer if we should
+            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem != RoleLean.None && !preventTimerRestart) {
                 _characterHandler.whitelistChars[_characterHandler.activeListIdx].Set_timeOfCommitment(); // set the commitment time if relationship is now two-way!
             }
             _chatManager.SendRealMessage(_messageEncoder.EncodeAcceptRequestAbsoluteSubmissionStatus(playerPayload, targetPlayer, requestedDynamic));

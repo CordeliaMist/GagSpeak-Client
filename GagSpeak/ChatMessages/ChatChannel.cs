@@ -123,7 +123,7 @@ public static class ChatChannel
     // Match Channel types with command aliases for them
     public static string[] GetChannelAlias(this ChatChannels channel) => channel switch
     {
-        ChatChannels.Tell => new[] { "/t", "/tell" },
+        ChatChannels.Tell => new[] { "/t", "/tell"},
         ChatChannels.Say => new[] { "/s", "/say" },
         ChatChannels.Party => new[] { "/p", "/party" },
         ChatChannels.Alliance => new[] { "/a", "/alliance" },
@@ -159,6 +159,12 @@ public static class ChatChannel
             result.AddRange(chatChannel.GetChannelAlias().Select(str => str + " "));
         }
         return result;
+    }
+
+    // see if the passed in alias is present as an alias in any of our existing channels
+    public static bool IsAliasForAnyActiveChannel(this IEnumerable<ChatChannels> enabledChannels, string alias)
+    {
+        return enabledChannels.Any(channel => channel.GetChannelAlias().Contains(alias));
     }
 
     /// <summary> This method is used to get the order of the enum, which is then given to getOrderedChannels. </summary>

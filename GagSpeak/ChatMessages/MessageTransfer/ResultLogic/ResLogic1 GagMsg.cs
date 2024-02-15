@@ -176,5 +176,27 @@ public partial class ResultLogic {
         GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag toggleLiveChatGarblerLock");
         return true; // sucessful parse
     }
+
+    private bool HandleToggleExtendedLockTimes(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
+        // extract the player name
+        string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
+        // see if they exist
+        if(!_characterHandler.IsPlayerInWhitelist(playerName)) {
+            isHandled = true; return LogError("[MsgResultLogic]: Cannot toggle extended lock times for non-whitelisted player.");
+        }
+        // get the dynamic tier
+        DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
+        // if our tier is not strong enough, exit.
+        if(tier < DynamicTier.Tier2) {
+            isHandled = true; return LogError($"[MsgResultLogic]: {playerName} failed to toggle extended lock times, Your dynamic is not strong enough.");
+        }
+        // if we reach here, we meet the conditions to set it
+        _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has toggled your extended lock times.").AddItalicsOff().BuiltString);
+        // toggle the extended lock times
+        _characterHandler.ToggleExtendedLockTimes();
+        // log result
+        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag toggleExtendedLockTimes");
+        return true; // sucessful parse
+    }
 }
 

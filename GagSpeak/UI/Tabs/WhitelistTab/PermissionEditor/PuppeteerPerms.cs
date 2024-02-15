@@ -61,11 +61,12 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableSetupColumn($"{text}",  ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("State",     ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("State").X);
             ImGui.TableSetupColumn("Req. Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Req. Tier").X);
-            ImGui.AlignTextToFramePadding();
             ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemm").X);
             ImGui.TableHeadersRow();
             ImGui.TableNextRow();
 
+            // if our hardcord condition is fullfilled, begin disable
+            if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
 
             // Lock Gag Storage on Gag Lock option
             ImGuiUtil.DrawFrameColumn($"Allows Sit Commands:");
@@ -90,8 +91,6 @@ public partial class WhitelistPlayerPermissions {
                     _characterHandler.ToggleAllowSitRequests(_characterHandler.activeListIdx);
                 }
             }
-
-
 
             // Enable Restraint Sets option
             ImGuiUtil.DrawFrameColumn($"Allows Motion Commands:");
@@ -157,6 +156,8 @@ public partial class WhitelistPlayerPermissions {
                 ImGui.Text(alias.Value);
             }
         }
+        // if our hardcord condition is fullfilled, end disable
+        if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
         // pop the style
         ImGui.PopStyleVar();
     }

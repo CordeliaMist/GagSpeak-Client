@@ -42,6 +42,10 @@ public partial class WhitelistPlayerPermissions {
             // for our first row, display the DD for layer, DD gag type, and apply gag to player buttons
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
+
+            // if our hardcord condition is fullfilled, begin disable
+            if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
+
             
             // create a combo for the layer, with options 1, 2, 3. Store selection to variable layer
             int layer = _layer;
@@ -117,6 +121,9 @@ public partial class WhitelistPlayerPermissions {
                 _interactOrPermButtonEvent.Invoke(5);
             }
         } // end our info table
+
+        // if our hardcord condition is fullfilled, end disable
+        if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
         // pop the spacing
         ImGui.PopStyleVar();
         

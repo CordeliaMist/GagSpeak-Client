@@ -44,6 +44,8 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableHeadersRow();
             ImGui.TableNextRow();
 
+            // if our hardcord condition is fullfilled, begin disable
+            if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
 
             // Lock Gag Storage on Gag Lock option
             ImGuiUtil.DrawFrameColumn($"Lock Gag Storage on Gag Lock:");
@@ -214,7 +216,8 @@ public partial class WhitelistPlayerPermissions {
                 ImGui.EndDisabled();
             }
         }
-        
+        // if our hardcord condition is fullfilled, end disable
+        if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
         // pop the spacing
         ImGui.PopStyleVar();
     }

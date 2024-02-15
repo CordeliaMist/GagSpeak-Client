@@ -261,23 +261,26 @@ public class PadlockIdentifier
         GagSpeak.Log.Debug($"[PadlockIdentifer]: Your Name: {YourPlayerName}");
         GagSpeak.Log.Debug($"[PadlockIdentifer]: AssignedPlayerName: {assignerPlayerName}");
         GagSpeak.Log.Debug($"[PadlockIdentifer]: TargetPlayerName {targetPlayerName}");
-
-        
         // if we are the assigner, then we can just return true.
         if(assignerPlayerName == null) {
             GagSpeak.Log.Debug($"[PadlockIdentifer]: Assigner name is null!"); return false;}
         
         // first see if the assigner is us. If it is us, we must be the mistress
         if(assignerPlayerName == YourPlayerName) {
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the assigner, and you are in dom mode");
+            GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the assigner");
             // if we reach this point, it means we are the one assigning it and are in dom mode.
             // next make sure the target we are using this on views us as mistress
             if(characterHandler.whitelistChars.Any(w => targetPlayerName.Contains(w._name)
-            && w.IsRoleLeanDominant(w._yourStatusToThem) 
-            && w.IsRoleLeanSubmissive(w._theirStatusToYou))) {
+            && (w._yourStatusToThem == RoleLean.Mistress || w._yourStatusToThem == RoleLean.Master || w._yourStatusToThem == RoleLean.Owner) 
+            && w.IsRoleLeanSubmissive(w._theirStatusToYou)))
+            {
                 // if we reached this point our dynamic is OK for a mistress assigning a lock to a pet or slave
                 GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the Mistress locking the padlock to your submissive, {targetPlayerName}");
                 return true;
+            }
+            else {
+                GagSpeak.Log.Debug($"[PadlockIdentifer]: But you cannot be the mistress because you cant be the mistress of yourself silly!");
+                return false;
             }
         }
 
@@ -287,17 +290,16 @@ public class PadlockIdentifier
             // at this point we know what relation we are, so now we must verify the relations
             if(characterHandler.whitelistChars.Any(w => assignerPlayerName.Contains(w._name)
             && w.IsRoleLeanSubmissive(w._yourStatusToThem) 
-            && w.IsRoleLeanDominant(w._theirStatusToYou))) {
+            &&(w._yourStatusToThem == RoleLean.Mistress || w._yourStatusToThem == RoleLean.Master || w._yourStatusToThem == RoleLean.Owner)))
+            {
                 // if we reached this point we know our dynamic is sucessful and we can accept it.
                 GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the submissive recieving the lock from your mistress, {assignerPlayerName}");
                 return true;
             }
-        }
-
-        // yes we can gag ourself
-        if (assignerPlayerName == targetPlayerName) {
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: You are able to gag yourself with that, yes!");
-            return true;
+            else {
+                GagSpeak.Log.Debug($"[PadlockIdentifer]: But you cannot be the mistress because you cant be the mistress of yourself silly!");
+                return false;
+            }
         }
 
         // if we reach here, then we failed all conditions, so return false.

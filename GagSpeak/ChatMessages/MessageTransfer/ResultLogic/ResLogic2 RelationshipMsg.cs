@@ -39,7 +39,10 @@ public partial class ResultLogic {
             int idx = _characterHandler.GetWhitelistIndex(playerName);
             // declare the pending request status as the passed in status
             RoleLean lean = _characterHandler.GetRoleLeanFromString(decodedMessageMediator.dynamicLean);
-            // set the pending relationship to none and relationship with that player to none
+            // before we go to update the current status, we must first check to see if they are simply adjusting their status states, this way,
+            // we can adjust the tier without resetting the timer.
+            bool preventTimerRestart = _characterHandler.CheckForPreventTimeRestart(idx, lean, _characterHandler.whitelistChars[idx]._theirStatusToYou);           
+            // update the current status
             switch(lean) {
                 case RoleLean.Owner:        _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Owner); break;
                 case RoleLean.Mistress:     _characterHandler.UpdateYourStatusToThem(idx, RoleLean.Mistress); break;
@@ -51,7 +54,9 @@ public partial class ResultLogic {
             }
             _characterHandler.UpdatePendingRelationRequestFromYou(idx, RoleLean.None);
                         // set the commitment time if relationship is now two-way!
-            if(_characterHandler.whitelistChars[idx]._theirStatusToYou != RoleLean.None) { 
+            if(_characterHandler.whitelistChars[idx]._theirStatusToYou != RoleLean.None
+            && !preventTimerRestart)
+            { 
                 _characterHandler.SetCommitmentTimeEstablished(idx);
             }
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s {lean}. Enjoy~.").AddItalicsOff().BuiltString);

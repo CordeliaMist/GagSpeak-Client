@@ -13,6 +13,7 @@ using GagSpeak.Services;
 using Dalamud.Interface.Utility;
 using Dalamud.Game.Text.SeStringHandling;
 using OtterGui.Classes;
+using GagSpeak.CharacterData;
 
 namespace GagSpeak.Utility;
 
@@ -269,5 +270,22 @@ public static class UIHelpers
             ImGuiUtil.HoverTooltip(tooltip);
             ImGui.EndPopup();
         }
+    }
+
+
+    /// <summary> Sees if the role lean is dominant </summary>
+    public static bool IsRoleLeanDomHelper(RoleLean roleLean) {
+        if(roleLean == RoleLean.Dominant || roleLean == RoleLean.Mistress || roleLean == RoleLean.Master || roleLean == RoleLean.Owner) {
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary> Sees if the role lean is submissive </summary>
+    public static bool IsRoleLeanSubHelper(RoleLean roleLean) {
+        if(roleLean == RoleLean.Submissive || roleLean == RoleLean.Pet || roleLean == RoleLean.Slave || roleLean == RoleLean.AbsoluteSlave) {
+            return true;
+        }
+        return false;
     }
 }

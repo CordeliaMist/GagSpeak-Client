@@ -92,6 +92,15 @@ public class ConfigSettingsTab : ITab
             ImGui.TableNextColumn();
             var yPos = ImGui.GetCursorPosY();
             ImGui.SetCursorPosY(yPos - 2*ImGuiHelpers.GlobalScale);
+            ///////////////////////////// HARDCORE MODE /////////////////////////////\
+            if(_config.hardcoreMode) {ImGui.BeginDisabled();}
+            UIHelpers.CheckboxNoConfig("Hardcore Mode (README)", 
+                "CAN ONLY BE TURNED OFF WITH A SAFEWORD, USE WITH CAUTION\n"+
+                "Enabling removes ability to toggle any options in whitelist tab once two-way commitment is made.",
+                _config.hardcoreMode,
+                v => _config.SetHardcoreMode(!_config.hardcoreMode)
+            );
+            if(_config.hardcoreMode) {ImGui.EndDisabled();}
             ///////////////////////////// COMMAND SETTINGS /////////////////////////////
             // should we allow commands from friends not in whitelist?
             UIHelpers.CheckboxNoConfig("Commands From Friends", 
@@ -105,8 +114,6 @@ public class ConfigSettingsTab : ITab
                 _characterHandler.playerChar._doCmdsFromParty,
                 v => _characterHandler.ToggleCmdFromParty()
             );
-            ///////////////////////////// DIRECT CHAT GARBLER /////////////////////////////
-            ImGui.Text("Direct Chat Garbler:");
             // Direct chat garbler, is it enabled?
             if(_characterHandler.playerChar._directChatGarblerLocked) {ImGui.BeginDisabled();}
             UIHelpers.CheckboxNoConfig("Direct Chat Garbler",
@@ -123,56 +130,6 @@ public class ConfigSettingsTab : ITab
                 _characterHandler.playerChar._liveGarblerWarnOnZoneChange,
                 v => _characterHandler.ToggleZoneWarnings()
             );
-            // Create the language dropdown
-            ImGui.SetNextItemWidth((ImGuiHelpers.GlobalScale*225)*.4f);
-            string prevLang = _config.language; // to only execute code to update data once it is changed
-            if (ImGui.BeginCombo("##Language", _config.language)) {
-                foreach (var language in _languages.Keys.ToArray()) {
-                    bool isSelected = (_config.language == language);
-                    if (ImGui.Selectable(language, isSelected)) {
-                        _config.language = language;
-                    }
-                    if (isSelected) {
-                        ImGui.SetItemDefaultFocus();
-                    }
-                }
-                ImGui.EndCombo();
-            }
-            if(ImGui.IsItemHovered()) {
-                ImGui.SetTooltip("Select the language you want to use for GagSpeak.");
-            }
-            //update if changed 
-            if (prevLang != _config.language) { // set the language to the newly selected language once it is changed
-                _currentDialects = _languages[_config.language]; // update the dialects for the new language
-                _activeDialect = _currentDialects[0]; // set the active dialect to the first dialect of the new language
-                SetConfigDialectFromDialect(_activeDialect);
-                _config.Save();
-            }
-            ImGui.SameLine();
-            // Create the dialect dropdown
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X*.65f);
-            string[] dialects = _languages[_config.language];
-            string prevDialect = _activeDialect; // to only execute code to update data once it is changed
-            if (ImGui.BeginCombo("##Dialect", _activeDialect)) {
-                foreach (var dialect in dialects) {
-                    bool isSelected = (_activeDialect == dialect);
-                    if (ImGui.Selectable(dialect, isSelected)) {
-                        _activeDialect = dialect;
-                    }
-                    if (isSelected) {
-                        ImGui.SetItemDefaultFocus();
-                    }
-                }
-                ImGui.EndCombo();
-            }
-            if(ImGui.IsItemHovered()) {
-                ImGui.SetTooltip("Select the Dialect you want to use for GagSpeak.");
-            }
-            //update if changed
-            if (prevDialect != _activeDialect) { // set the dialect to the newly selected dialect once it is changed
-                SetConfigDialectFromDialect(_activeDialect);
-                _config.Save();
-            }
             ///////////////////////////// WARDROBE SETTINGS /////////////////////////////
             ImGui.Text("Wardrobe Settings:");
             UIHelpers.CheckboxNoConfig("Enable Wardrobe",
@@ -271,8 +228,61 @@ public class ConfigSettingsTab : ITab
             // Show Debug Menu when Debug logging is enabled
             if(_characterHandler.playerChar._directChatGarblerLocked == true) {ImGui.BeginDisabled();}
             yPos = ImGui.GetCursorPosY();
-            ImGui.SetCursorPosY(yPos - 5*ImGuiHelpers.GlobalScale);
-            ImGui.Text("Enabled GagSpeak Channels:");
+            ImGui.AlignTextToFramePadding();
+            ImGui.Text("GagSpeak Channels:");
+            ImGui.SameLine();
+            // Create the language dropdown
+            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*85);
+            string prevLang = _config.language; // to only execute code to update data once it is changed
+            if (ImGui.BeginCombo("##Language", _config.language)) {
+                foreach (var language in _languages.Keys.ToArray()) {
+                    bool isSelected = (_config.language == language);
+                    if (ImGui.Selectable(language, isSelected)) {
+                        _config.language = language;
+                    }
+                    if (isSelected) {
+                        ImGui.SetItemDefaultFocus();
+                    }
+                }
+                ImGui.EndCombo();
+            }
+            if(ImGui.IsItemHovered()) {
+                ImGui.SetTooltip("Select the language you want to use for GagSpeak.");
+            }
+            //update if changed 
+            if (prevLang != _config.language) { // set the language to the newly selected language once it is changed
+                _currentDialects = _languages[_config.language]; // update the dialects for the new language
+                _activeDialect = _currentDialects[0]; // set the active dialect to the first dialect of the new language
+                SetConfigDialectFromDialect(_activeDialect);
+                _config.Save();
+            }
+            ImGui.SameLine();
+            // Create the dialect dropdown
+            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*65);
+            string[] dialects = _languages[_config.language];
+            string prevDialect = _activeDialect; // to only execute code to update data once it is changed
+            if (ImGui.BeginCombo("##Dialect", _activeDialect)) {
+                foreach (var dialect in dialects) {
+                    bool isSelected = (_activeDialect == dialect);
+                    if (ImGui.Selectable(dialect, isSelected)) {
+                        _activeDialect = dialect;
+                    }
+                    if (isSelected) {
+                        ImGui.SetItemDefaultFocus();
+                    }
+                }
+                ImGui.EndCombo();
+            }
+            if(ImGui.IsItemHovered()) {
+                ImGui.SetTooltip("Select the Dialect you want to use for GagSpeak.");
+            }
+            //update if changed
+            if (prevDialect != _activeDialect) { // set the dialect to the newly selected dialect once it is changed
+                SetConfigDialectFromDialect(_activeDialect);
+                _config.Save();
+            }
+
+            // display the channels
             var i = 0;
             foreach (var e in ChatChannel.GetOrderedChannels()) {
                 // See if it is already enabled by default
@@ -297,7 +307,7 @@ public class ConfigSettingsTab : ITab
                 i++;
             }
             ImGui.NewLine();
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 10);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 20);
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 20);
             // you might normally want to embed resources and load them from the manifest stream
             ImGui.Image(_dalamudTextureWrap.ImGuiHandle, new Vector2(_dalamudTextureWrap.Width, _dalamudTextureWrap.Height));
