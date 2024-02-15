@@ -125,7 +125,7 @@ public partial class ResultLogic {
             int index = _characterHandler.GetWhitelistIndex(playerName);
             DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
-            if(tier == DynamicTier.Tier4 && _characterHandler.playerChar._allowUsingPatterns[index]) {
+            if(_characterHandler.playerChar._allowUsingPatterns[index]) {
                 // execute the stored toy pattern
                 if(_patternHandler.ExecutePattern(decodedMessageMediator.patternNameToExecute)) {
                     GagSpeak.Log.Debug($"[Message Decoder]: {playerName} has executed the stored toy pattern {decodedMessageMediator.patternNameToExecute}");

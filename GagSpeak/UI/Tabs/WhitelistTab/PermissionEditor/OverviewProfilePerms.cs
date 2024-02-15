@@ -84,7 +84,7 @@ public partial class WhitelistPlayerPermissions {
             // draw the accept and decline buttons for the pending relation request
             var relationText = pendingDynamic.ToString()?.Split(' ')[0];
             if (ImGui.Button($"Accept {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} as your {relationText}",
-                new Vector2(ImGui.GetContentRegionAvail().X/2, 25)))
+                new Vector2(ImGui.GetContentRegionAvail().X*.65f, 25)))
             {
                 AcceptRequestForDynamicButton();
                 // set the relation request to established
@@ -93,8 +93,10 @@ public partial class WhitelistPlayerPermissions {
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}");
             }
             ImGui.SameLine();
-            if (ImGui.Button($"Decline {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}'s Request",
-                new Vector2(ImGui.GetContentRegionAvail().X, 25)))
+            var xPox = ImGui.GetCursorPosX();
+            ImGui.SetCursorPosX(xPox + 2*ImGuiHelpers.GlobalScale);
+            if (ImGui.Button($"Decline Request",
+                new Vector2(ImGui.GetContentRegionAvail().X-2*ImGuiHelpers.GlobalScale, 25)))
             {
                 DeclineRequestForDynamicButton();
                 // set the relation request to none

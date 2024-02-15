@@ -39,7 +39,6 @@ public class HelpPageTab : ITab
 
     /// <summary> This Function draws the content for the window of the Toybox Tab </summary>
     public void DrawContent() {
-        if(_characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         DrawShelfSelection();
@@ -49,7 +48,6 @@ public class HelpPageTab : ITab
         else {
             DrawPadlocksTab();
         }
-        if(_characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); }
     }
 
     /// <summary> Draws out the subtabs for the toybox tab </summary>

@@ -2,7 +2,8 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;         // this is the agent tha
 using FFXIVClientStructs.FFXIV.Client.System.Framework; // this is the framework that the game uses to handle all of its UI
 using System;                                           // this is used for the enum
 using System.Collections.Generic;                       // this is used for the lists
-using System.Linq;                                      // this is used for the lists
+using System.Linq;
+using Dalamud.Game.Text;                                      // this is used for the lists
 
 namespace GagSpeak.ChatMessages;
 
@@ -165,6 +166,39 @@ public static class ChatChannel
     public static bool IsAliasForAnyActiveChannel(this IEnumerable<ChatChannels> enabledChannels, string alias)
     {
         return enabledChannels.Any(channel => channel.GetChannelAlias().Contains(alias));
+    }
+
+    // get the chat channel type from the XIVChatType
+    public static ChatChannels? GetChatChannelFromXivChatType(XivChatType type) {
+        return type switch
+        {
+            XivChatType.TellIncoming    => ChatChannels.Tell_In,
+            XivChatType.TellOutgoing    => ChatChannels.Tell,
+            XivChatType.Say             => ChatChannels.Say,
+            XivChatType.Party           => ChatChannels.Party,
+            XivChatType.Alliance        => ChatChannels.Alliance,
+            XivChatType.Yell            => ChatChannels.Yell,
+            XivChatType.Shout           => ChatChannels.Shout,
+            XivChatType.FreeCompany     => ChatChannels.FreeCompany,
+            XivChatType.NoviceNetwork   => ChatChannels.NoviceNetwork,
+            XivChatType.Ls1             => ChatChannels.LS1,
+            XivChatType.Ls2             => ChatChannels.LS2,
+            XivChatType.Ls3             => ChatChannels.LS3,
+            XivChatType.Ls4             => ChatChannels.LS4,
+            XivChatType.Ls5             => ChatChannels.LS5,
+            XivChatType.Ls6             => ChatChannels.LS6,
+            XivChatType.Ls7             => ChatChannels.LS7,
+            XivChatType.Ls8             => ChatChannels.LS8,
+            XivChatType.CrossLinkShell1 => ChatChannels.CWL1,
+            XivChatType.CrossLinkShell2 => ChatChannels.CWL2,
+            XivChatType.CrossLinkShell3 => ChatChannels.CWL3,
+            XivChatType.CrossLinkShell4 => ChatChannels.CWL4,
+            XivChatType.CrossLinkShell5 => ChatChannels.CWL5,
+            XivChatType.CrossLinkShell6 => ChatChannels.CWL6,
+            XivChatType.CrossLinkShell7 => ChatChannels.CWL7,
+            XivChatType.CrossLinkShell8 => ChatChannels.CWL8,
+            _ => null
+        };
     }
 
     /// <summary> This method is used to get the order of the enum, which is then given to getOrderedChannels. </summary>

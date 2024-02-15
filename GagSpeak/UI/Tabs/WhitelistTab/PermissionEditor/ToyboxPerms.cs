@@ -22,8 +22,6 @@ public partial class WhitelistPlayerPermissions {
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
 
-        if(_characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
-
         using (var ToyBoxHeaderTable = ImRaii.Table("ToyBoxHeaderTable", 2)) {
             if (!ToyBoxHeaderTable) { return; }
 
@@ -91,6 +89,7 @@ public partial class WhitelistPlayerPermissions {
                     _characterHandler.ToggleToyboxUILocking();
                 }
             }
+            if(!_viewMode && _characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
             // Lock Gag Storage on Gag Lock option
             ImGuiUtil.DrawFrameColumn($"Allow Change Toy State:");
 
@@ -220,7 +219,7 @@ public partial class WhitelistPlayerPermissions {
             }
         }
         if(!_viewMode) { ImGui.EndDisabled(); }
-        if(_characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); }
+        if(!_viewMode && _characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); }
 
         // if our hardcord condition is fullfilled, end disable
         if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }

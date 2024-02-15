@@ -60,7 +60,7 @@ public partial class ResultLogic {
             "removeall"                 => HandleRemoveAllMessage(decodedMessageMediator, ref isHandled),
             "togglelivechatgarbler"     => HandleToggleLiveChatGarbler(decodedMessageMediator, ref isHandled),
             "togglelivechatgarblerlock" => HandleToggleLiveChatGarblerLock(decodedMessageMediator, ref isHandled),
-            "toggleExtendedLockTimes"   => HandleToggleExtendedLockTimes(decodedMessageMediator, ref isHandled),
+            "toggleextendedlocktimes"   => HandleToggleExtendedLockTimes(decodedMessageMediator, ref isHandled),
             _                => LogError("Invalid Order message parse, If you see this report it to cordy ASAP.")
         };
         return true;

@@ -232,14 +232,19 @@ public class ChatManager
             // contained the trigger word, so process it.
             if(globalPuppeteerMessageToSend != string.Empty) {
                 SeString messageToSend = globalPuppeteerMessageToSend;
-                // if it does, then our message is valid, but we should also make sure we are in one of our enabled channels
-                if(_config.ChannelsPuppeteer.Contains(ChatChannel.GetChatChannel())
-                && _puppeteerMediator.MeetsGlobalSettingCriteria(messageToSend))
-                {
-                    // if we are in a valid chatchannel, then send it
-                    messageQueue.Enqueue("/" + messageToSend);
-                } else {
-                    GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
+                // now get the incoming chattype converted to our chat channel,
+                ChatChannel.ChatChannels? incomingChannel = ChatChannel.GetChatChannelFromXivChatType(type);
+                // if it isnt any of our active channels then we just dont wanna even process it
+                if(incomingChannel != null) {
+                    // it isnt null meaning it is eithing the channels so now we can check if it meets the criteria
+                    if(_config.ChannelsPuppeteer.Contains(incomingChannel.Value)
+                    && _puppeteerMediator.MeetsGlobalSettingCriteria(messageToSend))
+                    {
+                        // if we are in a valid chatchannel, then send it
+                        messageQueue.Enqueue("/" + messageToSend);
+                    } else {
+                        GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
+                    }
                 }
             } else {
                 GagSpeak.Log.Debug($"[ChatManager] Puppeteer message to send was empty, aborting");
@@ -259,14 +264,19 @@ public class ChatManager
                 if(puppeteerMessageToSend != string.Empty) {
                     // apply any alias translations, if any
                     SeString aliasedMessageToSend = _puppeteerMediator.ConvertAliasCommandsIfAny(senderName, puppeteerMessageToSend);
-                    // if it does, then our message is valid, but we should also make sure we are in one of our enabled channels
-                    if(_config.ChannelsPuppeteer.Contains(ChatChannel.GetChatChannel())
-                    && _puppeteerMediator.MeetsSettingCriteria(senderName, aliasedMessageToSend))
-                    {
-                        // if we are in a valid chatchannel, then send it
-                        messageQueue.Enqueue("/" + aliasedMessageToSend);
-                    } else {
-                        GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
+                    // now get the incoming chattype converted to our chat channel,
+                    ChatChannel.ChatChannels? incomingChannel = ChatChannel.GetChatChannelFromXivChatType(type);
+                    // if it isnt any of our active channels then we just dont wanna even process it
+                    if(incomingChannel != null) {
+                        // it isnt null meaning it is eithing the channels so now we can check if it meets the criteria
+                        if(_config.ChannelsPuppeteer.Contains(incomingChannel.Value)
+                        && _puppeteerMediator.MeetsSettingCriteria(senderName, aliasedMessageToSend))
+                        {
+                            // if we are in a valid chatchannel, then send it
+                            messageQueue.Enqueue("/" + aliasedMessageToSend);
+                        } else {
+                            GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
+                        }
                     }
                 } else {
                     GagSpeak.Log.Debug($"[ChatManager] Puppeteer message to send was empty, aborting");

@@ -2,6 +2,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
 using Emote = Lumina.Excel.GeneratedSheets.Emote;
+using Expression = Lumina.Excel.GeneratedSheets.EmoteCategory;
 
 namespace GagSpeak.ToyboxandPuppeteer;
 // a mediator for holding timer information and tracks when a pattern has been saved
@@ -97,7 +98,7 @@ public class PuppeteerMediator
             if(emotes != null){
                 // check if the message matches any emotes from that sheet
                 foreach (var emote in emotes) {
-                    if (messageRecieved.TextValue == emote.Name.RawString.ToLower()) {
+                    if (messageRecieved.TextValue == emote.Name.RawString.Replace(" ", "").ToLower()) {
                         GagSpeak.Log.Debug($"[PuppeteerMediator]: valid emote command");
                         // then it is an emote, and we have enabled that option, so return true
                         return true;
@@ -132,7 +133,7 @@ public class PuppeteerMediator
             if(emotes != null){
                 // check if the message matches any emotes from that sheet
                 foreach (var emote in emotes) {
-                    if (messageRecieved.TextValue == emote.Name.RawString.ToLower()) {
+                    if (messageRecieved.TextValue == emote.Name.RawString.Replace(" ", "").ToLower()) {
                         GagSpeak.Log.Debug($"[PuppeteerMediator]: valid emote command");
                         // then it is an emote, and we have enabled that option, so return true
                         return true;

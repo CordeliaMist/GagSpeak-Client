@@ -100,8 +100,15 @@ public class PatternHandler : ISavable
         if (patternIdx == -1) {
             return false;
         }
-        // execute the pattern
+        // if the active pattern index is any pattern, and it is currently active, stop the playback and set it to not active
+        if (_activePatternIndex != -1 && _patterns[_activePatternIndex]._isActive) {
+            _patterns[_activePatternIndex]._isActive = false;
+            _patternPlayback.StopPlayback();
+        
+        }
+        // then switch the index
         _activePatternIndex = patternIdx;
+        // now we can execute the pattern
         ExecutePatternProper();
         return true;
     }
