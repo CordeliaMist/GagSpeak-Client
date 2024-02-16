@@ -3,19 +3,28 @@ using System.Collections.Generic;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.Utility;
 using GagSpeak.Events;
+using System.Linq;
 
 namespace GagSpeak.CharacterData;
 
 public partial class CharacterHandler
 {
-    public void SetPlayerGagType(int index, string gagName, bool invokeGlamourEvent = true) {
+    public void SetPlayerGagType(int index, string gagName, bool invokeGlamourEvent = true, string assignerName = "self") {
         // see if we reset it to none, and if so, we should remove our glamoured gag item
+        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
+        // clear the gag item from the selectedGagTypes list, resetting it to none
         if(gagName == "None") {
             ResetPlayerGagTypeToNone(index, invokeGlamourEvent);
         }
         // otherwise, just change the gag type
         else {
+            // if the current gag type is different, than the gag name, then change it!
             if(playerChar._selectedGagTypes[index] != gagName) {
+                // if we were meant to invoke glamour event and our item for that was enabled for glamour applying, we should change it.
+                if(invokeGlamourEvent && _gagStorageManager._gagEquipData[gagType]._isEnabled) {
+                    _gagSpeakGlamourEvent.Invoke(UpdateType.GagEquipped, gagName, assignerName);
+                }
+                // then change the type
                 playerChar._selectedGagTypes[index] = gagName;
                 _saveService.QueueSave(this);
             }
@@ -23,15 +32,19 @@ public partial class CharacterHandler
     }
 
     private void ResetPlayerGagTypeToNone(int index, bool invokeGlamourEvent) {
+        // store the gagtype in both enum and name
+        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
         var gagTypeName = playerChar._selectedGagTypes[index];
+        // see if the gag was previously Not none,
         if(playerChar._selectedGagTypes[index] != "None") {
+            // if so, set it
             playerChar._selectedGagTypes[index] = "None";
-            _saveService.QueueSave(this);
-            // if we want to also invoke the event, then invoke it
-            if(invokeGlamourEvent) {
+            // if we were meant to invoke glamour event and our item for that was enabled for glamour applying, we should remove it.
+            if(invokeGlamourEvent && _gagStorageManager._gagEquipData[gagType]._isEnabled) {
                 _gagSpeakGlamourEvent.Invoke(UpdateType.GagUnEquipped, gagTypeName);
             }
         }
+        _saveService.QueueSave(this);
     }
 
     public void SetPlayerGagPadlock(int index, string padlockName) {

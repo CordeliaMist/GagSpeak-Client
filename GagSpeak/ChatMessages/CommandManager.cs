@@ -166,7 +166,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 _characterHandler.playerChar._selectedGagPadlocks.IsSafewordCommandExecuting = true;
                 // remove all data
                 for (int layerIndex = 0; layerIndex < 3; layerIndex++) {
-                    _characterHandler.SetPlayerGagType(layerIndex, "None");
+                    _characterHandler.SetPlayerGagType(layerIndex, "None", true, "self");
                     _characterHandler.SetPlayerGagPadlock(layerIndex, Padlocks.None);
                     _characterHandler.SetPlayerGagPadlockPassword(layerIndex, "");
                     _characterHandler.SetPlayerGagPadlockAssigner(layerIndex, "");

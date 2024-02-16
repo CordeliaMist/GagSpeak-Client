@@ -212,11 +212,13 @@ public class GagListingsDrawer : IDisposable
         // draw the thing
         var prevItem = _characterHandler.playerChar._selectedGagTypes[layerIndex]; // get the previous item
         combo.Draw(ID, _characterHandler, layerIndex, width);
-        
-        if(prevItem != _characterHandler.playerChar._selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
-            _characterHandler.Quicksave();
-            _glamourEvent.Invoke(UpdateType.GagEquipped, _characterHandler.playerChar._selectedGagTypes[layerIndex], "self");
-        }
+
+        /////////////////////////// WE TECHNICALLY NO LONGER SHOULD NEED THIS, BUT I WILL KEEP IT FOR REFERENCE ///////////////////////////        
+        // if(prevItem != _characterHandler.playerChar._selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
+        //     if(_characterHandler.playerChar._selectedGagTypes[layerIndex] != "None") {
+        //         _glamourEvent.Invoke(UpdateType.GagEquipped, _characterHandler.playerChar._selectedGagTypes[layerIndex], "self");
+        //     }
+        // }
 
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
@@ -225,11 +227,11 @@ public class GagListingsDrawer : IDisposable
                 // clear the gag item from the selectedGagTypes list, resetting it to none
                 if(_gagStorageManager._gagEquipData[gagType]._isEnabled) {
                     // we should also apply the unequip data if the auto equip was on
-                    _characterHandler.SetPlayerGagType(layerIndex, "None", true);
+                    _characterHandler.SetPlayerGagType(layerIndex, "None", true, "self");
                 }
                 // but otherwise, just clear the item
                 else {
-                    _characterHandler.SetPlayerGagType(layerIndex, "None", false);
+                    _characterHandler.SetPlayerGagType(layerIndex, "None", false, "self");
                 }
                 // reset the _wasEquippedBy to empty
                 _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");

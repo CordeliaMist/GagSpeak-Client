@@ -68,9 +68,12 @@ public sealed class GagTypeFilterCombo
                     foreach( var item in _gagTypes ) { // We will draw out one selectable for each item.
                         // If our item is selected, set it and break
                         if( ImGui.Selectable( item._gagName, item._gagName == characterHandler.playerChar._selectedGagTypes[layerIndex]) ) {
-                            characterHandler.SetPlayerGagType(layerIndex, item._gagName);
+                            // update the gag type and the visual display
+                            characterHandler.SetPlayerGagType(layerIndex, item._gagName, true, "self");
                             GagSpeak.Log.Debug($"Selected Gag Type: {item._gagName}");
+                            // update the search text
                             _comboSearchText = string.Empty;
+                            // update the gagtypes for the garbler core
                             _gagTypes = _gagService._gagTypes;
                             ImGui.CloseCurrentPopup();
                             return;

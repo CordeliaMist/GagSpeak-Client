@@ -56,10 +56,7 @@ public class GagAndLockManager : IDisposable
     /// <summary> This method is used to handle gag applying command and UI presses </summary>
     public void ApplyGag(int layerIndex, string gagType, string assignerName = "self") {
         // apply the gag information to anywhere where it should be applied to within our code
-        _characterHandler.SetPlayerGagType(layerIndex, gagType);
-        
-        // Trigger the event letting our wardrobe manager know a gag is equipped
-        _gagSpeakGlamourEvent.Invoke(UpdateType.GagEquipped, gagType, assignerName);
+        _characterHandler.SetPlayerGagType(layerIndex, gagType, true, assignerName);
     }
 
     /// <summary> This method is used to handle individual gag removing command and UI presses
@@ -71,7 +68,7 @@ public class GagAndLockManager : IDisposable
         var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _characterHandler.playerChar._selectedGagTypes[layerIndex]);
         // remove the gag information from anywhere where it should be removed from within our code
         _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
-        _characterHandler.SetPlayerGagType(layerIndex, "None");
+        _characterHandler.SetPlayerGagType(layerIndex, "None", true, "self");
         _characterHandler.SetPlayerGagPadlock(layerIndex, Padlocks.None);
         _characterHandler.SetPlayerGagPadlockPassword(layerIndex, string.Empty);
         _characterHandler.SetPlayerGagPadlockAssigner(layerIndex, string.Empty);

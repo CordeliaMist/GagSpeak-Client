@@ -9,6 +9,7 @@ using GagSpeak.ToyboxandPuppeteer;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.Utility;
 using GagSpeak.Events;
+using GagSpeak.Wardrobe;
 
 /*
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,10 +38,13 @@ public partial class CharacterHandler : ISavable
     private readonly SaveService _saveService;
     [JsonIgnore]
     private readonly GagSpeakGlamourEvent _gagSpeakGlamourEvent;
+    [JsonIgnore]
+    private readonly GagStorageManager _gagStorageManager;
 
-    public CharacterHandler(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent) {
+    public CharacterHandler(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent, GagStorageManager gagStorageManager) {
         _saveService = saveService;
         _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
+        _gagStorageManager = gagStorageManager;
         // initialize blank data
         playerChar = new PlayerCharacterInfo();
         whitelistChars = new List<WhitelistedCharacterInfo>();
