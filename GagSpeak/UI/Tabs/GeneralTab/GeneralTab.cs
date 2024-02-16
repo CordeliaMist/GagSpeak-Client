@@ -13,6 +13,7 @@ using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;
 using GagSpeak.UI.Equipment;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>
@@ -128,7 +129,7 @@ public class GeneralTab : ITab, IDisposable
             if(_characterHandler.playerChar._safewordUsed) { ImGui.EndDisabled(); }
             ImGui.TableNextColumn();
             if(_characterHandler.playerChar._safewordUsed) {
-                ImGui.Text($"Safeword Cooldown: {_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
+                ImGui.Text($"CD:{_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
             }
         } 
         // if we used our safeword
@@ -140,21 +141,6 @@ public class GeneralTab : ITab, IDisposable
 
         // disable this interactability if our safeword is on cooldown
         if(_characterHandler.playerChar._safewordUsed) { ImGui.BeginDisabled(); }
-
-        // before we go down, lets draw the changelog button on the top right
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 5.25f * ImGui.GetFrameHeight(), yPos + ImGuiHelpers.GlobalScale));
-        ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
-        ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
-        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
-        ImGui.Text(" ");
-        ImGui.SameLine();
-        if (ImGui.Button("Changelog", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
-            // force open the changelog here
-            _changelog.Changelog.ForceOpen = true;
-        }
-        // pop off the colors we pushed
-        ImGui.PopStyleColor(3);
-
         ImGui.NewLine();
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
@@ -179,6 +165,30 @@ public class GeneralTab : ITab, IDisposable
         ImGui.TextColored(new Vector4(0,1,0,1), "Bit Gag Padded, Bone Gag, Bone Gag XL, Chopstick Gag, Dental Gag,\n"+
                                                 "Harness Panel Gag, Hook Gag, Inflatable Hood, Latex/Leather Hoods, Plug Gag\n"+
                                                 "Pump Gag, Sensory Deprivation Hood, Spider Gag, Tenticle Gag.");
+
+        // Draw the changelog
+        // before we go down, lets draw the changelog button on the top right
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 5.25f * ImGui.GetFrameHeight(), yPos + ImGuiHelpers.GlobalScale));
+        xPos = ImGui.GetCursorPosX();
+        yPos = ImGui.GetCursorPosY();
+        ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
+        ImGui.Text(" ");
+        ImGui.SameLine();
+        if (ImGui.Button("Changelog", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
+            // force open the changelog here
+            _changelog.Changelog.ForceOpen = true;
+        }
+        ImGui.SetCursorPos(new Vector2(xPos, yPos+30));
+        ImGui.Text(" ");
+        ImGui.SameLine();
+        if (ImGui.Button("Short YT Guides", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
+            ImGui.SetTooltip( "Only if you want to though!");
+            Process.Start(new ProcessStartInfo {FileName = "https://www.youtube.com/playlist?list=PLGzKipCtkx7EAyk1k5gRFG8ZyKB0FMTR3", UseShellExecute = true});
+        }
+        // pop off the colors we pushed
+        ImGui.PopStyleColor(3);
     }
 
     /// <summary>

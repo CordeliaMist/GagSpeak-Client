@@ -51,8 +51,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          string                                      language { get; set; } = "English";                     // The language dialect to use for the IPA conversion
     public          string                                      languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
     public          List<string>                                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
-
-    public          bool TestingPhaseDisableMode { get; set; } = false; // disables the testing phrase mode
     
     
     [JsonIgnore]

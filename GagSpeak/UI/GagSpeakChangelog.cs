@@ -24,7 +24,7 @@ public class GagSpeakChangelog
         Add0_9_9_10(Changelog); 
         Add1_0_1_3(Changelog);
         Add1_0_2_0(Changelog);
-        Add1_1_0_0(Changelog);
+        Add2_0_0_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -53,11 +53,13 @@ public class GagSpeakChangelog
     }
 
     // all versions are added here, the order doesnt madder, but it should be in order of newest to oldest.
-    private static void Add1_1_0_0(Changelog log)
-        => log.NextVersion("Version 1.1.0.0 Release")
+    private static void Add2_0_0_0(Changelog log)
+        => log.NextVersion("Version 2.0.0.0 Release")
+            .RegisterHighlight("I'm aware I have no awareness of version updates, making a full 2.0 update right away, but here we are.")
             .RegisterImportant("New Component now in GagSpeak: THE PUPPETEER TAB")
             .RegisterEntry("    》 Set unique trigger phrases to each person on your whitelist, so you make sure they are truely the only one who can make you do things!")
             .RegisterEntry("    》 Configure permission parameters for each person individually.")
+            .RegisterEntry("    》 Create Unique alias tables for each person on your whitelist, so you can make them do things with ease!")
             .RegisterEntry("    》 Regex paramater trigger words are a WIP atm and are coming soon!")
             .RegisterImportant("New Componet now in GagSpeak: THE TOYBOX TAB")
             .RegisterEntry("    》 Unique configuration control for each person on your whitelist, dictate who can and cant use your vibrator!")
@@ -65,6 +67,7 @@ public class GagSpeakChangelog
             .RegisterEntry("    》 Set and adjust the intensity of the vibrator at will")
             .RegisterEntry("    》 Create and execute patterns of vibration for your vibrator")
             .RegisterEntry("    》 Lock the UI of the toybox to prevent any changes from being made, making your partner enjoy their partner's pleasure")
+            .RegisterEntry("    》 Create your own fully fledged patterns within the new workshop sub-tab!")
             .RegisterImportant("GagSpeak Permissions have gone a FULL OVERHAUL")
             .RegisterEntry("It is very likely to encounter new bugs, so please report them as you find them! I had to reformat the whole backend of message/info transfer")
             .RegisterEntry("Permissions now are stored in 2 catagories, Global & Individual")
@@ -77,7 +80,7 @@ public class GagSpeakChangelog
 
 
     private static void Add1_0_2_0(Changelog log)
-        => log.NextVersion("Version 1.9.5.0 Release")
+        => log.NextVersion("Version 2.0.0.0 Release")
             .RegisterImportant("A New Wardrobe tab has now been added!")
             .RegisterEntry("Wardrobe tab introduces the ability to automatically equip preassigned items whenever a gag is worn.")
             .RegisterEntry("Wardrobe tab now allows you to define spesific restraint sets")
@@ -99,7 +102,7 @@ public class GagSpeakChangelog
             .RegisterHighlight("The Live Chat Garbler Lock warning message has now been changed to notify you whenever you switch zones, not just when you login!")
             .RegisterEntry("Any Enabled wardrobe features will automatically reapply themselves whenever you switch any jobs, items, or stains to gear!");
     private static void Add1_0_1_3(Changelog log)
-        => log.NextVersion("Version 1.9.5.0 Release")
+        => log.NextVersion("Version 2.0.0.0 Release")
             .RegisterImportant("Plugin has been officially released!")
             .RegisterHighlight("Fixed a majority of feedback bugs that made it past all the QA, fixing tons of issues!");
     

@@ -166,7 +166,6 @@ public static class ServiceHandler
             .AddSingleton<TutorialWindow>()
             .AddSingleton<UserProfileWindow>()
             .AddSingleton<SavePatternWindow>()
-            .AddSingleton<TestingPhaseWarningWindow>()
             .AddSingleton<DebugWindow>()
             .AddSingleton<GagSpeakChangelog>();
 

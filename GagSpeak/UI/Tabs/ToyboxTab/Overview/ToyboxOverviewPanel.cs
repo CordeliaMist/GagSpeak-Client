@@ -97,7 +97,7 @@ public class ToyboxOverviewPanel
             if (ImGui.Button("Watch Quick Install Guide", new Vector2(-1, 0)))
             {
                 // Open the youtube guide link from CK
-                Process.Start(new ProcessStartInfo {FileName = "https://www.youtube.com/@cordyskinkporium-ffxivbdsm8665/", UseShellExecute = true});
+                Process.Start(new ProcessStartInfo {FileName = "https://www.youtube.com/watch?v=h3JBYiwtAXg&list=PLGzKipCtkx7EAyk1k5gRFG8ZyKB0FMTR3&index=6", UseShellExecute = true});
                 ImGui.CloseCurrentPopup();
             }
             if (ImGui.Button("Go To Site Directly", new Vector2(-1, 0)))

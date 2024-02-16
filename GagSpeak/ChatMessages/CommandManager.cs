@@ -116,12 +116,8 @@ public class CommandManager : IDisposable // Our main command list manager
     {
         var argumentList = arguments.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (argumentList.Length < 1) { 
-            if(_config.TestingPhaseDisableMode) {
-                _chat.PrintError("GagSpeak is currently in testing phase, and is disabled. Please wait for the release.");
-            } else {
-                _mainWindow.Toggle();
-                return;
-            }
+            _mainWindow.Toggle();
+            return;
         }
 
         var argument = argumentList.Length == 2 ? argumentList[1] : string.Empty; // Make arguement be everything after command
@@ -136,13 +132,8 @@ public class CommandManager : IDisposable // Our main command list manager
                 _debugWindow.Toggle();     // when [/gagspeak debug] is typed
                 return;
             case "":
-                if(_config.TestingPhaseDisableMode) {
-                    _chat.PrintError("GagSpeak is currently in testing phase, and is disabled. Please wait for the release.");
-                    return;
-                } else {
-                    _mainWindow.Toggle(); // when [/gagspeak] is typed
-                    return;
-                }
+                _mainWindow.Toggle(); // when [/gagspeak] is typed
+                return;
             default:
                 PrintHelpGagSpeak("help");// when no arguements are passed.
                 return;
@@ -191,7 +182,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 _safewordCommandEvent.Invoke();
                 // fire the safewordUsed bool to true so that we set the cooldown
                 _characterHandler.SetSafewordUsed(true);
-                _timerService.StartTimer("SafewordUsed", "5s", 1000, () => _characterHandler.SetSafewordUsed(false));
+                _timerService.StartTimer("SafewordUsed", "10ms", 1000, () => _characterHandler.SetSafewordUsed(false));
             }
             // otherwise inform the user that the cooldown for safeword being used is still present
             else {
