@@ -1,23 +1,14 @@
 # Dalamud-GagSpeak 
 ![Banner Image](images/promopic.png)
-## GagSpeak Overview
-Its Finally here, after like 3 months of coding and begging literally everyone I knew for help!
-
-For those who just want to install the plugin:
-
-**Repo Link:** ```https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json```
-
 # Overview
 GagSpeak is made with the intent of being more than just a one-sided translator. Gagspeak will allow the user to muffle their speech using a sophisticated garbler algorithm, based on real life gag sound data, to accurately garble speech for each individual gag in their own unique way.
-
-Not only does the plugin do this, but it also implements
-- a shit ton of safety precautions and privacy checks
+- tons of safety precautions and privacy checks
 - has encrypted messaging
 - whitelist management
 - options to give yourself control over other users
 - options to restrict others from having access to control you.
 - setting a safeword
-- setting your mode (dom/sub/mistress/pet/slave)
+- setting your mode (Owner/Master/Mistress/Dominant/Submissive/Pet/Slave/AbsoluteSlave)
 - define relations with players & view commitment times with one another
 - Display a mini profile viewer pop-up windows
 - integrated commands for macro automation
@@ -25,9 +16,37 @@ Not only does the plugin do this, but it also implements
 - over 50 types of gags
 - equip up to 3 gags at once
 - chat garbler will be able to make new garbler messages by combining the garbling properties of each gag equipped together!
-- So much more....
+- link glamour items to each type of gag, so glamours with modded gags get applied when gags are applied
+- Toggle if each gag item link is enabled or disabled individually
+- toggle universally as well if you want too!
+- Add endless ammounts of stored restraint sets!
+- Self-Lock yourself into restraint sets, or lock others for set times!
+- Revert to automation or game when disabled
+- Restraint Sets can act as "overlays" or "Glamour Applications"
+- Restraint Set Lists can be copied and sent to others so they have an autofill dropdown for which of your sets to apply
+- Use the new puppeteer module
+- Setup unique trigger phrases for each whitelisted player
+- Setup global trigger phrases if you really want
+- Setup unique alias tables for each whitelisted player to use so they can enhance how easily their orders fit into normal conversation
+- Setup custom start and end characters to what defines what is encosed within brackets.
+- Configure what channels puppeteer trigger should be read from, seperate from gagspeak channels
+- Experience the all new Toybox Module!
+- Connect your bluetooth 'toy' to the toybox module
+- Adjust its intensity easily with a slider in realtime
+- Interact with other peoples toys via whitelist interactions
+- Export or Import patterns compressed into sendable strings!
+- Create your own patterns to share with others in the toybox workshop!
+- Use the workshop's loop and float buttons to create unique styles of pattern vibrations
+- Share your patterns in communities, or across DM's!
+- Send your pattern list to whitelisted players you trust so they can execute them for you!
+- View your toys battery & scan %
+- Feel comfortable with defining your trust level with others using the new dynamic tier system!
 
 I invested way to much time into safety, security, privacy, and features for this plugin, and I'm very happy with how far things have come.
+## For those who just want to install the plugin:
+```
+https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json
+```
 
 ## Notice:
 Not all gags were able to get ALL of their data in time, as such, some are incomplete, or have no data. At the moment, the ball gag will give you the most accurate realism, and the others may need some fine tuning.
