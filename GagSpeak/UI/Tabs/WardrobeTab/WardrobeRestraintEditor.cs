@@ -122,14 +122,9 @@ public class RestraintSetEditor
         var right = ImGui.IsItemClicked(ImGuiMouseButton.Right);
         var left  = ImGui.IsItemClicked(ImGuiMouseButton.Left);
 
-        if (SetIndex >= 0 && SetIndex < _gameItemCombo.Length) {
-            using var group = ImRaii.Group();
-            DrawItem(SetIndex, slot, out var label, right, left, width, _gameItemCombo);
-            DrawStain(SetIndex, slot, width, _stainCombo, _stainData);
-        } else {
-            // Handle the error, e.g., log a message or throw an exception
-            Console.WriteLine($"Invalid SetIndex: {SetIndex}. Must be between 0 and {_gameItemCombo.Length - 1}.");
-        }
+        using var group = ImRaii.Group();
+        DrawItem(SetIndex, slot, out var label, right, left, width, _gameItemCombo);
+        DrawStain(SetIndex, slot, width, _stainCombo, _stainData);
     }
 
     /// <summary> Draws the item combo dropdown for our equipDrawData.
