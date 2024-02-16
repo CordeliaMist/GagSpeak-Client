@@ -242,18 +242,24 @@ public class GlamourerFunctions : IDisposable
                     // reapply any restraints hiding under them, if any
                     await ApplyRestrainSetToCachedCharacterData();
                 }
-                // condition 5 --> it was a job change event, refresh all, but wait for the framework thread first
+                // condition 5 --> it was a gag refresh event, we should reapply all the gags
+                if(e.UpdateType == UpdateType.UpdateGags) {
+                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Update Gags");
+                    await ApplyGagItemsToCachedCharacterData();
+                }
+
+                // condition 6 --> it was a job change event, refresh all, but wait for the framework thread first
                 if(e.UpdateType == UpdateType.JobChange) {
                     GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Job Change");
                     await Task.Run(() => _charaDataHelpers.RunOnFrameworkThread(UpdateCachedCharacterData));
                 }
 
-                // condition 6 --> it was a refresh all event, we should reapply all the gags and restraint sets
+                // condition 7 --> it was a refresh all event, we should reapply all the gags and restraint sets
                 if(e.UpdateType == UpdateType.RefreshAll || e.UpdateType == UpdateType.ZoneChange || e.UpdateType == UpdateType.Login) {
                     GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Refresh All // Zone Change // Login // Job Change");
-                    UpdateCachedCharacterData();
+                    await UpdateCachedCharacterData();
                 }
-                // condition 7 --> it was a safeword event, we should revert to the game, then to game and disable toys
+                // condition 8 --> it was a safeword event, we should revert to the game, then to game and disable toys
                 if(e.UpdateType == UpdateType.Safeword) {
                     GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Safeword");
                     await _Interop.GlamourerRevertCharacter(_charaDataHelpers.Address);
@@ -273,7 +279,7 @@ public class GlamourerFunctions : IDisposable
     }
 
     /// <summary> Updates the raw glamourer customization data with our gag items and restraint sets, if applicable </summary>
-    public async void UpdateCachedCharacterData() {
+    public async Task UpdateCachedCharacterData() {
         // for privacy reasons, we must first make sure that our options for allowing such things are enabled.
         if(_characterHandler.playerChar._allowRestraintSetAutoEquip) {
             await ApplyRestrainSetToCachedCharacterData();

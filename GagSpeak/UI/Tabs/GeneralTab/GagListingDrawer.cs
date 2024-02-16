@@ -213,12 +213,6 @@ public class GagListingsDrawer : IDisposable
         var prevItem = _characterHandler.playerChar._selectedGagTypes[layerIndex]; // get the previous item
         combo.Draw(ID, _characterHandler, layerIndex, width);
 
-        /////////////////////////// WE TECHNICALLY NO LONGER SHOULD NEED THIS, BUT I WILL KEEP IT FOR REFERENCE ///////////////////////////        
-        // if(prevItem != _characterHandler.playerChar._selectedGagTypes[layerIndex]) { // if we have changed the item, update the image
-        //     if(_characterHandler.playerChar._selectedGagTypes[layerIndex] != "None") {
-        //         _glamourEvent.Invoke(UpdateType.GagEquipped, _characterHandler.playerChar._selectedGagTypes[layerIndex], "self");
-        //     }
-        // }
 
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {

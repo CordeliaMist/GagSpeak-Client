@@ -192,9 +192,9 @@ public class ClientUserInfo : IDisposable
         }
 
         // if our job is changed, invoke a redraw
-        if (_jobChanged) {
-            _jobChangedEvent.Invoke();
-        }
+        // if (_jobChanged) {
+        //     _jobChangedEvent.Invoke();
+        // }
         
 
         // if the current time is less than the delayed framework update check + 1 second, return

@@ -11,6 +11,7 @@ public enum UpdateType {
     GagEquipped,    
     // used when removing a gag or having it reset to none
     GagUnEquipped,
+    UpdateGags,
     // used for updating a characters information in general
     RefreshAll,
     // used for when we detect a job change

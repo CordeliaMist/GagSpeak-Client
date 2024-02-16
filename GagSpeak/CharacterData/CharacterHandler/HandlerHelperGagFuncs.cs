@@ -20,6 +20,12 @@ public partial class CharacterHandler
         else {
             // if the current gag type is different, than the gag name, then change it!
             if(playerChar._selectedGagTypes[index] != gagName) {
+                // BEFORE WE UPDATE THE DATA, MAKE SURE WE UNEQUIP THE OLD ONE IF IT WAS ENABLED
+                var prevGagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
+                if(_gagStorageManager._gagEquipData[prevGagType]._isEnabled) {
+                    // unequip it
+                    _gagSpeakGlamourEvent.Invoke(UpdateType.GagUnEquipped, playerChar._selectedGagTypes[index], "self");
+                }
                 // if we were meant to invoke glamour event and our item for that was enabled for glamour applying, we should change it.
                 if(invokeGlamourEvent && _gagStorageManager._gagEquipData[gagType]._isEnabled) {
                     _gagSpeakGlamourEvent.Invoke(UpdateType.GagEquipped, gagName, assignerName);
@@ -27,6 +33,9 @@ public partial class CharacterHandler
                 // then change the type
                 playerChar._selectedGagTypes[index] = gagName;
                 _saveService.QueueSave(this);
+
+                // update the gag display
+                _gagSpeakGlamourEvent.Invoke(UpdateType.UpdateGags);
             }
         }
     }
