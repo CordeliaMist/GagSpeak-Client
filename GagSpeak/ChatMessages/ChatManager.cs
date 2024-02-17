@@ -228,7 +228,7 @@ public class ChatManager
 
         // at this point, we have determined that it is not an encoded message, and we still have the sender info.
         // now we should check for if we have enabled global triggerphrase, and abide by all of its options.
-        if(_puppeteerMediator.ContainsGlobalTriggerWord(chatmessage.TextValue, out string globalPuppeteerMessageToSend)) {
+        if(_puppeteerMediator.ContainsGlobalTriggerWord(chatmessage.TextValue, out string globalPuppeteerMessageToSend) && senderName != pName) {
             // contained the trigger word, so process it.
             if(globalPuppeteerMessageToSend != string.Empty) {
                 SeString messageToSend = globalPuppeteerMessageToSend;

@@ -172,7 +172,7 @@ public static class ChatChannel
     public static ChatChannels? GetChatChannelFromXivChatType(XivChatType type) {
         return type switch
         {
-            XivChatType.TellIncoming    => ChatChannels.Tell_In,
+            XivChatType.TellIncoming    => ChatChannels.Tell,
             XivChatType.TellOutgoing    => ChatChannels.Tell,
             XivChatType.Say             => ChatChannels.Say,
             XivChatType.Party           => ChatChannels.Party,
