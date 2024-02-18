@@ -6,7 +6,7 @@
             "Jdtug"
         ],
         "Name": "GagSpeak",
-        "Punchline": "Truely have one feel their own speach muffled when gagged.",
+        "Punchline": "Truely have one feel their own speech muffled when gagged.",
         "Description": "Dom & Sub modes, whitelist feature, channel access control, apply up to 3 gags. Over 65+ Gags, 7 unique locks. Safewords for safety!",
         "Tags": [ 
             "Speak",
@@ -18,18 +18,18 @@
             "RP"
         ],
         "InternalName": "GagSpeak",
-        "AssemblyVersion": "2.1.0.0",
-        "TestingAssemblyVersion": "2.1.0.0",
+        "AssemblyVersion": "2.1.1.0",
+        "TestingAssemblyVersion": "2.1.1.0",
         "RepoUrl": "https://github.com/CordeliaMist/Dalamud-GagSpeak",
         "ApplicableVersion": "any",
         "DalamudApiLevel": 9,
         "IsHide": "False",
         "IsTestingExclusive": "False",
-        "DownloadCount": 420,
+        "DownloadCount": 11325,
         "LastUpdate": 1618608322,
-        "DownloadLinkInstall": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v2.1.0.0-Release/latest.zip",
-        "DownloadLinkUpdate": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v2.1.0.0-Release/latest.zip",
-        "DownloadLinkTesting": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v2.1.0.0-Release/latest.zip",
+        "DownloadLinkInstall": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v2.1.1.0-Release/latest.zip",
+        "DownloadLinkUpdate": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v2.1.1.0-Release/latest.zip",
+        "DownloadLinkTesting": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v2.1.1.0-Release/latest.zip",
         "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/images/icon.png"
     }
 ]

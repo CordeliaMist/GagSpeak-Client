@@ -146,7 +146,7 @@ public class ClientUserInfo : IDisposable
             GagSpeak.Log.Debug($"[ZoneSwitch]  Zone switch/Gpose end");
             // let user know on launch of their direct chat garbler is still enabled
             if (_characterHandler.playerChar._directChatGarblerActive && _characterHandler.playerChar._liveGarblerWarnOnZoneChange)
-                _chat.PrintError("[Notice] Direct Chat Garbler is still enabled. A Friendly reminder encase you forgot <3");
+                _chat.PrintError("[Notice] Direct Chat Garbler is still enabled. A Friendly reminder incase you forgot <3");
             // update the between areas to false
             _sentBetweenAreas = false;
         }
