@@ -30,6 +30,11 @@ public class PlayerCharacterInfo : CharacterInfoBase
     public  bool            _allowRestraintSetAutoEquip { get; set; } = false;          // lets gagspeak know if anything in the Restraintset compartment will function
     ///////////////////////////////////////////// GAGSPEAK PUPPETEER SETTINGS  /////////////////////////////////////////////
     public  List<AliasList> _triggerAliases { get; set; }                               // lets the player set the trigger phrases for each whitelisted player
+    //////////////////////////////////////////////// TOYBOX MODULE SETTING /////////////////////////////////////////////////
+    public  bool            _usingSimulatedVibe { get; set; } = false;                  // lets the player know if they are using a simulated vibe
+    
+    // potentially a list of triggers can be stored in here, or saved seperately
+
     ///////////////////////////////////////////// FUTURE MODULES CAN GO HERE /////////////////////////////////////////////
 
     ///////////////////////////////////////// FIELDS UNIQUE FOR EACH WHITELIST USER ////////////////////////////////////////////////////
@@ -76,6 +81,7 @@ public class PlayerCharacterInfo : CharacterInfoBase
             ["AllowItemAutoEquip"] = _allowItemAutoEquip,
             ["AllowRestraintSetAutoEquip"] = _allowRestraintSetAutoEquip,
             ["TriggerAliasesList"] = new JArray(_triggerAliases.Select(alias => alias.Serialize())),
+            ["UsingSimulatedVibe"] = _usingSimulatedVibe,
             ["ExtendedLockTimes"] = new JArray(_grantExtendedLockTimes),
             ["EnableRestraintSets"] = new JArray(_enableRestraintSets),
             ["RestraintSetLocking"] = new JArray(_restraintSetLocking),
@@ -119,6 +125,7 @@ public class PlayerCharacterInfo : CharacterInfoBase
             _globalAllowAllCommands = jsonObject["GlobalAllowAllCommands"]?.Value<bool>() ?? false;
             _allowItemAutoEquip = jsonObject["AllowItemAutoEquip"]?.Value<bool>() ?? false;
             _allowRestraintSetAutoEquip = jsonObject["AllowRestraintSetAutoEquip"]?.Value<bool>() ?? false;
+            _usingSimulatedVibe = jsonObject["UsingSimulatedVibe"]?.Value<bool>() ?? false;
             _grantExtendedLockTimes = jsonObject["ExtendedLockTimes"]?.Values<bool>().ToList() ?? new List<bool>();
             _enableRestraintSets = jsonObject["EnableRestraintSets"]?.Values<bool>().ToList() ?? new List<bool>();
             _restraintSetLocking = jsonObject["RestraintSetLocking"]?.Values<bool>().ToList() ?? new List<bool>();

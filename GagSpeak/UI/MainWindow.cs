@@ -13,6 +13,8 @@ using GagSpeak.UI.Tabs.HelpPageTab;
 using GagSpeak.UI.Tabs.WardrobeTab;
 using GagSpeak.UI.Tabs.PuppeteerTab;
 using GagSpeak.UI.Tabs.ToyboxTab;
+using GagSpeak.UI.Tabs.WorkshopTab;
+using Dalamud.Interface.Utility.Raii;
 
 namespace GagSpeak.UI;
 
@@ -23,8 +25,9 @@ public enum TabType {
     Wardrobe        = 2,    // Where you can set what equips when what is worn & config automatic bind & lock options.
     Puppeteer       = 3,    // for controlling others~
     Toybox          = 4,    // for controlling toys, fun fun~
-    ConfigSettings  = 5,    // Where you can change the plugin settings, such as debug mode, and other things.
-    HelpPage        = 6     // Where you can find information on how to use the plugin, and how to get support.
+    Workshop        = 5,    // for controlling the workshop, fun fun~
+    ConfigSettings  = 6,    // Where you can change the plugin settings, such as debug mode, and other things.
+    HelpPage        = 7     // Where you can find information on how to use the plugin, and how to get support.
 }
 /// <summary> This class is used to handle the main window. </summary>
 public class MainWindow : Window
@@ -36,6 +39,7 @@ public class MainWindow : Window
     public readonly     WardrobeTab         Wardrobe;
     public readonly		  PuppeteerTab		    Puppeteer;
     public readonly		  ToyboxTab			      Toybox;
+    public readonly     WorkshopTab         Workshop;
     public readonly     ConfigSettingsTab   ConfigSettings;
     public readonly     HelpPageTab         HelpPage;
     public              TabType             SelectTab = TabType.None;
@@ -45,7 +49,7 @@ public class MainWindow : Window
     /// </para> </summary>
     public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general,
 	WhitelistTab whitelist, ConfigSettingsTab configsettings, WardrobeTab wardrobeTab,
-	PuppeteerTab puppeteer, ToyboxTab toybox, HelpPageTab helpPageTab): base(GetLabel()) {
+	PuppeteerTab puppeteer, ToyboxTab toybox, WorkshopTab workshopTab,HelpPageTab helpPageTab): base(GetLabel()) {
 		// Let's first make sure that we disable the plugin while inside of gpose.
 		pluginInt.UiBuilder.DisableGposeUiHide = true;
 		// Next let's set the size of the window
@@ -61,6 +65,7 @@ public class MainWindow : Window
 		Wardrobe = wardrobeTab;
 		Puppeteer = puppeteer;
 		Toybox = toybox;
+    Workshop = workshopTab;
 		ConfigSettings = configsettings;
 		HelpPage = helpPageTab;
 		// Below are the stuff besides the tabs that are passed through
@@ -73,6 +78,7 @@ public class MainWindow : Window
 			wardrobeTab,
 			puppeteer,
 			toybox,
+      workshopTab,
 			configsettings,
 			helpPageTab
 		};
@@ -87,13 +93,13 @@ public class MainWindow : Window
             _config.Save();
         }
         // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 6.15f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 2.55f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
         ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
         ImGui.Text(" ");
         ImGui.SameLine();
-        if (ImGui.Button("Toss Cordy a Thanks♥")) {
+        if (ImGui.Button("Ko-Fi ♥")) {
             ImGui.SetTooltip( "Only if you want to though!");
             Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
         }
@@ -110,6 +116,7 @@ public class MainWindow : Window
             TabType.Wardrobe        => Wardrobe.Label,
             TabType.Puppeteer       => Puppeteer.Label,
             TabType.Toybox          => Toybox.Label,
+            TabType.Workshop        => Workshop.Label,
             TabType.ConfigSettings  => ConfigSettings.Label,
             TabType.HelpPage        => HelpPage.Label,
             _                       => ReadOnlySpan<byte>.Empty, // This label confuses me a bit. I think it is just a blank label?
@@ -128,6 +135,7 @@ public class MainWindow : Window
         if (label == Wardrobe.Label)        return TabType.Wardrobe;
         if (label == Puppeteer.Label)       return TabType.Puppeteer;
         if (label == Toybox.Label)          return TabType.Toybox;
+        if (label == Workshop.Label)        return TabType.Workshop;
         if (label == ConfigSettings.Label)  return TabType.ConfigSettings;
         if (label == HelpPage.Label)        return TabType.HelpPage;
         // @formatter:on

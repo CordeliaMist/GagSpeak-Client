@@ -269,14 +269,17 @@ public class ChatManager
                     // if it isnt any of our active channels then we just dont wanna even process it
                     if(incomingChannel != null) {
                         // it isnt null meaning it is eithing the channels so now we can check if it meets the criteria
-                        if(_config.ChannelsPuppeteer.Contains(incomingChannel.Value)
-                        && _puppeteerMediator.MeetsSettingCriteria(senderName, aliasedMessageToSend))
-                        {
-                            // if we are in a valid chatchannel, then send it
-                            messageQueue.Enqueue("/" + aliasedMessageToSend);
+                        if(_config.ChannelsPuppeteer.Contains(incomingChannel.Value)) {
+                            if(_puppeteerMediator.MeetsSettingCriteria(senderName, aliasedMessageToSend)) {
+                                // if we are in a valid chatchannel, then send it
+                                messageQueue.Enqueue("/" + aliasedMessageToSend);
+                            } else {
+                                GagSpeak.Log.Debug($"[ChatManager] Command didnt abide by your settings aborting");
+                            }
                         } else {
-                            GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
+                            GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, aborting");
                         }
+                            
                     }
                 } else {
                     GagSpeak.Log.Debug($"[ChatManager] Puppeteer message to send was empty, aborting");

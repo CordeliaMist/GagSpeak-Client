@@ -6,6 +6,7 @@ using System.Timers;
 using GagSpeak.CharacterData;
 using GagSpeak.Events;
 using GagSpeak.Utility;
+using GagSpeak.Wardrobe;
 
 
 namespace GagSpeak.Services;
@@ -17,6 +18,7 @@ public class TimerService : IDisposable
 {
    private readonly  GagSpeakConfig                _config;                // for config options
    private readonly  CharacterHandler              _characterHandler;      // for getting the whitelist
+   private readonly  RestraintSetManager           _restraintSetManager;    // for clearing restraint set timers
    private readonly  InfoRequestEvent              _infoRequestEvent;      // event to notify subscribers when info is requested
    public event      Action<string, TimeSpan>?     RemainingTimeChanged;   // event to notify subscribers when remaining time changes
    public            Dictionary<string, TimerData> timers;                 // Dictionary to store active timers
@@ -27,9 +29,11 @@ public class TimerService : IDisposable
    /// <list type="bullet">
    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
    /// </list> </summary>
-   public TimerService(GagSpeakConfig config, CharacterHandler characterHandler, InfoRequestEvent infoRequestEvent) {
+   public TimerService(GagSpeakConfig config, CharacterHandler characterHandler, 
+   RestraintSetManager restraintSetManager ,InfoRequestEvent infoRequestEvent) {
       _config = config;
       _characterHandler = characterHandler;
+      _restraintSetManager = restraintSetManager;
       _infoRequestEvent = infoRequestEvent;
       timers = new Dictionary<string, TimerData>();
       remainingTimes = new Dictionary<string, string>();
@@ -163,7 +167,7 @@ public class TimerService : IDisposable
          // Calculate the remaining time in milliseconds
          var remainingTime = UIHelpers.FormatTimeSpan(pair.Value - DateTimeOffset.Now);
          // Print the timer name and remaining time
-         //GagSpeak.Log.Debug($"[Timer Service] Config Timer Data: {pair.Key}, Remaining Time: {remainingTime}");
+         GagSpeak.Log.Debug($"[Timer Service] Config Timer Data: {pair.Key}, Remaining Time: {remainingTime}");
       }
    }
 
@@ -259,7 +263,9 @@ public class TimerService : IDisposable
                   _config.padlockIdentifier[0].UpdatePadlockInfo(0, !_config.isLocked[0], _characterHandler);
                });
             }
-         } else if(timerName.Contains("_Identifier1")) {
+         }
+         // for the second gag layer
+         else if(timerName.Contains("_Identifier1")) {
             // Check to see if the timer expired while we were offline, if it is, clear the respective data
             if (remainingTime < TimeSpan.Zero) {
                GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
@@ -275,7 +281,9 @@ public class TimerService : IDisposable
                   _config.padlockIdentifier[1].UpdatePadlockInfo(1, !_config.isLocked[1], _characterHandler);
                });
             }
-         } else if(timerName.Contains("_Identifier2")) {
+         }
+         // for the third gag layer
+         else if(timerName.Contains("_Identifier2")) {
             // Check to see if the timer expired while we were offline, if it is, clear the respective data
             if (remainingTime < TimeSpan.Zero) {
                GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
@@ -289,6 +297,39 @@ public class TimerService : IDisposable
                   _config.isLocked[2] = false;
                   _config.padlockIdentifier[2].ClearPasswords();
                   _config.padlockIdentifier[2].UpdatePadlockInfo(2, !_config.isLocked[2], _characterHandler);
+               });
+            }
+         }
+         // for the safeword used
+         else if(timerName.Contains("SafewordUsed")) {
+            // Check to see if the timer expired while we were offline, if it is, clear the respective data
+            if (remainingTime < TimeSpan.Zero) {
+               GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
+               _characterHandler.SetSafewordUsed(false);
+            } else {
+               // Check to see if the timer expired while we were offline, if it is, clear the respective data
+               GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
+               StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
+                  _characterHandler.SetSafewordUsed(false);
+               });
+            }
+         }
+         // for any restraint set
+         else if(timerName.Contains("RestraintSet_")) {
+            // Check to see if the timer expired while we were offline, if it is, clear the respective data
+            if (remainingTime < TimeSpan.Zero) {
+               GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
+               ClearRestraintSetTimer();
+            } else {
+               // get the index of the name
+               string restraintSetName = timerName.Replace("RestraintSet_", "");
+               // find the index of it
+               int setIndex = _restraintSetManager.GetRestraintSetIndex(restraintSetName);
+               // Check to see if the timer expired while we were offline, if it is, clear the respective data
+               GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
+               StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
+                  _restraintSetManager.TryUnlockRestraintSet(setIndex, "self");
+                  ClearRestraintSetTimer();
                });
             }
          }

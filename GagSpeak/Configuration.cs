@@ -37,7 +37,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          string                                      sendInfoName { get; set; } = "";                        // Name of the person you are sending info to
     public          bool                                        acceptingInfoRequests { get; set; } = true;             // Are you accepting info requests? (for cooldowns)//
     public          bool                                        processingInfoRequest { get; set; } = false;            // Are you processing an info request?
-    public          bool                                        hardcoreMode { get; set; } = false;                     // Is the plugin in hardcore mode?
+    public          bool                                        hardcoreMode { get; set; } = false;                     // Is the plugin in hardcore mode
     public          Dictionary<string,DateTimeOffset>           timerData { get; set; }                                 // stores the timer data for the plugin
     // stuff for the gaglistingDrawer
     public          List<bool>                                  isLocked { get; set; }                                  // determines if the gaglisting should have its UI locked
@@ -51,8 +51,9 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          string                                      language { get; set; } = "English";                     // The language dialect to use for the IPA conversion
     public          string                                      languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
     public          List<string>                                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
-    
-    
+    // stuff for the toybox
+    public          string                                      intifacePortValue { get; set; } = "12345";              // The port value for the intiface server
+
     [JsonIgnore]
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
 
@@ -122,6 +123,11 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
 
     public void SetprocessingInfoRequest(bool value) {
         processingInfoRequest = value;
+        _saveService.QueueSave(this);
+    }
+
+    public void SetIntifacePortValue(string value) {
+        intifacePortValue = value;
         _saveService.QueueSave(this);
     }
 

@@ -26,6 +26,7 @@ using GagSpeak.Gagsandlocks;
 using GagSpeak.ToyboxandPuppeteer;
 using GagSpeak.UI.Tabs.PuppeteerTab;
 using GagSpeak.UI.Tabs.ToyboxTab;
+using GagSpeak.UI.Tabs.WorkshopTab;
 
 namespace GagSpeak.Services;
 
@@ -133,7 +134,9 @@ public static class ServiceHandler
         => services.AddSingleton<PatternHandler>()
             .AddSingleton<PatternPlayback>()
             .AddSingleton<WorkshopMediator>()
-            .AddSingleton<PuppeteerMediator>();
+            .AddSingleton<PuppeteerMediator>()
+            .AddSingleton<ToyboxPatternTable>()
+            .AddSingleton<SoundPlayer>();
 
     /// <summary> Classes to add to the service collection from the [UI] folder </summary>
     private static ServiceManager AddUi(this ServiceManager services)
@@ -157,10 +160,11 @@ public static class ServiceHandler
             .AddSingleton<PuppeteerAliasTable>()
             .AddSingleton<ToyboxTab>()
             .AddSingleton<ToyboxSelector>()
-            .AddSingleton<ToyboxOverviewSubtab>()
-            .AddSingleton<ToyboxOverviewPanel>()
-            .AddSingleton<ToyboxPatternTable>()
-            .AddSingleton<ToyboxWorkshopSubtab>()
+            .AddSingleton<ToyboxPanel>()
+            .AddSingleton<SetupAndInfoSubtab>()
+            .AddSingleton<PatternSubtab>()
+            .AddSingleton<TriggersSubtab>()
+            .AddSingleton<WorkshopTab>()
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HelpPageTab>()
             .AddSingleton<TutorialWindow>()

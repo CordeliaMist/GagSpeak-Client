@@ -14,18 +14,17 @@ using GagSpeak.CharacterData;
 using GagSpeak.Events;
 using GagSpeak.Utility;
 // Thank you to Ryuuki for most of this code. I have modified it to fit the needs of GagSpeak
-
 // Big Warning: This is a very NSFW service. It is a service that connects to a toybox server and controls a lovense device.
 // This service is not to be used in any way that is not consensual. It is also not to be used in any way that is not legal.
 namespace GagSpeak.Services;
 public class PlugService : IDisposable
 {
-    // migrate any direct calls to functions to make this private later
+    private GagSpeakConfig _config; // for getting the intiface port
     private readonly CharacterHandler _characterHandler; // for getting the whitelist
     private readonly IChatGui _chatGui; // for sending messages to the chat
     private readonly ActiveDeviceChangedEvent _activeDeviceChangedEvent;
     public ButtplugClient client;
-    public ButtplugWebsocketConnector connector = new ButtplugWebsocketConnector(new Uri("ws://localhost:12345"));
+    public ButtplugWebsocketConnector connector;
     public ButtplugClientDevice? activeDevice; // our connected device
     // our plugServiceAttributes
     public int deviceIndex;         // know our actively selected device index in _client.Devices[]
@@ -34,8 +33,9 @@ public class PlugService : IDisposable
     public double stepInterval;         // know the step size of our active device
     public int stepCount;           // know the step count of our active device
     public double batteryLevel;     // know the battery level of our active device
-    public PlugService(CharacterHandler characterHandler, IChatGui chatGui,
+    public PlugService(GagSpeakConfig config, CharacterHandler characterHandler, IChatGui chatGui,
     ActiveDeviceChangedEvent activeDeviceChangedEvent) {
+        _config = config;
         _characterHandler = characterHandler;
         _activeDeviceChangedEvent = activeDeviceChangedEvent;
         _chatGui = chatGui;
@@ -46,7 +46,9 @@ public class PlugService : IDisposable
         stepCount = 0;
         batteryLevel = 0;
         ////// STEP ONE /////////
-        // connect to client
+        // connect to connector and then client
+        connector = CreateNewConnector();
+        // create a new client
         client = new ButtplugClient("GagSpeak");
         ////// STEP TWO /////////
         // once the client connects, it will ask server for list of devices.
@@ -152,6 +154,12 @@ public class PlugService : IDisposable
     /// <returns>True if we have a connected device, false if we do not.</returns>
     public bool HasConnectedDevice() => client.Connected && client.Devices.Any() ? true : false;
 
+    public ButtplugWebsocketConnector CreateNewConnector() {
+        return _config.intifacePortValue != null
+                    ? new ButtplugWebsocketConnector(new Uri($"ws://localhost:{_config.intifacePortValue}"))
+                    : new ButtplugWebsocketConnector(new Uri("ws://localhost:12345"));
+    }
+
     /// <summary> Connect to the server asynchronously </summary>
     public async void ConnectToServerAsync() {
         try {
@@ -208,7 +216,7 @@ public class PlugService : IDisposable
             }
             // once it is disconnected, dispose of the client and the connector
             connector.Dispose();
-            connector = new ButtplugWebsocketConnector(new Uri("ws://localhost:12345"));
+            connector = CreateNewConnector();
         }
         // if at any point we fail here, throw an exception
         catch (Exception ex) {

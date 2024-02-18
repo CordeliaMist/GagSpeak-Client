@@ -54,6 +54,11 @@ public partial class CharacterHandler
         }
     }
 
+    public void ToggleUsingSimulatedVibe() {
+        playerChar._usingSimulatedVibe = !playerChar._usingSimulatedVibe;
+        _saveService.QueueSave(this);
+    }
+
     public void SetSafewordUsed(bool value) {
         if(playerChar._safewordUsed != value) {
             playerChar._safewordUsed = value;

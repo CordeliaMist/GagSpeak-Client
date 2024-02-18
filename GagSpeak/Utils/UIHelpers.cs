@@ -219,6 +219,10 @@ public static class UIHelpers
     /// </summary>
     public static bool ValidateTimer(string timerInput) {
         // see if it meets the timer requirements
+        if(string.IsNullOrEmpty(timerInput) || string.IsNullOrWhiteSpace(timerInput)) {
+            return false;
+        }
+        // for valid timers.
         GagSpeak.Log.Debug($"[UI Helpers]: ValidatingTimer [{timerInput}]");
         var match = Regex.Match(timerInput, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
         return match.Success;
