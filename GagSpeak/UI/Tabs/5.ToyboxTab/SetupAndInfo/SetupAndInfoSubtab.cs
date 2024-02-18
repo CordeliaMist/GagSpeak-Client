@@ -57,6 +57,10 @@ public class SetupAndInfoSubtab : IDisposable
         ImGui.SameLine();
         // store the input text boxes trigger phrase
         var portValue  = _tempPortValue ?? _config.intifacePortValue;
+        // if port value is empty, set it to the default
+        if(portValue.IsNullOrEmpty()) {
+            portValue = "ws://localhost:12345";
+        }
         ImGui.SetNextItemWidth(150*ImGuiHelpers.GlobalScale);
         if (ImGui.InputText($"##Connector Address", ref portValue, 128, ImGuiInputTextFlags.EnterReturnsTrue))
             _tempPortValue = portValue;
@@ -66,7 +70,7 @@ public class SetupAndInfoSubtab : IDisposable
             _tempPortValue = null;
         }
         if(ImGui.IsItemHovered()) {
-            ImGui.SetTooltip("Select the port you want to connect to intiface with.\nPort 12345 is the default used.");
+            ImGui.SetTooltip("Select the port you want to connect to intiface with.\nDelete all to restore defaults.");
         }
         // draw out the option for if player wants to use the simulated toy
         ImGui.AlignTextToFramePadding();
