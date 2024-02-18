@@ -19,7 +19,7 @@ using GagSpeak.Utility;
 namespace GagSpeak.Services;
 public class PlugService : IDisposable
 {
-    private GagSpeakConfig _config; // for getting the intiface port
+    private GagSpeakConfig _config; // for getting the intiface uri
     private readonly CharacterHandler _characterHandler; // for getting the whitelist
     private readonly IChatGui _chatGui; // for sending messages to the chat
     private readonly ActiveDeviceChangedEvent _activeDeviceChangedEvent;
@@ -155,8 +155,8 @@ public class PlugService : IDisposable
     public bool HasConnectedDevice() => client.Connected && client.Devices.Any() ? true : false;
 
     public ButtplugWebsocketConnector CreateNewConnector() {
-        return _config.intifacePortValue != null
-                    ? new ButtplugWebsocketConnector(new Uri($"ws://localhost:{_config.intifacePortValue}"))
+        return _config.intifaceUri != null
+                    ? new ButtplugWebsocketConnector(new Uri(_config.intifaceUri))
                     : new ButtplugWebsocketConnector(new Uri("ws://localhost:12345"));
     }
 
