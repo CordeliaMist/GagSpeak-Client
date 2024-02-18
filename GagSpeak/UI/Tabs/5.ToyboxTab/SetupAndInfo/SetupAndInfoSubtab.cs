@@ -18,7 +18,7 @@ public class SetupAndInfoSubtab : IDisposable
     private readonly    PatternHandler      _patternCollection;
     private readonly    FontService _fontService; // for getting the font
     private             int? _tempSliderValue; // for storing the slider value
-    private             string? _tempPortValue; // for storing the port value
+    private             string? _tempUri; // for storing the uri value
     private             bool _simulatedVibeType; // quiet or loud or none?
 
     public SetupAndInfoSubtab(GagSpeakConfig config, CharacterHandler charHandler, SoundPlayer soundPlayer,
@@ -31,7 +31,7 @@ public class SetupAndInfoSubtab : IDisposable
         _fontService = fontService;
         // setup values
         _tempSliderValue = 0;
-        _tempPortValue = _config.intifacePortValue != null ? _config.intifacePortValue : "12345";
+        _tempUri = _config.intifaceUri != null ? _config.intifaceUri : "ws://localhost:12345";
         _simulatedVibeType = true;
 
         // start the sound player if it is not already started
@@ -49,24 +49,24 @@ public class SetupAndInfoSubtab : IDisposable
     }
 
     public void Draw() {
-        // allow the user to setup a custom port for the intiface server
+        // allow the user to setup a custom uri for the intiface server
         var yPos = ImGui.GetCursorPosY();
         var xPos = ImGui.GetCursorPosX();
         ImGui.AlignTextToFramePadding();
-        ImGui.Text($"Intiface Server Port Value: ");
+        ImGui.Text($"Intiface Server Uri: ");
         ImGui.SameLine();
         // store the input text boxes trigger phrase
-        var portValue  = _tempPortValue ?? _config.intifacePortValue;
+        var uri  = _tempUri ?? _config.intifaceUri;
         ImGui.SetNextItemWidth(100*ImGuiHelpers.GlobalScale);
-        if (ImGui.InputText($"##Intiface Server Port Value", ref portValue, 10, ImGuiInputTextFlags.EnterReturnsTrue))
-            _tempPortValue = portValue;
+        if (ImGui.InputText($"##Intiface Server Uri", ref uri, 10, ImGuiInputTextFlags.EnterReturnsTrue))
+            _tempUri = uri;
         // will only update our safeword once we click away or enter is pressed
         if (ImGui.IsItemDeactivatedAfterEdit()) {
-            _config.SetIntifacePortValue(portValue);
-            _tempPortValue = null;
+            _config.SetIntifaceUri(uri);
+            _tempUri = null;
         }
         if(ImGui.IsItemHovered()) {
-            ImGui.SetTooltip("Select the port you want to connect to intiface with.\nPort 12345 is the default used.");
+            ImGui.SetTooltip("Select the intiface server you want to connect.\nws://localhost:12345 is the default used.");
         }
         // draw out the option for if player wants to use the simulated toy
         ImGui.AlignTextToFramePadding();
