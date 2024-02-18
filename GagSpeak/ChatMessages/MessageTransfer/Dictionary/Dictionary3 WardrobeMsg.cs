@@ -21,7 +21,7 @@ public partial class MessageDictionary {
         }
 
         // The toggle allowLockingRestraints option message [ ID == 23 // _restraintSetLocking ]
-        if(textVal.Contains("looked down at their companion before walking ove to their wardrobe, \"Now you'll be a good slut and not resist any locks I try putting on your restraints, understand?~\""))
+        if(textVal.Contains("looked down at their companion before walking over to their wardrobe, \"Now you'll be a good slut and not resist any locks I try putting on your restraints, understand?~\""))
         {
             decodedMessageMediator.encodedMsgIndex = 23;
             decodedMessageMediator.msgType = DecodedMessageType.Wardrobe;
