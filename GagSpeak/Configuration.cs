@@ -52,7 +52,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          string                                      languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
     public          List<string>                                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
     // stuff for the toybox
-    public          string                                      intifacePortValue { get; set; } = "12345";              // The port value for the intiface server
+    public          string                                      intifacePortValue { get; set; } = "ws://localhost:12345";              // The port value for the intiface server
 
     [JsonIgnore]
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
@@ -101,6 +101,9 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         disableGlamChangeEvent = false;
         acceptingInfoRequests = true;
         processingInfoRequest = false;
+        if(intifacePortValue.Length < 10) {
+            intifacePortValue = "ws://localhost:12345";
+        }
             
         // finished!
         GagSpeak.Log.Debug("[Configuration File] Constructor Finished Initializing and setting default values, and previous data restored.");

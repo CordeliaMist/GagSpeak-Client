@@ -31,7 +31,7 @@ public class SetupAndInfoSubtab : IDisposable
         _fontService = fontService;
         // setup values
         _tempSliderValue = 0;
-        _tempPortValue = _config.intifacePortValue != null ? _config.intifacePortValue : "12345";
+        _tempPortValue = _config.intifacePortValue != null ? _config.intifacePortValue : "ws://localhost:12345";
         _simulatedVibeType = true;
 
         // start the sound player if it is not already started
@@ -53,12 +53,12 @@ public class SetupAndInfoSubtab : IDisposable
         var yPos = ImGui.GetCursorPosY();
         var xPos = ImGui.GetCursorPosX();
         ImGui.AlignTextToFramePadding();
-        ImGui.Text($"Intiface Server Port Value: ");
+        ImGui.Text($"Connector Address: ");
         ImGui.SameLine();
         // store the input text boxes trigger phrase
         var portValue  = _tempPortValue ?? _config.intifacePortValue;
-        ImGui.SetNextItemWidth(100*ImGuiHelpers.GlobalScale);
-        if (ImGui.InputText($"##Intiface Server Port Value", ref portValue, 10, ImGuiInputTextFlags.EnterReturnsTrue))
+        ImGui.SetNextItemWidth(150*ImGuiHelpers.GlobalScale);
+        if (ImGui.InputText($"##Connector Address", ref portValue, 128, ImGuiInputTextFlags.EnterReturnsTrue))
             _tempPortValue = portValue;
         // will only update our safeword once we click away or enter is pressed
         if (ImGui.IsItemDeactivatedAfterEdit()) {

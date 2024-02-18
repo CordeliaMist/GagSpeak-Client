@@ -156,7 +156,7 @@ public class PlugService : IDisposable
 
     public ButtplugWebsocketConnector CreateNewConnector() {
         return _config.intifacePortValue != null
-                    ? new ButtplugWebsocketConnector(new Uri($"ws://localhost:{_config.intifacePortValue}"))
+                    ? new ButtplugWebsocketConnector(new Uri($"{_config.intifacePortValue}"))
                     : new ButtplugWebsocketConnector(new Uri("ws://localhost:12345"));
     }
 
