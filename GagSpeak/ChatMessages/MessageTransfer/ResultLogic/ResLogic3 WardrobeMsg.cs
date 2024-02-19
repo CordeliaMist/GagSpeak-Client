@@ -115,11 +115,13 @@ public partial class ResultLogic {
                 if (setIdx == -1) {
                     isHandled = true;
                     LogError($"[MsgResultLogic]: Restraint Set Name {decodedMessageMediator.setToLockOrUnlock} was attempted to be applied to you, but the set does not exist!");
+                    return false;
                 }
                 // Check if any restraint sets are currently locked
                 if (_restraintSetManager.AreAnySetsLocked()) {
                     isHandled = true;
                     LogError($"[MsgResultLogic]: A restraint set is currently locked. Cannot enable a new set.");
+                    return false;
                 }
                 // if it is, then set that restraint sets enabled flag to true.
                 _restraintSetManager.ChangeRestraintSetState(setIdx, !_restraintSetManager._restraintSets[setIdx]._enabled);
@@ -134,6 +136,7 @@ public partial class ResultLogic {
         } else {
             isHandled = true;
             LogError($"[MsgResultLogic]: Player {playerName} is not in your whitelist.");
+            return false;
         }
         return false;
     }
@@ -156,11 +159,13 @@ public partial class ResultLogic {
                 if (setIdx == -1) {
                     isHandled = true;
                     LogError($"[MsgResultLogic]: Restraint Set Name {decodedMessageMediator.setToLockOrUnlock} was attempted to be applied to you, but the set does not exist!");
+                    return false;
                 }
                 // make sure that the formatted time is not longer than 12 hours
                 if (UIHelpers.GetEndTime(decodedMessageMediator.layerTimer[0]) - DateTimeOffset.Now > TimeSpan.FromHours(12) && _characterHandler.playerChar._grantExtendedLockTimes[whitelistIdx] == false) {
                     isHandled = true;
                     LogError($"[MsgResultLogic]: Timer {decodedMessageMediator.layerTimer[0]} is too long, it must be less than 12 hours unless your partner has allowd you to have extended lock times.");
+                    return false;
                 }
 
                 // lock the restraint set, if it is enabled
@@ -174,14 +179,17 @@ public partial class ResultLogic {
                 } else {
                     isHandled = true;
                     LogError($"[MsgResultLogic]: Restraint Set {decodedMessageMediator.setToLockOrUnlock} is not enabled, so can't lock it!");
+                    return false;
                 }
             } else {
                 isHandled = true;
                 LogError($"[MsgResultLogic]: Player {playerName} does not have a high enough dynamic tier to lock a restraint set.");
+                return false;
             }
         } else {
             isHandled = true;
             LogError($"[MsgResultLogic]: Player {playerName} is not in your whitelist.");
+            return false;
         }
         return false;
     }

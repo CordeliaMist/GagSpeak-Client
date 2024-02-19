@@ -155,8 +155,9 @@ public class PlugService : IDisposable
     public bool HasConnectedDevice() => client.Connected && client.Devices.Any() ? true : false;
 
     public ButtplugWebsocketConnector CreateNewConnector() {
+
         return _config.intifaceUri != null
-                    ? new ButtplugWebsocketConnector(new Uri(_config.intifaceUri))
+                    ? new ButtplugWebsocketConnector(new Uri($"{_config.intifaceUri}"))
                     : new ButtplugWebsocketConnector(new Uri("ws://localhost:12345"));
     }
 
