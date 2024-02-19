@@ -88,7 +88,7 @@ public partial class ResultLogic {
             // get the index
             int index = _characterHandler.GetWhitelistIndex(playerName);
             // update the active toy's vibe intensity levels
-            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive) {
+            if(_characterHandler.playerChar._isToyActive) {
                 // now check to see if our device is turned on (via the setting changeState), and if the user has the permission to change the state
                 if(_characterHandler.playerChar._allowChangingToyState[index] && _characterHandler.playerChar._allowIntensityControl[index]) {
                     // update the active connected vibe, if one is
@@ -100,7 +100,7 @@ public partial class ResultLogic {
                     // after, update the simulated vibe volume, if it is active
                     // update our simulated toy, if active
                     if(_characterHandler.playerChar._usingSimulatedVibe) {
-                        var maxval = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize == 0 ? 20 : _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize;
+                        var maxval = _plugService.stepCount == 0 ? 20 : _plugService.stepCount;
                         _soundPlayer.SetVolume((float)(decodedMessageMediator.intensityLevel/(double)maxval));
                     }
                     
