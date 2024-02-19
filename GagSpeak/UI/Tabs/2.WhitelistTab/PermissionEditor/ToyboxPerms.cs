@@ -78,7 +78,7 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableNextColumn();
             ImGuiUtil.Center("4");
             ImGui.TableNextColumn();
-            if(ImGuiUtil.DrawDisabledButton("Toggle##UpdatePlayerToyIntensityButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+            if(ImGuiUtil.DrawDisabledButton("Toggle##UpdateWhitelistPlayersToyIntensityButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier3))) {
                 if(_viewMode) {
                     // the whitelisted players lock
@@ -170,14 +170,14 @@ public partial class WhitelistPlayerPermissions {
             int intensityResult = _vibratorIntensity;
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             // default to a range of 10, but otherwise, display the toy's active step size
-            var maxSliderVal = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize==0 ? 10 : _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize;
+            var maxSliderVal = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize==0 ? 20 : _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize;
             if(ImGui.SliderInt("##ToyIntensity", ref intensityResult, 0, maxSliderVal)) {
                 _vibratorIntensity = intensityResult;
             }
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Update##UpdateToyIntensity", new Vector2(ImGui.GetContentRegionAvail().X, 0),
             string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
-                UpdatePlayerToyIntensity(_vibratorIntensity);
+                UpdateWhitelistPlayersToyIntensity(_vibratorIntensity);
                 _interactOrPermButtonEvent.Invoke(2);
             }
 
@@ -273,7 +273,7 @@ public partial class WhitelistPlayerPermissions {
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleToyOnOff(playerPayload, targetPlayer));
     }
 
-    public void UpdatePlayerToyIntensity(int newIntensityLevel) {
+    public void UpdateWhitelistPlayersToyIntensity(int newIntensityLevel) {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);

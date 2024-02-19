@@ -25,11 +25,12 @@ public partial class ResultLogic {
     private readonly    TimerService           _timerService;          // used to get the timer service
     private readonly    GagSpeakGlamourEvent   _gagSpeakGlamourEvent;  // used to get the glamour event
     private readonly    PlugService            _plugService;           // used to get the plug service
+    private readonly    SoundPlayer            _soundPlayer;           // used to get the sound player
 
     public ResultLogic(IChatGui clientChat, IClientState clientState, GagSpeakConfig config, CharacterHandler characterHandler,
     PatternHandler patternHandler, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager, 
     PlugService plugService, GagAndLockManager lockManager, GagService gagService, TimerService timerService,
-    GagSpeakGlamourEvent gagSpeakGlamourEvent) {
+    GagSpeakGlamourEvent gagSpeakGlamourEvent, SoundPlayer soundPlayer) {
         _clientChat = clientChat;
         _clientState = clientState;
         _config = config;
@@ -42,6 +43,7 @@ public partial class ResultLogic {
         _timerService = timerService;
         _plugService = plugService;
         _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
+        _soundPlayer = soundPlayer;
     }
     /// <summary> This function is used to handle the message result logic for decoded messages involing your player in the GagSpeak plugin. </summary>
     /// <returns>Whether or not the message has been handled.</returns>

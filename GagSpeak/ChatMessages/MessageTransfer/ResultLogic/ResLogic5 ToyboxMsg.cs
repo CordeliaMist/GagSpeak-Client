@@ -88,15 +88,23 @@ public partial class ResultLogic {
             // get the index
             int index = _characterHandler.GetWhitelistIndex(playerName);
             // update the active toy's vibe intensity levels
-            if(_plugService.HasConnectedDevice() && _plugService.IsClientConnected() && _plugService.anyDeviceConnected) {
+            if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive) {
                 // now check to see if our device is turned on (via the setting changeState), and if the user has the permission to change the state
                 if(_characterHandler.playerChar._allowChangingToyState[index] && _characterHandler.playerChar._allowIntensityControl[index]) {
-                    // they have the permission to do it, so do it
-                    _ = _plugService.ToyboxVibrateAsync((byte)((decodedMessageMediator.intensityLevel/(double)_plugService.stepCount)*100), 20);
-                    // set the new intensity level
-                    _characterHandler.SetWhitelistIntensityLevel(index, (byte)decodedMessageMediator.intensityLevel);
-                    GagSpeak.Log.Debug($"[Message Decoder]: {playerName} had its intensity updated "+
-                    $"to lv.{decodedMessageMediator.intensityLevel}");
+                    // update the active connected vibe, if one is
+                    if(_plugService.HasConnectedDevice() && _plugService.IsClientConnected() && _plugService.anyDeviceConnected) {
+                        _ = _plugService.ToyboxVibrateAsync((byte)((decodedMessageMediator.intensityLevel/(double)_plugService.stepCount)*100), 20);
+                    }
+                    // regardless, update the intensity level
+                    _characterHandler.UpdateIntensityLevel((byte)decodedMessageMediator.intensityLevel);
+                    // after, update the simulated vibe volume, if it is active
+                    // update our simulated toy, if active
+                    if(_characterHandler.playerChar._usingSimulatedVibe) {
+                        var maxval = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize == 0 ? 20 : _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize;
+                        _soundPlayer.SetVolume((float)(decodedMessageMediator.intensityLevel/(double)maxval));
+                    }
+                    
+                    GagSpeak.Log.Debug($"[Message Decoder]: {playerName} had its intensity updated to lv.{decodedMessageMediator.intensityLevel}");
                     return true;
                 } else {
                     // we do not have the permission to change the state
@@ -108,6 +116,7 @@ public partial class ResultLogic {
                 GagSpeak.Log.Error($"[Message Decoder]: Your intensity was attempted to be updated, but there is no actively connected toy");
                 return false;
             }
+            
         } else {
             // return false
             GagSpeak.Log.Error($"[Message Decoder]: {playerName} is not in the whitelist");
