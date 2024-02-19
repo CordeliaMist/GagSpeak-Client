@@ -47,7 +47,7 @@ public partial class MessageDictionary {
         if (textVal.Contains("from") && textVal.Contains("reaches behind your neck"))
         {
             // The Unlock Gag Message [ ID == 6 // unlockPassword ]
-            if(textVal.Contains("and sets the password to") && textVal.Contains("on your") && textVal.Contains("layer gagstrap, unlocking it.*")) {
+            if(textVal.Contains("and sets the password to") && textVal.Contains("on your") && textVal.Contains("layer gagstrap, unlocking it*")) {
                 GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /gag unlock password command");
                 decodedMessageMediator.encodedMsgIndex = 6;
                 decodedMessageMediator.msgType = DecodedMessageType.GagSpeak;

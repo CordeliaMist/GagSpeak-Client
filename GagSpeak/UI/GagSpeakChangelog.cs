@@ -54,7 +54,7 @@ public class GagSpeakChangelog
 
     // all versions are added here, the order doesnt madder, but it should be in order of newest to oldest.
     private static void Add2_0_0_0(Changelog log)
-        => log.NextVersion("Version 2.1.5.0 Release")
+        => log.NextVersion("Version 2.1.6.0 Release")
             .RegisterHighlight("I'm aware I have no awareness of version updates, making a full 2.0 update right away, but here we are.")
             .RegisterImportant("New Component now in GagSpeak: THE PUPPETEER TAB")
             .RegisterEntry("    》 Set unique trigger phrases to each person on your whitelist, so you make sure they are truely the only one who can make you do things!")
@@ -80,7 +80,7 @@ public class GagSpeakChangelog
 
 
     private static void Add1_0_2_0(Changelog log)
-        => log.NextVersion("Version 2.1.5.0 Release")
+        => log.NextVersion("Version 2.1.6.0 Release")
             .RegisterImportant("A New Wardrobe tab has now been added!")
             .RegisterEntry("Wardrobe tab introduces the ability to automatically equip preassigned items whenever a gag is worn.")
             .RegisterEntry("Wardrobe tab now allows you to define spesific restraint sets")
@@ -102,7 +102,7 @@ public class GagSpeakChangelog
             .RegisterHighlight("The Live Chat Garbler Lock warning message has now been changed to notify you whenever you switch zones, not just when you login!")
             .RegisterEntry("Any Enabled wardrobe features will automatically reapply themselves whenever you switch any jobs, items, or stains to gear!");
     private static void Add1_0_1_3(Changelog log)
-        => log.NextVersion("Version 2.1.5.0 Release")
+        => log.NextVersion("Version 2.1.6.0 Release")
             .RegisterImportant("Plugin has been officially released!")
             .RegisterHighlight("Fixed a majority of feedback bugs that made it past all the QA, fixing tons of issues!");
     
