@@ -199,9 +199,6 @@ public sealed class GlamourerService
                     var gameObj = _clientUserInfo.CreateGameObject(character);
                     // if the game object is the character, then get the customization for it.
                     if (gameObj is Character c) {
-                    //logger.LogDebug("[{appid}] Calling On IPC: GlamourerUnlockName", applicationId);
-                    //_glamourerUnlock.InvokeFunc(name, LockCode);
-                    //logger.LogDebug("[{appid}] Calling On IPC: GlamourerRevert", applicationId);
                         _RevertCharacter.InvokeAction(c);
                     }
                 }

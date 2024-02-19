@@ -191,7 +191,6 @@ public partial class ResultLogic {
             LogError($"[MsgResultLogic]: Player {playerName} is not in your whitelist.");
             return false;
         }
-        return false;
     }
 
     // decoder message for unlocking the restraint set from the player [ ID == 26 ]
@@ -208,7 +207,7 @@ public partial class ResultLogic {
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for unlocking restraint set");
             } else {
                 isHandled = true;
-                LogError($"[MsgResultLogic]: Restraint Set {decodedMessageMediator.setToLockOrUnlock} could not be unlocked. You were not the assigner!");
+                LogError($"[MsgResultLogic]: Restraint Set {decodedMessageMediator.setToLockOrUnlock} could not be unlocked. {playerName} tried, but unlockrestraintset logic failed!");
             }
         } else {
             isHandled = true;

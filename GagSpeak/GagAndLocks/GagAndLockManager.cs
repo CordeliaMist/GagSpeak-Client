@@ -334,7 +334,7 @@ public class GagAndLockManager : IDisposable
         }
         // if the restraint set is not locked, we cannot unlock it
         if(_restraintSetManager._restraintSets[setIndex]._locked == false) {
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: {restraintSetName} is not locked, so we cannot unlock it.");
+            GagSpeak.Log.Debug($"[Padlock Manager Service]: index {setIndex} | {_restraintSetManager._restraintSets[setIndex]._name} is not locked, so we cannot unlock it.");
             return false;
         }
         if(_restraintSetManager._restraintSets[setIndex]._wasLockedBy != assignerName && _restraintSetManager._restraintSets[setIndex]._wasLockedBy != "self") {

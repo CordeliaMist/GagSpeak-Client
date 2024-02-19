@@ -24,6 +24,7 @@ public class PuppeteerMediator
             puppeteerMessageToSend = string.Empty;
             return false;
         }
+        GagSpeak.Log.Debug($"[PuppeteerMediator]: Trigger Word: {triggerWord}");
         // now that we have our trigger word, see if the trigger word exists within our message
         if (messageRecieved.Contains(triggerWord)) {
             string remainingMessage = messageRecieved.Substring(messageRecieved.IndexOf(triggerWord) + triggerWord.Length).Trim();

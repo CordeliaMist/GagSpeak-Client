@@ -191,7 +191,7 @@ public partial class ResultLogic {
             // get the dynamictier and index
             int index = _characterHandler.GetWhitelistIndex(playerName);
             // if the sender is someone in your whitelist who has the allow changing toy state permission enabled, allow them to toggle your toys state
-            if(_characterHandler.whitelistChars[index]._allowChangingToyState) {
+            if(_characterHandler.playerChar._allowChangingToyState[index]) {
                 // toggle the toys state
                 _characterHandler.ToggleToyState();
                 return true;

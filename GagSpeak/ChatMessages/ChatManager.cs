@@ -227,8 +227,11 @@ public class ChatManager
 
 
         // at this point, we have determined that it is not an encoded message, and we still have the sender info.
-        // now we should check for if we have enabled global triggerphrase, and abide by all of its options.
-        if(_puppeteerMediator.ContainsGlobalTriggerWord(chatmessage.TextValue, out string globalPuppeteerMessageToSend) && senderName != pName) {
+        // now we should check for if we have enabled global triggerphrase, and abide by all of its options.        
+        if(_puppeteerMediator.ContainsGlobalTriggerWord(chatmessage.TextValue, out string globalPuppeteerMessageToSend)
+        && senderName != _clientState.LocalPlayer?.Name.TextValue
+        && type != XivChatType.TellOutgoing)
+        {
             // contained the trigger word, so process it.
             if(globalPuppeteerMessageToSend != string.Empty) {
                 SeString messageToSend = globalPuppeteerMessageToSend;
@@ -240,11 +243,14 @@ public class ChatManager
                     if(_config.ChannelsPuppeteer.Contains(incomingChannel.Value)
                     && _puppeteerMediator.MeetsGlobalSettingCriteria(messageToSend))
                     {
+                        GagSpeak.Log.Debug($"[ChatManager] Global Puppeteer message to send: {messageToSend}");
                         // if we are in a valid chatchannel, then send it
                         messageQueue.Enqueue("/" + messageToSend);
                     } else {
                         GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
                     }
+                } else {
+                    GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, aborting");
                 }
             } else {
                 GagSpeak.Log.Debug($"[ChatManager] Puppeteer message to send was empty, aborting");
@@ -278,8 +284,7 @@ public class ChatManager
                             }
                         } else {
                             GagSpeak.Log.Debug($"[ChatManager] Not an Enabled Chat Channel, aborting");
-                        }
-                            
+                        } 
                     }
                 } else {
                     GagSpeak.Log.Debug($"[ChatManager] Puppeteer message to send was empty, aborting");
