@@ -1,6 +1,8 @@
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Emote = Lumina.Excel.GeneratedSheets.Emote;
 using Expression = Lumina.Excel.GeneratedSheets.EmoteCategory;
 
@@ -26,8 +28,9 @@ public class PuppeteerMediator
         }
         GagSpeak.Log.Debug($"[PuppeteerMediator]: Trigger Word: {triggerWord}");
         // now that we have our trigger word, see if the trigger word exists within our message
-        if (messageRecieved.Contains(triggerWord)) {
-            string remainingMessage = messageRecieved.Substring(messageRecieved.IndexOf(triggerWord) + triggerWord.Length).Trim();
+        var match = MatchTriggerWord(messageRecieved, triggerWord);
+        if (match.Success) {
+            string remainingMessage = messageRecieved.Substring(match.Index + match.Length).Trim();
             remainingMessage = GetGlobalSubstringWithinParentheses(remainingMessage);
             if (remainingMessage != null) {
                 remainingMessage = ConvertSquareToAngleBrackets(remainingMessage);
@@ -56,17 +59,22 @@ public class PuppeteerMediator
         string triggerWords = _characterHandler.playerChar._triggerPhraseForPuppeteer[indexOfWhitelistedChar];
         string[] triggerWordArray = triggerWords.Split('|');
 
-        foreach (string triggerWord in triggerWordArray) {
-            if(string.IsNullOrEmpty(triggerWord) || string.IsNullOrWhiteSpace(triggerWord) || triggerWord == "" || triggerWord == " ") {
+        foreach (string triggerWord in triggerWordArray)
+        {
+            if (string.IsNullOrEmpty(triggerWord) || string.IsNullOrWhiteSpace(triggerWord) || triggerWord == "" || triggerWord == " ")
+            {
                 continue;
             }
             GagSpeak.Log.Debug($"[PuppeteerMediator]: Trigger Word: {triggerWord}");
 
             // now that we have our trigger word, see if the trigger word exists within our message
-            if (messageRecieved.Contains(triggerWord)) {
-                string remainingMessage = messageRecieved.Substring(messageRecieved.IndexOf(triggerWord) + triggerWord.Length).Trim();
+            var match = MatchTriggerWord(messageRecieved, triggerWord);
+            if (match.Success)
+            {
+                string remainingMessage = messageRecieved.Substring(match.Index + match.Length).Trim();
                 remainingMessage = GetSubstringWithinParentheses(remainingMessage, indexOfWhitelistedChar);
-                if (remainingMessage != null) {
+                if (remainingMessage != null)
+                {
                     remainingMessage = ConvertSquareToAngleBrackets(remainingMessage);
                     puppeteerMessageToSend = remainingMessage;
                     GagSpeak.Log.Debug($"[PuppeteerMediator]: New Message: {puppeteerMessageToSend}");
@@ -199,4 +207,10 @@ public class PuppeteerMediator
 
     /// <summary> Converts square brackets to angle brackets </summary>
     private string ConvertSquareToAngleBrackets(string str) => str.Replace("[", "<").Replace("]", ">");
+
+    private Match MatchTriggerWord(string message, string triggerWord)
+    {
+        var triggerRegex = $@"(?<=^|\s){triggerWord}(?=\s)";
+        return Regex.Match(message, triggerRegex);
+    }
 }
