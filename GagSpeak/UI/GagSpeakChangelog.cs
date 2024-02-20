@@ -54,7 +54,7 @@ public class GagSpeakChangelog
     }
 
     private static void Add2_2_0_0(Changelog log)
-        => log.NextVersion("Version 2.2.0.0 Release")
+        => log.NextVersion("Version 2.2.1.0 Release")
             .RegisterHighlight("Paving the way for the new Hardcore Tab, which will have its logic developed by others.")
             .RegisterEntry("Restructured the CharacterData, added a config migrator for the pre 2.1.6.0 users.")
             .RegisterEntry("Lots of backend work done to make things more organized and less spaghetti.")
@@ -89,7 +89,7 @@ public class GagSpeakChangelog
 
 
     private static void Add1_0_2_0(Changelog log)
-        => log.NextVersion("Version 2.1.6.0 Release")
+        => log.NextVersion("Version 1.0.2.0 Release")
             .RegisterImportant("A New Wardrobe tab has now been added!")
             .RegisterEntry("Wardrobe tab introduces the ability to automatically equip preassigned items whenever a gag is worn.")
             .RegisterEntry("Wardrobe tab now allows you to define spesific restraint sets")
@@ -111,7 +111,7 @@ public class GagSpeakChangelog
             .RegisterHighlight("The Live Chat Garbler Lock warning message has now been changed to notify you whenever you switch zones, not just when you login!")
             .RegisterEntry("Any Enabled wardrobe features will automatically reapply themselves whenever you switch any jobs, items, or stains to gear!");
     private static void Add1_0_1_3(Changelog log)
-        => log.NextVersion("Version 2.1.6.0 Release")
+        => log.NextVersion("Version 1.0.3.0 Release")
             .RegisterImportant("Plugin has been officially released!")
             .RegisterHighlight("Fixed a majority of feedback bugs that made it past all the QA, fixing tons of issues!");
     

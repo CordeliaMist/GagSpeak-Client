@@ -152,7 +152,8 @@ public partial class ResultLogic {
             DynamicTier dynamicStrength = _characterHandler.GetDynamicTierNonClient(playerName);
             int whitelistIdx = _characterHandler.GetWhitelistIndex(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
-            if(dynamicStrength != DynamicTier.Tier0 && _characterHandler.playerChar._allowRestraintSetAutoEquip && _characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._restraintSetLocking) {
+            if(dynamicStrength != DynamicTier.Tier0 && _characterHandler.playerChar._allowRestraintSetAutoEquip 
+            && _characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._restraintSetLocking) {
                 // see if our restraint set is anywhere in the list
                 int setIdx = _restraintSetManager.GetRestraintSetIndex(decodedMessageMediator.setToLockOrUnlock);
                 // exit if the index is -1
@@ -162,9 +163,11 @@ public partial class ResultLogic {
                     return false;
                 }
                 // make sure that the formatted time is not longer than 12 hours
-                if (UIHelpers.GetEndTime(decodedMessageMediator.layerTimer[0]) - DateTimeOffset.Now > TimeSpan.FromHours(12) && _characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._grantExtendedLockTimes == false) {
+                if (UIHelpers.GetEndTime(decodedMessageMediator.layerTimer[0]) - DateTimeOffset.Now > TimeSpan.FromHours(12)
+                && _characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._grantExtendedLockTimes == false) {
                     isHandled = true;
-                    LogError($"[MsgResultLogic]: Timer {decodedMessageMediator.layerTimer[0]} is too long, it must be less than 12 hours unless your partner has allowd you to have extended lock times.");
+                    LogError($"[MsgResultLogic]: Timer {decodedMessageMediator.layerTimer[0]} is too long, it must be less than 12 hours unless your partner "+
+                    "has allowd you to have extended lock times.");
                     return false;
                 }
 
@@ -173,7 +176,8 @@ public partial class ResultLogic {
                     // lock the restraint set
                     _lockManager.LockRestraintSet(decodedMessageMediator.setToLockOrUnlock, playerName, decodedMessageMediator.layerTimer[0], playerName);
                     // notify the user that the request as been sent. 
-                    _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Restraint Set {decodedMessageMediator.setToLockOrUnlock} has been locked for {decodedMessageMediator.layerTimer[0]}.").AddItalicsOff().BuiltString);
+                    _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Restraint Set "+
+                    $"{decodedMessageMediator.setToLockOrUnlock} has been locked for {decodedMessageMediator.layerTimer[0]}.").AddItalicsOff().BuiltString);
                     GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for locking restraint set");
                     return true;
                 } else {

@@ -190,7 +190,7 @@ public partial class WhitelistPlayerPermissions {
         // get dynamic
         RoleLean requestedDynamic = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._pendingRelationRequestFromPlayer;
         // execute action based on dynamic type
-        if(requestedDynamic == RoleLean.Owner || requestedDynamic == RoleLean.Master || requestedDynamic == RoleLean.Mistress) {
+        if(requestedDynamic == RoleLean.Owner || requestedDynamic == RoleLean.Master || requestedDynamic == RoleLean.Mistress || requestedDynamic == RoleLean.Dominant) {
             _chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have now declined "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s request to become their {requestedDynamic}.").AddItalicsOff().BuiltString);
@@ -230,7 +230,7 @@ public partial class WhitelistPlayerPermissions {
         if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
         string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
         // print to chat that you sent the request
-        if(dynamicRole == RoleLean.Owner || dynamicRole == RoleLean.Master || dynamicRole == RoleLean.Mistress) {
+        if(dynamicRole == RoleLean.Owner || dynamicRole == RoleLean.Master || dynamicRole == RoleLean.Mistress || dynamicRole == RoleLean.Dominant) {
             _chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending request to "+
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}, to see if they would like you to become their {dynamicRole}.").AddItalicsOff().BuiltString);
