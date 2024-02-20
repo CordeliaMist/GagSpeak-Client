@@ -7,9 +7,7 @@ using Newtonsoft.Json.Linq;
 using System.IO;
 using Newtonsoft.Json;
 using Penumbra.GameData.Structs;
-using GagSpeak.Gagsandlocks;
 using GagSpeak.Events;
-using Dalamud.Plugin.Services;
 
 namespace GagSpeak.Wardrobe;
 
@@ -23,12 +21,13 @@ public class RestraintSetManager : ISavable
     [JsonIgnore]
     private readonly GagSpeakGlamourEvent _glamourEvent;
     [JsonIgnore]
-    private readonly IClientState _clientState;
+    private readonly RestraintSetListChanged _restraintSetListChanged;
+    
     public RestraintSetManager(SaveService saveService,
-    GagSpeakGlamourEvent gagSpeakGlamourEvent, IClientState clientState) {
+    GagSpeakGlamourEvent gagSpeakGlamourEvent, RestraintSetListChanged restraintSetListChanged) {
         _saveService = saveService;
-        _clientState = clientState;
         _glamourEvent = gagSpeakGlamourEvent;
+        _restraintSetListChanged = restraintSetListChanged;
         
         // load the information from our storage file
         Load();
@@ -43,6 +42,9 @@ public class RestraintSetManager : ISavable
                 set._locked = false;
             }
         }
+
+        // update our variables dependant on the restraint set lists:
+        _restraintSetListChanged.Invoke(ListUpdateType.SizeIntegrityCheck, _restraintSets.Count);
     }
     
     #region Manager Methods
@@ -73,6 +75,8 @@ public class RestraintSetManager : ISavable
             copyNumber++;
         }
         _restraintSets.Add(newSet);
+        // invoke the event to update character info
+        _restraintSetListChanged.Invoke(ListUpdateType.AddedRestraintSet, _restraintSets.Count - 1);
         _saveService.QueueSave(this);
     }
 
@@ -81,6 +85,8 @@ public class RestraintSetManager : ISavable
         // delete a restraint set spesified by index if it exists
         if (index >= 0 && index < _restraintSets.Count) {
             _restraintSets.RemoveAt(index);
+            // invoke the event to update character info
+            _restraintSetListChanged.Invoke(ListUpdateType.RemovedRestraintSet, index);
             _saveService.QueueSave(this);
         }
     }
@@ -95,6 +101,8 @@ public class RestraintSetManager : ISavable
         }
         // append the new name       
         _restraintSets[restraintSetIdx].ChangeSetName(newName);
+        // invoke the event to update character info
+        _restraintSetListChanged.Invoke(ListUpdateType.NameChanged, restraintSetIdx);
         _saveService.QueueSave(this);
         // (will remove old set but transfer all info to newly serialized one)
     }
@@ -114,7 +122,6 @@ public class RestraintSetManager : ISavable
         }
         return false;
     }
-
 
     /// <summary> Sets the IsEnabled for a restraint set spesified by index if it exists. </summary>
     public void ChangeRestraintSetState(int restraintSetIdx, bool isEnabled) {

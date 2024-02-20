@@ -35,7 +35,7 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly    DebugWindow             _debugWindow;
     private readonly    IChatGui                _chat;
     private readonly    GagSpeakConfig          _config;
-    private readonly    ChatManager             _chatManager;
+    private readonly    OnChatMsgManager             _chatManager;
     private readonly    IClientState            _clientState;
     private             RealChatInteraction     _realChatInteraction;
     private readonly    TimerService            _timerService;
@@ -51,7 +51,7 @@ public class CommandManager : IDisposable // Our main command list manager
     // Constructor for the command manager
     public CommandManager(ICommandManager command, MainWindow mainwindow, DebugWindow debugWindow,
     GagSpeakGlamourEvent glamourEvent, RestraintSetManager restraintSetManager,
-    IChatGui chat, GagSpeakConfig config, ChatManager chatManager, IClientState clientState,
+    IChatGui chat, GagSpeakConfig config, OnChatMsgManager chatManager, IClientState clientState,
     GlamourerService GlamourerService, GagService gagService, CharacterHandler characterHandler,
     GagGarbleManager GagGarbleManager, RealChatInteraction realchatinteraction, TimerService timerService,
     SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder, GagStorageManager gagStorageManager)

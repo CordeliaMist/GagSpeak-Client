@@ -12,7 +12,7 @@ namespace GagSpeak.Utility;
 public class ListCopier
 {
     private List<bool> _checkboxStates;
-    private List<string> _items;
+    public List<string> _items;
 
     public ListCopier(List<string> items)
     {
@@ -21,10 +21,8 @@ public class ListCopier
     }
 
     public void UpdateListInfo(List<string> items) {
-        if(items.Count != _items.Count) {
-            _items = items;
-            _checkboxStates = new List<bool>(new bool[_items.Count]);
-        }
+        _items = items;
+        _checkboxStates = new List<bool>(new bool[_items.Count]);
     }
 
     public void DrawCopyButton(string popupId, string sucessText, string failText) {

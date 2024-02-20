@@ -187,6 +187,13 @@ public class GeneralTab : ITab, IDisposable
             ImGui.SetTooltip( "Only if you want to though!");
             Process.Start(new ProcessStartInfo {FileName = "https://www.youtube.com/playlist?list=PLGzKipCtkx7EAyk1k5gRFG8ZyKB0FMTR3", UseShellExecute = true});
         }
+        ImGui.SetCursorPos(new Vector2(xPos, yPos+60));
+        ImGui.Text(" ");
+        ImGui.SameLine();
+        if (ImGui.Button("Toss a Thanks!♥", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
+            ImGui.SetTooltip( "Only if you want to though!");
+            Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
+        }
         // pop off the colors we pushed
         ImGui.PopStyleColor(3);
     }

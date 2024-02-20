@@ -25,12 +25,12 @@ public partial class WhitelistPlayerPermissions {
     private readonly    IChatGui                    _chatGui;
     private readonly    IDataManager                _dataManager;
     private readonly    MessageEncoder              _messageEncoder;
-    private readonly    ChatManager                 _chatManager;
+    private readonly    OnChatMsgManager                 _chatManager;
     private readonly    UserProfileWindow           _userProfileWindow;
     public              TabType                     SelectedSubTab;
     public WhitelistPlayerPermissions(InteractOrPermButtonEvent interactOrPermButtonEvent, GagSpeakConfig config,
     CharacterHandler characterHandler, IClientState clientState, IChatGui chatGui, IDataManager dataManager,
-    MessageEncoder messageEncoder, ChatManager chatManager, UserProfileWindow userProfileWindow, 
+    MessageEncoder messageEncoder, OnChatMsgManager chatManager, UserProfileWindow userProfileWindow, 
     FontService fontService, GagService gagService, GagListingsDrawer gagListingsDrawer) {
         _interactOrPermButtonEvent = interactOrPermButtonEvent;
         _config = config;

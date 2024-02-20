@@ -18,13 +18,13 @@ public class InfoRequestService : IDisposable
 {
     private readonly GagSpeakConfig     _config;            // for getting the config
     private readonly CharacterHandler   _characterHandler;  // for getting the whitelis
-    private readonly ChatManager        _chatManager;       // for sending messages to the chat
+    private readonly OnChatMsgManager        _chatManager;       // for sending messages to the chat
     private readonly MessageEncoder     _encoder;       // for sending messages to the chat
     private readonly IClientState       _clientState;       // for getting the player name
     private readonly IChatGui           _chatGui;           // for sending messages to the chat
     private readonly InfoRequestEvent   _infoRequestEvent;  // for getting the event
 
-    public InfoRequestService(GagSpeakConfig config, CharacterHandler characterHandler, ChatManager chatManager,
+    public InfoRequestService(GagSpeakConfig config, CharacterHandler characterHandler, OnChatMsgManager chatManager,
     MessageEncoder encoder, IClientState clientState, IChatGui chatGui, InfoRequestEvent infoRequestEvent) {
         _config = config;
         _characterHandler = characterHandler;

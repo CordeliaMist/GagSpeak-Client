@@ -55,7 +55,7 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.DrawFrameColumn($"Extended Lock Times:");
             ImGui.TableNextColumn();
             var extendedLockTimesIcon = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._grantExtendedLockTimes
-                                                  : _characterHandler.playerChar._grantExtendedLockTimes[_characterHandler.activeListIdx];
+                                                  : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._grantExtendedLockTimes;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((extendedLockTimesIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }

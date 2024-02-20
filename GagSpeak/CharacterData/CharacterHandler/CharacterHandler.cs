@@ -5,31 +5,14 @@ using GagSpeak.Services;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using Newtonsoft.Json;
-using GagSpeak.ToyboxandPuppeteer;
-using GagSpeak.Gagsandlocks;
 using GagSpeak.Utility;
 using GagSpeak.Events;
 using GagSpeak.Wardrobe;
 
-/*
-/////////////////////////////////////////////////////////////////////////////////////////////////
-///
-///                    Warning for anyone viewing this class:
-///                    
-///       Yes, I am aware this is long and ugly. However, I need to update saveservice
-///       whenever a value is changed, and I didnt want to just implement a lazy quicksave
-///       function and rather practice protected setting.
-///       
-///       Because of this, i have split it up into regions. If I could have done it by partial
-///       class split i would have, but at this time i'm too deprived of energy to do that.
-/////////////////////////////////////////////////////////////////////////////////////////////////
-*/
-
 namespace GagSpeak.CharacterData;
-
 public partial class CharacterHandler : ISavable
 {
-    public PlayerCharacterInfo playerChar { get; protected set; }
+    public PlayerGlobalPerms playerChar { get; protected set; }
     public List<WhitelistedCharacterInfo> whitelistChars { get; protected set; }
     // store the active whitelist index
     public int activeListIdx = 0;
@@ -40,19 +23,87 @@ public partial class CharacterHandler : ISavable
     private readonly GagSpeakGlamourEvent _gagSpeakGlamourEvent;
     [JsonIgnore]
     private readonly GagStorageManager _gagStorageManager;
+    [JsonIgnore]
+    private readonly RestraintSetManager _restraintSetManager;
+    [JsonIgnore]
+    private readonly RestraintSetListChanged _restraintSetListChanged;
 
-    public CharacterHandler(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent, GagStorageManager gagStorageManager) {
+    public CharacterHandler(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent,
+    GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager, 
+    RestraintSetListChanged restraintSetListChanged) {
         _saveService = saveService;
         _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
         _gagStorageManager = gagStorageManager;
+        _restraintSetManager = restraintSetManager;
+        _restraintSetListChanged = restraintSetListChanged;
         // initialize blank data
-        playerChar = new PlayerCharacterInfo();
+        playerChar = new PlayerGlobalPerms();
         whitelistChars = new List<WhitelistedCharacterInfo>();
         activeListIdx = 0;
         // load the information from our storage file stuff
         Load();
         // ensure all lists have the correct sizes
+        playerChar.IntegrityCheck(_restraintSetManager._restraintSets.Count);
+        _saveService.QueueSave(this);
+        // call the handler for it
+        _restraintSetListChanged.SetListModified += OnRestraintSetListModified;
     }
+
+
+    public void OnRestraintSetListModified(object sender, RestraintSetListChangedArgs e) {
+        // update the player chars things to match the restraint set list change
+        switch(e.UpdateType) {
+            case ListUpdateType.AddedRestraintSet : {
+                foreach (var perm in playerChar._uniquePlayerPerms) {
+                    perm._legsRestraintedProperty.Add(false);
+                    perm._armsRestraintedProperty.Add(false);
+                    perm._gaggedProperty.Add(false);
+                    perm._blindfoldedProperty.Add(false);
+                    perm._immobileProperty.Add(false);
+                    perm._weightyProperty.Add(false);
+                    perm._lightStimulationProperty.Add(false);
+                    perm._mildStimulationProperty.Add(false);
+                    perm._heavyStimulationProperty.Add(false);
+                }
+                break;
+            }
+            case ListUpdateType.ReplacedRestraintSet: {
+                foreach (var perm in playerChar._uniquePlayerPerms) {
+                    perm._legsRestraintedProperty[e.SetIndex] = false;
+                    perm._armsRestraintedProperty[e.SetIndex] = false;
+                    perm._gaggedProperty[e.SetIndex] = false;
+                    perm._blindfoldedProperty[e.SetIndex] = false;
+                    perm._immobileProperty[e.SetIndex] = false;
+                    perm._weightyProperty[e.SetIndex] = false;
+                    perm._lightStimulationProperty[e.SetIndex] = false;
+                    perm._mildStimulationProperty[e.SetIndex] = false;
+                    perm._heavyStimulationProperty[e.SetIndex] = false;
+                }
+                break;
+            }
+            case ListUpdateType.RemovedRestraintSet: {
+                foreach (var perm in playerChar._uniquePlayerPerms) {
+                    perm._legsRestraintedProperty.RemoveAt(e.SetIndex);
+                    perm._armsRestraintedProperty.RemoveAt(e.SetIndex);
+                    perm._gaggedProperty.RemoveAt(e.SetIndex);
+                    perm._blindfoldedProperty.RemoveAt(e.SetIndex);
+                    perm._immobileProperty.RemoveAt(e.SetIndex);
+                    perm._weightyProperty.RemoveAt(e.SetIndex);
+                    perm._lightStimulationProperty.RemoveAt(e.SetIndex);
+                    perm._mildStimulationProperty.RemoveAt(e.SetIndex);
+                    perm._heavyStimulationProperty.RemoveAt(e.SetIndex);
+                }
+                break;
+            }
+            case ListUpdateType.SizeIntegrityCheck: {
+                // call the integrity check function from uniquePlayerPerms
+                playerChar.IntegrityCheck(e.SetIndex);
+                break;
+            }
+        }
+        Save();
+    }
+
 #region Whitelist Handler Functions
     public bool IsPlayerInWhitelist(string playerName) {
         return whitelistChars.Any(x => x._name == playerName);
@@ -69,122 +120,25 @@ public partial class CharacterHandler : ISavable
     public void AddNewWhitelistItem(string playerName, string playerWorld) {
         whitelistChars.Add(new WhitelistedCharacterInfo(playerName, playerWorld));
         // update the player chars things to match the whitelist edit
-        playerChar._triggerAliases.Add(new AliasList());
-        playerChar._grantExtendedLockTimes.Add(false);
-        playerChar._enableRestraintSets.Add(false);
-        playerChar._restraintSetLocking.Add(false);
-        playerChar._triggerPhraseForPuppeteer.Add("");
-        playerChar._StartCharForPuppeteerTrigger.Add("(");
-        playerChar._EndCharForPuppeteerTrigger.Add(")");
-        playerChar._allowSitRequests.Add(false);
-        playerChar._allowMotionRequests.Add(false);
-        playerChar._allowAllCommands.Add(false);
-        playerChar._allowChangingToyState.Add(false);
-        playerChar._allowIntensityControl.Add(false);
-        playerChar._allowUsingPatterns.Add(false);
-        // do a quicksave (happens on the next framework tick, very fast)
-        EnsureListSizes();
+        playerChar.AddNewWhitelistItemPerms();
+        // save
         _saveService.QueueSave(this);
     }
 
     public void ReplaceWhitelistItem(int index, string playerName, string playerWorld) {
         whitelistChars[index] = new WhitelistedCharacterInfo(playerName, playerWorld);
         // update the player chars things to match the whitelist edit
-        playerChar._triggerAliases[index] = new AliasList();
-        playerChar._grantExtendedLockTimes[index] = false;
-        playerChar._enableRestraintSets[index] = false;
-        playerChar._restraintSetLocking[index] = false;
-        playerChar._triggerPhraseForPuppeteer[index] = "";
-        playerChar._StartCharForPuppeteerTrigger[index] = "(";
-        playerChar._EndCharForPuppeteerTrigger[index] = ")";
-        playerChar._allowSitRequests[index] = false;
-        playerChar._allowMotionRequests[index] = false;
-        playerChar._allowAllCommands[index] = false;
-        playerChar._allowChangingToyState[index] = false;
-        playerChar._allowIntensityControl[index] = false;
-        playerChar._allowUsingPatterns[index] = false;
-        // do a quicksave (happens on the next framework tick, very fast)
-        EnsureListSizes();
+        playerChar.ReplaceWhitelistItemPerms(index);
+        // save
         _saveService.QueueSave(this);
     }
 
     public void RemoveWhitelistItem(int index) {
         whitelistChars.RemoveAt(index);
         // update the player chars things to match the whitelist edit
-        playerChar._triggerAliases.RemoveAt(index);
-        playerChar._grantExtendedLockTimes.RemoveAt(index);
-        playerChar._enableRestraintSets.RemoveAt(index);
-        playerChar._restraintSetLocking.RemoveAt(index);
-        playerChar._triggerPhraseForPuppeteer.RemoveAt(index);
-        playerChar._StartCharForPuppeteerTrigger.RemoveAt(index);
-        playerChar._EndCharForPuppeteerTrigger.RemoveAt(index);
-        playerChar._allowSitRequests.RemoveAt(index);
-        playerChar._allowMotionRequests.RemoveAt(index);
-        playerChar._allowAllCommands.RemoveAt(index);
-        playerChar._allowChangingToyState.RemoveAt(index);
-        playerChar._allowIntensityControl.RemoveAt(index);
-        playerChar._allowUsingPatterns.RemoveAt(index);
-        // do a quicksave (happens on the next framework tick, very fast)
-        EnsureListSizes();
+        playerChar.RemoveWhitelistItemPerms(index);
+        // save
         _saveService.QueueSave(this);
-    }
-
-    public void EnsureListSizes() {
-        int targetSize = whitelistChars.Count;
-
-        // Helper function to resize a list to the target size
-        Action<List<AliasList>, AliasList> resizeAliasList = (list, defaultValue) => {
-            int currentSize = list.Count;
-
-            if (currentSize < targetSize) {
-                // If the list is too small, add default elements
-                for (int i = currentSize; i < targetSize; i++) {
-                    list.Add(defaultValue);
-                }
-            } else if (currentSize > targetSize) {
-                // If the list is too large, remove elements from the end
-                list.RemoveRange(targetSize, currentSize - targetSize);
-            }
-        };
-
-        Action<List<bool>, bool> resizeBoolList = (list, defaultValue) => {
-            int currentSize = list.Count;
-
-            if (currentSize < targetSize) {
-                for (int i = currentSize; i < targetSize; i++) {
-                    list.Add(defaultValue);
-                }
-            } else if (currentSize > targetSize) {
-                list.RemoveRange(targetSize, currentSize - targetSize);
-            }
-        };
-
-        Action<List<string>, string> resizeStringList = (list, defaultValue) => {
-            int currentSize = list.Count;
-
-            if (currentSize < targetSize) {
-                for (int i = currentSize; i < targetSize; i++) {
-                    list.Add(defaultValue);
-                }
-            } else if (currentSize > targetSize) {
-                list.RemoveRange(targetSize, currentSize - targetSize);
-            }
-        };
-
-        // Resize all the lists in playerChar
-        resizeAliasList(playerChar._triggerAliases, new AliasList());
-        resizeBoolList(playerChar._grantExtendedLockTimes, false);
-        resizeBoolList(playerChar._enableRestraintSets, false);
-        resizeBoolList(playerChar._restraintSetLocking, false);
-        resizeStringList(playerChar._triggerPhraseForPuppeteer, "");
-        resizeStringList(playerChar._StartCharForPuppeteerTrigger, "(");
-        resizeStringList(playerChar._EndCharForPuppeteerTrigger, ")");
-        resizeBoolList(playerChar._allowSitRequests, false);
-        resizeBoolList(playerChar._allowMotionRequests, false);
-        resizeBoolList(playerChar._allowAllCommands, false);
-        resizeBoolList(playerChar._allowChangingToyState, false);
-        resizeBoolList(playerChar._allowIntensityControl, false);
-        resizeBoolList(playerChar._allowUsingPatterns, false);
     }
 
     public void UpdateYourStatusToThem(int index, RoleLean role) {
@@ -291,9 +245,6 @@ public partial class CharacterHandler : ISavable
         Serialize().WriteTo(j);
     }
 
-    public void Quicksave()
-        => _saveService.QueueSave(this);
-
     public void Save()
         => _saveService.DelaySave(this);
 
@@ -328,7 +279,7 @@ public partial class CharacterHandler : ISavable
             // Deserialize PlayerCharacterData
             var playerCharacterData = jsonObject["PlayerCharacterData"]?.Value<JObject>();
             if (playerCharacterData != null) {
-                playerChar = new PlayerCharacterInfo();
+                playerChar = new PlayerGlobalPerms();
                 playerChar.Deserialize(playerCharacterData);
             }
             var whitelistCharsArray = jsonObject["WhitelistData"].Value<JArray>();
@@ -347,7 +298,7 @@ public partial class CharacterHandler : ISavable
 
     public void CreateNewFile() {
         // create a new charater data file
-        playerChar = new PlayerCharacterInfo();
+        playerChar = new PlayerGlobalPerms();
         
         // Create a default WhitelistedCharacterInfo
         var defaultWhitelistUser = new WhitelistedCharacterInfo();

@@ -10,7 +10,7 @@ namespace GagSpeak.UI.Tabs.WhitelistTab;
 
 public static class InfoSendAndRequestHelpers {
 #region RequestInfoHelpers
-    public static void RequestInfoFromPlayer(int listIdx, CharacterHandler characterHandler, ChatMessages.ChatManager chatManager,
+    public static void RequestInfoFromPlayer(int listIdx, CharacterHandler characterHandler, ChatMessages.OnChatMsgManager chatManager,
     ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
     {    
         GagSpeak.Log.Debug($"[WhitelistTab]: Requesting information from player: {characterHandler.whitelistChars[listIdx]._name}");
@@ -33,7 +33,7 @@ public static class InfoSendAndRequestHelpers {
 	/// <summary>  Controls logic for sending the first chunk of your info the player that requested it from you. 
     /// <para> It makes sure it is something that is allowed based on your current information about the whitelisted player, then if allowable,
     /// sends them the encoded message automatically, serving as a shortcut to needing to type out the commands. </para> </summary>
-    public static void SendInfoToPlayer(CharacterHandler characterHandler, ChatMessages.ChatManager chatManager, 
+    public static void SendInfoToPlayer(CharacterHandler characterHandler, ChatMessages.OnChatMsgManager chatManager, 
     ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config, string senderName)
     {
         PlayerPayload playerPayload; // get player payload
@@ -49,7 +49,7 @@ public static class InfoSendAndRequestHelpers {
     }
 
     /// <summary>  Controls logic for sending the second chunk of your info the player that requested it from you. </summary>
-    public static void SendInfoToPlayer2(CharacterHandler characterHandler, ChatMessages.ChatManager chatManager,
+    public static void SendInfoToPlayer2(CharacterHandler characterHandler, ChatMessages.OnChatMsgManager chatManager,
     ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config, string senderName)
     {
         PlayerPayload playerPayload; // get player payload
@@ -65,7 +65,7 @@ public static class InfoSendAndRequestHelpers {
     }
 
     /// <summary>  Controls logic for sending the third chunk of your info the player that requested it from you. </summary>
-    public static void SendInfoToPlayer3(CharacterHandler characterHandler, ChatMessages.ChatManager chatManager,
+    public static void SendInfoToPlayer3(CharacterHandler characterHandler, ChatMessages.OnChatMsgManager chatManager,
     ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config, string senderName)
     {
         PlayerPayload playerPayload; // get player payload
@@ -81,7 +81,7 @@ public static class InfoSendAndRequestHelpers {
     }
 
     /// <summary>  Controls logic for sending the fourth chunk of your info the player that requested it from you. </summary>
-    public static void SendInfoToPlayer4(CharacterHandler characterHandler, ChatMessages.ChatManager chatManager,
+    public static void SendInfoToPlayer4(CharacterHandler characterHandler, ChatMessages.OnChatMsgManager chatManager,
     ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui, GagSpeakConfig config, string senderName)
     {
         PlayerPayload playerPayload; // get player payload

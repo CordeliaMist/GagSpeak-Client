@@ -105,7 +105,7 @@ public partial class PuppeteerPanel
                 ImGui.SetCursorPosY(yPos - 5*ImGuiHelpers.GlobalScale);
                 ImGui.Text($"Trigger Phrase for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}:");
                 // store the input text boxes trigger phrase
-                var TriggerPhrase  = _tempTriggerPhrase ?? _characterHandler.playerChar._triggerPhraseForPuppeteer[_characterHandler.activeListIdx];
+                var TriggerPhrase  = _tempTriggerPhrase ?? _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._triggerPhraseForPuppeteer;
                 ImGui.SetNextItemWidth(305*ImGuiHelpers.GlobalScale);
                 if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sTriggerPhrase", ref TriggerPhrase, 64, ImGuiInputTextFlags.EnterReturnsTrue))
                     _tempTriggerPhrase = TriggerPhrase;
@@ -122,7 +122,7 @@ public partial class PuppeteerPanel
             // go to the next column
             ImGui.TableNextColumn();
             // draw out the inputs for our custom start and end parameters
-            var tempStartParam  = _tempStartParameter ?? _characterHandler.playerChar._StartCharForPuppeteerTrigger[_characterHandler.activeListIdx];
+            var tempStartParam  = _tempStartParameter ?? _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._StartCharForPuppeteerTrigger;
             ImGui.SetNextItemWidth(20*ImGuiHelpers.GlobalScale);
             if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sBegin",
             ref tempStartParam, 1, ImGuiInputTextFlags.EnterReturnsTrue)) {
@@ -136,7 +136,7 @@ public partial class PuppeteerPanel
                 _tempStartParameter = null;
             }
             ImGuiUtil.LabeledHelpMarker("Start Char", "Sets a custom start character for enclosing what gets executed after your trigger word");
-            var tempEndParam  = _tempEndParameter ?? _characterHandler.playerChar._EndCharForPuppeteerTrigger[_characterHandler.activeListIdx];
+            var tempEndParam  = _tempEndParameter ?? _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._EndCharForPuppeteerTrigger;
             ImGui.SetNextItemWidth(20*ImGuiHelpers.GlobalScale);
             if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sEnd", 
             ref tempEndParam, 1, ImGuiInputTextFlags.EnterReturnsTrue)) {
@@ -154,9 +154,9 @@ public partial class PuppeteerPanel
             // go to the next column
             ImGui.TableNextColumn();
             // draw out the permissions
-            var checkbox1Value = _characterHandler.playerChar._allowSitRequests[_characterHandler.activeListIdx];
-            var checkbox2Value = _characterHandler.playerChar._allowMotionRequests[_characterHandler.activeListIdx];
-            var checkbox3Value = _characterHandler.playerChar._allowAllCommands[_characterHandler.activeListIdx];
+            var checkbox1Value = _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowSitRequests;
+            var checkbox2Value = _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowMotionRequests;
+            var checkbox3Value = _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowAllCommands;
             if(ImGui.Checkbox($"##Sitting", ref checkbox1Value)) {
                 _characterHandler.UpdateAllowSitRequests(checkbox1Value);
             }

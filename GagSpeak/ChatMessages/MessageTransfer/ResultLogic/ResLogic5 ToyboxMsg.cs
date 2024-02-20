@@ -90,7 +90,7 @@ public partial class ResultLogic {
             // update the active toy's vibe intensity levels
             if(_characterHandler.playerChar._isToyActive) {
                 // now check to see if our device is turned on (via the setting changeState), and if the user has the permission to change the state
-                if(_characterHandler.playerChar._allowChangingToyState[index] && _characterHandler.playerChar._allowIntensityControl[index]) {
+                if(_characterHandler.playerChar._uniquePlayerPerms[index]._allowChangingToyState && _characterHandler.playerChar._uniquePlayerPerms[index]._allowIntensityControl) {
                     // update the active connected vibe, if one is
                     if(_plugService.HasConnectedDevice() && _plugService.IsClientConnected() && _plugService.anyDeviceConnected) {
                         _ = _plugService.ToyboxVibrateAsync((byte)((decodedMessageMediator.intensityLevel/(double)_plugService.stepCount)*100), 20);
@@ -134,7 +134,7 @@ public partial class ResultLogic {
             int index = _characterHandler.GetWhitelistIndex(playerName);
             DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
-            if(_characterHandler.playerChar._allowUsingPatterns[index]) {
+            if(_characterHandler.playerChar._uniquePlayerPerms[index]._allowUsingPatterns) {
                 // execute the stored toy pattern
                 if(_patternHandler.ExecutePattern(decodedMessageMediator.patternNameToExecute)) {
                     GagSpeak.Log.Debug($"[Message Decoder]: {playerName} has executed the stored toy pattern {decodedMessageMediator.patternNameToExecute}");
@@ -191,7 +191,7 @@ public partial class ResultLogic {
             // get the dynamictier and index
             int index = _characterHandler.GetWhitelistIndex(playerName);
             // if the sender is someone in your whitelist who has the allow changing toy state permission enabled, allow them to toggle your toys state
-            if(_characterHandler.playerChar._allowChangingToyState[index]) {
+            if(_characterHandler.playerChar._uniquePlayerPerms[index]._allowChangingToyState) {
                 // toggle the toys state
                 _characterHandler.ToggleToyState();
                 return true;

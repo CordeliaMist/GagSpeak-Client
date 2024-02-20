@@ -25,6 +25,7 @@ public class GagSpeakChangelog
         Add1_0_1_3(Changelog);
         Add1_0_2_0(Changelog);
         Add2_0_0_0(Changelog);
+        Add2_2_0_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -51,6 +52,14 @@ public class GagSpeakChangelog
             _config.Save();
         }
     }
+
+    private static void Add2_2_0_0(Changelog log)
+        => log.NextVersion("Version 2.2.0.0 Release")
+            .RegisterHighlight("Paving the way for the new Hardcore Tab, which will have its logic developed by others.")
+            .RegisterEntry("Restructured the CharacterData, added a config migrator for the pre 2.1.6.0 users.")
+            .RegisterEntry("Lots of backend work done to make things more organized and less spaghetti.")
+            .RegisterEntry("Modular preperation for toybox triggers and hardcore functionality is now implemented.");
+
 
     // all versions are added here, the order doesnt madder, but it should be in order of newest to oldest.
     private static void Add2_0_0_0(Changelog log)

@@ -74,7 +74,7 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.DrawFrameColumn($"Allow Toggling Restraint Sets:");
             ImGui.TableNextColumn();
             var enableRestraintSets = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets 
-                                                : _characterHandler.playerChar._enableRestraintSets[_characterHandler.activeListIdx];
+                                                : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._enableRestraintSets;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((enableRestraintSets ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
@@ -97,7 +97,7 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.DrawFrameColumn($"Restraint Set Locking:");
             ImGui.TableNextColumn();
             var restraintSetLocking = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking 
-                                               : _characterHandler.playerChar._restraintSetLocking[_characterHandler.activeListIdx];
+                                               : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._restraintSetLocking;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((restraintSetLocking ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }

@@ -61,7 +61,7 @@ public partial class MessageEncoder {
         baseString += " endured ";
 
         // if they allow extendedLockTimes (BOOL)
-        baseString += _characterHandler.playerChar._grantExtendedLockTimes[Idx]
+        baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._grantExtendedLockTimes
         ? "strong bindings" : "weak bindings";
         baseString += ", ";
         
@@ -188,12 +188,12 @@ public partial class MessageEncoder {
         baseString += ", ";
 
         // is player allowed to enabled restraint sets? (BOOL)
-        baseString += _characterHandler.playerChar._enableRestraintSets[Idx]
+        baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._enableRestraintSets
         ? "and their restraint compartment was accessible for their partner" : "and they had not allowed their partner to enable restraint sets";
         baseString += ". ";
         
         // is player allowed to lock restraint sets? (BOOL)
-        baseString += _characterHandler.playerChar._restraintSetLocking[Idx]
+        baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._restraintSetLocking
         ? "They recalled their partner locking their restraints" : "They recalled their partner leaving their restraints unlocked";
         baseString += ", ";
 
@@ -203,23 +203,23 @@ public partial class MessageEncoder {
 
         // trigger phrase of messageSender for puppeteer compartment
         baseString += $"their partner whispered "+
-        $"{_characterHandler.playerChar._StartCharForPuppeteerTrigger[Idx]}"+
-        $"{_characterHandler.playerChar._triggerPhraseForPuppeteer[Idx]}"+
-        $"{_characterHandler.playerChar._EndCharForPuppeteerTrigger[Idx]}";
+        $"{_characterHandler.playerChar._uniquePlayerPerms[Idx]._StartCharForPuppeteerTrigger[Idx]}"+
+        $"{_characterHandler.playerChar._uniquePlayerPerms[Idx]._triggerPhraseForPuppeteer[Idx]}"+
+        $"{_characterHandler.playerChar._uniquePlayerPerms[Idx]._EndCharForPuppeteerTrigger[Idx]}";
 
         // does messageSender allow sit requests? (BOOL)
         baseString += " causing them to ";
-        baseString += _characterHandler.playerChar._allowSitRequests[Idx]
+        baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._allowSitRequests
         ? "sit down on command" : "sit down";
         baseString += ". ";
 
         // does messageSender allow motion requests? (BOOL)
-        baseString += _characterHandler.playerChar._allowMotionRequests[Idx]
+        baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._allowMotionRequests
         ? "For their partner controlled their movements" : "For their partner controlled most their movements";
         baseString += ", ";
 
         // does messageSender allow all commands? (BOOL)
-        baseString += _characterHandler.playerChar._allowAllCommands[Idx]
+        baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._allowAllCommands
         ? "and all of their actions" : "and some of their actions";
         baseString += ". ";
 
@@ -251,12 +251,12 @@ public partial class MessageEncoder {
         baseString += ". Within the drawer there ";
 
         // does messageSender allow you to toggle toy? (BOOL)
-        baseString += _characterHandler.playerChar._allowChangingToyState[Idx]
+        baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._allowChangingToyState
         ? "was powered Vibrator" : "was an unpowered Vibrator";
         baseString += ", ";
 
         // does messageSender allow adjusting intensity of toy? (BOOL)
-        baseString += _characterHandler.playerChar._allowIntensityControl[Idx]
+        baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._allowIntensityControl
         ? "with an adjustable intensity level" : "with a static intensity level";
 
         // current intensity level of active toy ((or new intensity level being sent)) (INT)
@@ -265,7 +265,7 @@ public partial class MessageEncoder {
         baseString += ". ";
 
         // does messageSender allow you to execute storedToyPatterns? (BOOL)
-        baseString += _characterHandler.playerChar._allowUsingPatterns[Idx]
+        baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._allowUsingPatterns
         ? "The vibrator was able to execute set patterns" : "Unfortuintely the vibrator couldnt execute any patterns";
         baseString += ", ";
 

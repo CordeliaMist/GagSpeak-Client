@@ -1,10 +1,8 @@
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Emote = Lumina.Excel.GeneratedSheets.Emote;
-using Expression = Lumina.Excel.GeneratedSheets.EmoteCategory;
 
 namespace GagSpeak.ToyboxandPuppeteer;
 // a mediator for holding timer information and tracks when a pattern has been saved
@@ -56,7 +54,7 @@ public class PuppeteerMediator
             return false;
         }
         GagSpeak.Log.Debug($"[PuppeteerMediator]: Index of Whitelisted Char: {indexOfWhitelistedChar}");
-        string triggerWords = _characterHandler.playerChar._triggerPhraseForPuppeteer[indexOfWhitelistedChar];
+        string triggerWords = _characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._triggerPhraseForPuppeteer;
         string[] triggerWordArray = triggerWords.Split('|');
 
         foreach (string triggerWord in triggerWordArray)
@@ -93,7 +91,7 @@ public class PuppeteerMediator
         if (indexOfWhitelistedChar == -1) { return false; }
         // At this point, our main concern is if the message to play is within the parameters of the settings we set
         // for the player. If the player has the setting enabled, then we can proceed.
-        if(_characterHandler.playerChar._allowSitRequests[indexOfWhitelistedChar]) {
+        if(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._allowSitRequests) {
             if(messageRecieved.TextValue == "sit" || messageRecieved.TextValue == "groundsit") {
                 GagSpeak.Log.Debug($"[PuppeteerMediator]: valid sit command");
                 return true;
@@ -101,7 +99,7 @@ public class PuppeteerMediator
                 GagSpeak.Log.Debug($"[PuppeteerMediator]: not a sit command");
             }
         }
-        if(_characterHandler.playerChar._allowMotionRequests[indexOfWhitelistedChar]) {
+        if(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._allowMotionRequests) {
             // we can check to see if it is a valid emote
             var emotes = _dataManager.GetExcelSheet<Emote>();
             if(emotes != null){
@@ -116,7 +114,7 @@ public class PuppeteerMediator
                 GagSpeak.Log.Debug($"[PuppeteerMediator]: not a valid emote!");
             }
         }
-        if(_characterHandler.playerChar._allowAllCommands[indexOfWhitelistedChar]) {
+        if(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._allowAllCommands) {
             GagSpeak.Log.Debug($"[PuppeteerMediator]: valid all type command order");
             return true;
         }
@@ -185,8 +183,8 @@ public class PuppeteerMediator
 
     /// <summary> encapsulates the puppeteer command within '(' and ')' </summary>
     private string GetSubstringWithinParentheses(string str, int indexOfWhitelistedChar) {
-        int startIndex = str.IndexOf(_characterHandler.playerChar._StartCharForPuppeteerTrigger[indexOfWhitelistedChar]);
-        int endIndex = str.IndexOf(_characterHandler.playerChar._EndCharForPuppeteerTrigger[indexOfWhitelistedChar]);
+        int startIndex = str.IndexOf(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._StartCharForPuppeteerTrigger);
+        int endIndex = str.IndexOf(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._EndCharForPuppeteerTrigger);
 
         if (startIndex >= 0 && endIndex >= 0 && endIndex > startIndex) {
             return str.Substring(startIndex + 1, endIndex - startIndex - 1).Trim();

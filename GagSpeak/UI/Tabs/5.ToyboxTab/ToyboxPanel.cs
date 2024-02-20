@@ -89,19 +89,19 @@ public class ToyboxPanel
         // draw the permission buttons
         UIHelpers.CheckboxNoConfig("Toy State",
         $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} can turn your toys on/off",
-        _charHandler.playerChar._allowChangingToyState[_charHandler.activeListIdx],
+        _charHandler.playerChar._uniquePlayerPerms[_charHandler.activeListIdx]._allowChangingToyState,
         v => _charHandler.ToggleChangeToyState(_charHandler.activeListIdx)
         );
         ImGui.SameLine();
         UIHelpers.CheckboxNoConfig("Intensity", 
         $"If  {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} can adjust your active toys intensity.",
-        _charHandler.playerChar._allowIntensityControl[_charHandler.activeListIdx],
+        _charHandler.playerChar._uniquePlayerPerms[_charHandler.activeListIdx]._allowIntensityControl,
         v => _charHandler.ToggleAllowIntensityControl(_charHandler.activeListIdx)
         );
         ImGui.SameLine();
         UIHelpers.CheckboxNoConfig("Patterns",
         $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} can execute patterns to your toys",
-        _charHandler.playerChar._allowUsingPatterns[_charHandler.activeListIdx],
+        _charHandler.playerChar._uniquePlayerPerms[_charHandler.activeListIdx]._allowUsingPatterns,
         v => _charHandler.ToggleAllowPatternExecution(_charHandler.activeListIdx)
         );
         ImGui.SameLine();

@@ -134,7 +134,7 @@ public partial class WhitelistPlayerPermissions {
 	/// <summary> Is called whenever a button on the UI is pressed to gag the player. It references the current active whitelist
     /// player, and applies only if they meet the conditions (relative to your stored info on them). </summary>
     public static void ApplyGagOnPlayer(int layer, string gagType, int listIdx, CharacterHandler characterHandler,
-    ChatMessages.ChatManager chatManager, ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState,
+    ChatMessages.OnChatMsgManager chatManager, ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState,
     IChatGui chatGui) {
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
@@ -160,7 +160,7 @@ public partial class WhitelistPlayerPermissions {
 #region LockButtons
     /// <summary> Controls logic for what to do once the Lock Gag button is pressed in the whitelist tab. </summary>
     public static void LockGagOnPlayer(int layer, string lockLabel, int listIdx, CharacterHandler characterHandler,
-    ChatMessages.ChatManager chatManager, ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState,
+    ChatMessages.OnChatMsgManager chatManager, ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState,
     IChatGui chatGui, GagSpeakConfig _config) {
         // get payload
         PlayerPayload playerPayload;
@@ -265,7 +265,7 @@ public partial class WhitelistPlayerPermissions {
 #region UnlockButtons
 	/// <summary> Controls logic for what to do once the Unlock Gag button is pressed in the whitelist tab. </summary>
     public static void UnlockGagOnPlayer(int layer, string lockLabel, int listIdx, CharacterHandler characterHandler,
-    GagSpeakConfig _config, IChatGui chatGui, ChatMessages.ChatManager chatManager, ChatMessages.MessageTransfer.MessageEncoder gagMessages,
+    GagSpeakConfig _config, IChatGui chatGui, ChatMessages.OnChatMsgManager chatManager, ChatMessages.MessageTransfer.MessageEncoder gagMessages,
     IClientState clientState) {
         // get payload
         PlayerPayload playerPayload;
@@ -362,7 +362,7 @@ public partial class WhitelistPlayerPermissions {
 #region RemoveGagButton
 	/// <summary>  Controls logic for what to do once the Remove Gag button is pressed in the whitelist tab. </summary>
     public static void RemoveGagFromPlayer(int layer, string gagType, int listIdx, CharacterHandler characterHandler,
-    ChatMessages.ChatManager chatManager, ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState,
+    ChatMessages.OnChatMsgManager chatManager, ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState,
     IChatGui chatGui) {    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
@@ -389,7 +389,7 @@ public partial class WhitelistPlayerPermissions {
     }
 
 	/// <summary>  Controls logic for what to do once the Remove All Gags button is pressed in the whitelist tab. </summary>
-    public static void RemoveAllGagsFromPlayer(int listIdx, CharacterHandler characterHandler, ChatMessages.ChatManager chatManager,
+    public static void RemoveAllGagsFromPlayer(int listIdx, CharacterHandler characterHandler, ChatMessages.OnChatMsgManager chatManager,
     ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
     {    
         PlayerPayload playerPayload; // get player payload

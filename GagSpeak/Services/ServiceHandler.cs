@@ -27,6 +27,8 @@ using GagSpeak.ToyboxandPuppeteer;
 using GagSpeak.UI.Tabs.PuppeteerTab;
 using GagSpeak.UI.Tabs.ToyboxTab;
 using GagSpeak.UI.Tabs.WorkshopTab;
+using GagSpeak.Hardcore;
+using GagSpeak.UI.Tabs.HardcoreTab;
 
 namespace GagSpeak.Services;
 
@@ -46,6 +48,7 @@ public static class ServiceHandler
             .AddEvents()
             .AddGagsAndLocks()
             .AddGarbleCore()
+            .AddHardcore()
             .AddInterop()
             .AddToybox()
             .AddUi()
@@ -71,6 +74,7 @@ public static class ServiceHandler
             .AddSingleton<FontService>()
             .AddSingleton<GagService>()
             .AddSingleton<InfoRequestService>()
+            .AddSingleton<OnFrameworkService>()
             .AddSingleton<TimerService>()
             .AddSingleton<GagSpeakConfig>()
             .AddSingleton<PlugService>()
@@ -78,8 +82,7 @@ public static class ServiceHandler
                 
     /// <summary> Classes to add to the service collection from the [Character Data] folder </summary>
     private static ServiceManager AddCharacterData(this ServiceManager services)
-        => services.AddSingleton<CharacterHandler>()
-            .AddSingleton<ClientUserInfo>();
+        => services.AddSingleton<CharacterHandler>();
 
     /// <summary> Classes to add to the service collection from the [Chat Messages] folder </summary>
     private static ServiceManager AddChatMessages(this ServiceManager services)
@@ -87,8 +90,12 @@ public static class ServiceHandler
             .AddSingleton<MessageDictionary>()
             .AddSingleton<MessageDecoder>()
             .AddSingleton<ResultLogic>()
-            .AddSingleton<ChatManager>()
+            .AddSingleton<OnChatMsgManager>()
+            .AddSingleton<EncodedMsgDetector>()
+            .AddSingleton<TriggerWordDetector>()
             .AddSingleton<DecodedMessageMediator>()
+
+            // for the xivcommon chat detour/injection classes
             .AddSingleton<ChatInputProcessor>(_ => {
                 var sigService = _.GetRequiredService<ISigScanner>(); 
                 var interop = _.GetRequiredService<IGameInteropProvider>();
@@ -107,10 +114,10 @@ public static class ServiceHandler
         => services.AddSingleton<SafewordUsedEvent>()
             .AddSingleton<InfoRequestEvent>()
             .AddSingleton<InteractOrPermButtonEvent>()
-            .AddSingleton<JobChangedEvent>()
             .AddSingleton<LanguageChangedEvent>()
             .AddSingleton<GagSpeakGlamourEvent>()
-            .AddSingleton<ActiveDeviceChangedEvent>();
+            .AddSingleton<ActiveDeviceChangedEvent>()
+            .AddSingleton<RestraintSetListChanged>();
 
     /// <summary> Classes to add to the service collection from the [GagsAndLocks] folder </summary>
     private static ServiceManager AddGagsAndLocks(this ServiceManager services)
@@ -123,6 +130,11 @@ public static class ServiceHandler
             .AddSingleton<IpaParserCantonese>()
             .AddSingleton<IpaParserMandarian>()
             .AddSingleton<IpaParserPersian>();
+
+    /// <summary> Classes to add to the service collection from the [Hardcore] folder </summary>
+    private static ServiceManager AddHardcore(this ServiceManager services)
+        => services.AddSingleton<ActionManager>()
+            .AddSingleton<MovementManager>();
 
     /// <summary> Classes to add to the service collection from the [Interop] folder </summary>
     private static ServiceManager AddInterop(this ServiceManager services)
@@ -165,6 +177,12 @@ public static class ServiceHandler
             .AddSingleton<PatternSubtab>()
             .AddSingleton<TriggersSubtab>()
             .AddSingleton<WorkshopTab>()
+            .AddSingleton<HardcoreTab>()
+            .AddSingleton<HardcoreSelector>()
+            .AddSingleton<HardcoreMainPanel>()
+            .AddSingleton<HC_RestraintSetProperties>()
+            .AddSingleton<HC_OrdersControl>()
+            .AddSingleton<HC_Humiliation>()
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HelpPageTab>()
             .AddSingleton<TutorialWindow>()

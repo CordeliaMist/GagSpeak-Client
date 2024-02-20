@@ -1,9 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
-using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Widgets;
 using GagSpeak.UI.Tabs.GeneralTab;
@@ -14,7 +12,7 @@ using GagSpeak.UI.Tabs.WardrobeTab;
 using GagSpeak.UI.Tabs.PuppeteerTab;
 using GagSpeak.UI.Tabs.ToyboxTab;
 using GagSpeak.UI.Tabs.WorkshopTab;
-using Dalamud.Interface.Utility.Raii;
+using GagSpeak.UI.Tabs.HardcoreTab;
 
 namespace GagSpeak.UI;
 
@@ -26,8 +24,9 @@ public enum TabType {
     Puppeteer       = 3,    // for controlling others~
     Toybox          = 4,    // for controlling toys, fun fun~
     Workshop        = 5,    // for controlling the workshop, fun fun~
-    ConfigSettings  = 6,    // Where you can change the plugin settings, such as debug mode, and other things.
-    HelpPage        = 7     // Where you can find information on how to use the plugin, and how to get support.
+    Hardcore        = 6,    // for the most serious of devients
+    ConfigSettings  = 7,    // Where you can change the plugin settings, such as debug mode, and other things.
+    HelpPage        = 8     // Where you can find information on how to use the plugin, and how to get support.
 }
 /// <summary> This class is used to handle the main window. </summary>
 public class MainWindow : Window
@@ -40,6 +39,7 @@ public class MainWindow : Window
     public readonly		  PuppeteerTab		    Puppeteer;
     public readonly		  ToyboxTab			      Toybox;
     public readonly     WorkshopTab         Workshop;
+    public readonly     HardcoreTab         Hardcore;
     public readonly     ConfigSettingsTab   ConfigSettings;
     public readonly     HelpPageTab         HelpPage;
     public              TabType             SelectTab = TabType.None;
@@ -48,8 +48,8 @@ public class MainWindow : Window
     /// <para> Note: The 'MainWindow' is the window space hosting the UI when you type /gagspeak, not any independant tab.
     /// </para> </summary>
     public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general,
-	WhitelistTab whitelist, ConfigSettingsTab configsettings, WardrobeTab wardrobeTab,
-	PuppeteerTab puppeteer, ToyboxTab toybox, WorkshopTab workshopTab,HelpPageTab helpPageTab): base(GetLabel()) {
+	WhitelistTab whitelist, ConfigSettingsTab configsettings, WardrobeTab wardrobeTab, PuppeteerTab puppeteer,
+  ToyboxTab toybox, WorkshopTab workshopTab, HardcoreTab hardcoreTab, HelpPageTab helpPageTab): base(GetLabel()) {
 		// Let's first make sure that we disable the plugin while inside of gpose.
 		pluginInt.UiBuilder.DisableGposeUiHide = true;
 		// Next let's set the size of the window
@@ -66,6 +66,7 @@ public class MainWindow : Window
 		Puppeteer = puppeteer;
 		Toybox = toybox;
     Workshop = workshopTab;
+    Hardcore = hardcoreTab;
 		ConfigSettings = configsettings;
 		HelpPage = helpPageTab;
 		// Below are the stuff besides the tabs that are passed through
@@ -79,6 +80,7 @@ public class MainWindow : Window
 			puppeteer,
 			toybox,
       workshopTab,
+      hardcoreTab,
 			configsettings,
 			helpPageTab
 		};
@@ -92,19 +94,6 @@ public class MainWindow : Window
             _config.SelectedTab = FromLabel(currentTab); // set the config selected tab to the current tab
             _config.Save();
         }
-        // We want to display the save & close, and the donation buttons on the topright, so lets draw those as well.
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 2.55f * ImGui.GetFrameHeight(), yPos - ImGuiHelpers.GlobalScale));
-        ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
-        ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
-        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
-        ImGui.Text(" ");
-        ImGui.SameLine();
-        if (ImGui.Button("Ko-Fi ♥")) {
-            ImGui.SetTooltip( "Only if you want to though!");
-            Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
-        }
-        // pop off the colors we pushed
-        ImGui.PopStyleColor(3);
     }
 
     /// <summary> Gets the correct label to display for each tab type </summary> 
@@ -117,6 +106,7 @@ public class MainWindow : Window
             TabType.Puppeteer       => Puppeteer.Label,
             TabType.Toybox          => Toybox.Label,
             TabType.Workshop        => Workshop.Label,
+            TabType.Hardcore        => Hardcore.Label,
             TabType.ConfigSettings  => ConfigSettings.Label,
             TabType.HelpPage        => HelpPage.Label,
             _                       => ReadOnlySpan<byte>.Empty, // This label confuses me a bit. I think it is just a blank label?
@@ -136,6 +126,7 @@ public class MainWindow : Window
         if (label == Puppeteer.Label)       return TabType.Puppeteer;
         if (label == Toybox.Label)          return TabType.Toybox;
         if (label == Workshop.Label)        return TabType.Workshop;
+        if (label == Hardcore.Label)        return TabType.Hardcore;
         if (label == ConfigSettings.Label)  return TabType.ConfigSettings;
         if (label == HelpPage.Label)        return TabType.HelpPage;
         // @formatter:on

@@ -95,7 +95,7 @@ public partial class WhitelistPlayerPermissions {
 
             ImGui.TableNextColumn();
             var toyStatePerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState 
-                                         : _characterHandler.playerChar._allowChangingToyState[_characterHandler.activeListIdx];
+                                         : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowChangingToyState;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((toyStatePerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
@@ -117,7 +117,7 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.DrawFrameColumn($"Can Control Intensity:");
             ImGui.TableNextColumn();
             var toyIntensityPerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsIntensityControl 
-                                            : _characterHandler.playerChar._allowIntensityControl[_characterHandler.activeListIdx];
+                                            : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowIntensityControl;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((toyIntensityPerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
@@ -137,7 +137,7 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.DrawFrameColumn($"Can Execute Patterns:");
             ImGui.TableNextColumn();
             var patternExecuttionPerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsUsingPatterns 
-                                            : _characterHandler.playerChar._allowUsingPatterns[_characterHandler.activeListIdx];
+                                            : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowUsingPatterns;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((patternExecuttionPerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }

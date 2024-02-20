@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
-using GagSpeak.CharacterData;
+using GagSpeak.Services;
 
 namespace GagSpeak.Interop;
 
@@ -14,7 +14,7 @@ namespace GagSpeak.Interop;
 public sealed class GlamourerService
 {
     private readonly DalamudPluginInterface _pluginInterface; // the plugin interface
-    private readonly ClientUserInfo _clientUserInfo; // the game framework utility
+    private readonly OnFrameworkService _OnFrameworkService; // the game framework utility
     
     /// <summary> Initialize the IPC Subscriber callgates:  </summary>
     public readonly ICallGateSubscriber<(int, int)> _ApiVersions; // Gets Glamourer's API version.
@@ -32,9 +32,9 @@ public sealed class GlamourerService
     public readonly uint LockCode = 0x6D617265; // setting a lock code for our plugin
     private bool _Available = false; // defines if glamourer is currently interactable at all or not.
 
-    public GlamourerService(DalamudPluginInterface pluginInterface, ClientUserInfo ClientUserInfo) {
+    public GlamourerService(DalamudPluginInterface pluginInterface, OnFrameworkService OnFrameworkService) {
         _pluginInterface = pluginInterface; // initialize the plugin interface
-        _clientUserInfo = ClientUserInfo; // initialize the game framework utility
+        _OnFrameworkService = OnFrameworkService; // initialize the game framework utility
         // API callgate
         _ApiVersions = _pluginInterface.GetIpcSubscriber<(int, int)>("Glamourer.ApiVersions");
         // customization callgates
@@ -92,9 +92,9 @@ public sealed class GlamourerService
         // If our customization is empty, glamourer is not enabled, or we are zoning, do not process this request.
         if (!CheckGlamourerApi() || string.IsNullOrEmpty(customization)) return;
         try {
-            await _clientUserInfo.RunOnFrameworkThread(() => {
+            await _OnFrameworkService.RunOnFrameworkThread(() => {
                 // set the game object to the character
-                var gameObj = _clientUserInfo.CreateGameObject(character);
+                var gameObj = _OnFrameworkService.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
                     GagSpeak.Log.Verbose("[ApplyAllAsyncIntrop] Calling on IPC: GlamourerApplyAll");
@@ -112,9 +112,9 @@ public sealed class GlamourerService
         if (!CheckGlamourerApi()) return string.Empty;
         try {
             // await for us to be running on the framework thread. Once we are:
-            return await _clientUserInfo.RunOnFrameworkThread(() => {
+            return await _OnFrameworkService.RunOnFrameworkThread(() => {
                 // set the game object to the character
-                var gameObj = _clientUserInfo.CreateGameObject(character);
+                var gameObj = _OnFrameworkService.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
                     GagSpeak.Log.Verbose("[GetCharacterCustomizationAsync] Calling on IPC: GlamourerGetAllCustomizationFromCharacter");
@@ -134,9 +134,9 @@ public sealed class GlamourerService
         if (!CheckGlamourerApi()) return;
         try {
             // await for us to be running on the framework thread. Once we are:
-            await _clientUserInfo.RunOnFrameworkThread(() => {
+            await _OnFrameworkService.RunOnFrameworkThread(() => {
                 // set the game object to the character
-                var gameObj = _clientUserInfo.CreateGameObject(character);
+                var gameObj = _OnFrameworkService.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
                     GagSpeak.Log.Verbose("[SetItemOnceToCharacterAsync] Calling on IPC: GlamourSetItemToCharacter");
@@ -158,11 +158,11 @@ public sealed class GlamourerService
         try
         {
             // we spesifically DONT want to wait for character to finish drawing because we want to revert before an automation is applied
-            await _clientUserInfo.RunOnFrameworkThread(async () => {
+            await _OnFrameworkService.RunOnFrameworkThread(async () => {
                 try
                 {
                     // set the game object to the character
-                    var gameObj = _clientUserInfo.CreateGameObject(character);
+                    var gameObj = _OnFrameworkService.CreateGameObject(character);
                     // if the game object is the character, then get the customization for it.
                     if (gameObj is Character c) {
                         GagSpeak.Log.Verbose("[GlamourRevertIPC] Calling on IPC: GlamourerRevertToAutomationCharacter");
@@ -192,11 +192,11 @@ public sealed class GlamourerService
         try
         {
             // we spesifically DONT want to wait for character to finish drawing because we want to revert before an automation is applied
-            await _clientUserInfo.RunOnFrameworkThread(() => {
+            await _OnFrameworkService.RunOnFrameworkThread(() => {
                 try
                 {
                     // set the game object to the character
-                    var gameObj = _clientUserInfo.CreateGameObject(character);
+                    var gameObj = _OnFrameworkService.CreateGameObject(character);
                     // if the game object is the character, then get the customization for it.
                     if (gameObj is Character c) {
                         _RevertCharacter.InvokeAction(c);

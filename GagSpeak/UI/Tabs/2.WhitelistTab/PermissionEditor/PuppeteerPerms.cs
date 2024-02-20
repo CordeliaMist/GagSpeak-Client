@@ -31,7 +31,8 @@ public partial class WhitelistPlayerPermissions {
 
         ImGui.Text($"Trigger phase: \"");
         ImGui.SameLine();
-        var triggerPhrase = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirTriggerPhrase : _characterHandler.playerChar._triggerPhraseForPuppeteer[_characterHandler.activeListIdx];
+        var triggerPhrase = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirTriggerPhrase 
+                                      : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._triggerPhraseForPuppeteer;
         if(triggerPhrase == "") {
             ImGui.TextColored(new Vector4(1, 0, 0, 1), "Empty / Invalid Trigger Phrase");
         } else {
@@ -48,9 +49,9 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TextColored(new Vector4(1, 0, 0, 1), _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirTriggerEndChar);
         } else {
             ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), _characterHandler.playerChar._StartCharForPuppeteerTrigger[_characterHandler.activeListIdx]);
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._StartCharForPuppeteerTrigger);
             ImGui.SameLine(); ImGui.Text(" & "); ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), _characterHandler.playerChar._EndCharForPuppeteerTrigger[_characterHandler.activeListIdx]);
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._EndCharForPuppeteerTrigger);
         }
 
         // draw out the table for our permissions
@@ -73,7 +74,7 @@ public partial class WhitelistPlayerPermissions {
 
             ImGui.TableNextColumn();
             var allowSits = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsSitRequests
-                                      : _characterHandler.playerChar._allowSitRequests[_characterHandler.activeListIdx];
+                                      : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowSitRequests;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((allowSits ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
@@ -96,7 +97,7 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.DrawFrameColumn($"Allows Motion Commands:");
             ImGui.TableNextColumn();
             var allowMotions = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsMotionRequests
-                                        : _characterHandler.playerChar._allowMotionRequests[_characterHandler.activeListIdx];
+                                        : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowMotionRequests;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((allowMotions ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
@@ -120,7 +121,7 @@ public partial class WhitelistPlayerPermissions {
             ImGuiUtil.DrawFrameColumn($"Allow All Commands:");
             ImGui.TableNextColumn();
             var allowAllCommands = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsAllCommands
-                                            : _characterHandler.playerChar._allowAllCommands[_characterHandler.activeListIdx];
+                                            : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowAllCommands;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((allowAllCommands ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }

@@ -56,7 +56,7 @@ public partial class ResultLogic {
                 _characterHandler.ToggleEnableRestraintSets(whitelistIdx);
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Enable Restraint Sets has been toggled "+
-                $"to {_characterHandler.playerChar._enableRestraintSets[whitelistIdx]}.").AddItalicsOff().BuiltString);
+                $"to {_characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._enableRestraintSets}.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling enable restraint sets");
                 return true;
             } else {
@@ -86,7 +86,7 @@ public partial class ResultLogic {
                 _characterHandler.ToggleRestraintSetLocking(idx);
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Allow Restraint Locking "+
-                $"has been toggled to {_characterHandler.playerChar._restraintSetLocking[idx]}.").AddItalicsOff().BuiltString);
+                $"has been toggled to {_characterHandler.playerChar._uniquePlayerPerms[idx]._restraintSetLocking}.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling allow restraint locking");
                 return true;
             } else {
@@ -152,7 +152,7 @@ public partial class ResultLogic {
             DynamicTier dynamicStrength = _characterHandler.GetDynamicTierNonClient(playerName);
             int whitelistIdx = _characterHandler.GetWhitelistIndex(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
-            if(dynamicStrength != DynamicTier.Tier0 && _characterHandler.playerChar._allowRestraintSetAutoEquip && _characterHandler.playerChar._restraintSetLocking[whitelistIdx]) {
+            if(dynamicStrength != DynamicTier.Tier0 && _characterHandler.playerChar._allowRestraintSetAutoEquip && _characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._restraintSetLocking) {
                 // see if our restraint set is anywhere in the list
                 int setIdx = _restraintSetManager.GetRestraintSetIndex(decodedMessageMediator.setToLockOrUnlock);
                 // exit if the index is -1
@@ -162,7 +162,7 @@ public partial class ResultLogic {
                     return false;
                 }
                 // make sure that the formatted time is not longer than 12 hours
-                if (UIHelpers.GetEndTime(decodedMessageMediator.layerTimer[0]) - DateTimeOffset.Now > TimeSpan.FromHours(12) && _characterHandler.playerChar._grantExtendedLockTimes[whitelistIdx] == false) {
+                if (UIHelpers.GetEndTime(decodedMessageMediator.layerTimer[0]) - DateTimeOffset.Now > TimeSpan.FromHours(12) && _characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._grantExtendedLockTimes == false) {
                     isHandled = true;
                     LogError($"[MsgResultLogic]: Timer {decodedMessageMediator.layerTimer[0]} is too long, it must be less than 12 hours unless your partner has allowd you to have extended lock times.");
                     return false;

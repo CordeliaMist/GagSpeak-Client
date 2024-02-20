@@ -13,12 +13,14 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using GagSpeak.Interop;
 using Dalamud.Interface.Utility;
+using GagSpeak.Events;
 
 namespace GagSpeak.UI.Tabs.WardrobeTab;
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>
 public class RestraintSetSelector
 {
     private readonly    RestraintSetManager _restraintSetManager; // for getting the restraint sets
+    private readonly    RestraintSetListChanged _restraintSetListChanged; // for getting the restraint set list changed event
     private readonly    FontService         _fontService;         // for getting the font service
     private readonly    TimerService        _timerService;        // for getting the timer service
     private readonly    ListCopier          _listCopier;          // for getting the list copier
@@ -27,13 +29,15 @@ public class RestraintSetSelector
 
     /// <summary> Initializes a new instance wardrobe tab"/> class. <summary>
     public RestraintSetSelector(RestraintSetManager restraintSetManager, FontService fontService,
-    TimerService timerService) {
+    TimerService timerService, RestraintSetListChanged restraintSetListChanged) {
         _restraintSetManager = restraintSetManager;
+        _restraintSetListChanged = restraintSetListChanged;
         _fontService = fontService;
         _timerService = timerService;
         _listCopier = new ListCopier(new List<string>());
 
         _timerService.RemainingTimeChanged += OnRemainingTimeChanged;
+        _restraintSetListChanged.SetListModified += OnRestraintSetListChanged;
     }
 
     public void Draw(float width, float height) {
@@ -49,17 +53,17 @@ public class RestraintSetSelector
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero)
             .Push(ImGuiStyleVar.FrameRounding, 0);
 
-        DrawRestraintSetSelector(width, height);
+        DrawRestraintSetSelector(width, height, _defaultItemSpacing);
         DrawSelectionButtons(width);
     }
 
 #region  RestraintSetSelector
-    private void DrawRestraintSetSelector(float width, float height) {
+    public void DrawRestraintSetSelector(float width, float height, Vector2 ItemSpacing) {
         using var child = ImRaii.Child("##Selector", new Vector2(width, height), true);
         if (!child)
             return;
 
-        using var style     = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, _defaultItemSpacing);
+        using var style     = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ItemSpacing);
         var       skips     = OtterGui.ImGuiClip.GetNecessarySkips(ImGui.GetTextLineHeight());
         var       remainder = OtterGui.ImGuiClip.ClippedDraw(
                                     _restraintSetManager._restraintSets, skips, DrawSelectable);
@@ -81,11 +85,11 @@ public class RestraintSetSelector
             .Push(ImGuiStyleVar.FrameRounding, 0);
         var buttonWidth = new Vector2(((width / 2) - ImGui.GetTextLineHeight()), 0);
 
-        if (ImGui.Button("Add Set", buttonWidth)) {
+        if (ImGui.Button("Add Set", new Vector2(buttonWidth.X-ImGuiHelpers.GlobalScale*10, buttonWidth.Y))) {
             _restraintSetManager.AddNewRestraintSet();
         }
         ImGui.SameLine();
-        if (ImGui.Button("Remove Set", buttonWidth)) {
+        if (ImGui.Button("Remove Set", new Vector2(buttonWidth.X+ImGuiHelpers.GlobalScale*10, buttonWidth.Y))) {
             // if the set only has one item, just replace it with a blank template
             if (_restraintSetManager._restraintSets.Count == 1) {
                 _restraintSetManager._restraintSets[0] = new RestraintSet();
@@ -103,14 +107,23 @@ public class RestraintSetSelector
             ImGui.OpenPopup("Copy Restraint Set List");
             // it should open the list copier here with the correct parameters and stuff
         }
-
-        _listCopier.UpdateListInfo(_restraintSetManager._restraintSets.Select(x => x._name).ToList());
+        
+        // update the list copier if we need to
+        if(_restraintSetManager._restraintSets.Count != _listCopier._items.Count) {
+            _listCopier.UpdateListInfo(_restraintSetManager._restraintSets.Select(x => x._name).ToList());
+        }
         // list copier should draw the button here with the correct parameters
         _listCopier.DrawCopyButton("Copy Restraint Set List", "Copied Restraint Set List to clipboard",
         "Could not copy Restraint Set List to clipboard");
     }
 
 #endregion RestraintSetSelector
+    private void OnRestraintSetListChanged(object sender, RestraintSetListChangedArgs e) {
+        if(e.UpdateType == ListUpdateType.NameChanged) {
+            _listCopier.UpdateListInfo(_restraintSetManager._restraintSets.Select(x => x._name).ToList());
+        }
+    }
+
 #region RestraintSetOverview
     private void DrawRestraintSetOverview(float height) {
         using var group = ImRaii.Group();

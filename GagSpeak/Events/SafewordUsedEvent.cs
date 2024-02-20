@@ -3,7 +3,6 @@ using System;
 namespace GagSpeak.Events;
 
 // Thrown every time the safeword is changed. Must be used before onSelectedIndexChanged.
-// Or it will cause a crash loop
 
 /// <summary> This class is used to handle the safeword command event, and triggers every time it is fired. </summary>
 public class SafewordUsedEvent 

@@ -50,7 +50,6 @@ public class RestraintSetEditor
         _stainCombo = new StainColorCombo(DefaultWidth-20, _stainData);
     }
 
-    /// <summary> This Function draws the content for the ConfigSettings Tab </summary>
     public void Draw() {
         _comboLength = DefaultWidth * ImGuiHelpers.GlobalScale;
         using var style = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);

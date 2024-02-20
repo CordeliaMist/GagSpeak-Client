@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
+using GagSpeak.Events;
 using GagSpeak.ToyboxandPuppeteer;
+using GagSpeak.Wardrobe;
 using Newtonsoft.Json.Linq;
 
 namespace GagSpeak.CharacterData;
@@ -12,7 +15,7 @@ public enum RevertStyle {
     ToGameOnly,
     ToGameThenAutomation,
 }
-public class PlayerCharacterInfo : CharacterInfoBase
+public class PlayerGlobalPerms : CharacterInfoBase
 {
     //////////////////////////////////////// PREFERENCES FOR NON-WHITELISTED PLAYERS  ///////////////////////////////////////
     public  string          _safeword { get; set; } = "safeword";                       // What is the safeword?
@@ -33,37 +36,37 @@ public class PlayerCharacterInfo : CharacterInfoBase
     //////////////////////////////////////////////// TOYBOX MODULE SETTING /////////////////////////////////////////////////
     public  bool            _usingSimulatedVibe { get; set; } = false;                  // lets the player know if they are using a simulated vibe
     
-    // potentially a list of triggers can be stored in here, or saved seperately
-
-    ///////////////////////////////////////////// FUTURE MODULES CAN GO HERE /////////////////////////////////////////////
-
     ///////////////////////////////////////// FIELDS UNIQUE FOR EACH WHITELIST USER ////////////////////////////////////////////////////
-    public  List<bool>      _grantExtendedLockTimes { get; set; }                       // [TIER 2] If you allow the whitelisted player to use extended lock times
-    public  List<bool>      _enableRestraintSets { get; set; }                          // [TIER 2] allows dom to enable spesific restraint sets
-    public  List<bool>      _restraintSetLocking { get; set; }                          // [TIER 1] enables / disables restraint set locking 
-    public  List<string>    _triggerPhraseForPuppeteer { get; set; }                    // [TIER 0] YOUR spesific trigger phrase FOR EACH whitelisted player
-    public  List<string>    _StartCharForPuppeteerTrigger { get; set; }                 // [TIER 0] what to have instead of () surrounding full commands
-    public  List<string>    _EndCharForPuppeteerTrigger { get; set; }                   // [TIER 0] what to have instead of () surrounding full commands
-    public  List<bool>      _allowSitRequests { get; set; }                             // [TIER 1] if you allow the whitelisted player is allowed to use sit requests
-    public  List<bool>      _allowMotionRequests { get; set; }                          // [TIER 2] if the whitelisted player is allowed to use motion requests
-    public  List<bool>      _allowAllCommands { get; set; }                             // [TIER 4] if the whitelisted user has access to use all commands on you
-    public  List<bool>      _allowChangingToyState { get; set; }                        // [TIER 1] Basically, "They can turn on my vibe, at my selected slider position"
-    public  List<bool>      _allowIntensityControl { get; set; }                        // [TIER 3] Basically says "This person can adjust the intensity slider"
-    public  List<bool>      _allowUsingPatterns { get; set; }                           // [TIER 4] if the whitelisted player is allowed to execute stored patterns
-    public PlayerCharacterInfo() {
+    public List<UniquePlayerPerms> _uniquePlayerPerms { get; set; }                      // list of unique player permissions set for each whitelisted user.
+        
+    public PlayerGlobalPerms() {
         _triggerAliases = new List<AliasList>() { new AliasList() };
-        _grantExtendedLockTimes = new List<bool>() { false };
-        _enableRestraintSets = new List<bool>() { false };
-        _restraintSetLocking = new List<bool>() { false };
-        _triggerPhraseForPuppeteer = new List<string>() { "" };
-        _StartCharForPuppeteerTrigger = new List<string>() { "(" };
-        _EndCharForPuppeteerTrigger = new List<string>() { ")" };
-        _allowSitRequests = new List<bool>() { false };
-        _allowMotionRequests = new List<bool>() { false };
-        _allowAllCommands = new List<bool>() { false };
-        _allowChangingToyState = new List<bool>() { false };
-        _allowIntensityControl = new List<bool>() { false };
-        _allowUsingPatterns = new List<bool>() { false };
+        _uniquePlayerPerms = new List<UniquePlayerPerms>() { new UniquePlayerPerms() };
+    }
+
+    public void AddNewWhitelistItemPerms() {
+        // update the player chars things to match the whitelist edit
+        _triggerAliases.Add(new AliasList());
+        _uniquePlayerPerms.Add(new UniquePlayerPerms());
+    }
+
+    public void ReplaceWhitelistItemPerms(int index) {
+        // update the player chars things to match the whitelist edit
+        _triggerAliases[index] = new AliasList();
+        _uniquePlayerPerms[index] = new UniquePlayerPerms();
+    }
+
+    public void RemoveWhitelistItemPerms(int index) {
+        // update the player chars things to match the whitelist edit
+        _triggerAliases.RemoveAt(index);
+        _uniquePlayerPerms.RemoveAt(index);
+    }
+
+    public void IntegrityCheck(int sizeOfSets) {
+        // update the player chars things to match the whitelist edit
+        foreach (var perm in _uniquePlayerPerms) {
+            perm.ListIntegrityCheck(sizeOfSets);
+        }
     }
 
 #region Serialization
@@ -82,18 +85,7 @@ public class PlayerCharacterInfo : CharacterInfoBase
             ["AllowRestraintSetAutoEquip"] = _allowRestraintSetAutoEquip,
             ["TriggerAliasesList"] = new JArray(_triggerAliases.Select(alias => alias.Serialize())),
             ["UsingSimulatedVibe"] = _usingSimulatedVibe,
-            ["ExtendedLockTimes"] = new JArray(_grantExtendedLockTimes),
-            ["EnableRestraintSets"] = new JArray(_enableRestraintSets),
-            ["RestraintSetLocking"] = new JArray(_restraintSetLocking),
-            ["TriggerPhrase"] = new JArray(_triggerPhraseForPuppeteer),
-            ["StartCharForPuppeteerTrigger"] = new JArray(_StartCharForPuppeteerTrigger),
-            ["EndCharForPuppeteerTrigger"] = new JArray(_EndCharForPuppeteerTrigger),
-            ["AllowSitRequests"] = new JArray(_allowSitRequests),
-            ["AllowMotionRequests"] = new JArray(_allowMotionRequests),
-            ["AllowAllCommands"] = new JArray(_allowAllCommands),
-            ["AllowChangingToyState"] = new JArray(_allowChangingToyState),
-            ["AllowIntensityControl"] = new JArray(_allowIntensityControl),
-            ["AllowUsingPatterns"] = new JArray(_allowUsingPatterns)
+            ["UniquePlayerPerms"] = new JArray(_uniquePlayerPerms.Select(perm => perm.Serialize())),
         };
         JObject baseSerialized = base.Serialize();
         derivedSerialized.Merge(baseSerialized);
@@ -101,6 +93,21 @@ public class PlayerCharacterInfo : CharacterInfoBase
     }
 
     public override void Deserialize(JObject jsonObject) {
+        // we need to know which config we have before we deserialize, if it was the old one or the new one.
+        _uniquePlayerPerms.Clear();
+        var uniquePlayerPermsArray = jsonObject["UniquePlayerPerms"]?.Value<JArray>();
+        // see if uniquePlayerPerms is an empty array
+        if (uniquePlayerPermsArray == null || uniquePlayerPermsArray.Count == 0) {
+            GagSpeak.Log.Debug($"[PlayerGlobalPerms]: We Have an outdated file!");
+            DeserializeOld(jsonObject);
+        } else {
+            GagSpeak.Log.Debug($"[PlayerGlobalPerms]: We Have Most Recently updated file!");
+            DeserializeNew(jsonObject);
+            // will need to clear and then deserialize the trigger aliass
+        }
+    }
+
+    private void DeserializeOld(JObject jsonObject) {
         #pragma warning disable CS8604 // Possible null reference argument.
         try{
             // will need to clear and then deserialize the trigger aliass
@@ -126,21 +133,86 @@ public class PlayerCharacterInfo : CharacterInfoBase
             _allowItemAutoEquip = jsonObject["AllowItemAutoEquip"]?.Value<bool>() ?? false;
             _allowRestraintSetAutoEquip = jsonObject["AllowRestraintSetAutoEquip"]?.Value<bool>() ?? false;
             _usingSimulatedVibe = jsonObject["UsingSimulatedVibe"]?.Value<bool>() ?? false;
-            _grantExtendedLockTimes = jsonObject["ExtendedLockTimes"]?.Values<bool>().ToList() ?? new List<bool>();
-            _enableRestraintSets = jsonObject["EnableRestraintSets"]?.Values<bool>().ToList() ?? new List<bool>();
-            _restraintSetLocking = jsonObject["RestraintSetLocking"]?.Values<bool>().ToList() ?? new List<bool>();
-            _triggerPhraseForPuppeteer = jsonObject["TriggerPhrase"]?.Values<string>().Select(s => s ?? "").ToList() ?? new List<string>();
-            _StartCharForPuppeteerTrigger = jsonObject["StartCharForPuppeteerTrigger"]?.Values<string>().Select(s => s ?? "(").ToList() ?? new List<string> { "(" };
-            _EndCharForPuppeteerTrigger = jsonObject["EndCharForPuppeteerTrigger"]?.Values<string>().Select(s => s ?? ")").ToList() ?? new List<string> { ")" };
-            _allowSitRequests = jsonObject["AllowSitRequests"]?.Values<bool>().ToList() ?? new List<bool>();
-            _allowMotionRequests = jsonObject["AllowMotionRequests"]?.Values<bool>().ToList() ?? new List<bool>();
-            _allowAllCommands = jsonObject["AllowAllCommands"]?.Values<bool>().ToList() ?? new List<bool>();
-            _allowChangingToyState = jsonObject["AllowChangingToyState"]?.Values<bool>().ToList() ?? new List<bool>();
-            _allowIntensityControl = jsonObject["AllowIntensityControl"]?.Values<bool>().ToList() ?? new List<bool>();
-            _allowUsingPatterns = jsonObject["AllowUsingPatterns"]?.Values<bool>().ToList() ?? new List<bool>();
+            var tempLockTimesBoolList = jsonObject["ExtendedLockTimes"]?.Values<bool>().ToList() ?? new List<bool>();
+            var tempEnableRestraintSets = jsonObject["EnableRestraintSets"]?.Values<bool>().ToList() ?? new List<bool>();
+            var tempRestraintSetLocking = jsonObject["RestraintSetLocking"]?.Values<bool>().ToList() ?? new List<bool>();
+            var tempTriggerPhraseForPuppeteer = jsonObject["TriggerPhrase"]?.Values<string>().Select(s => s ?? "").ToList() ?? new List<string>();
+            var tempStartCharForPuppeteerTrigger = jsonObject["StartCharForPuppeteerTrigger"]?.Values<string>().Select(s => s ?? "(").ToList() ?? new List<string> { "(" };
+            var tempEndCharForPuppeteerTrigger = jsonObject["EndCharForPuppeteerTrigger"]?.Values<string>().Select(s => s ?? ")").ToList() ?? new List<string> { ")" };
+            var tempAllowSitRequests = jsonObject["AllowSitRequests"]?.Values<bool>().ToList() ?? new List<bool>();
+            var tempAllowMotionRequests = jsonObject["AllowMotionRequests"]?.Values<bool>().ToList() ?? new List<bool>();
+            var tempAllowAllCommands = jsonObject["AllowAllCommands"]?.Values<bool>().ToList() ?? new List<bool>();
+            var tempAllowChangingToyState = jsonObject["AllowChangingToyState"]?.Values<bool>().ToList() ?? new List<bool>();
+            var tempAllowIntensityControl = jsonObject["AllowIntensityControl"]?.Values<bool>().ToList() ?? new List<bool>();
+            var tempAllowUsingPatterns = jsonObject["AllowUsingPatterns"]?.Values<bool>().ToList() ?? new List<bool>();
+            // Assuming all the temporary lists have the same count
+            for (int i = 0; i < tempLockTimesBoolList.Count; i++)
+            {
+                var perm = new UniquePlayerPerms
+                {
+                    _grantExtendedLockTimes = tempLockTimesBoolList[i],
+                    _enableRestraintSets = tempEnableRestraintSets[i],
+                    _restraintSetLocking = tempRestraintSetLocking[i],
+                    _triggerPhraseForPuppeteer = tempTriggerPhraseForPuppeteer[i],
+                    _StartCharForPuppeteerTrigger = tempStartCharForPuppeteerTrigger[i],
+                    _EndCharForPuppeteerTrigger = tempEndCharForPuppeteerTrigger[i],
+                    _allowSitRequests = tempAllowSitRequests[i],
+                    _allowMotionRequests = tempAllowMotionRequests[i],
+                    _allowAllCommands = tempAllowAllCommands[i],
+                    _allowChangingToyState = tempAllowChangingToyState[i],
+                    _allowIntensityControl = tempAllowIntensityControl[i],
+                    _allowUsingPatterns = tempAllowUsingPatterns[i]
+                };
+                _uniquePlayerPerms.Add(perm);
+            }
         }
         catch (System.Exception e) {
             GagSpeak.Log.Error($"[PlayerCharacterInfo]: Error deserializing PlayerCharacterInfo: {e}");
+        }
+    }
+
+    private void DeserializeNew(JObject jsonObject) {
+        try{
+            // will need to clear and then deserialize the trigger aliass
+            _triggerAliases.Clear();
+            var triggerAliasesArray = jsonObject["TriggerAliasesList"]?.Value<JArray>();
+            if (triggerAliasesArray != null) {
+                foreach (var item in triggerAliasesArray) {
+                    var alias = new AliasList();
+                    alias.Deserialize(item.Value<JObject>());
+                    _triggerAliases.Add(alias);
+                }
+                GagSpeak.Log.Debug($"[PlayerGlobalPerms]: Deserialized {triggerAliasesArray.Count} TriggerAliases");
+            }
+            // for the unique player perms
+            _uniquePlayerPerms.Clear();
+            var uniquePlayerPermsArray = jsonObject["UniquePlayerPerms"]?.Value<JArray>();
+            if (uniquePlayerPermsArray != null) {
+                foreach (var item in uniquePlayerPermsArray) {
+                    var perm = new UniquePlayerPerms();
+                    perm.Deserialize(item.Value<JObject>());
+                    _uniquePlayerPerms.Add(perm);
+                }
+                GagSpeak.Log.Debug($"[PlayerGlobalPerms]: Deserialized {uniquePlayerPermsArray.Count} UniquePlayerPerms");
+            }
+            // deserialize the rest of the base class
+            base.Deserialize(jsonObject);
+            _safeword = jsonObject["Safeword"]?.Value<string>() ?? "safeword";
+            _doCmdsFromFriends = jsonObject["DoCmdsFromFriends"]?.Value<bool>() ?? false;
+            _doCmdsFromParty = jsonObject["DoCmdsFromParty"]?.Value<bool>() ?? false;
+            _liveGarblerWarnOnZoneChange = jsonObject["LiveGarblerWarnOnZoneChange"]?.Value<bool>() ?? false;
+            _revertStyle = Enum.TryParse(jsonObject["RevertStyle"]?.Value<string>(), out RevertStyle revertstyle) ? revertstyle : RevertStyle.ToAutomationOnly;
+            _globalTriggerPhrase = jsonObject["GlobalTriggerPhrase"]?.Value<string>() ?? "";
+            _globalAllowSitRequests = jsonObject["GlobalAllowSitRequests"]?.Value<bool>() ?? false;
+            _globalAllowMotionRequests = jsonObject["GlobalAllowMotionRequests"]?.Value<bool>() ?? false;
+            _globalAllowAllCommands = jsonObject["GlobalAllowAllCommands"]?.Value<bool>() ?? false;
+            _allowItemAutoEquip = jsonObject["AllowItemAutoEquip"]?.Value<bool>() ?? false;
+            _allowRestraintSetAutoEquip = jsonObject["AllowRestraintSetAutoEquip"]?.Value<bool>() ?? false;
+            _usingSimulatedVibe = jsonObject["UsingSimulatedVibe"]?.Value<bool>() ?? false;
+
+        }
+        catch (System.Exception e) {
+            GagSpeak.Log.Error($"[PlayerGlobalPerms]: Error deserializing PlayerGlobalPerms: {e}");
         }
         #pragma warning restore CS8604 // Possible null reference argument.
     }

@@ -97,7 +97,7 @@ public partial class CharacterHandler
     }
 
     public void ToggleExtendedLockTimes() {
-        playerChar._grantExtendedLockTimes[activeListIdx] = !playerChar._grantExtendedLockTimes[activeListIdx];
+        playerChar._uniquePlayerPerms[activeListIdx]._grantExtendedLockTimes = !playerChar._uniquePlayerPerms[activeListIdx]._grantExtendedLockTimes;
         _saveService.QueueSave(this);
     }
 
@@ -122,12 +122,12 @@ public partial class CharacterHandler
     }
 
     public void ToggleEnableRestraintSets(int idx) {
-        playerChar._enableRestraintSets[idx] = !playerChar._enableRestraintSets[idx];
+        playerChar._uniquePlayerPerms[activeListIdx]._enableRestraintSets = !playerChar._uniquePlayerPerms[activeListIdx]._enableRestraintSets;
         _saveService.QueueSave(this);
     }
 
     public void ToggleRestraintSetLocking(int idx) {
-        playerChar._restraintSetLocking[idx] = !playerChar._restraintSetLocking[idx];
+        playerChar._uniquePlayerPerms[activeListIdx]._restraintSetLocking = !playerChar._uniquePlayerPerms[activeListIdx]._restraintSetLocking;
         _saveService.QueueSave(this);
     }
 
@@ -142,17 +142,17 @@ public partial class CharacterHandler
     }
 
     public void ToggleAllowSitRequests(int idx) {
-        playerChar._allowSitRequests[idx] = !playerChar._allowSitRequests[idx];
+        playerChar._uniquePlayerPerms[activeListIdx]._allowSitRequests = !playerChar._uniquePlayerPerms[activeListIdx]._allowSitRequests;
         _saveService.QueueSave(this);
     }
 
     public void ToggleAllowMotionRequests(int idx) {
-        playerChar._allowMotionRequests[idx] = !playerChar._allowMotionRequests[idx];
+        playerChar._uniquePlayerPerms[activeListIdx]._allowMotionRequests = !playerChar._uniquePlayerPerms[activeListIdx]._allowMotionRequests;
         _saveService.QueueSave(this);
     }
 
     public void ToggleAllowAllCommands(int idx) {
-        playerChar._allowAllCommands[idx] = !playerChar._allowAllCommands[idx];
+        playerChar._uniquePlayerPerms[activeListIdx]._allowAllCommands = !playerChar._uniquePlayerPerms[activeListIdx]._allowAllCommands;
         _saveService.QueueSave(this);
     }
 
@@ -163,17 +163,17 @@ public partial class CharacterHandler
     }
 
     public void ToggleAllowIntensityControl(int idx) {
-        playerChar._allowIntensityControl[idx] = !playerChar._allowIntensityControl[idx];
+        playerChar._uniquePlayerPerms[activeListIdx]._allowIntensityControl = !playerChar._uniquePlayerPerms[activeListIdx]._allowIntensityControl;
         _saveService.QueueSave(this);
     }
 
     public void ToggleChangeToyState(int idx) {
-        playerChar._allowChangingToyState[idx] = !playerChar._allowChangingToyState[idx];
+        playerChar._uniquePlayerPerms[activeListIdx]._allowChangingToyState = !playerChar._uniquePlayerPerms[activeListIdx]._allowChangingToyState;
         _saveService.QueueSave(this);
     }
 
     public void ToggleAllowPatternExecution(int idx) {
-        playerChar._allowUsingPatterns[idx] = !playerChar._allowUsingPatterns[idx];
+        playerChar._uniquePlayerPerms[activeListIdx]._allowUsingPatterns = !playerChar._uniquePlayerPerms[activeListIdx]._allowUsingPatterns;
         _saveService.QueueSave(this);
     }
 
@@ -188,37 +188,37 @@ public partial class CharacterHandler
     }
 
     public void SetNewTriggerPhrase(string newPhrase) {
-        playerChar._triggerPhraseForPuppeteer[activeListIdx] = newPhrase;
+        playerChar._uniquePlayerPerms[activeListIdx]._triggerPhraseForPuppeteer = newPhrase;
         _saveService.QueueSave(this);
     }
 
     public void UpdateAllowSitRequests(bool value) {
-        if(playerChar._allowSitRequests[activeListIdx] != value) {
-            playerChar._allowSitRequests[activeListIdx] = value;
+        if(playerChar._uniquePlayerPerms[activeListIdx]._allowSitRequests != value) {
+            playerChar._uniquePlayerPerms[activeListIdx]._allowSitRequests = value;
             _saveService.QueueSave(this);
         }
         else {
-            playerChar._allowSitRequests[activeListIdx] = value;
+            playerChar._uniquePlayerPerms[activeListIdx]._allowSitRequests = value;
         }
     }
 
     public void UpdateAllowMotionRequests(bool value) {
-        if(playerChar._allowMotionRequests[activeListIdx] != value) {
-            playerChar._allowMotionRequests[activeListIdx] = value;
+        if(playerChar._uniquePlayerPerms[activeListIdx]._allowMotionRequests != value) {
+            playerChar._uniquePlayerPerms[activeListIdx]._allowMotionRequests = value;
             _saveService.QueueSave(this);
         }
         else {
-            playerChar._allowMotionRequests[activeListIdx] = value;
+            playerChar._uniquePlayerPerms[activeListIdx]._allowMotionRequests = value;
         }
     }
 
     public void UpdateAllowAllCommands(bool value) {
-        if(playerChar._allowAllCommands[activeListIdx] != value) {
-            playerChar._allowAllCommands[activeListIdx] = value;
+        if(playerChar._uniquePlayerPerms[activeListIdx]._allowAllCommands != value) {
+            playerChar._uniquePlayerPerms[activeListIdx]._allowAllCommands = value;
             _saveService.QueueSave(this);
         }
         else {
-            playerChar._allowAllCommands[activeListIdx] = value;
+            playerChar._uniquePlayerPerms[activeListIdx]._allowAllCommands = value;
         }
     }
     public void AddNewAliasEntry(AliasTrigger alias) {
@@ -251,12 +251,12 @@ public partial class CharacterHandler
     }
 
     public void SetNewStartCharForPuppeteerTrigger(string newStartChar) {
-        playerChar._StartCharForPuppeteerTrigger[activeListIdx] = newStartChar;
+        playerChar._uniquePlayerPerms[activeListIdx]._StartCharForPuppeteerTrigger = newStartChar;
         _saveService.QueueSave(this);
     }
 
     public void SetNewEndCharForPuppeteerTrigger(string newEndChar) {
-        playerChar._EndCharForPuppeteerTrigger[activeListIdx] = newEndChar;
+        playerChar._uniquePlayerPerms[activeListIdx]._EndCharForPuppeteerTrigger = newEndChar;
         _saveService.QueueSave(this);
     }
 #endregion PlayerChar Handler Functions

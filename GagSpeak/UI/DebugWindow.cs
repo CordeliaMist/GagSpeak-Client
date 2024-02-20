@@ -87,47 +87,6 @@ public class DebugWindow : Window //, IDisposable
         DrawPhoneticDebugInformation();
     }
 
-    // temp vibe debug stuff
-    /*
-    ImGui.SetCursorPosY(yPos - 5*ImGuiHelpers.GlobalScale);
-    if(!_plugService.anyDeviceConnected) { 
-        DisplayText("No Device Connected!");
-    }
-    else {
-        #pragma warning disable CS8602 // Dereference of a possibly null reference.
-        if(_plugService.activeDevice.DisplayName.IsNullOrEmpty()) {
-            DisplayText($"{_plugService.activeDevice.Name} Connected");
-        }
-        else {
-            DisplayText($"{_plugService.activeDevice.DisplayName} Connected");
-        }
-        #pragma warning restore CS8602 // Dereference of a possibly null reference.
-        // print all the juicy into to figure out how this service works
-        // Print ButtplugClient details
-        ImGui.Text($"Client Name: {_plugService.client.Name}");
-        ImGui.Text($"Connected: {_plugService.client.Connected}");
-        if(_plugService.IsClientConnected() && _plugService.HasConnectedDevice()) {
-            ImGui.Text($"Devices: {string.Join(", ", _plugService.client.Devices.Select(d => d.Name))}");
-        } else {
-            ImGui.Text($"Devices: No Devices Connected");
-        }
-        // Print ButtplugClientDevice details if a device is connected
-        if (_plugService.activeDevice != null)
-        {
-            ImGui.Text($"Device Index: {_plugService.activeDevice.Index}");
-            ImGui.Text($"Device Name: {_plugService.activeDevice.Name}");
-            ImGui.Text($"Device Display Name: {_plugService.activeDevice.DisplayName}");
-            ImGui.Text($"Message Timing Gap: {_plugService.activeDevice.MessageTimingGap}");
-            ImGui.Text($"ActiveToy's Step Size: {_plugService.stepInterval}");
-            ImGui.Text($"Has Battery: {_plugService.activeDevice.HasBattery}");
-            ImGui.TextWrapped($"Vibrate Attributes: {string.Join(", ", _plugService.activeDevice.VibrateAttributes.Select(a => a.ActuatorType.ToString()))}");
-            ImGui.Text($"Oscillate Attributes: {string.Join(", ", _plugService.activeDevice.OscillateAttributes.Select(a => a.ActuatorType.ToString()))}");
-            ImGui.Text($"Rotate Attributes: {string.Join(", ", _plugService.activeDevice.RotateAttributes.Select(a => a.ActuatorType.ToString()))}");
-            ImGui.Text($"Linear Attributes: {string.Join(", ", _plugService.activeDevice.LinearAttributes.Select(a => a.ActuatorType.ToString()))}");
-        }
-    }
-    */
-
     // basic string function to get the label of title for the window
     private static string GetLabel() => "GagSpeakDebug###GagSpeakDebug";    
 
@@ -157,11 +116,11 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Text($"Enable Item Auto-Equip?: {_characterHandler.playerChar._allowItemAutoEquip}");
         ImGui.Text($"Allow Restraint Locking?: {_characterHandler.playerChar._allowRestraintSetAutoEquip}");
         ImGui.Text($"Lock Gag Storage on Gag Lock: {_characterHandler.playerChar._lockGagStorageOnGagLock}");
-        ImGui.Text($"Enable Restraint Sets: {_characterHandler.playerChar._enableRestraintSets}");
-        ImGui.Text($"Restraint Set Locking: {_characterHandler.playerChar._restraintSetLocking}");
+        ImGui.Text($"Enable Restraint Sets: {_characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._enableRestraintSets}");
+        ImGui.Text($"Restraint Set Locking: {_characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._restraintSetLocking}");
         ImGui.Separator();
         ImGui.Text($"Enable Toybox: {_characterHandler.playerChar._enableToybox}");
-        ImGui.Text($"Allow Intensity Control: {_characterHandler.playerChar._allowIntensityControl}");
+        ImGui.Text($"Allow Intensity Locking: {_characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowIntensityControl}");
         ImGui.Text($"Intensity Level: {_characterHandler.playerChar._intensityLevel}");
         ImGui.Text($"Allow Toybox Locking: {_characterHandler.playerChar._lockToyboxUI}");
         ImGui.Separator();
@@ -175,24 +134,41 @@ public class DebugWindow : Window //, IDisposable
         var triggerlist = _characterHandler.playerChar._triggerAliases[_characterHandler.activeListIdx];
         ImGui.Text($"Trigger Aliases: || "); ImGui.SameLine(); foreach (var alias in triggerlist._aliasTriggers) { ImGui.Text(alias._inputCommand); };
         ImGui.Separator();
-        ImGui.Text($"Allow Extended Lock Times: || "); ImGui.SameLine(); foreach (var extendedLock in _characterHandler.playerChar._grantExtendedLockTimes) { ImGui.Text(extendedLock.ToString()); };
-        ImGui.Separator();
-        ImGui.Text($"Trigger Phrase for Puppeteer: || "); ImGui.SameLine(); foreach (var triggerPhrase in _characterHandler.playerChar._triggerPhraseForPuppeteer) { ImGui.Text(triggerPhrase); };
-        ImGui.Separator();
-        ImGui.Text($"Start Char for Puppeteer Trigger: || "); ImGui.SameLine(); foreach (var startChar in _characterHandler.playerChar._StartCharForPuppeteerTrigger) { ImGui.Text(startChar); };
-        ImGui.Separator();
-        ImGui.Text($"End Char for Puppeteer Trigger: || "); ImGui.SameLine(); foreach (var endChar in _characterHandler.playerChar._EndCharForPuppeteerTrigger) { ImGui.Text(endChar); };
-        ImGui.Separator();
-        ImGui.Text($"Allow Sit Requests: || "); ImGui.SameLine(); foreach (var sitRequest in _characterHandler.playerChar._allowSitRequests) { ImGui.Text(sitRequest.ToString()); };
-        ImGui.Separator();
-        ImGui.Text($"Allow Motion Requests: || "); ImGui.SameLine(); foreach (var motionRequest in _characterHandler.playerChar._allowMotionRequests) { ImGui.Text(motionRequest.ToString()); };
-        ImGui.Separator();
-        ImGui.Text($"Allow All Commands: || "); ImGui.SameLine(); foreach (var allCommands in _characterHandler.playerChar._allowAllCommands) { ImGui.Text(allCommands.ToString()); };
-        ImGui.Separator();
-        ImGui.Text($"Allow Changing Toy State: || "); ImGui.SameLine(); foreach (var toyState in _characterHandler.playerChar._allowChangingToyState) { ImGui.Text(toyState.ToString()); };
-        ImGui.Separator();
-        ImGui.Text($"Allow Using Patterns: || "); ImGui.SameLine(); foreach (var usingPatterns in _characterHandler.playerChar._allowUsingPatterns) { ImGui.Text(usingPatterns.ToString()); };
-        ImGui.Separator();
+        int i = 0;
+        foreach(var uniquePlayer in _characterHandler.playerChar._uniquePlayerPerms) {
+            ImGui.Text($"Lock Times: {uniquePlayer._grantExtendedLockTimes}");
+            ImGui.Text($"Enable Restraints: {uniquePlayer._enableRestraintSets}");
+            ImGui.Text($"Enable Set Locking: {uniquePlayer._restraintSetLocking}");
+            ImGui.Text($"Trigger Phrase for them: {uniquePlayer._triggerPhraseForPuppeteer}");
+            ImGui.Text($"Trigger start char: {uniquePlayer._StartCharForPuppeteerTrigger}");
+            ImGui.Text($"Trigger end char: {uniquePlayer._EndCharForPuppeteerTrigger}");
+            ImGui.Text($"Allow sitting: {uniquePlayer._allowSitRequests}");
+            ImGui.Text($"Allow emotes: {uniquePlayer._allowMotionRequests}");
+            ImGui.Text($"Allow all: {uniquePlayer._allowAllCommands}");
+            ImGui.Text($"Allow Changing toy state: {uniquePlayer._allowChangingToyState}");
+            ImGui.Text($"Allow pattern execution: {uniquePlayer._allowUsingPatterns}");
+            ImGui.Text($"RestraintSetProperties");
+            for(int j = 0; j < uniquePlayer._legsRestraintedProperty.Count; j++) {
+                ImGui.Text($"Properties for restraint set {j}");
+                ImGui.Text($"Legs:{uniquePlayer._legsRestraintedProperty[j]}||");
+                ImGui.SameLine();
+                ImGui.Text($"Arms:{uniquePlayer._armsRestraintedProperty[j]}||");
+                ImGui.SameLine();
+                ImGui.Text($"Gagged:{uniquePlayer._gaggedProperty[j]}||");
+                ImGui.SameLine();
+                ImGui.Text($"Blindfolded:{uniquePlayer._blindfoldedProperty[j]}||");
+                ImGui.SameLine();
+                ImGui.Text($"Immobile:{uniquePlayer._immobileProperty[j]}||");
+                ImGui.SameLine();
+                ImGui.Text($"Weighty:{uniquePlayer._weightyProperty[j]}||");
+                ImGui.SameLine();
+                ImGui.Text($"LightStim:{uniquePlayer._lightStimulationProperty[j]}||");
+                ImGui.SameLine();
+                ImGui.Text($"MildStim:{uniquePlayer._mildStimulationProperty[j]}||");
+                ImGui.SameLine();
+                ImGui.Text($"HeavyStim:{uniquePlayer._heavyStimulationProperty[j]}||");
+            }
+        }
     }
 
     public void DrawRestraintSetOverview() {
