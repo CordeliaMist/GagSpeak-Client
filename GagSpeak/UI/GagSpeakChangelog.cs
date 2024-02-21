@@ -54,7 +54,7 @@ public class GagSpeakChangelog
     }
 
     private static void Add2_2_0_0(Changelog log)
-        => log.NextVersion("Version 2.2.2.0 Release")
+        => log.NextVersion("Version 2.2.2.1 Release")
             .RegisterHighlight("Paving the way for the new Hardcore Tab, which will have its logic developed by others.")
             .RegisterEntry("Restructured the CharacterData, added a config migrator for the pre 2.1.6.0 users.")
             .RegisterEntry("Lots of backend work done to make things more organized and less spaghetti.")

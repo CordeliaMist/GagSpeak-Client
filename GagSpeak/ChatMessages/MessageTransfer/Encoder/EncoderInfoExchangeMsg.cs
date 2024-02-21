@@ -203,9 +203,9 @@ public partial class MessageEncoder {
 
         // trigger phrase of messageSender for puppeteer compartment
         baseString += $"their partner whispered "+
-        $"{_characterHandler.playerChar._uniquePlayerPerms[Idx]._StartCharForPuppeteerTrigger[Idx]}"+
-        $"{_characterHandler.playerChar._uniquePlayerPerms[Idx]._triggerPhraseForPuppeteer[Idx]}"+
-        $"{_characterHandler.playerChar._uniquePlayerPerms[Idx]._EndCharForPuppeteerTrigger[Idx]}";
+        $"{_characterHandler.playerChar._uniquePlayerPerms[Idx]._StartCharForPuppeteerTrigger}"+
+        $"{_characterHandler.playerChar._uniquePlayerPerms[Idx]._triggerPhraseForPuppeteer}"+
+        $"{_characterHandler.playerChar._uniquePlayerPerms[Idx]._EndCharForPuppeteerTrigger}";
 
         // does messageSender allow sit requests? (BOOL)
         baseString += " causing them to ";

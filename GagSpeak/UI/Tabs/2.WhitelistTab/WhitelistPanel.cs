@@ -258,7 +258,6 @@ public partial class WhitelistPanel {
         var text = "You";
         var suffix = "r";
         // if our hardcord condition is fullfilled, begin disable
-        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
         // draw the dropdowns
         try{
             DrawDetailsOverview(ref _interactions, text, suffix);
@@ -267,7 +266,6 @@ public partial class WhitelistPanel {
             DrawDetailsToybox(ref _interactions, text, suffix);
             // DrawDetailsHardcore(ref _interactions);
         } finally {
-            if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
             ImGui.PopStyleVar();
         }
     }
@@ -278,7 +276,10 @@ public partial class WhitelistPanel {
             : $"View your own configured settings and general permissions.";
         if(!ImGui.CollapsingHeader($"{text}{suffix} General Info & Settings")) { if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); } return; }
         if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); }
+        // draw the overview
+        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
         DrawOverviewPerms(ref _interactions, text, suffix);
+        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
     }
     private void DrawDetailsGags(ref bool _interactions, string text, string suffix) {
         var tooltipText = $"Apply, Lock, Unlock, or Remove both Gags & Padlocks to {text}.";
@@ -287,7 +288,10 @@ public partial class WhitelistPanel {
             return;
         }
         if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); }
+        // draw the gags
+        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
         DrawGagInteractions(ref _interactions);
+        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
     }
     private void DrawDetailsWardrobe(ref bool _interactions, string text, string suffix) {
         var tooltipText = WhitelistPanelTab.TheirSettings == _activePanelTab
@@ -301,7 +305,10 @@ public partial class WhitelistPanel {
             return;
         }
         if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); }
+        // draw the wardrobe
+        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
         DrawWardrobePerms(ref _interactions, text, suffix);
+        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
     }
     private void DrawDetailsPuppeteer(ref bool _interactions, string text, string suffix) { 
         var tooltipText = WhitelistPanelTab.TheirSettings == _activePanelTab
