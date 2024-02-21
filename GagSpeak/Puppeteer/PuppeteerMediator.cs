@@ -1,6 +1,7 @@
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Emote = Lumina.Excel.GeneratedSheets.Emote;
 
@@ -39,7 +40,6 @@ public class PuppeteerMediator
         puppeteerMessageToSend = string.Empty;
         return false;
     }
-
 
     /// <summary> Checks if whitelisted players message contains your trigger word </summary>
     /// <returns> True if the message contains the trigger word, false if not </returns>
@@ -161,6 +161,8 @@ public class PuppeteerMediator
         if (indexOfWhitelistedChar == -1) { return puppeteerMessageToSend; }
         // now we can use this index to scan our aliasLists
         AliasList aliasListToScan = _characterHandler.playerChar._triggerAliases[indexOfWhitelistedChar];
+        // Sort the aliases by length in descending order, to ensure longer equivalent input variants are taken before shorter ones.
+        var sortedAliases = aliasListToScan._aliasTriggers.OrderByDescending(alias => alias._inputCommand.Length);
         // see if our message contains any of the alias strings. For it to match, it must match the full alias string.
         foreach (AliasTrigger alias in aliasListToScan._aliasTriggers) {
             // if the alias is enabled
