@@ -17,48 +17,57 @@ public class TriggerWordDetector
         _puppeteerMediator = puppeteerMediator;
     }
 
-    public bool IsValidGlobalTriggerWord(string globalPuppeteerMessageToSend, XivChatType type) {
-        // contained the trigger word, so process it.
-        if(globalPuppeteerMessageToSend != string.Empty) {
-            SeString messageToSend = globalPuppeteerMessageToSend;
-            // now get the incoming chattype converted to our chat channel,
-            ChatChannel.ChatChannels? incomingChannel = ChatChannel.GetChatChannelFromXivChatType(type);
-            // if it isnt any of our active channels then we just dont wanna even process it
-            if(incomingChannel != null) {
-                // it isnt null meaning it is eithing the channels so now we can check if it meets the criteria
-                if(_config.ChannelsPuppeteer.Contains(incomingChannel.Value)
-                && _puppeteerMediator.MeetsGlobalSettingCriteria(messageToSend))
-                {
-                    return true;
+    public bool IsValidGlobalTriggerWord(SeString chatmessage, XivChatType type, out SeString messageToSend) {
+        // create the string that will be sent out
+        messageToSend = new SeString();
+        // see if it contains your trigger word for them
+        if(_puppeteerMediator.ContainsGlobalTriggerWord(chatmessage.TextValue, out string globalPuppeteerMessageToSend)) {
+            // contained the trigger word, so process it.
+            if(globalPuppeteerMessageToSend != string.Empty) {
+                // set the message to send
+                messageToSend = globalPuppeteerMessageToSend;
+                // now get the incoming chattype converted to our chat channel,
+                ChatChannel.ChatChannels? incomingChannel = ChatChannel.GetChatChannelFromXivChatType(type);
+                // if it isnt any of our active channels then we just dont wanna even process it
+                if(incomingChannel != null) {
+                    // it isnt null meaning it is eithing the channels so now we can check if it meets the criteria
+                    if(_config.ChannelsPuppeteer.Contains(incomingChannel.Value)
+                    && _puppeteerMediator.MeetsGlobalSettingCriteria(messageToSend))
+                    {
+                        return true;
+                    } else {
+                        GagSpeak.Log.Debug($"[OnChatMsgManager] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
+                        return false;
+                    }
                 } else {
-                    GagSpeak.Log.Debug($"[OnChatMsgManager] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
+                    GagSpeak.Log.Debug($"[OnChatMsgManager] Not an Enabled Chat Channel, aborting");
                     return false;
                 }
             } else {
-                GagSpeak.Log.Debug($"[OnChatMsgManager] Not an Enabled Chat Channel, aborting");
+                GagSpeak.Log.Debug($"[OnChatMsgManager] Puppeteer message to send was empty, aborting");
                 return false;
             }
         } else {
-            GagSpeak.Log.Debug($"[OnChatMsgManager] Puppeteer message to send was empty, aborting");
+            GagSpeak.Log.Debug($"[OnChatMsgManager] Message does not contain trigger word");
             return false;
         }
     }
         
-    public bool IsValidPuppeteerTriggerWord(string senderName, SeString chatmessage, XivChatType type, ref bool isHandled) {
-        GagSpeak.Log.Debug($"[OnChatMsgManager] Puppeteer was enabled, scanning message from {senderName}, as they are in your whitelist");
+    public bool IsValidPuppeteerTriggerWord(string senderName, SeString chatmessage, XivChatType type, ref bool isHandled, out SeString messageToSend) {
+        // create the string that will be sent out
+        messageToSend = new SeString();
         // see if it contains your trigger word for them
         if(_puppeteerMediator.ContainsTriggerWord(senderName, chatmessage.TextValue, out string puppeteerMessageToSend)){
-            GagSpeak.Log.Debug($"[OnChatMsgManager] Puppeteer message to send: {puppeteerMessageToSend}");
             if(puppeteerMessageToSend != string.Empty) {
                 // apply any alias translations, if any
-                SeString aliasedMessageToSend = _puppeteerMediator.ConvertAliasCommandsIfAny(senderName, puppeteerMessageToSend);
+                messageToSend = _puppeteerMediator.ConvertAliasCommandsIfAny(senderName, puppeteerMessageToSend);
                 // now get the incoming chattype converted to our chat channel,
                 ChatChannel.ChatChannels? incomingChannel = ChatChannel.GetChatChannelFromXivChatType(type);
                 // if it isnt any of our active channels then we just dont wanna even process it
                 if(incomingChannel != null) {
                     // it isnt null meaning it is eithing the channels so now we can check if it meets the criteria
                     if(_config.ChannelsPuppeteer.Contains(incomingChannel.Value)) {
-                        if(_puppeteerMediator.MeetsSettingCriteria(senderName, aliasedMessageToSend)) {
+                        if(_puppeteerMediator.MeetsSettingCriteria(senderName, messageToSend)) {
                             return true;
                         } else {
                             GagSpeak.Log.Debug($"[OnChatMsgManager] Command didnt abide by your settings aborting");

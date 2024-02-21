@@ -31,21 +31,23 @@ public class WhitelistSelector
         _dataManager = dataManager;
     }
 
-    private void DrawWhitelistHeader(float width) // Draw our header
-        => WindowHeader.Draw("Whitelist", 0, ImGui.GetColorU32(ImGuiCol.FrameBg), 0, width, WindowHeader.Button.Invisible);
+    private void DrawWhitelistHeader(float width, Action<bool> setInteractions, bool _interactions) // Draw our header
+        => WindowHeader.Draw("Whitelist", 0, ImGui.GetColorU32(ImGuiCol.FrameBg), 0, width, InteractionsButton(setInteractions, _interactions));
 
-    public void Draw(float width, ref bool _enableInteractions) {
+    public void Draw(float width, Action<bool> setInteractions, ref bool _interactions) {
         _defaultItemSpacing = ImGui.GetStyle().ItemSpacing;
         using (_ = ImRaii.Group()) {
         using var style   = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero)
             .Push(ImGuiStyleVar.FrameRounding, 0); // and make them recantuclar instead of rounded buttons
-        DrawWhitelistHeader(width);
+        DrawWhitelistHeader(width, setInteractions, _interactions);
         // make content disabled
-        if(!_enableInteractions) { ImGui.BeginDisabled(); }
         DrawWhitelistSelector(width);
-        DrawWhitelistButtons(width);
-        // end the disabled state
-        if(!_enableInteractions) { ImGui.EndDisabled(); }
+        if(!_interactions) { ImGui.BeginDisabled(); }
+        try{
+            DrawWhitelistButtons(width);
+        } finally {
+            if(!_interactions) { ImGui.EndDisabled(); }
+        }
         style.Pop();
         }
     }
@@ -156,6 +158,24 @@ public class WhitelistSelector
         style.Pop();
     }
 
+    private WindowHeader.Button InteractionsButton(Action<bool> setInteractions, bool _enableInteractions)
+            => !_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)
+                ? WindowHeader.Button.Invisible
+                : _enableInteractions
+                    ? new WindowHeader.Button {
+                        Description = "Disable interactions.",
+                        Icon = FontAwesomeIcon.LockOpen,
+                        OnClick = () => setInteractions(false),
+                        Visible = true,
+                        Disabled = false,
+                    }
+                    : new WindowHeader.Button {
+                        Description = "Enable interactions.",
+                        Icon = FontAwesomeIcon.Lock,
+                        OnClick = () => setInteractions(true),
+                        Visible = true,
+                        Disabled = false,
+                    };
 
     public void ImportRestraintSetList() {
         try {

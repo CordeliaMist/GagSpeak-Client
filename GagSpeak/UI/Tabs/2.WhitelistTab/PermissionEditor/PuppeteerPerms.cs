@@ -11,132 +11,135 @@ using GagSpeak.CharacterData;
 using Dalamud.Interface.Utility;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
-public partial class WhitelistPlayerPermissions {
+public partial class WhitelistPanel {
 
 #region DrawPuppeteerPerms
-    public void DrawPuppeteerPerms(ref bool _viewMode) {
+    public void DrawPuppeteerPerms(ref bool _interactions, string prefix, string suffix) {
         // Big Name Header
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
 
-        ImGui.PushFont(_fontService.UidFont);
-        var name = _viewMode ? $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}'s" : "Your";
-        ImGui.Text($"{name} Puppeteer Settings");
-        ImGui.PopFont();
 
         // store their dynamic tier for edit purposes
-        DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTierClient();
+        DynamicTier dynamicTier = _tempWhitelistChar.GetDynamicTierClient();
         // store the hovered var for tooltips
-        var hovered  = ImGui.IsItemHovered();
-
-        ImGui.Text($"Trigger phase: \"");
+        ImGui.Text($"{prefix}{suffix} Trigger Phrase: \"");
+        if(ImGui.IsItemHovered()) { var tt = tooltips["TriggerPhraseTT"](); ImGui.SetTooltip($"{tt}"); }
         ImGui.SameLine();
-        var triggerPhrase = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirTriggerPhrase 
-                                      : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._triggerPhraseForPuppeteer;
+        var triggerPhrase = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._theirTriggerPhrase 
+                                    : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._triggerPhraseForPuppeteer;
         if(triggerPhrase == "") {
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), "Empty / Invalid Trigger Phrase");
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), "Invalid Trigger Phrase");
+            if(ImGui.IsItemHovered()) { var tt = tooltips["TriggerPhraseTT"](); ImGui.SetTooltip($"{tt}"); }
         } else {
             ImGui.TextColored(new Vector4(0, 1, 0, 1), triggerPhrase);
+            if(ImGui.IsItemHovered()) { var tt = tooltips["TriggerPhraseTT"](); ImGui.SetTooltip($"{tt}"); }
         }
-        ImGui.SameLine();
-        ImGui.Text("\"");
+        ImGui.SameLine(); ImGui.Text("\"");
 
-        ImGui.Text("Start/End Chars:");
-        if(_viewMode) {
+        ImGui.Text("Start Bracket Char: ");
+        if(ImGui.IsItemHovered()) { var tt = tooltips["StartCharTT"](); ImGui.SetTooltip($"{tt}"); }
+        if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
             ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirTriggerStartChar);
-            ImGui.SameLine(); ImGui.Text(" & "); ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirTriggerEndChar);
+            ImGui.TextColored(new Vector4(0, 1, 0, 1), _tempWhitelistChar._theirTriggerStartChar);
         } else {
             ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._StartCharForPuppeteerTrigger);
-            ImGui.SameLine(); ImGui.Text(" & "); ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._EndCharForPuppeteerTrigger);
+            ImGui.TextColored(new Vector4(0, 1, 0, 1), _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._StartCharForPuppeteerTrigger);
         }
-
+        ImGui.Text("End Bracket Char: ");
+        if(ImGui.IsItemHovered()) { var tt = tooltips["EndCharTT"](); ImGui.SetTooltip($"{tt}"); }
+        if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
+            ImGui.SameLine();
+            ImGui.TextColored(new Vector4(0, 1, 0, 1), _tempWhitelistChar._theirTriggerEndChar);
+        } else {
+            ImGui.SameLine();
+            ImGui.TextColored(new Vector4(0, 1, 0, 1), _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._EndCharForPuppeteerTrigger);
+        }
         // draw out the table for our permissions
         using (var tableOverrideSettings = ImRaii.Table("PuppeteerManagerTable", 4, ImGuiTableFlags.RowBg)) {
             if (!tableOverrideSettings) return;
             // Create the headers for the table
-            var text = _viewMode ? "Granted Permission Level" : $"Permissions for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}";
-            ImGui.TableSetupColumn($"{text}",  ImGuiTableColumnFlags.WidthStretch);
+            var text2 = _activePanelTab==WhitelistPanelTab.TheirSettings ? "Granted Permission Level" : $"Permissions for {_tempWhitelistChar._name.Split(' ')[0]}";
+            ImGui.TableSetupColumn($"{text2}",  ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("State",     ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("State").X);
             ImGui.TableSetupColumn("Req. Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Req. Tier").X);
             ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemm").X);
             ImGui.TableHeadersRow();
             ImGui.TableNextRow();
 
-            // if our hardcord condition is fullfilled, begin disable
-            if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
-
             // Lock Gag Storage on Gag Lock option
             ImGuiUtil.DrawFrameColumn($"Allows Sit Commands:");
-
+            if(ImGui.IsItemHovered()) { var tt = tooltips["AllowSitPermTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var allowSits = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsSitRequests
-                                      : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowSitRequests;
+            var allowSits = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._allowsSitRequests
+                                      : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._allowSitRequests;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((allowSits ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
+            if(ImGui.IsItemHovered()) { var tt = tooltips["CurrentStateTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("1");
+            if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleSitCommandsPermissionButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier1))) {
+            tooltips["ToggleButtonTT"](), _activePanelTab==WhitelistPanelTab.TheirSettings && !(dynamicTier >= DynamicTier.Tier1))) {
                 // how to treat what happens when we press the button
-                if(_viewMode) {
+                if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
                     TogglePlayersSitRequestOption();
                     _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     // its us pressing it, so just toggle the state
-                    _characterHandler.ToggleAllowSitRequests(_characterHandler.activeListIdx);
+                    _characterHandler.ToggleAllowSitRequests(_tempWhitelistIdx);
                 }
             }
-
             // Enable Restraint Sets option
             ImGuiUtil.DrawFrameColumn($"Allows Motion Commands:");
+            if(ImGui.IsItemHovered()) { var tt = tooltips["AllowMotionPermTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var allowMotions = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsMotionRequests
-                                        : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowMotionRequests;
+            var allowMotions = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._allowsMotionRequests
+                                        : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._allowMotionRequests;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((allowMotions ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
+            if(ImGui.IsItemHovered()) { var tt = tooltips["CurrentStateTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("2");
+            if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleMotionCommandsPermissionButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
+            tooltips["ToggleButtonTT"](), _activePanelTab==WhitelistPanelTab.TheirSettings && !(dynamicTier >= DynamicTier.Tier2))) {
                 // how to treat what happens when we press the button
-                if(_viewMode) {
+                if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
                     TogglePlayerMotionRequestsOption();
                     _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     // its us pressing it, so just toggle the state
-                    _characterHandler.ToggleAllowMotionRequests(_characterHandler.activeListIdx);
+                    _characterHandler.ToggleAllowMotionRequests(_tempWhitelistIdx);
                 }
             }
-
-
             // Restraint Set Locking option
             ImGuiUtil.DrawFrameColumn($"Allow All Commands:");
+            if(ImGui.IsItemHovered()) { var tt = tooltips["AllowAllCommandsPermTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var allowAllCommands = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsAllCommands
-                                            : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowAllCommands;
+            var allowAllCommands = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._allowsAllCommands
+                                            : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._allowAllCommands;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((allowAllCommands ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
+            if(ImGui.IsItemHovered()) { var tt = tooltips["CurrentStateTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("4");
+            if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleAllCommandsPermissionButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier4))) {
+            tooltips["ToggleButtonTT"](), _activePanelTab==WhitelistPanelTab.TheirSettings && !(dynamicTier >= DynamicTier.Tier4))) {
                 // how to treat what happens when we press the button
-                if(_viewMode) {
+                if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
                     TogglePlayerAllCommandsOption();
                     _interactOrPermButtonEvent.Invoke(5);
                 } else {
                     // its us pressing it, so just toggle the state
-                    _characterHandler.ToggleAllowAllCommands(_characterHandler.activeListIdx);
+                    _characterHandler.ToggleAllowAllCommands(_tempWhitelistIdx);
                 }
             }
         }
@@ -150,15 +153,15 @@ public partial class WhitelistPlayerPermissions {
             ImGui.TableNextRow();
 
             // draw out the alias list
-            foreach (var alias in _characterHandler.whitelistChars[_characterHandler.activeListIdx]._storedAliases) {
+            foreach (var alias in _tempWhitelistChar._storedAliases) {
                 ImGui.TableNextColumn();
                 ImGui.Text(alias.Key);
+                if(ImGui.IsItemHovered()) { var tt = tooltips["AliasInputTT"](); ImGui.SetTooltip($"{tt}"); }
                 ImGui.TableNextColumn();
                 ImGui.Text(alias.Value);
+                if(ImGui.IsItemHovered()) { var tt = tooltips["AliasOutputTT"](); ImGui.SetTooltip($"{tt}"); }
             }
         }
-        // if our hardcord condition is fullfilled, end disable
-        if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
         // pop the style
         ImGui.PopStyleVar();
     }
@@ -168,14 +171,14 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
-        string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
+        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Allow Sit Requests Option!").AddItalicsOff().BuiltString);
+            $"{_tempWhitelistChar._name}'s Allow Sit Requests Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistAllowSitRequests(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsSitRequests);
+        _characterHandler.SetWhitelistAllowSitRequests(_tempWhitelistIdx, !_tempWhitelistChar._allowsSitRequests);
         _chatManager.SendRealMessage(_messageEncoder.EncodePuppeteerToggleOnlySitRequestOption(playerPayload, targetPlayer));
     }
 
@@ -183,28 +186,28 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
-        string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
+        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Allow Motion Requests Option!").AddItalicsOff().BuiltString);
+            $"{_tempWhitelistChar._name}'s Allow Motion Requests Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistAllowMotionRequests(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsMotionRequests);
+        _characterHandler.SetWhitelistAllowMotionRequests(_tempWhitelistIdx, !_tempWhitelistChar._allowsMotionRequests);
         _chatManager.SendRealMessage(_messageEncoder.EncodePuppeteerToggleOnlyMotionRequestOption(playerPayload, targetPlayer));
     }
     public void TogglePlayerAllCommandsOption() {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
-        string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
+        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Allow All Commands Option!").AddItalicsOff().BuiltString);
+            $"{_tempWhitelistChar._name}'s Allow All Commands Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistAllowAllCommands(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsAllCommands);
+        _characterHandler.SetWhitelistAllowAllCommands(_tempWhitelistIdx, !_tempWhitelistChar._allowsAllCommands);
         _chatManager.SendRealMessage(_messageEncoder.EncodePuppeteerToggleAllCommandsOption(playerPayload, targetPlayer));
     }
 #endregion ButtonHelpers

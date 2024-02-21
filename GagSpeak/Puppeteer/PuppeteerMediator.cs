@@ -24,7 +24,6 @@ public class PuppeteerMediator
             puppeteerMessageToSend = string.Empty;
             return false;
         }
-        GagSpeak.Log.Debug($"[PuppeteerMediator]: Trigger Word: {triggerWord}");
         // now that we have our trigger word, see if the trigger word exists within our message
         var match = MatchTriggerWord(messageRecieved, triggerWord);
         if (match.Success) {
@@ -33,7 +32,6 @@ public class PuppeteerMediator
             if (remainingMessage != null) {
                 remainingMessage = ConvertSquareToAngleBrackets(remainingMessage);
                 puppeteerMessageToSend = remainingMessage;
-                GagSpeak.Log.Debug($"[PuppeteerMediator]: New Message: {puppeteerMessageToSend}");
                 return true;
             }
         }
@@ -53,7 +51,6 @@ public class PuppeteerMediator
             puppeteerMessageToSend = string.Empty;
             return false;
         }
-        GagSpeak.Log.Debug($"[PuppeteerMediator]: Index of Whitelisted Char: {indexOfWhitelistedChar}");
         string triggerWords = _characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._triggerPhraseForPuppeteer;
         string[] triggerWordArray = triggerWords.Split('|');
 
@@ -63,8 +60,6 @@ public class PuppeteerMediator
             {
                 continue;
             }
-            GagSpeak.Log.Debug($"[PuppeteerMediator]: Trigger Word: {triggerWord}");
-
             // now that we have our trigger word, see if the trigger word exists within our message
             var match = MatchTriggerWord(messageRecieved, triggerWord);
             if (match.Success)
@@ -75,7 +70,7 @@ public class PuppeteerMediator
                 {
                     remainingMessage = ConvertSquareToAngleBrackets(remainingMessage);
                     puppeteerMessageToSend = remainingMessage;
-                    GagSpeak.Log.Debug($"[PuppeteerMediator]: New Message: {puppeteerMessageToSend}");
+                    GagSpeak.Log.Debug($"[PuppeteerMediator]: Index of Whitelisted Char in found Match: {indexOfWhitelistedChar}");
                     return true;
                 }
             }
@@ -92,7 +87,8 @@ public class PuppeteerMediator
         // At this point, our main concern is if the message to play is within the parameters of the settings we set
         // for the player. If the player has the setting enabled, then we can proceed.
         if(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._allowSitRequests) {
-            if(messageRecieved.TextValue == "sit" || messageRecieved.TextValue == "groundsit") {
+            if(messageRecieved.TextValue == "sit" || messageRecieved.TextValue == "groundsit")
+            {
                 GagSpeak.Log.Debug($"[PuppeteerMediator]: valid sit command");
                 return true;
             } else {

@@ -33,7 +33,7 @@ public class PuppeteerTab : ITab
     }
 
     public float GetSelectorWidth()
-        => 160f * ImGuiHelpers.GlobalScale;
+        => 140f * ImGuiHelpers.GlobalScale;
 
     public float GetPanelHeight()
         => 175f * ImGuiHelpers.GlobalScale;

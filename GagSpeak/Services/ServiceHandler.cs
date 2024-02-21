@@ -158,7 +158,7 @@ public static class ServiceHandler
             .AddSingleton<GagListingsDrawer>()
             .AddSingleton<WhitelistTab>()
             .AddSingleton<WhitelistSelector>()
-            .AddSingleton<WhitelistPlayerPermissions>()
+            .AddSingleton<WhitelistPanel>()
             .AddSingleton<WardrobeTab>()
             .AddSingleton<WardrobeGagCompartment>()
             .AddSingleton<GagStorageSelector>()

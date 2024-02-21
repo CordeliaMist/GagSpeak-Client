@@ -9,78 +9,70 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface;
 using GagSpeak.CharacterData;
 using Dalamud.Interface.Utility;
+using System;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
-public partial class WhitelistPlayerPermissions {
+public partial class WhitelistPanel {
     public int _vibratorIntensity = 1;
     public string _vibePatternName = "";
     public int _activeStoredPatternListIdx = 0;
 
 #region DrawWardrobePerms
-    public void DrawToyboxPerms(ref bool _viewMode) {
+    public void DrawToyboxPerms(ref bool _interactions, string prefix, string suffix) {
         // Big Name Header
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
 
-        using (var ToyBoxHeaderTable = ImRaii.Table("ToyBoxHeaderTable", 2)) {
-            if (!ToyBoxHeaderTable) { return; }
-
-            ImGui.TableSetupColumn("##ToyboxHeader", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn("##ToyboxHeaderButton", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("ToyTogglemmmmm").X);
-            ImGui.TableNextRow();
-            ImGui.TableNextColumn();
-
-            // if our hardcord condition is fullfilled, begin disable
-            if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
-
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
-            ImGui.PushFont(_fontService.UidFont);
-            var name = _viewMode ? $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}'s" : "Your";
-            ImGui.Text($"{name} Toybox Settings");
+        // toy state:
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
+        ImGui.PushFont(_fontService.UidFont);
+        try {
+            ImGui.Text($"{prefix}{suffix} Toy State: ");
+        } finally {
             ImGui.PopFont();
-            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.BeginDisabled(); }
-
-            ImGui.TableNextColumn();
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 5*ImGuiHelpers.GlobalScale);
-            ImGui.Text($"Toy State:");
-            ImGui.SameLine();
-            var text = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive ? "On" : "Off";
-            if(ImGuiUtil.DrawDisabledButton($"{text}##ToggleToyActive", new Vector2(ImGui.GetContentRegionAvail().X, 20*ImGuiHelpers.GlobalScale),
-            string.Empty, _viewMode && !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState)) {
+        }
+        ImGui.SameLine();
+        if(!_tempWhitelistChar._allowChangingToyState) { ImGui.BeginDisabled(); }
+        try{
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 6*ImGuiHelpers.GlobalScale);
+            var text2 = _tempWhitelistChar._isToyActive ? "On" : "Off";
+            if(ImGuiUtil.DrawDisabledButton($"{text2}##ToggleToyActive", new Vector2(ImGuiHelpers.GlobalScale*50, 22*ImGuiHelpers.GlobalScale),
+            "Toggle the current state of the toy", _activePanelTab==WhitelistPanelTab.TheirSettings && !_tempWhitelistChar._allowChangingToyState)) {
                 TogglePlayersIsToyActiveOption();
                 _interactOrPermButtonEvent.Invoke(5);
             }
-            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState) { ImGui.EndDisabled(); }
+        } finally {
+            if(!_tempWhitelistChar._allowChangingToyState) { ImGui.EndDisabled(); }
         }
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 3*ImGuiHelpers.GlobalScale);
         // store their dynamic tier for edit purposes
-        DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTierClient();
+        DynamicTier dynamicTier = _tempWhitelistChar.GetDynamicTierClient();
         
         // draw out the table for our permissions
         using (var tableOverrideSettings = ImRaii.Table("ToyboxManagerTable", 4, ImGuiTableFlags.RowBg)) {
             if (!tableOverrideSettings) return;
-            // Create the headers for the table
-            var text = _viewMode ? "Setting" : $"Permission Setting for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}";
-            ImGui.TableSetupColumn($"{text}",  ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn($"Setting",  ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("State",     ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("State").X);
             ImGui.TableSetupColumn("Req. Tier", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Req.Tier").X);
-            ImGui.AlignTextToFramePadding();
             ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemo").X);
             ImGui.TableHeadersRow();
             ImGui.TableNextRow();
             // Restraint Set Locking option
             ImGuiUtil.DrawFrameColumn($"Locked Toybox UI?");
+            if(ImGui.IsItemHovered()) { var tt = tooltips["ToyboxStateTT"](); ImGui.SetTooltip(tt); }
             ImGui.TableNextColumn();
-            var toyboxUILock = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockToyboxUI : _characterHandler.playerChar._lockToyboxUI;
+            var toyboxUILock = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._lockToyboxUI : _characterHandler.playerChar._lockToyboxUI;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((toyboxUILock ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
+            if(ImGui.IsItemHovered()) { var tt = tooltips["CurrentStateTT"](); ImGui.SetTooltip(tt); }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("4");
+            if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip(tt); }
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Toggle##UpdateWhitelistPlayersToyIntensityButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier3))) {
-                if(_viewMode) {
+            tooltips["ToggleButtonTT"](), _activePanelTab==WhitelistPanelTab.TheirSettings && !(dynamicTier >= DynamicTier.Tier3))) {
+                if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
                     // the whitelisted players lock
                     TogglePlayerToyboxLockOption();
                     _interactOrPermButtonEvent.Invoke(5);
@@ -89,140 +81,157 @@ public partial class WhitelistPlayerPermissions {
                     _characterHandler.ToggleToyboxUILocking();
                 }
             }
-            if(!_viewMode && _characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
-            // Lock Gag Storage on Gag Lock option
-            ImGuiUtil.DrawFrameColumn($"Allow Change Toy State:");
-
-            ImGui.TableNextColumn();
-            var toyStatePerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState 
-                                         : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowChangingToyState;
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((toyStatePerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
-            }
-            ImGui.TableNextColumn();
-            ImGuiUtil.Center("1");
-            ImGui.TableNextColumn();
-            if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyActiveState", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier1))) {
-                if(_viewMode) {
-                    // toggle the whitelisted players permission to allow changing toy state
-                    TogglePlayerToggleChangeToyState();
-                    _interactOrPermButtonEvent.Invoke(5);
-                } else {
-                    // toggles if this person can change your toy state
-                    _characterHandler.ToggleChangeToyState(_characterHandler.activeListIdx);
-                }
-            }
-            // Can Control Intensity
-            ImGuiUtil.DrawFrameColumn($"Can Control Intensity:");
-            ImGui.TableNextColumn();
-            var toyIntensityPerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsIntensityControl 
-                                            : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowIntensityControl;
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((toyIntensityPerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
-            }
-            ImGui.TableNextColumn();
-            ImGuiUtil.Center("0");
-            ImGui.TableNextColumn();
-            if(_viewMode) {
-                ImGuiUtil.Center("ReadOnly");
-            } else {
-                if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyIntensityControl", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-                string.Empty, false)) {
-                    // toggles if this person can change your toy state
-                    _characterHandler.ToggleAllowIntensityControl(_characterHandler.activeListIdx);
-                }
-            }
-            // Enable Restraint Sets option
-            ImGuiUtil.DrawFrameColumn($"Can Execute Patterns:");
-            ImGui.TableNextColumn();
-            var patternExecuttionPerm = _viewMode ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsUsingPatterns 
-                                            : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowUsingPatterns;
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((patternExecuttionPerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
-            }
-            ImGui.TableNextColumn();
-            ImGuiUtil.Center("0");
-            ImGui.TableNextColumn();
-            if(_viewMode) {
-                ImGuiUtil.Center("ReadOnly");
-            } else {
-                if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleAllowingPatternExecution", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-                string.Empty, false)) {
-                    // toggles if this person can change your toy state
-                    _characterHandler.ToggleAllowPatternExecution(_characterHandler.activeListIdx);
-                }
-            }
-        }
-        if(!_viewMode) { ImGui.BeginDisabled(); }
-        // seperate the table and sliders
-        using (var toyboxDisplayList = ImRaii.Table("ToyboxManagerDisplayTable", 3, ImGuiTableFlags.RowBg)) {
-            if (!toyboxDisplayList) return;
-            // Create the headers for the table
-            var text = _viewMode ? "Setting" : $"Permission Setting for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}";
-            ImGui.TableSetupColumn("Setting",  ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Stored Patternmm").X);
-            ImGui.TableSetupColumn("Adjuster",     ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemo").X);
-            ImGui.TableNextRow();
-
-            ImGuiUtil.DrawFrameColumn("Intensity Level: ");
-            ImGui.TableNextColumn();
-            int intensityResult = _vibratorIntensity;
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            // default to a range of 10, but otherwise, display the toy's active step size
-            var maxSliderVal = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize==0 ? 20 : _characterHandler.whitelistChars[_characterHandler.activeListIdx]._activeToystepSize;
-            if(ImGui.SliderInt("##ToyIntensity", ref intensityResult, 0, maxSliderVal)) {
-                _vibratorIntensity = intensityResult;
-            }
-            ImGui.TableNextColumn();
-            if(ImGuiUtil.DrawDisabledButton("Update##UpdateToyIntensity", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, _viewMode && !(dynamicTier >= DynamicTier.Tier2))) {
-                UpdateWhitelistPlayersToyIntensity(_vibratorIntensity);
-                _interactOrPermButtonEvent.Invoke(2);
-            }
-
-            // pattern executtion section
-            ImGuiUtil.DrawFrameColumn("Pattern Name: ");
-            ImGui.TableNextColumn();
-            string patternResult = _vibePatternName;
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            ImGui.AlignTextToFramePadding();
-            if (ImGui.InputTextWithHint("##ToyPatternName", "Pattern Name", ref patternResult, 50)) {
-                _vibePatternName = patternResult;
-            }
-            // then go over and draw the execute button
-            ImGui.TableNextColumn();
-            if(ImGuiUtil.DrawDisabledButton("Execute##ExecuteToyPattern", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            string.Empty, !(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowsUsingPatterns == true))) {
-                ExecutePlayerToyPattern(_vibePatternName);
-                _interactOrPermButtonEvent.Invoke(5);
-            }
-
-            // stored pattern list
-            if(_viewMode) {
-                ImGuiUtil.DrawFrameColumn("Stored Patterns: ");
+            if(_activePanelTab==WhitelistPanelTab.YourSettings && _characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
+            try{
+                // Lock Gag Storage on Gag Lock option
+                ImGuiUtil.DrawFrameColumn($"Allow Change Toy State:");
+                if(ImGui.IsItemHovered()) { var tt = tooltips["AllowChangeToyStateTT"](); ImGui.SetTooltip(tt); }
                 ImGui.TableNextColumn();
-                // Create a combo box with the stored restraint data (had to convert to array because am dumb)
-                string[] patternData = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._storedPatternNames.ToArray();
-                int currentPatternIndex = _activeStoredPatternListIdx==0 ? 0 : _activeStoredPatternListIdx; // This should be the current selected index
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                if (ImGui.Combo("##storedPatternData", ref currentPatternIndex, patternData, patternData.Length)) {
-                    // If an item is selected from the dropdown, update the restraint set name field
-                    _vibePatternName = patternData[currentPatternIndex];
-                    // update the index to display
-                    _activeStoredPatternListIdx = currentPatternIndex;
+                var toyStatePerm = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._allowChangingToyState 
+                                            : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._allowChangingToyState;
+                using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
+                    ImGuiUtil.Center((toyStatePerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
                 }
-                // end the disabled state
-                if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _viewMode==false) {
-                    ImGui.EndDisabled();
+                if(ImGui.IsItemHovered()) { var tt = tooltips["CurrentStateTT"](); ImGui.SetTooltip(tt); }
+                ImGui.TableNextColumn();
+                ImGuiUtil.Center("1");
+                if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip(tt); }
+                ImGui.TableNextColumn();
+                if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyActiveState", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+                tooltips["ToggleButtonTT"](), _activePanelTab==WhitelistPanelTab.TheirSettings && !(dynamicTier >= DynamicTier.Tier1))) {
+                    if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
+                        // toggle the whitelisted players permission to allow changing toy state
+                        TogglePlayerToggleChangeToyState();
+                        _interactOrPermButtonEvent.Invoke(5);
+                    } else {
+                        // toggles if this person can change your toy state
+                        _characterHandler.ToggleChangeToyState(_tempWhitelistIdx);
+                    }
                 }
+                // Can Control Intensity
+                ImGuiUtil.DrawFrameColumn($"Can Control Intensity:");
+                if(ImGui.IsItemHovered()) { var tt = tooltips["CanControlIntensityTT"](); ImGui.SetTooltip(tt); }
+                ImGui.TableNextColumn();
+                var toyIntensityPerm = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._allowsIntensityControl 
+                                                : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._allowIntensityControl;
+                using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
+                    ImGuiUtil.Center((toyIntensityPerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                }
+                if(ImGui.IsItemHovered()) { var tt = tooltips["CurrentStateTT"](); ImGui.SetTooltip(tt); }
+                ImGui.TableNextColumn();
+                ImGuiUtil.Center("0");
+                if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip(tt); }
+                ImGui.TableNextColumn();
+                if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
+                    ImGuiUtil.Center("ReadOnly");
+                } else {
+                    if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyIntensityControl", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+                    tooltips["ToggleButtonTT"](), false)) {
+                        // toggles if this person can change your toy state
+                        _characterHandler.ToggleAllowIntensityControl(_tempWhitelistIdx);
+                    }
+                }
+                // Enable Restraint Sets option
+                ImGuiUtil.DrawFrameColumn($"Can Execute Patterns:");
+                if(ImGui.IsItemHovered()) { var tt = tooltips["CanExecutePatternsTT"](); ImGui.SetTooltip(tt); }
+                ImGui.TableNextColumn();
+                var patternExecuttionPerm = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._allowsUsingPatterns 
+                                                : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._allowUsingPatterns;
+                using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
+                    ImGuiUtil.Center((patternExecuttionPerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                }
+                if(ImGui.IsItemHovered()) { var tt = tooltips["CurrentStateTT"](); ImGui.SetTooltip(tt); }
+                ImGui.TableNextColumn();
+                ImGuiUtil.Center("0");
+                if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip(tt); }
+                ImGui.TableNextColumn();
+                if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
+                    ImGuiUtil.Center("ReadOnly");
+                } else {
+                    if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleAllowingPatternExecution", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+                    tooltips["ToggleButtonTT"](), false)) {
+                        // toggles if this person can change your toy state
+                        _characterHandler.ToggleAllowPatternExecution(_tempWhitelistIdx);
+                    }
+                }
+            } finally {
+                if(_activePanelTab==WhitelistPanelTab.YourSettings && _characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); }
             }
         }
-        if(!_viewMode) { ImGui.EndDisabled(); }
-        if(!_viewMode && _characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); }
+        // disable just incase our UI is locked
+        if(_activePanelTab==WhitelistPanelTab.YourSettings && _characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
+        // draw out the table for our permissions
+        try{
+            if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
+                using (var toyboxDisplayList = ImRaii.Table("ToyboxManagerDisplayTable", 3, ImGuiTableFlags.RowBg)) {
+                    if (!toyboxDisplayList) return;
+                    // Create the headers for the table
+                    ImGui.TableSetupColumn("Setting",  ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Stored Patternmm").X);
+                    ImGui.TableSetupColumn("Adjuster",     ImGuiTableColumnFlags.WidthStretch);
+                    ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglemo").X);
+                    ImGui.TableNextRow();
 
-        // if our hardcord condition is fullfilled, end disable
-        if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
+                    ImGuiUtil.DrawFrameColumn("Intensity Level: ");
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["IntensityMeterTT"](); ImGui.SetTooltip(tt); }
+                    ImGui.TableNextColumn();
+                    int intensityResult = _vibratorIntensity;
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                    // default to a range of 10, but otherwise, display the toy's active step size
+                    var maxSliderVal = _tempWhitelistChar._activeToystepSize==0 ? 20 : _tempWhitelistChar._activeToystepSize;
+                    if(ImGui.SliderInt("##ToyIntensity", ref intensityResult, 0, maxSliderVal)) {
+                        _vibratorIntensity = intensityResult;
+                    }
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["IntensityMeterTT"](); ImGui.SetTooltip(tt); }
+                    ImGui.TableNextColumn();
+                    if(ImGuiUtil.DrawDisabledButton("Update##UpdateToyIntensity", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+                    tooltips["ToggleButtonTT"](), !(dynamicTier >= DynamicTier.Tier2))) {
+                        UpdateWhitelistPlayersToyIntensity(_vibratorIntensity);
+                        _interactOrPermButtonEvent.Invoke(2);
+                    }
+                    // pattern executtion section
+                    ImGuiUtil.DrawFrameColumn("Pattern Name: ");
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["PatternTT"](); ImGui.SetTooltip(tt); }
+                    ImGui.TableNextColumn();
+                    string patternResult = _vibePatternName;
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                    ImGui.AlignTextToFramePadding();
+                    if (ImGui.InputTextWithHint("##ToyPatternName", "Pattern Name", ref patternResult, 50)) {
+                        _vibePatternName = patternResult;
+                    }
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["PatternTT"](); ImGui.SetTooltip(tt); }
+                    // then go over and draw the execute button
+                    ImGui.TableNextColumn();
+                    if(ImGuiUtil.DrawDisabledButton("Execute##ExecuteToyPattern", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+                    tooltips["ToggleButtonTT"](), !(_tempWhitelistChar._allowsUsingPatterns == true))) {
+                        ExecutePlayerToyPattern(_vibePatternName);
+                        _interactOrPermButtonEvent.Invoke(5);
+                    }
+                    // stored pattern list
+                    ImGuiUtil.DrawFrameColumn("Stored Patterns: ");
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["PatternListTT"](); ImGui.SetTooltip(tt); }
+                    ImGui.TableNextColumn();
+                    // Create a combo box with the stored restraint data (had to convert to array because am dumb)
+                    string[] patternData = _tempWhitelistChar._storedPatternNames.ToArray();
+                    int currentPatternIndex = _activeStoredPatternListIdx==0 ? 0 : _activeStoredPatternListIdx; // This should be the current selected index
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                    if (ImGui.Combo("##storedPatternData", ref currentPatternIndex, patternData, patternData.Length)) {
+                        // If an item is selected from the dropdown, update the restraint set name field
+                        _vibePatternName = patternData[currentPatternIndex];
+                        // update the index to display
+                        _activeStoredPatternListIdx = currentPatternIndex;
+                    }
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["PatternListTT"](); ImGui.SetTooltip(tt); }
+                    // end the disabled state
+                    if(!_tempWhitelistChar._enableWardrobe || _activePanelTab==WhitelistPanelTab.TheirSettings==false) {
+                        ImGui.EndDisabled();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            GagSpeak.Log.Debug($"Error drawing Toybox Permissions {e.Message}");
+        } finally {
+            if(_activePanelTab==WhitelistPanelTab.YourSettings && _characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); }
+        }
         // pop the style
         ImGui.PopStyleVar();
     }
@@ -232,14 +241,14 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
-        string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
+        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Enable Toybox Option!").AddItalicsOff().BuiltString);
+            $"{_tempWhitelistChar._name}'s Enable Toybox Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistEnableToybox(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableToybox);
+        _characterHandler.SetWhitelistEnableToybox(_tempWhitelistIdx, !_tempWhitelistChar._enableToybox);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleEnableToyboxOption(playerPayload, targetPlayer));
     }
 
@@ -247,14 +256,14 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
-        string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
+        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Toy State!").AddItalicsOff().BuiltString);
+            $"{_tempWhitelistChar._name}'s Toy State!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistAllowChangingToyState(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowChangingToyState);
+        _characterHandler.SetWhitelistAllowChangingToyState(_tempWhitelistIdx, !_tempWhitelistChar._allowChangingToyState);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleActiveToyboxOption(playerPayload, targetPlayer));
     }
 
@@ -262,14 +271,14 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
-        string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
+        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Toy Active Option!").AddItalicsOff().BuiltString);
+            $"{_tempWhitelistChar._name}'s Toy Active Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistToyIsActive(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._isToyActive);
+        _characterHandler.SetWhitelistToyIsActive(_tempWhitelistIdx, !_tempWhitelistChar._isToyActive);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleToyOnOff(playerPayload, targetPlayer));
     }
 
@@ -277,14 +286,14 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
-        string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
+        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating  "+ 
-            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Toy Intensity to {newIntensityLevel}!").AddItalicsOff().BuiltString);
+            $"{_tempWhitelistChar._name}'s Toy Intensity to {newIntensityLevel}!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistIntensityLevel(_characterHandler.activeListIdx, (byte)newIntensityLevel);
+        _characterHandler.SetWhitelistIntensityLevel(_tempWhitelistIdx, (byte)newIntensityLevel);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxUpdateActiveToyIntensity(playerPayload, targetPlayer, newIntensityLevel));
     }
 
@@ -292,12 +301,12 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
-        string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
+        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Executing  "+ 
-            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Toy Pattern [{patternName}]!").AddItalicsOff().BuiltString);
+            $"{_tempWhitelistChar._name}'s Toy Pattern [{patternName}]!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxExecuteStoredToyPattern(playerPayload, targetPlayer, patternName));
     }
@@ -306,14 +315,14 @@ public partial class WhitelistPlayerPermissions {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
-        string targetPlayer = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name + "@" + _characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
+        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s Toybox Lock Option!").AddItalicsOff().BuiltString);
+            $"{_tempWhitelistChar._name}'s Toybox Lock Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistAllowToyboxLocking(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockToyboxUI);
+        _characterHandler.SetWhitelistAllowToyboxLocking(_tempWhitelistIdx, !_tempWhitelistChar._lockToyboxUI);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleLockToyboxUI(playerPayload, targetPlayer));
     }
 #endregion ButtonHelpers

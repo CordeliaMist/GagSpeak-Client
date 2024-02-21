@@ -140,26 +140,24 @@ public class OnChatMsgManager
 
 
         // check for global puppeteer trigger.
-        if(_puppeteerMediator.ContainsGlobalTriggerWord(chatmessage.TextValue, out string globalPuppeteerMessageToSend)
-        && senderName != _clientState.LocalPlayer?.Name.TextValue && type != XivChatType.TellOutgoing && isHandled == false)
+        if(senderName != _clientState.LocalPlayer?.Name.TextValue && type != XivChatType.TellOutgoing && isHandled == false)
         {
             // if it is a valid global trigger word, send the message to the server
-            if(_triggerWordDetector.IsValidGlobalTriggerWord(globalPuppeteerMessageToSend, type)) {
+            if(_triggerWordDetector.IsValidGlobalTriggerWord(chatmessage, type, out SeString messageToSend)) {
                 // if we are in a valid chatchannel, then send it
-                GagSpeak.Log.Debug($"[OnChatMsgManager] Global Puppeteer message to send: {globalPuppeteerMessageToSend}");
-                messageQueue.Enqueue("/" + globalPuppeteerMessageToSend);
+                GagSpeak.Log.Debug($"[OnChatMsgManager] Global Puppeteer message to send: {messageToSend.TextValue}");
+                messageQueue.Enqueue("/" + messageToSend.TextValue);
             }
         }
         
         // personal puppeteer trgger
-        if(senderName != null  && _characterHandler.playerChar._allowPuppeteer
-        && _characterHandler.IsPlayerInWhitelist(senderName) && isHandled == false)
+        if(senderName != null  && _characterHandler.playerChar._allowPuppeteer && _characterHandler.IsPlayerInWhitelist(senderName) && isHandled == false)
         {
             // if it contains a trigger word, then process it
-            if(_triggerWordDetector.IsValidPuppeteerTriggerWord(senderName, chatmessage, type, ref isHandled)) {
+            if(_triggerWordDetector.IsValidPuppeteerTriggerWord(senderName, chatmessage, type, ref isHandled, out SeString messageToSend)) {
                 // if we are in a valid chatchannel, then send it
-                GagSpeak.Log.Debug($"[OnChatMsgManager] Puppeteer message to send: {chatmessage.TextValue}");
-                messageQueue.Enqueue("/" + chatmessage.TextValue);
+                GagSpeak.Log.Debug($"[OnChatMsgManager] Puppeteer message to send: {messageToSend.TextValue}");
+                messageQueue.Enqueue("/" + messageToSend.TextValue);
             }
         }
 

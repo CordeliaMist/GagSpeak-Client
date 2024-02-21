@@ -16,7 +16,7 @@ using GagSpeak.Gagsandlocks;
 using Dalamud.Plugin.Services;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
-public partial class WhitelistPlayerPermissions {
+public partial class WhitelistPanel {
     protected   int                     _layer;
     protected   string                  _gagLabel;
     protected   string                  _lockLabel;
@@ -24,109 +24,108 @@ public partial class WhitelistPlayerPermissions {
     protected   GagLockFilterCombo[]    _gagLockFilterCombo;        // create an array of item combos
 
 #region GeneralPerms
-    public void DrawGagInteractions(ref bool _viewMode) {
+    public void DrawGagInteractions(ref bool _interactions) {
         // Big Name Header
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
 
-        ImGui.PushFont(_fontService.UidFont);
-        ImGui.Text($"Gag Interactions for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}");
-        ImGui.PopFont();
-
         // create a new table for this section
-        using (var InfoTable = ImRaii.Table("InfoTable", 2)) {
+        using (var InfoTable = ImRaii.Table("Gag Interactions", 2)) {
             if (!InfoTable) return;
 
             ImGui.TableSetupColumn("Gag Dropdown", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn("Gag Button", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Remove All Gagsmm").X);
+            ImGui.TableSetupColumn("Gag Button", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale*125);
             // for our first row, display the DD for layer, DD gag type, and apply gag to player buttons
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
-
-            // if our hardcord condition is fullfilled, begin disable
-            if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
-
-            
             // create a combo for the layer, with options 1, 2, 3. Store selection to variable layer
             int layer = _layer;
             ImGui.Text("Select Gag Layer:");
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 0.95f);
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             ImGui.Combo("##Layer", ref layer, new string[] { "Layer 1", "Layer 2", "Layer 3" }, 3);
+            if(ImGui.IsItemHovered()) { var tt = tooltips["GagLayerSelectionTT"](); ImGui.SetTooltip($"{tt}"); }
             _layer = layer;
             
             // create a dropdown for the gag type,
             ImGui.Text("Select Gag Type:");
-            int width = (int)(ImGui.GetContentRegionAvail().X * 0.95f);
-            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, _characterHandler.activeListIdx, ref _gagLabel,
+            int width = (int)ImGui.GetContentRegionAvail().X;
+            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, _tempWhitelistIdx, ref _gagLabel,
                                                     layer, false, width, _gagTypeFilterCombo[layer]);
+            if(ImGui.IsItemHovered()) { var tt = tooltips["GagTypeSelectionTT"](); ImGui.SetTooltip($"{tt}"); }
             
             // set up a temp password storage field here.
             ImGui.Text("Select Gag Lock Type:");
-            width = (int)(ImGui.GetContentRegionAvail().X * 0.95f);
-            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, _characterHandler.activeListIdx, ref _lockLabel, layer, width, _gagLockFilterCombo[layer]);
-            
+            width = (int)ImGui.GetContentRegionAvail().X;
+            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, _tempWhitelistIdx, ref _lockLabel,
+            layer, width, _gagLockFilterCombo[layer]);
+            if(ImGui.IsItemHovered()) { var tt = tooltips["GagPadlockSelectionTT"](); ImGui.SetTooltip($"{tt}"); }
             
             // display the password field, if any.
             ImGui.Text("Password (If Nessisary):");
-            var tempwidth = ImGui.GetContentRegionAvail().X * 0.95f;
-            ImGui.Columns(2,"Password Divider", false);
-            ImGui.SetColumnWidth(0, tempwidth);
+            var tempwidth = ImGui.GetContentRegionAvail().X - ImGuiHelpers.GlobalScale*125;
             Enum.TryParse(_lockLabel, out Padlocks parsedLockType);
-            if(_config.whitelistPadlockIdentifier.DisplayPasswordField(parsedLockType)) {}
+            _config.whitelistPadlockIdentifier.DisplayPasswordField(parsedLockType);
 
             // now draw the gag buttons
             ImGui.TableNextColumn();
             ImGui.Spacing();
-            if (ImGuiUtil.DrawDisabledButton("Apply Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale), 
-            "Applies the selected gag to the player", _gagLabel == "None")) {
+            // apply gag
+            var tt1 = tooltips["ApplyGagTT"]();
+            if (ImGuiUtil.DrawDisabledButton("Apply Gag", new Vector2(ImGui.GetContentRegionAvail().X, 34*ImGuiHelpers.GlobalScale), 
+            $"{tt1}", _gagLabel == "None")) {
                 // execute the generation of the apply gag layer string
-                ApplyGagOnPlayer(layer, _gagLabel, _characterHandler.activeListIdx,
+                ApplyGagOnPlayer(layer, _gagLabel, _tempWhitelistIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
                 _interactOrPermButtonEvent.Invoke(5);
             }
-            if (ImGuiUtil.DrawDisabledButton("Lock Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale), 
-            "Applies the selected gag to the player", _lockLabel == "None")) {
-                LockGagOnPlayer(layer, _lockLabel, _characterHandler.activeListIdx,
+            // lock gag
+            var tt2 = tooltips["ApplyPadlockTT"]();
+            if (ImGuiUtil.DrawDisabledButton("Lock Gag", new Vector2(ImGui.GetContentRegionAvail().X, 34*ImGuiHelpers.GlobalScale), 
+            $"{tt2}", _lockLabel == "None")) {
+                LockGagOnPlayer(layer, _lockLabel, _tempWhitelistIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui, _config);
                 // Start a 5-second cooldown timer
                 _interactOrPermButtonEvent.Invoke(5);
             }
-            if (ImGui.Button("Unlock Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale))) {
+            // unlock gag
+            if (ImGui.Button("Unlock Gag", new Vector2(ImGui.GetContentRegionAvail().X, 34*ImGuiHelpers.GlobalScale))) {
                 // if our selected dropdown lock label doesnt match the currently equipped type of the player, send an error message to the chat
-                if(_lockLabel != _characterHandler.whitelistChars[_characterHandler.activeListIdx]._selectedGagPadlocks[layer].ToString()) {
+                if(_lockLabel != _tempWhitelistChar._selectedGagPadlocks[layer].ToString()) {
                     GagSpeak.Log.Debug($"[Whitelist]: Selected lock type does not match equipped lock type of that player! "+
-                    $"({_lockLabel} != {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._selectedGagPadlocks[layer].ToString()})");
+                    $"({_lockLabel} != {_tempWhitelistChar._selectedGagPadlocks[layer].ToString()})");
                     _chatGui.Print(
                         new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Selected lock type does not match equipped lock "+
                         $"type of that player!").AddItalicsOff().BuiltString
                     );
                 } else {
-                    UnlockGagOnPlayer(layer, _lockLabel, _characterHandler.activeListIdx, _characterHandler,
+                    UnlockGagOnPlayer(layer, _lockLabel, _tempWhitelistIdx, _characterHandler,
                     _config, _chatGui, _chatManager, _messageEncoder, _clientState);
                     // Start a 5-second cooldown timer
                     _interactOrPermButtonEvent.Invoke(5);
                 }
             }
-            if (ImGui.Button("Remove This Gag", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale))) {
-                RemoveGagFromPlayer(layer, _gagLabel, _characterHandler.activeListIdx,
+            if(ImGui.IsItemHovered()) { var tt = tooltips["UnlockPadlockTT"](); ImGui.SetTooltip($"{tt}"); }
+            // remove gags
+            if (ImGui.Button("Remove This Gag", new Vector2(ImGui.GetContentRegionAvail().X, 34*ImGuiHelpers.GlobalScale))) {
+                RemoveGagFromPlayer(layer, _gagLabel, _tempWhitelistIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
                 _interactOrPermButtonEvent.Invoke(5);
             }
-            if (ImGui.Button("Remove All Gags", new Vector2(ImGui.GetContentRegionAvail().X, 25 * ImGuiHelpers.GlobalScale))) {
-                RemoveAllGagsFromPlayer(_characterHandler.activeListIdx,
+            if(ImGui.IsItemHovered()) { var tt = tooltips["RemoveGagTT"](); ImGui.SetTooltip($"{tt}"); }
+            // remove all gags
+            if (ImGui.Button("Remove All Gags", new Vector2(ImGui.GetContentRegionAvail().X, 34*ImGuiHelpers.GlobalScale))) {
+                RemoveAllGagsFromPlayer(_tempWhitelistIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
                 _interactOrPermButtonEvent.Invoke(5);
             }
-        } // end our info table
-
-        // if our hardcord condition is fullfilled, end disable
-        if(!_viewMode && _characterHandler.IsLeanLesserThanPartner(_characterHandler.activeListIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
+            if(ImGui.IsItemHovered()) { var tt = tooltips["RemoveAllGagsTT"](); ImGui.SetTooltip($"{tt}"); }
+        } 
         // pop the spacing
         ImGui.PopStyleVar();
-        
+
     }
 #endregion GeneralPerms
 

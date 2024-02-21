@@ -1,18 +1,12 @@
 using System.Numerics;
 using ImGuiNET;
 using OtterGui.Raii;
-using GagSpeak.Events;
 using GagSpeak.CharacterData;
 using GagSpeak.ChatMessages;
 using Dalamud.Interface.Utility;
 using GagSpeak.Services;
 using OtterGui;
 using System;
-using Dalamud.Interface;
-using System.Linq;
-using System.Collections.Generic;
-using GagSpeak.Interop;
-using Newtonsoft.Json;
 
 namespace GagSpeak.UI.Tabs.PuppeteerTab;
 public partial class PuppeteerPanel
@@ -119,6 +113,11 @@ public partial class PuppeteerPanel
             } finally {
                 ImGui.PopFont();
             }
+            if(ImGui.IsItemHovered()) {
+                ImGui.SetTooltip($"The Trigger Phrase that you have set for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}.\n"+
+                                $"If {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} says this in chat in any enabled channels,\n"+
+                                $"you will execute whatever comes after the trigger phrase,\n(or what is enclosed within the start and end brackets)");
+            }
             // go to the next column
             ImGui.TableNextColumn();
             // draw out the inputs for our custom start and end parameters
@@ -135,7 +134,9 @@ public partial class PuppeteerPanel
                 _characterHandler.SetNewStartCharForPuppeteerTrigger(tempStartParam);
                 _tempStartParameter = null;
             }
-            ImGuiUtil.LabeledHelpMarker("Start Char", "Sets a custom start character for enclosing what gets executed after your trigger word");
+            ImGuiUtil.LabeledHelpMarker("Start Char", 
+                $"Custom Start Character that replaces the left enclosing bracket.\n"+
+                "Replaces the [ ( ] in Ex: [ TriggerPhrase (commandToExecute) ]");
             var tempEndParam  = _tempEndParameter ?? _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._EndCharForPuppeteerTrigger;
             ImGui.SetNextItemWidth(20*ImGuiHelpers.GlobalScale);
             if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sEnd", 
@@ -149,7 +150,9 @@ public partial class PuppeteerPanel
                 _characterHandler.SetNewEndCharForPuppeteerTrigger(tempEndParam);
                 _tempEndParameter = null;
             }
-            ImGuiUtil.LabeledHelpMarker("End Char", "Sets a custom start character for enclosing what gets executed after your trigger word");
+            ImGuiUtil.LabeledHelpMarker("End Char", 
+                $"Custom End Character that replaces the right enclosing bracket.\n"+
+                "Replaces the [ ) ] in Ex: [ TriggerPhrase (commandToExecute) ]");
         
             // go to the next column
             ImGui.TableNextColumn();
@@ -161,20 +164,25 @@ public partial class PuppeteerPanel
                 _characterHandler.UpdateAllowSitRequests(checkbox1Value);
             }
             ImGui.SameLine();
-            ImGuiUtil.LabeledHelpMarker("Sitting", "Allows commands like /sit and /groundsit");
+            ImGuiUtil.LabeledHelpMarker("Sitting", 
+            $"If you are giving {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} access "+
+            "to make you execute /sit and /groundsit commands with your trigger phrase.");
             // next box
             if(ImGui.Checkbox("##Emotes", ref checkbox2Value)) {
                 _characterHandler.UpdateAllowMotionRequests(checkbox2Value);
             }
             ImGui.SameLine();
-            ImGuiUtil.LabeledHelpMarker("Emotes", "Allows emote and expressions");
+            ImGuiUtil.LabeledHelpMarker("Emotes", 
+                $"If you are giving {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} access "+
+                "to make you execute emotes and expressions with your trigger phrase.");
             // next box
             if(ImGui.Checkbox("##All", ref checkbox3Value)) {
                 _characterHandler.UpdateAllowAllCommands(checkbox3Value);
             }
             ImGui.SameLine();
-            ImGuiUtil.LabeledHelpMarker("All", "Can use any commands with arguements.\n"+
-            $"Commands can be encapsulated in the start & end parameters you defined above.");
+            ImGuiUtil.LabeledHelpMarker("All", 
+                $"If you are giving {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} access "+
+                "to make you execute any command with your trigger phrase.");
         }
         yPos = ImGui.GetCursorPosY();
         ImGui.SetCursorPosY(yPos + 3*ImGuiHelpers.GlobalScale);
