@@ -124,7 +124,7 @@ public partial class ResultLogic {
                     return false;
                 }
                 // if it is, then set that restraint sets enabled flag to true.
-                _restraintSetManager.ChangeRestraintSetState(setIdx, !_restraintSetManager._restraintSets[setIdx]._enabled);
+                _restraintSetManager.ChangeRestraintSetState(setIdx, !_restraintSetManager._restraintSets[setIdx]._enabled, playerName);
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Restraint Set {decodedMessageMediator.setToLockOrUnlock} has been enabled.").AddItalicsOff().BuiltString);
                 GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for enabling restraint set");

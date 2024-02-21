@@ -22,12 +22,15 @@ public class RestraintSetManager : ISavable
     private readonly GagSpeakGlamourEvent _glamourEvent;
     [JsonIgnore]
     private readonly RestraintSetListChanged _restraintSetListChanged;
+    [JsonIgnore]
+    private readonly RestraintSetToggleEvent _restraintSetToggleEvent;
     
-    public RestraintSetManager(SaveService saveService,
-    GagSpeakGlamourEvent gagSpeakGlamourEvent, RestraintSetListChanged restraintSetListChanged) {
+    public RestraintSetManager(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent,
+    RestraintSetListChanged restraintSetListChanged, RestraintSetToggleEvent restraintSetToggleEvent) {
         _saveService = saveService;
         _glamourEvent = gagSpeakGlamourEvent;
         _restraintSetListChanged = restraintSetListChanged;
+        _restraintSetToggleEvent = restraintSetToggleEvent;
         
         // load the information from our storage file
         Load();
@@ -124,7 +127,7 @@ public class RestraintSetManager : ISavable
     }
 
     /// <summary> Sets the IsEnabled for a restraint set spesified by index if it exists. </summary>
-    public void ChangeRestraintSetState(int restraintSetIdx, bool isEnabled) {
+    public void ChangeRestraintSetState(int restraintSetIdx, bool isEnabled, string assignerName = "self") {
         // if we are wanting to enable this set, be sure to disable all other sets first
         if(isEnabled) {
             // we want to set this to true, so first disable all other sets
@@ -136,7 +139,9 @@ public class RestraintSetManager : ISavable
             // then set this one to true
             _restraintSets[restraintSetIdx].SetIsEnabled(true);
             // and update our restraint set
-            _glamourEvent.Invoke(UpdateType.UpdateRestraintSet);            
+            _glamourEvent.Invoke(UpdateType.UpdateRestraintSet);
+            // invoke the toggledSet event so we know which set was enabled, to send off to the hardcore panel
+            _restraintSetToggleEvent.Invoke(RestraintSetToggleType.Enabled, restraintSetIdx, assignerName);         
         }
         // OTHERWISE, we want to set it to false, so just disable it 
         else {
@@ -144,6 +149,8 @@ public class RestraintSetManager : ISavable
             _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled);
             // then fire a disable restraint set event to revert to automation
             _glamourEvent.Invoke(UpdateType.DisableRestraintSet);
+            // invoke the toggledSet event so we know which set was disabled, to send off to the hardcore panel
+            _restraintSetToggleEvent.Invoke(RestraintSetToggleType.Disabled, restraintSetIdx, assignerName);
         }
         _saveService.QueueSave(this);
     }

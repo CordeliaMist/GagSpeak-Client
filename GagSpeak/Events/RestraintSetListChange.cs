@@ -4,7 +4,6 @@
 using System;
 
 namespace GagSpeak.Events;
-/// <summary> This class is used to handle the gag item equipped event, and triggers every time it is fired. </summary>
 public enum ListUpdateType {
     AddedRestraintSet,
     ReplacedRestraintSet,
@@ -26,9 +25,6 @@ public class RestraintSetListChanged
     }
 }
 
-/// <summary>
-/// This class is used to handle the gag item equipped event arguments
-/// </summary>
 public class RestraintSetListChangedArgs : EventArgs
 {
     // contains the update type for the event
