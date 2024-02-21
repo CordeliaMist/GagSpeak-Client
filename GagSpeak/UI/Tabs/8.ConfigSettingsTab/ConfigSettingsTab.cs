@@ -21,27 +21,18 @@ namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>
 public class ConfigSettingsTab : ITab
 {
-    private readonly    IDalamudTextureWrap             _dalamudTextureWrap;    // for loading images
     private readonly    GagSpeakConfig                  _config;                // for getting the config
     private readonly    CharacterHandler                _characterHandler;      // for getting the whitelist
-    private readonly    UiBuilder                       _uiBuilder;             // for loading images
-    private readonly    GlamourerFunctions              _glamourerInterop;      // for getting the glamourer interop
     private             Dictionary<string, string[]>    _languages;             // the dictionary of languages & dialects 
     private             string[]                        _currentDialects;       // the array of language names
     private             string                          _activeDialect;         // the dialect selected
     private             string?                         _globalTriggerPhrase;        // the language selected
 
     /// <summary> Initializes a new instance of the <see cref="ConfigSettingsTab"/> class. <summary>
-    public ConfigSettingsTab(GagSpeakConfig config, CharacterHandler characterHandler, UiBuilder uiBuilder, DalamudPluginInterface pluginInterface,
-    GagListingsDrawer gagListingsDrawer, GagService gagService, GlamourerFunctions GlamourerService) {
+    public ConfigSettingsTab(GagSpeakConfig config, CharacterHandler characterHandler,
+    GagListingsDrawer gagListingsDrawer, GagService gagService) {
         _config = config;
         _characterHandler = characterHandler;
-        _uiBuilder = uiBuilder;
-        _glamourerInterop = GlamourerService;
-        var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "iconUI.png");
-        var IconImage = _uiBuilder.LoadImage(imagePath);
-        // sets the icon
-        _dalamudTextureWrap = IconImage;
         // load the dropdown info
         _languages = new Dictionary<string, string[]> {
             { "English", new string[] { "US", "UK" } },
@@ -350,10 +341,6 @@ public class ConfigSettingsTab : ITab
                 ImGui.SameLine();
                 j++;
             }
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 20);
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 20);
-            // you might normally want to embed resources and load them from the manifest stream
-            ImGui.Image(_dalamudTextureWrap.ImGuiHandle, new Vector2(_dalamudTextureWrap.Width, _dalamudTextureWrap.Height));
             ImGui.PopStyleVar();
             if(_characterHandler.playerChar._directChatGarblerLocked == true) {ImGui.EndDisabled();}
         }
