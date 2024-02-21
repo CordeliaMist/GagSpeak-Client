@@ -324,7 +324,9 @@ public partial class WhitelistPanel {
             return;
         }
         if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); }
+        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
         DrawPuppeteerPerms(ref _interactions, text, suffix);
+        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
     }
     private void DrawDetailsToybox(ref bool _interactions, string text, string suffix) { 
         var tooltipText = WhitelistPanelTab.TheirSettings == _activePanelTab
@@ -341,6 +343,8 @@ public partial class WhitelistPanel {
             return;
         }
         if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); }
+        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
         DrawToyboxPerms(ref _interactions, text, suffix);
+        if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.BeginDisabled(); }
     }
 }
