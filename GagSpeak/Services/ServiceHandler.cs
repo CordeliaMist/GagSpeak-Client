@@ -117,6 +117,7 @@ public static class ServiceHandler
             .AddSingleton<LanguageChangedEvent>()
             .AddSingleton<GagSpeakGlamourEvent>()
             .AddSingleton<ActiveDeviceChangedEvent>()
+            .AddSingleton<RestraintSetToggleEvent>()
             .AddSingleton<RestraintSetListChanged>();
 
     /// <summary> Classes to add to the service collection from the [GagsAndLocks] folder </summary>

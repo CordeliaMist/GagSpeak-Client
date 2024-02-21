@@ -131,6 +131,7 @@ public class ConfigSettingsTab : ITab
                 v => _characterHandler.ToggleZoneWarnings()
             );
             ///////////////////////////// WARDROBE SETTINGS /////////////////////////////
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
             ImGui.Text("Wardrobe Settings:");
             UIHelpers.CheckboxNoConfig("Enable Wardrobe",
                 "Must be enabled for anything in the Kink Wardrobe component of GagSpeak to function.",
@@ -171,6 +172,7 @@ public class ConfigSettingsTab : ITab
                 ImGui.SetTooltip("Select how you want your attire to revert when a restraint set is removed.");
             }
             ///////////////////////////// PUPPETEER SETTINGS /////////////////////////////
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
             ImGui.Text("Puppeteer Settings:");
             UIHelpers.CheckboxNoConfig("Enable Puppeteer",
                 "Allows the use of the Puppeteer Module of GagSpeak.\n"+
@@ -214,12 +216,19 @@ public class ConfigSettingsTab : ITab
 
 
             ///////////////////////////// TOYBOX SETTINGS /////////////////////////////
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
             ImGui.Text("Toybox Settings:");
             UIHelpers.CheckboxNoConfig("Enable Toybox", 
                 "Allows the use of the Toybox Module of GagSpeak.\n"+
                 ">> This will allow anyone in your whitelist to use the Toybox Module on you who is allowed.",
                 _characterHandler.playerChar._enableToybox,
                 v => _characterHandler.ToggleEnableToybox()
+            );
+
+            UIHelpers.CheckboxNoConfig("Auto-Open UI",
+                "Opens the GagSpeak UI on login or plugin enable automatically",
+                _config.UiOpenOnEnable,
+                v => _config.SetUiOpenOnEnable(!_config.UiOpenOnEnable)
             );
         
 

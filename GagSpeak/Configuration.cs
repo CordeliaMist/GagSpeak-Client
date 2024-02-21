@@ -38,6 +38,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          bool                                        acceptingInfoRequests { get; set; } = true;             // Are you accepting info requests? (for cooldowns)//
     public          bool                                        processingInfoRequest { get; set; } = false;            // Are you processing an info request?
     public          bool                                        hardcoreMode { get; set; } = false;                     // Is the plugin in hardcore mode
+    public          bool                                        UiOpenOnEnable { get; set; } = true;                    // Should the UI open when the plugin is enabled
     public          Dictionary<string,DateTimeOffset>           timerData { get; set; }                                 // stores the timer data for the plugin
     // stuff for the gaglistingDrawer
     public          List<bool>                                  isLocked { get; set; }                                  // determines if the gaglisting should have its UI locked
@@ -109,30 +110,12 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         GagSpeak.Log.Debug("[Configuration File] Constructor Finished Initializing and setting default values, and previous data restored.");
     }
 
-    public void SetHardcoreMode(bool value) {
-        hardcoreMode = value;
-        _saveService.QueueSave(this);
-    }
-
-    public void SetSendInfoName(string name) {
-        sendInfoName = name;
-        _saveService.QueueSave(this);
-    }
-
-    public void SetAcceptInfoRequests(bool value) {
-        acceptingInfoRequests = value;
-        _saveService.QueueSave(this);
-    }
-
-    public void SetprocessingInfoRequest(bool value) {
-        processingInfoRequest = value;
-        _saveService.QueueSave(this);
-    }
-
-    public void SetIntifacePortValue(string value) {
-        intifacePortValue = value;
-        _saveService.QueueSave(this);
-    }
+    public void SetHardcoreMode(bool value) { hardcoreMode = value; Save(); }
+    public void SetSendInfoName(string name) { sendInfoName = name; _saveService.QueueSave(this); }
+    public void SetAcceptInfoRequests(bool value) { acceptingInfoRequests = value; _saveService.QueueSave(this); }
+    public void SetprocessingInfoRequest(bool value) { processingInfoRequest = value; _saveService.QueueSave(this); }
+    public void SetIntifacePortValue(string value) { intifacePortValue = value; Save(); }
+    public void SetUiOpenOnEnable(bool value) { UiOpenOnEnable = value; Save(); }
 
 
     /// <summary> Saves the config to our save service and updates the garble level to its new value. </summary>

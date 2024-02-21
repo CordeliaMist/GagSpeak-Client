@@ -33,9 +33,9 @@ public class GagSpeakWindowManager : IDisposable
         _uiBuilder.Draw                  += _windowSystem.Draw;     // for drawing the UI stuff
         _uiBuilder.OpenConfigUi          += _ui.Toggle;             // for toggling the UI stuff
         
-        // if(config.OpenUiOnStart) {
+        if(config.UiOpenOnEnable) {
             _ui.Toggle();
-        //}
+        }
         //handle a fresh install
         if (config.FreshInstall){
             // They are new, so print some nice messages
