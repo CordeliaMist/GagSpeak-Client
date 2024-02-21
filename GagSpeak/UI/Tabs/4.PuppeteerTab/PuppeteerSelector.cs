@@ -24,21 +24,21 @@ public class PuppeteerSelector
     private void DrawPuppeteerHeader(float width) // Draw our header
         => WindowHeader.Draw("Whitelist", 0, ImGui.GetColorU32(ImGuiCol.FrameBg), 0, width, WindowHeader.Button.Invisible);
 
-    public void Draw(float width, float height) {
+    public void Draw(float width) {
         _defaultItemSpacing = ImGui.GetStyle().ItemSpacing;
         using (_ = ImRaii.Group()) {
         using var style   = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero)
             .Push(ImGuiStyleVar.FrameRounding, 0); // and make them recantuclar instead of rounded buttons
         DrawPuppeteerHeader(width);
-        DrawPuppeteerSelector(width, height);
+        DrawPuppeteerSelector(width);
         DrawPuppeteerButtons(width);
         style.Pop();
         }
     }
 
-    private void DrawPuppeteerSelector(float width, float height) {
+    private void DrawPuppeteerSelector(float width) {
         using var child = ImRaii.Child("##PuppeteerSelectorChild", 
-        new Vector2(width, height-(ImGui.GetTextLineHeightWithSpacing()+5*ImGuiHelpers.GlobalScale)), true);
+        new Vector2(width, -(ImGui.GetTextLineHeightWithSpacing()+5*ImGuiHelpers.GlobalScale)), true);
         if (!child) { return; }
 
         using var style     = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, _defaultItemSpacing);

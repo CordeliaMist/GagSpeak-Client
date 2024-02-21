@@ -239,6 +239,9 @@ public class ConfigSettingsTab : ITab
             yPos = ImGui.GetCursorPosY();
             ImGui.AlignTextToFramePadding();
             ImGui.Text("GagSpeak Channels:");
+            if(ImGui.IsItemHovered()) {
+                ImGui.SetTooltip("Every selected channel from here becomes a channel that your direct chat garbler works in.");
+            }
             ImGui.SameLine();
             // Create the language dropdown
             ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*85);
@@ -316,6 +319,37 @@ public class ConfigSettingsTab : ITab
                 i++;
             }
             ImGui.NewLine();
+            ImGui.NewLine();
+            ImGui.AlignTextToFramePadding();
+            ImGui.Text("Puppeteer Channels:");
+            if(ImGui.IsItemHovered()) {
+                ImGui.SetTooltip("Every selected channel from here becomes a channel that you will pick up your trigger word from.\n"+
+                "The Global Puppeteer trigger works in all channels, and cannot be configured.");
+            }
+            var j = 0;
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
+            foreach (var e in ChatChannel.GetOrderedChannels()) {
+                // See if it is already enabled by default
+                var enabled = _config.ChannelsPuppeteer.Contains(e);
+                // Create a new line after every 4 columns
+                if (j != 0 && (j==4 || j==7 || j==11 || j==15 || j == 19)) {
+                    ImGui.NewLine();
+                    //i = 0;
+                }
+                // Move to the next row if it is LS1 or CWLS1
+                if (e is ChatChannel.ChatChannels.LS1 or ChatChannel.ChatChannels.CWL1)
+                    ImGui.Separator();
+
+                if (ImGui.Checkbox($"{e}", ref enabled)) {
+                    // See If the UIHelpers.Checkbox is clicked, If not, add to the list of enabled channels, otherwise, remove it.
+                    if (enabled) _config.ChannelsPuppeteer.Add(e);
+                    else _config.ChannelsPuppeteer.Remove(e);
+                    _config.Save();
+                }
+
+                ImGui.SameLine();
+                j++;
+            }
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 20);
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 20);
             // you might normally want to embed resources and load them from the manifest stream

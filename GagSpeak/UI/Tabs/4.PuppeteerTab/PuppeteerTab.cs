@@ -27,9 +27,9 @@ public class PuppeteerTab : ITab
 
     public void DrawContent()
     {
-        _selector.Draw(GetSelectorWidth(), GetPanelHeight());
+        _selector.Draw(GetSelectorWidth());
         ImGui.SameLine();
-        _panel.Draw(GetPanelHeight(), GetSelectorWidth());
+        _panel.Draw();
     }
 
     public float GetSelectorWidth()

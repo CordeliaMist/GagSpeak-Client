@@ -35,18 +35,16 @@ public partial class PuppeteerAliasTable {
     public List<int> itemsToRemove = new List<int>();
 
     private void DrawAliasListTable() {
-        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(ImGui.GetStyle().CellPadding.X * 0.2f, ImGui.GetStyle().CellPadding.Y)); // Modify the X padding
-        using (var table = ImRaii.Table("UniqueAliasListCreator", 4, ImGuiTableFlags.RowBg)) {
+        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(ImGui.GetStyle().CellPadding.X * 0.3f, ImGui.GetStyle().CellPadding.Y)); // Modify the X padding
+        using (var table = ImRaii.Table("UniqueAliasListCreator", 2, ImGuiTableFlags.RowBg)) {
         if (!table) { return; }
             // draw the header row
             ImGui.TableSetupColumn("##Delete", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
-            ImGui.TableSetupColumn("Alias Text Input", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale*150);
-            ImGui.TableSetupColumn("Use##IsEnabled", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
-            ImGui.TableSetupColumn("   Replacement text to execute instead", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("Alias Text Input / Output", ImGuiTableColumnFlags.WidthStretch);
+            //ImGui.TableSetupColumn("Use##IsEnabled", ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
             ImGui.TableHeadersRow();
-            
-            
-            
+
+
             // Replace this with your actual data
             foreach (var (aliasTrigger, idx) in _characterHandler.playerChar._triggerAliases.ElementAt(_characterHandler.activeListIdx)
                                                                                     ._aliasTriggers.Select((value, index) => (value, index)))
@@ -74,34 +72,35 @@ public partial class PuppeteerAliasTable {
         bool shouldRemove = false;
         ImGui.TableNextColumn();
         if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), new Vector2(ImGui.GetFrameHeight()),
-        "Delete this alias from associations", false, true))
+        "Delete this alias from associations\nHold SHIFT in order to delete.", !ImGui.GetIO().KeyShift, true)) {
             shouldRemove = true;
-
+        }
+        bool isEnabled = aliasTrigger._enabled;
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - ImGuiHelpers.GlobalScale);
+        if (ImGui.Checkbox($"##isEnabled{idx}", ref isEnabled)) {
+            _characterHandler.UpdateAliasEntryEnabled(idx, isEnabled); // Use the helper function to update the alias entry enabled status
+        }
+        if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"Whether or not the alias is enabled for use."); }
         ImGui.TableNextColumn();
         string aliasText = _tempAliasTexts.ContainsKey(idx) ? _tempAliasTexts[idx] : aliasTrigger._inputCommand;
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if (ImGui.InputText($"##aliasText{idx}", ref aliasText, 50)) {
+        if (ImGui.InputTextWithHint($"##aliasText{idx}", "Alias Input phrase goes here...", ref aliasText, 64)) {
             _tempAliasTexts[idx] = aliasText; // Update the alias entry input
         }
         if(ImGui.IsItemDeactivatedAfterEdit()) {
             _characterHandler.UpdateAliasEntryInput(idx, aliasText);
             _tempAliasTexts.Remove(idx);
         }
-        ImGui.TableNextColumn();
-        bool isEnabled = aliasTrigger._enabled;
-        if (ImGui.Checkbox($"##isEnabled{idx}", ref isEnabled)) {
-            _characterHandler.UpdateAliasEntryEnabled(idx, isEnabled); // Use the helper function to update the alias entry enabled status
-        }
-
-        ImGui.TableNextColumn();
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - ImGuiHelpers.GlobalScale);
         string command = _tempAliasCommands.ContainsKey(idx) ? _tempAliasCommands[idx] : aliasTrigger._outputCommand;
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if (ImGui.InputText($"##command{idx}", ref command, 200)) // If the input text is modified
+        if (ImGui.InputTextWithHint($"##command{idx}", "Alias Output phrase goes here...", ref command, 300)) // If the input text is modified
             _tempAliasCommands[idx] = command; // Update the alias entry output
         if(ImGui.IsItemDeactivatedAfterEdit()) {
             _characterHandler.UpdateAliasEntryOutput(idx, command);
             _tempAliasCommands.Remove(idx);
         }
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + .5f*ImGuiHelpers.GlobalScale);
 
         return shouldRemove;
     }
@@ -112,22 +111,34 @@ public partial class PuppeteerAliasTable {
             _characterHandler.AddNewAliasEntry(_tempNewAlias); // Use the helper function to add the new alias entry
             _tempNewAlias = new AliasTrigger();
         }
-        ImGui.TableNextColumn();
-        string newAliasText = _tempNewAlias._inputCommand;
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if (ImGui.InputText("##newAliasText", ref newAliasText, 50)){
-            _tempNewAlias._inputCommand = newAliasText; // Update the new alias entry input
-        }
-        ImGui.TableNextColumn();
+        if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"Add the alias configuration to the list."); }
         bool newAliasEnabled = _tempNewAlias._enabled;
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - ImGuiHelpers.GlobalScale);
         if (ImGui.Checkbox("##newAliasEnabled", ref newAliasEnabled)) {
             _tempNewAlias._enabled = newAliasEnabled; // Update the new alias entry enabled status
         }
+        if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"Whether or not the alias is enabled for use."); }
+        
         ImGui.TableNextColumn();
+        string newAliasText = _tempNewAlias._inputCommand;
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        if (ImGui.InputTextWithHint("##newAliasText", "Alias Input...", ref newAliasText, 50)){
+            _tempNewAlias._inputCommand = newAliasText; // Update the new alias entry input
+        }
+        if(ImGui.IsItemHovered()) { 
+            ImGui.SetTooltip($"When {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} "+
+            "says this as a part of the command for you to execute after your trigger phrase,\n"+
+            "You will replace it with the alias output command before executing it.");
+        }
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         string newAliasCommand = _tempNewAlias._outputCommand;
-        if (ImGui.InputText("##newAliasCommand", ref newAliasCommand, 200)) {
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - ImGuiHelpers.GlobalScale);
+        if (ImGui.InputTextWithHint("##newAliasCommand","Output Command to execute when alias input is read...", ref newAliasCommand, 200)) {
             _tempNewAlias._outputCommand = newAliasCommand; // Update the new alias entry output
+        }
+        if(ImGui.IsItemHovered()) { 
+            ImGui.SetTooltip($"What you will replace the alias input command with if "+
+            "it is included in the command to execute after your trigger phrase.");
         }
     }
 }
