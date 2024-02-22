@@ -23,19 +23,12 @@ public partial class CharacterHandler : ISavable
     private readonly GagSpeakGlamourEvent _gagSpeakGlamourEvent;
     [JsonIgnore]
     private readonly GagStorageManager _gagStorageManager;
-    [JsonIgnore]
-    private readonly RestraintSetManager _restraintSetManager;
-    [JsonIgnore]
-    private readonly RestraintSetListChanged _restraintSetListChanged;
 
     public CharacterHandler(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent,
-    GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager, 
-    RestraintSetListChanged restraintSetListChanged) {
+    GagStorageManager gagStorageManager) {
         _saveService = saveService;
         _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
         _gagStorageManager = gagStorageManager;
-        _restraintSetManager = restraintSetManager;
-        _restraintSetListChanged = restraintSetListChanged;
         // initialize blank data
         playerChar = new PlayerGlobalPerms();
         whitelistChars = new List<WhitelistedCharacterInfo>();
@@ -43,66 +36,9 @@ public partial class CharacterHandler : ISavable
         // load the information from our storage file stuff
         Load();
         // ensure all lists have the correct sizes
-        playerChar.IntegrityCheck(_restraintSetManager._restraintSets.Count);
         _saveService.QueueSave(this);
-        // call the handler for it
-        _restraintSetListChanged.SetListModified += OnRestraintSetListModified;
     }
 
-
-    public void OnRestraintSetListModified(object sender, RestraintSetListChangedArgs e) {
-        // update the player chars things to match the restraint set list change
-        switch(e.UpdateType) {
-            case ListUpdateType.AddedRestraintSet : {
-                foreach (var perm in playerChar._uniquePlayerPerms) {
-                    perm._legsRestraintedProperty.Add(false);
-                    perm._armsRestraintedProperty.Add(false);
-                    perm._gaggedProperty.Add(false);
-                    perm._blindfoldedProperty.Add(false);
-                    perm._immobileProperty.Add(false);
-                    perm._weightyProperty.Add(false);
-                    perm._lightStimulationProperty.Add(false);
-                    perm._mildStimulationProperty.Add(false);
-                    perm._heavyStimulationProperty.Add(false);
-                }
-                break;
-            }
-            case ListUpdateType.ReplacedRestraintSet: {
-                foreach (var perm in playerChar._uniquePlayerPerms) {
-                    perm._legsRestraintedProperty[e.SetIndex] = false;
-                    perm._armsRestraintedProperty[e.SetIndex] = false;
-                    perm._gaggedProperty[e.SetIndex] = false;
-                    perm._blindfoldedProperty[e.SetIndex] = false;
-                    perm._immobileProperty[e.SetIndex] = false;
-                    perm._weightyProperty[e.SetIndex] = false;
-                    perm._lightStimulationProperty[e.SetIndex] = false;
-                    perm._mildStimulationProperty[e.SetIndex] = false;
-                    perm._heavyStimulationProperty[e.SetIndex] = false;
-                }
-                break;
-            }
-            case ListUpdateType.RemovedRestraintSet: {
-                foreach (var perm in playerChar._uniquePlayerPerms) {
-                    perm._legsRestraintedProperty.RemoveAt(e.SetIndex);
-                    perm._armsRestraintedProperty.RemoveAt(e.SetIndex);
-                    perm._gaggedProperty.RemoveAt(e.SetIndex);
-                    perm._blindfoldedProperty.RemoveAt(e.SetIndex);
-                    perm._immobileProperty.RemoveAt(e.SetIndex);
-                    perm._weightyProperty.RemoveAt(e.SetIndex);
-                    perm._lightStimulationProperty.RemoveAt(e.SetIndex);
-                    perm._mildStimulationProperty.RemoveAt(e.SetIndex);
-                    perm._heavyStimulationProperty.RemoveAt(e.SetIndex);
-                }
-                break;
-            }
-            case ListUpdateType.SizeIntegrityCheck: {
-                // call the integrity check function from uniquePlayerPerms
-                playerChar.IntegrityCheck(e.SetIndex);
-                break;
-            }
-        }
-        Save();
-    }
 
 #region Whitelist Handler Functions
     public bool IsPlayerInWhitelist(string playerName) {

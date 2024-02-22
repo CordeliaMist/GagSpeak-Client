@@ -9,9 +9,9 @@ namespace GagSpeak.UI.Tabs.HardcoreTab;
 
 public class HC_Humiliation
 {
-    private readonly CharacterHandler _charHandler;
-    public HC_Humiliation(CharacterHandler characterHandler) {
-        _charHandler = characterHandler;
+    private readonly HardcoreManager _hardcoreManager;
+    public HC_Humiliation(HardcoreManager hardcoreManager) {
+        _hardcoreManager = hardcoreManager;
     }
 
     public void Draw() {

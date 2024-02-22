@@ -12,6 +12,7 @@ public class FilenameService
     public readonly string GagStorageFile;    // for storing information about our gags 
     public readonly string CharacterDataFile;     // for storing information about our whitelist
     public readonly string PatternStorageFile; // for storing information about our patterns
+    public readonly string HardcoreSettingsFile; // for storing information about our hardcore settings
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilenameService"/> class.
@@ -23,5 +24,6 @@ public class FilenameService
         GagStorageFile      = Path.Combine(ConfigDirectory, "GagStorage.json");
         CharacterDataFile       = Path.Combine(ConfigDirectory, "CharacterData.json");
         PatternStorageFile  = Path.Combine(ConfigDirectory, "PatternStorage.json");
+        HardcoreSettingsFile= Path.Combine(ConfigDirectory, "HardcoreSettings.json");
     }
 }

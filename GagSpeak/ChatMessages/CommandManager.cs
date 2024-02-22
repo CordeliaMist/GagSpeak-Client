@@ -19,6 +19,9 @@ using System.Runtime.CompilerServices;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;
 using GagSpeak.ToyboxandPuppeteer;
+using GagSpeak.Hardcore.Movement;
+using GagSpeak.Hardcore.Actions;
+using GagSpeak.Hardcore;
 
 namespace GagSpeak.ChatMessages;
 
@@ -47,6 +50,7 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly    CharacterHandler        _characterHandler;
     private readonly    SafewordUsedEvent       _safewordCommandEvent;
     private readonly    GagSpeakGlamourEvent    _glamourEvent;
+    private             HardcoreManager         _hardcoreManager;
 
     // Constructor for the command manager
     public CommandManager(ICommandManager command, MainWindow mainwindow, DebugWindow debugWindow,
@@ -54,7 +58,8 @@ public class CommandManager : IDisposable // Our main command list manager
     IChatGui chat, GagSpeakConfig config, OnChatMsgManager chatManager, IClientState clientState,
     GlamourerService GlamourerService, GagService gagService, CharacterHandler characterHandler,
     GagGarbleManager GagGarbleManager, RealChatInteraction realchatinteraction, TimerService timerService,
-    SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder, GagStorageManager gagStorageManager)
+    SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder, GagStorageManager gagStorageManager,
+    HardcoreManager hardcoreManager)
     {
         // set the private readonly's to the passed in data of the respective names
         _commands = command;
@@ -75,6 +80,8 @@ public class CommandManager : IDisposable // Our main command list manager
         _restriantSetManager = restraintSetManager;
         _glamourerInterop = GlamourerService;
         _characterHandler = characterHandler;
+        // testing things
+        _hardcoreManager = hardcoreManager;
 
         // Add handlers to the main commands
         _commands.AddHandler(MainCommandString, new CommandInfo(OnGagSpeak) {
@@ -130,6 +137,9 @@ public class CommandManager : IDisposable // Our main command list manager
                 return;
             case "debug":
                 _debugWindow.Toggle();     // when [/gagspeak debug] is typed
+                return;
+        case "testhardcore":
+                _hardcoreManager.SetMovementDisabled(!_hardcoreManager._movementDisabled);
                 return;
             case "":
                 _mainWindow.Toggle(); // when [/gagspeak] is typed

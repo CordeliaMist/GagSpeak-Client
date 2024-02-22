@@ -29,6 +29,8 @@ using GagSpeak.UI.Tabs.ToyboxTab;
 using GagSpeak.UI.Tabs.WorkshopTab;
 using GagSpeak.Hardcore;
 using GagSpeak.UI.Tabs.HardcoreTab;
+using GagSpeak.Hardcore.Movement;
+using GagSpeak.Hardcore.Actions;
 
 namespace GagSpeak.Services;
 
@@ -117,7 +119,8 @@ public static class ServiceHandler
             .AddSingleton<LanguageChangedEvent>()
             .AddSingleton<GagSpeakGlamourEvent>()
             .AddSingleton<ActiveDeviceChangedEvent>()
-            .AddSingleton<RestraintSetToggleEvent>()
+            .AddSingleton<RS_ToggleEvent>()
+            .AddSingleton<RS_PropertyChangedEvent>()
             .AddSingleton<RestraintSetListChanged>();
 
     /// <summary> Classes to add to the service collection from the [GagsAndLocks] folder </summary>
@@ -134,8 +137,13 @@ public static class ServiceHandler
 
     /// <summary> Classes to add to the service collection from the [Hardcore] folder </summary>
     private static ServiceManager AddHardcore(this ServiceManager services)
-        => services.AddSingleton<ActionManager>()
-            .AddSingleton<MovementManager>();
+        => services.AddSingleton<ActionManagerLogic>()
+            .AddSingleton<HardcoreManager>()
+            .AddSingleton<ActionManager>()
+            .AddSingleton<MovementManager>()
+            .AddSingleton<MoveMemory>(_ => {
+                var interop = _.GetRequiredService<IGameInteropProvider>();
+                return new MoveMemory(interop);});
 
     /// <summary> Classes to add to the service collection from the [Interop] folder </summary>
     private static ServiceManager AddInterop(this ServiceManager services)

@@ -7,7 +7,8 @@ using GagSpeak.Services;  // REQUIRED for our plugins CommandManager requiredser
 using GagSpeak.Interop;
 using GagSpeak.ChatMessages;
 using GagSpeak.ChatMessages.ChatControl;
-using GagSpeak.CharacterData;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
+using GagSpeak.Hardcore.Actions;
+using GagSpeak.Hardcore.Movement;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
 
 
 // The main namespace for the plugin, aka the same name of our plugin, the highest level
@@ -55,6 +56,9 @@ public class GagSpeak : IDalamudPlugin
           _services.GetService<InfoRequestService>(); // Because the info request service is being a stubborn bitch and needs to subscribe to events and not be lazy.
           _services.GetService<GlamourerFunctions>();  // force loading here because nhothing else loads it so it is initialized as lazy
           _services.GetService<OnFrameworkService>(); // get the charahandler
+          // for hardcore stuff
+          _services.GetService<ActionManager>();
+          _services.GetService<MovementManager>();
           Log.Information($"GagSpeak v{Version} loaded successfully."); // Log the version to the /xllog menu
       }
       catch

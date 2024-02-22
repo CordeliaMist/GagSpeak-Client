@@ -18,6 +18,7 @@ using GagSpeak.Gagsandlocks;
 using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.CharacterData;
 using GagSpeak.Wardrobe;
+using GagSpeak.Hardcore;
 
 namespace GagSpeak.UI;
 // probably can remove this later, atm it is literally just used for the debug window
@@ -42,6 +43,7 @@ public class DebugWindow : Window //, IDisposable
 {
     private          GagSpeakConfig         _config;                        // for retrieving the config data to display to the window
     private readonly CharacterHandler       _characterHandler;
+    private readonly HardcoreManager        _hardcoreManager;               // for knowing the information in the hardcore manager
     private readonly RestraintSetManager    _restraintSetManager;           // for knowing the information in the currently equipped restraints
     private readonly IpaParserEN_FR_JP_SP   _translatorLanguage;            // creates an instance of the EnglishToIPA class
     private readonly GagGarbleManager       _gagManager;                    // for knowing what gags are equipped
@@ -56,7 +58,7 @@ public class DebugWindow : Window //, IDisposable
 
     public DebugWindow(DalamudPluginInterface pluginInt, FontService fontService, GagService gagService, RestraintSetManager restraintSetManager,
     IpaParserEN_FR_JP_SP translatorLanguage, GagSpeakConfig config, CharacterHandler characterHandler, GagSpeakGlamourEvent gagSpeakGlamourEvent,
-    GagGarbleManager GagGarbleManager, GagListingsDrawer gagListingsDrawer) : base(GetLabel()) {
+    GagGarbleManager GagGarbleManager, GagListingsDrawer gagListingsDrawer, HardcoreManager hardcoreManager) : base(GetLabel()) {
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
         // Next let's set the size of the window
@@ -73,6 +75,7 @@ public class DebugWindow : Window //, IDisposable
         _translatorLanguage = translatorLanguage;
         _restraintSetManager = restraintSetManager;
         _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
+        _hardcoreManager = hardcoreManager;
     }
 
 
@@ -134,41 +137,41 @@ public class DebugWindow : Window //, IDisposable
         var triggerlist = _characterHandler.playerChar._triggerAliases[_characterHandler.activeListIdx];
         ImGui.Text($"Trigger Aliases: || "); ImGui.SameLine(); foreach (var alias in triggerlist._aliasTriggers) { ImGui.Text(alias._inputCommand); };
         ImGui.Separator();
-        int i = 0;
-        foreach(var uniquePlayer in _characterHandler.playerChar._uniquePlayerPerms) {
-            ImGui.Text($"Lock Times: {uniquePlayer._grantExtendedLockTimes}");
-            ImGui.Text($"Enable Restraints: {uniquePlayer._enableRestraintSets}");
-            ImGui.Text($"Enable Set Locking: {uniquePlayer._restraintSetLocking}");
-            ImGui.Text($"Trigger Phrase for them: {uniquePlayer._triggerPhraseForPuppeteer}");
-            ImGui.Text($"Trigger start char: {uniquePlayer._StartCharForPuppeteerTrigger}");
-            ImGui.Text($"Trigger end char: {uniquePlayer._EndCharForPuppeteerTrigger}");
-            ImGui.Text($"Allow sitting: {uniquePlayer._allowSitRequests}");
-            ImGui.Text($"Allow emotes: {uniquePlayer._allowMotionRequests}");
-            ImGui.Text($"Allow all: {uniquePlayer._allowAllCommands}");
-            ImGui.Text($"Allow Changing toy state: {uniquePlayer._allowChangingToyState}");
-            ImGui.Text($"Allow pattern execution: {uniquePlayer._allowUsingPatterns}");
-            ImGui.Text($"RestraintSetProperties");
-            for(int j = 0; j < uniquePlayer._legsRestraintedProperty.Count; j++) {
-                ImGui.Text($"Properties for restraint set {j}");
-                ImGui.Text($"Legs:{uniquePlayer._legsRestraintedProperty[j]}||");
-                ImGui.SameLine();
-                ImGui.Text($"Arms:{uniquePlayer._armsRestraintedProperty[j]}||");
-                ImGui.SameLine();
-                ImGui.Text($"Gagged:{uniquePlayer._gaggedProperty[j]}||");
-                ImGui.SameLine();
-                ImGui.Text($"Blindfolded:{uniquePlayer._blindfoldedProperty[j]}||");
-                ImGui.SameLine();
-                ImGui.Text($"Immobile:{uniquePlayer._immobileProperty[j]}||");
-                ImGui.SameLine();
-                ImGui.Text($"Weighty:{uniquePlayer._weightyProperty[j]}||");
-                ImGui.SameLine();
-                ImGui.Text($"LightStim:{uniquePlayer._lightStimulationProperty[j]}||");
-                ImGui.SameLine();
-                ImGui.Text($"MildStim:{uniquePlayer._mildStimulationProperty[j]}||");
-                ImGui.SameLine();
-                ImGui.Text($"HeavyStim:{uniquePlayer._heavyStimulationProperty[j]}||");
-            }
-        }
+        // int i = 0;
+        // foreach(var uniquePlayer in _characterHandler.playerChar._uniquePlayerPerms) {
+        //     ImGui.Text($"Lock Times: {uniquePlayer._grantExtendedLockTimes}");
+        //     ImGui.Text($"Enable Restraints: {uniquePlayer._enableRestraintSets}");
+        //     ImGui.Text($"Enable Set Locking: {uniquePlayer._restraintSetLocking}");
+        //     ImGui.Text($"Trigger Phrase for them: {uniquePlayer._triggerPhraseForPuppeteer}");
+        //     ImGui.Text($"Trigger start char: {uniquePlayer._StartCharForPuppeteerTrigger}");
+        //     ImGui.Text($"Trigger end char: {uniquePlayer._EndCharForPuppeteerTrigger}");
+        //     ImGui.Text($"Allow sitting: {uniquePlayer._allowSitRequests}");
+        //     ImGui.Text($"Allow emotes: {uniquePlayer._allowMotionRequests}");
+        //     ImGui.Text($"Allow all: {uniquePlayer._allowAllCommands}");
+        //     ImGui.Text($"Allow Changing toy state: {uniquePlayer._allowChangingToyState}");
+        //     ImGui.Text($"Allow pattern execution: {uniquePlayer._allowUsingPatterns}");
+        //     ImGui.Text($"RestraintSetProperties");
+        //     for(int j = 0; j < _hardcoreManager._rsProperties.Count; j++) {
+        //         ImGui.Text($"Properties for restraint set {j}");
+        //         ImGui.Text($"Legs:{_hardcoreManager._rsProperties[j]._legsRestraintedProperty}||");
+        //         ImGui.SameLine();
+        //         ImGui.Text($"Arms:{_hardcoreManager._rsProperties[j]._armsRestraintedProperty}||");
+        //         ImGui.SameLine();
+        //         ImGui.Text($"Gagged:{_hardcoreManager._rsProperties[j]._gaggedProperty}||");
+        //         ImGui.SameLine();
+        //         ImGui.Text($"Blindfolded:{_hardcoreManager._rsProperties[j]._blindfoldedProperty}||");
+        //         ImGui.SameLine();
+        //         ImGui.Text($"Immobile:{_hardcoreManager._rsProperties[j]._immobileProperty}||");
+        //         ImGui.SameLine();
+        //         ImGui.Text($"Weighty:{_hardcoreManager._rsProperties[j]._weightyProperty}||");
+        //         ImGui.SameLine();
+        //         ImGui.Text($"LightStim:{_hardcoreManager._rsProperties[j]._lightStimulationProperty}||");
+        //         ImGui.SameLine();
+        //         ImGui.Text($"MildStim:{_hardcoreManager._rsProperties[j]._mildStimulationProperty}||");
+        //         ImGui.SameLine();
+        //         ImGui.Text($"HeavyStim:{_hardcoreManager._rsProperties[j]._heavyStimulationProperty}||");
+        //     }
+        
     }
 
     public void DrawRestraintSetOverview() {

@@ -23,14 +23,14 @@ public class RestraintSetManager : ISavable
     [JsonIgnore]
     private readonly RestraintSetListChanged _restraintSetListChanged;
     [JsonIgnore]
-    private readonly RestraintSetToggleEvent _restraintSetToggleEvent;
+    private readonly RS_ToggleEvent _RS_ToggleEvent;
     
     public RestraintSetManager(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent,
-    RestraintSetListChanged restraintSetListChanged, RestraintSetToggleEvent restraintSetToggleEvent) {
+    RestraintSetListChanged restraintSetListChanged, RS_ToggleEvent RS_ToggleEvent) {
         _saveService = saveService;
         _glamourEvent = gagSpeakGlamourEvent;
         _restraintSetListChanged = restraintSetListChanged;
-        _restraintSetToggleEvent = restraintSetToggleEvent;
+        _RS_ToggleEvent = RS_ToggleEvent;
         
         // load the information from our storage file
         Load();
@@ -141,7 +141,7 @@ public class RestraintSetManager : ISavable
             // and update our restraint set
             _glamourEvent.Invoke(UpdateType.UpdateRestraintSet);
             // invoke the toggledSet event so we know which set was enabled, to send off to the hardcore panel
-            _restraintSetToggleEvent.Invoke(RestraintSetToggleType.Enabled, restraintSetIdx, assignerName);         
+            _RS_ToggleEvent.Invoke(RestraintSetToggleType.Enabled, restraintSetIdx, assignerName);         
         }
         // OTHERWISE, we want to set it to false, so just disable it 
         else {
@@ -150,7 +150,7 @@ public class RestraintSetManager : ISavable
             // then fire a disable restraint set event to revert to automation
             _glamourEvent.Invoke(UpdateType.DisableRestraintSet);
             // invoke the toggledSet event so we know which set was disabled, to send off to the hardcore panel
-            _restraintSetToggleEvent.Invoke(RestraintSetToggleType.Disabled, restraintSetIdx, assignerName);
+            _RS_ToggleEvent.Invoke(RestraintSetToggleType.Disabled, restraintSetIdx, assignerName);
         }
         _saveService.QueueSave(this);
     }

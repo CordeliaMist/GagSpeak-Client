@@ -62,13 +62,6 @@ public class PlayerGlobalPerms : CharacterInfoBase
         _uniquePlayerPerms.RemoveAt(index);
     }
 
-    public void IntegrityCheck(int sizeOfSets) {
-        // update the player chars things to match the whitelist edit
-        foreach (var perm in _uniquePlayerPerms) {
-            perm.ListIntegrityCheck(sizeOfSets);
-        }
-    }
-
 #region Serialization
     public override JObject Serialize() {
         JObject derivedSerialized = new JObject() {
