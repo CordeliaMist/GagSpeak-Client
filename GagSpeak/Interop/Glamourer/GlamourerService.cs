@@ -52,6 +52,7 @@ public sealed class GlamourerService
         _SetItemOnce = _pluginInterface.GetIpcSubscriber<GameObject?, byte, ulong, byte, uint, int>("Glamourer.SetItem"); 
         // also subscribe to the state changed event so we know whenever they try to change an outfit
         _StateChangedSubscriber = _pluginInterface.GetIpcSubscriber<int, nint, Lazy<string>, object?>("Glamourer.StateChanged");
+        GagSpeak.Log.Debug("[GlamourerService] GLAMOURER SERVICE INITIALIZED");
     }
 
     /// <summary> Checks if Glamourer is active and installed. </summary>

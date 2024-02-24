@@ -57,7 +57,7 @@ public class GagSpeak : IDalamudPlugin
           _services.GetService<GlamourerFunctions>();  // force loading here because nhothing else loads it so it is initialized as lazy
           _services.GetService<OnFrameworkService>(); // get the charahandler
           // for hardcore stuff
-          _services.GetService<ActionManager>();
+          _services.GetService<GsActionManager>();
           _services.GetService<MovementManager>();
           Log.Information($"GagSpeak v{Version} loaded successfully."); // Log the version to the /xllog menu
       }

@@ -173,13 +173,19 @@ public partial class ResultLogic {
 
                 // lock the restraint set, if it is enabled
                 if(_restraintSetManager._restraintSets[setIdx]._enabled) {
-                    // lock the restraint set
-                    _lockManager.LockRestraintSet(decodedMessageMediator.setToLockOrUnlock, playerName, decodedMessageMediator.layerTimer[0], playerName);
-                    // notify the user that the request as been sent. 
-                    _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Restraint Set "+
-                    $"{decodedMessageMediator.setToLockOrUnlock} has been locked for {decodedMessageMediator.layerTimer[0]}.").AddItalicsOff().BuiltString);
-                    GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for locking restraint set");
-                    return true;
+                    if(!_restraintSetManager._restraintSets[setIdx]._locked) {
+                        // lock the restraint set
+                        _lockManager.LockRestraintSet(decodedMessageMediator.setToLockOrUnlock, playerName, decodedMessageMediator.layerTimer[0], playerName);
+                        // notify the user that the request as been sent. 
+                        _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Restraint Set "+
+                        $"{decodedMessageMediator.setToLockOrUnlock} has been locked for {decodedMessageMediator.layerTimer[0]}.").AddItalicsOff().BuiltString);
+                        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for locking restraint set");
+                        return true;
+                    } else {
+                        isHandled = true;
+                        LogError($"[MsgResultLogic]: Restraint Set {decodedMessageMediator.setToLockOrUnlock} is already locked!");
+                        return false;
+                    }
                 } else {
                     isHandled = true;
                     LogError($"[MsgResultLogic]: Restraint Set {decodedMessageMediator.setToLockOrUnlock} is not enabled, so can't lock it!");

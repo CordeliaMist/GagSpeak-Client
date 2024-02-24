@@ -22,6 +22,7 @@ public class DalamudServices {
 		services.AddDalamudService<IDataManager>(pi);			// for parsing object data
 		services.AddDalamudService<IFramework>(pi);				// For interfacing with the dalamud framework (scheduler, timings, etc.)
 		services.AddDalamudService<IGameInteropProvider>(pi);	// helps with detouring the chat input for our plugin
+		services.AddDalamudService<IGameConfig>(pi);			// For interfacing with the game network
 		services.AddDalamudService<IKeyState>(pi);				// for the file system selector to use to get our state
 		services.AddDalamudService<IObjectTable>(pi);			// For interfacing with the object table
 		services.AddDalamudService<IPartyFinderGui>(pi);		// For interfacing with the party finder (may remove)

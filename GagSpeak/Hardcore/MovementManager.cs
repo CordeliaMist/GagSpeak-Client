@@ -45,20 +45,19 @@ public class MovementManager : IDisposable
         GagSpeak.Log.Debug($"Enabling moving, cnt {_moveMemory.ForceDisableMovement}");
         // disable our hooks, we dont need to track them anymore.
         _moveMemory.DisableHooks();
-        if (_moveMemory.ForceDisableMovement > 0) {
-            _moveMemory.ForceDisableMovement--;
-        }
+        // if (_moveMemory.ForceDisableMovement > 0) {
+        //     _moveMemory.ForceDisableMovement--;
+        // }
     }
 
     private void DisableMoving() {
         GagSpeak.Log.Debug($"Disabling moving, cnt {_moveMemory.ForceDisableMovement}");
         // reinable our hooks
         _moveMemory.EnableHooks();
-        _moveMemory.ForceDisableMovement++;
+        // _moveMemory.ForceDisableMovement++;
     }
 
     private void OnRestraintSetPropertyChanged(object sender, RS_PropertyChangedEventArgs e) {
-        GagSpeak.Log.Debug($"WE GOT HERE SOMEHOW WOOOOO");
         // enable movement if this satisfies
         if(e.PropertyType == HardcoreChangeType.MovementDisabled && e.ChangeType == RestraintSetChangeType.Disabled) {
             EnableMoving();

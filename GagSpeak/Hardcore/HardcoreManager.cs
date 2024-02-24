@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GagSpeak.Events;
 using GagSpeak.Wardrobe;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 
 namespace GagSpeak.Hardcore;
 public class HardcoreManager : ISavable
@@ -20,7 +21,7 @@ public class HardcoreManager : ISavable
     // after a whitelisted player says "stay here for now", teleport and return will be blocked, and your any exit US that pops up will automatically hit no on yesno confirmations... These permissions are restored when they say "come along now"
     public bool _forcedToStay { get; private set; } = false;
     // if active, a blindfold overlay is visable
-    public bool _blindfolded { get; private set; } = false; 
+    public bool _blindfolded { get; private set; } = false;
     public List<HC_RestraintProperties> _rsProperties;
 
     [JsonIgnore]
@@ -114,15 +115,15 @@ public class HardcoreManager : ISavable
         _forcedToStay = forcedToStay;
         _saveService.QueueSave(this);
         // invoke the change
-        _rsPropertyChanged.Invoke(HardcoreChangeType.Immobile, forcedToStay ? RestraintSetChangeType.Enabled
-                                                                            : RestraintSetChangeType.Disabled);
+        //_rsPropertyChanged.Invoke(HardcoreChangeType.Immobile, forcedToStay ? RestraintSetChangeType.Enabled
+        //                                                                    : RestraintSetChangeType.Disabled);
     }
     public void SetBlindfolded(bool blindfolded) {
         _blindfolded = blindfolded;
         _saveService.QueueSave(this);
         // invoke the change
-        _rsPropertyChanged.Invoke(HardcoreChangeType.Blindfolded, blindfolded ? RestraintSetChangeType.Enabled
-                                                                              : RestraintSetChangeType.Disabled);
+        //_rsPropertyChanged.Invoke(HardcoreChangeType.Blindfolded, blindfolded ? RestraintSetChangeType.Enabled
+        //                                                                      : RestraintSetChangeType.Disabled);
     }
     public void ResetEverythingDueToSafeword() {
         _forcedWalk = false;
@@ -152,46 +153,64 @@ public class HardcoreManager : ISavable
     public void SetLegsRestraintedProperty(int setIndex, bool value) {
         _rsProperties[setIndex]._legsRestraintedProperty = value;
         _saveService.QueueSave(this);
+        // doesnt madder if enabled or disabled, we will just refresh the active actions if so (for now)
+        _rsPropertyChanged.Invoke(HardcoreChangeType.RS_PropertyModified, RestraintSetChangeType.Disabled);
     }
 
     public void SetArmsRestraintedProperty(int setIndex, bool value) {
         _rsProperties[setIndex]._armsRestraintedProperty = value;
         _saveService.QueueSave(this);
+        // doesnt madder if enabled or disabled, we will just refresh the active actions if so (for now)
+        _rsPropertyChanged.Invoke(HardcoreChangeType.RS_PropertyModified, RestraintSetChangeType.Disabled);
     }
 
     public void SetGaggedProperty(int setIndex, bool value) {
         _rsProperties[setIndex]._gaggedProperty = value;
         _saveService.QueueSave(this);
+        // doesnt madder if enabled or disabled, we will just refresh the active actions if so (for now)
+        _rsPropertyChanged.Invoke(HardcoreChangeType.RS_PropertyModified, RestraintSetChangeType.Disabled);
     }
 
     public void SetBlindfoldedProperty(int setIndex, bool value) {
         _rsProperties[setIndex]._blindfoldedProperty = value;
         _saveService.QueueSave(this);
+        // doesnt madder if enabled or disabled, we will just refresh the active actions if so (for now)
+        _rsPropertyChanged.Invoke(HardcoreChangeType.RS_PropertyModified, RestraintSetChangeType.Disabled);
     }
 
     public void SetImmobileProperty(int setIndex, bool value) {
         _rsProperties[setIndex]._immobileProperty = value;
         _saveService.QueueSave(this);
+        // doesnt madder if enabled or disabled, we will just refresh the active actions if so (for now)
+        _rsPropertyChanged.Invoke(HardcoreChangeType.RS_PropertyModified, RestraintSetChangeType.Disabled);
     }
 
     public void SetWeightedProperty(int setIndex, bool value) {
         _rsProperties[setIndex]._weightyProperty = value;
         _saveService.QueueSave(this);
+        // doesnt madder if enabled or disabled, we will just refresh the active actions if so (for now)
+        _rsPropertyChanged.Invoke(HardcoreChangeType.RS_PropertyModified, RestraintSetChangeType.Disabled);
     }
 
     public void SetLightStimulationProperty(int setIndex, bool value) {
         _rsProperties[setIndex]._lightStimulationProperty = value;
         _saveService.QueueSave(this);
+        // doesnt madder if enabled or disabled, we will just refresh the active actions if so (for now)
+        _rsPropertyChanged.Invoke(HardcoreChangeType.RS_PropertyModified, RestraintSetChangeType.Disabled);
     }
 
     public void SetMildStimulationProperty(int setIndex, bool value) {
         _rsProperties[setIndex]._mildStimulationProperty = value;
         _saveService.QueueSave(this);
+        // doesnt madder if enabled or disabled, we will just refresh the active actions if so (for now)
+        _rsPropertyChanged.Invoke(HardcoreChangeType.RS_PropertyModified, RestraintSetChangeType.Disabled);
     }
 
     public void SetHeavyStimulationProperty(int setIndex, bool value) {
         _rsProperties[setIndex]._heavyStimulationProperty = value;
         _saveService.QueueSave(this);
+        // doesnt madder if enabled or disabled, we will just refresh the active actions if so (for now)
+        _rsPropertyChanged.Invoke(HardcoreChangeType.RS_PropertyModified, RestraintSetChangeType.Disabled);
     }
 
 #endregion property setters
@@ -239,11 +258,20 @@ public class HardcoreManager : ISavable
             _forcedFollow = jsonObject["ForcedFollow"]?.Value<bool>() ?? false;
             _forcedToStay = jsonObject["ForcedToStay"]?.Value<bool>() ?? false;
             _blindfolded = jsonObject["Blindfolded"]?.Value<bool>() ?? false;
-            _rsProperties = jsonObject["RestraintProperties"]?.ToObject<List<HC_RestraintProperties>>() ?? _rsProperties;
+
+            var rsPropertiesArray = jsonObject["RestraintProperties"]?.Value<JArray>();
+            _rsProperties = new List<HC_RestraintProperties>();
+            if (rsPropertiesArray != null) {
+                foreach (var item in rsPropertiesArray) {
+                    var rsProperty = new HC_RestraintProperties();
+                    rsProperty.Deserialize(item.Value<JObject>());
+                    _rsProperties.Add(rsProperty);
+                }
+            }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"[HardcoreManager] Error loading GagStorage.json: {ex}");
+            GagSpeak.Log.Error($"[HardcoreManager] Error loading HardcoreManager.json: {ex}");
         } finally {
-            GagSpeak.Log.Debug($"[HardcoreManager] GagStorage.json loaded!");
+            GagSpeak.Log.Debug($"[HardcoreManager] HardcoreManager.json loaded!");
         }
         #pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }

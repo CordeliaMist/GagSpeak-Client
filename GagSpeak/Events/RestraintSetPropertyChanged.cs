@@ -1,21 +1,25 @@
 using System;
 namespace GagSpeak.Events;
 public enum HardcoreChangeType {
-    LegsRestraint,
-    ArmsRestraint,
-    Gagged,
-    Blindfolded,
-    Immobile,
-    Weighty,
-    LightStimulation,
-    MildStimulation,
-    HeavyStimulation,
+    RS_PropertyModified,
+    // LegsRestraint,
+    // ArmsRestraint,
+    // Gagged,
+    // Blindfolded,
+    // Immobile,
+    // Weighty,
+    // LightStimulation,
+    // MildStimulation,
+    // HeavyStimulation, 
     ForcedWalk,
     ForcedSit,
     ForcedFollow,
     MovementDisabled,
     Safeword,
 }
+/// <summary>
+/// The type of change that was made to the restraint
+/// </summary>
 public enum RestraintSetChangeType {
     Enabled,
     Disabled,

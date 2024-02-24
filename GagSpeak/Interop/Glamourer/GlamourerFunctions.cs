@@ -248,7 +248,6 @@ public class GlamourerFunctions : IDisposable
             } catch (Exception ex) {
                 GagSpeak.Log.Error($"[GlamourEventFired]: Error processing glamour event: {ex.Message}");
             } finally {
-                GagSpeak.Log.Debug($"[GlamourEventFired]: re-allowing GlamourChangedEvent");
                 _gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting = false;
                 _config.finishedDrawingGlamChange = true;
             }
@@ -295,6 +294,7 @@ public class GlamourerFunctions : IDisposable
                         // Because it was disabled, we will treat it as an overlay, ignoring it if it is a nothing item
                         if (!pair.Value._gameItem.Equals(ItemIdVars.NothingItem(pair.Value._slot))) {
                             // Apply the EquipDrawData
+                            GagSpeak.Log.Debug($"[ApplyRestrainSetToData] Calling on Helmet Placement {pair.Key}!");
                             tasks.Add(_Interop.SetItemToCharacterAsync(
                                 _onFrameworkService._address, 
                                 Convert.ToByte(pair.Key), // the key (EquipSlot)

@@ -319,22 +319,22 @@ public class ConfigSettingsTab : ITab
             }
             var j = 0;
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
-            foreach (var e in ChatChannel.GetOrderedChannels()) {
+            foreach (var f in ChatChannel.GetOrderedChannels()) {
                 // See if it is already enabled by default
-                var enabled = _config.ChannelsPuppeteer.Contains(e);
+                var enabledPuppet = _config.ChannelsPuppeteer.Contains(f);
                 // Create a new line after every 4 columns
                 if (j != 0 && (j==4 || j==7 || j==11 || j==15 || j == 19)) {
                     ImGui.NewLine();
                     //i = 0;
                 }
                 // Move to the next row if it is LS1 or CWLS1
-                if (e is ChatChannel.ChatChannels.LS1 or ChatChannel.ChatChannels.CWL1)
+                if (f is ChatChannel.ChatChannels.LS1 or ChatChannel.ChatChannels.CWL1)
                     ImGui.Separator();
 
-                if (ImGui.Checkbox($"{e}", ref enabled)) {
+                if (ImGui.Checkbox($"{f}##{f}_puppeteer", ref enabledPuppet)) {
                     // See If the UIHelpers.Checkbox is clicked, If not, add to the list of enabled channels, otherwise, remove it.
-                    if (enabled) _config.ChannelsPuppeteer.Add(e);
-                    else _config.ChannelsPuppeteer.Remove(e);
+                    if (enabledPuppet) _config.ChannelsPuppeteer.Add(f);
+                    else _config.ChannelsPuppeteer.Remove(f);
                     _config.Save();
                 }
 

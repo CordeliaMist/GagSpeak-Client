@@ -54,7 +54,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public          List<string>                                phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
     // stuff for the toybox
     public          string                                      intifacePortValue { get; set; } = "ws://localhost:12345";              // The port value for the intiface server
-
+    public          bool                                        AdminMode { get; set; }                    
+    
     [JsonIgnore]
     private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
 
@@ -102,6 +103,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         disableGlamChangeEvent = false;
         acceptingInfoRequests = true;
         processingInfoRequest = false;
+        AdminMode = false;
         if(intifacePortValue.Length < 10) {
             intifacePortValue = "ws://localhost:12345";
         }

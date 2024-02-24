@@ -31,6 +31,7 @@ using GagSpeak.Hardcore;
 using GagSpeak.UI.Tabs.HardcoreTab;
 using GagSpeak.Hardcore.Movement;
 using GagSpeak.Hardcore.Actions;
+using GagSpeak.Utility;
 
 namespace GagSpeak.Services;
 
@@ -137,9 +138,8 @@ public static class ServiceHandler
 
     /// <summary> Classes to add to the service collection from the [Hardcore] folder </summary>
     private static ServiceManager AddHardcore(this ServiceManager services)
-        => services.AddSingleton<ActionManagerLogic>()
-            .AddSingleton<HardcoreManager>()
-            .AddSingleton<ActionManager>()
+        => services.AddSingleton<HardcoreManager>()
+            .AddSingleton<GsActionManager>()
             .AddSingleton<MovementManager>()
             .AddSingleton<MoveMemory>(_ => {
                 var interop = _.GetRequiredService<IGameInteropProvider>();
@@ -198,7 +198,9 @@ public static class ServiceHandler
             .AddSingleton<UserProfileWindow>()
             .AddSingleton<SavePatternWindow>()
             .AddSingleton<DebugWindow>()
-            .AddSingleton<GagSpeakChangelog>();
+            .AddSingleton<GagSpeakChangelog>()
+            
+            .AddSingleton<IconManager>();
 
     /// <summary> Classes to add to the service collection from the [Wardrobe] folder </summary>
     private static ServiceManager AddWardrobe(this ServiceManager services)

@@ -26,6 +26,7 @@ public class GagSpeakChangelog
         Add1_0_2_0(Changelog);
         Add2_0_0_0(Changelog);
         Add2_2_0_0(Changelog);
+        Add2_4_0_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -52,6 +53,14 @@ public class GagSpeakChangelog
             _config.Save();
         }
     }
+
+    private static void Add2_4_0_0(Changelog log)
+        => log.NextVersion("Version 2.4.0.0 Release")
+            .RegisterHighlight("The Hardcore Tab is now in experiemental mode.")
+            .RegisterEntry("Minor fixes to issues reported in puppeteer channels not being able to be selected")
+            .RegisterEntry("Minor fixes to issues reported in toybox not loading")
+            .RegisterEntry("Minor fixes to issues reported with restraint set locking")
+            .RegisterEntry("Minor fixes to issues reported with the wardrobe tab not loading");
 
     private static void Add2_2_0_0(Changelog log)
         => log.NextVersion("Version 2.2.2.3 Release")

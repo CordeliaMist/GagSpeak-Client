@@ -2,6 +2,7 @@ using System.Numerics;
 using Dalamud.Interface.Utility.Raii;
 using GagSpeak.CharacterData;
 using GagSpeak.Hardcore;
+using GagSpeak.Hardcore.Actions;
 using GagSpeak.Utility;
 using ImGuiNET;
 using OtterGui;
@@ -11,15 +12,17 @@ namespace GagSpeak.UI.Tabs.HardcoreTab;
 public class HC_OrdersControl
 {
     private readonly HardcoreManager _hardcoreManager;
-    public HC_OrdersControl(HardcoreManager hardcoreManager) {
+    private readonly GsActionManager _actionManager;
+    public HC_OrdersControl(HardcoreManager hardcoreManager, GsActionManager actionManager) {
         _hardcoreManager = hardcoreManager;
+        _actionManager = actionManager;
     }
     public void Draw() {
         using var child = ImRaii.Child("##HC_OrdersControlChild", new Vector2(ImGui.GetContentRegionAvail().X, -1), true);
         if (!child)
             return;
 
-        ImGuiUtil.Center("uwu");
+        ImGuiUtil.Center("uwu"); // test
         
         UIHelpers.CheckboxNoConfig("Follow Me",
         "When this whitelisted user says \"follow me\" you will be forced to follow them.\n"+
@@ -43,17 +46,21 @@ public class HC_OrdersControl
         v => _hardcoreManager.SetForcedToStay(!_hardcoreManager._forcedToStay)
         );
 
-        // UIHelpers.CheckboxNoConfig("Disable Movement",
-        // "For Testing Purposes, Disabled all movement when checked",
-        // _hardcoreManager._movementDisabled,
-        // v => _hardcoreManager.SetMovementDisabled(!_hardcoreManager._movementDisabled)
-        // );
+        UIHelpers.CheckboxNoConfig("Disable Movement",
+        "For Testing Purposes, Disabled all movement when checked",
+        _hardcoreManager._movementDisabled,
+        v => _hardcoreManager.SetMovementDisabled(!_hardcoreManager._movementDisabled)
+        );
 
-        // UIHelpers.CheckboxNoConfig("Force Walk",
-        // "For Testing Purposes, Forces walking when checked",
-        // _hardcoreManager._forcedWalk,
-        // v => _hardcoreManager.SetForcedWalk(!_hardcoreManager._forcedWalk)
-        // );
+        UIHelpers.CheckboxNoConfig("Force Walk",
+        "For Testing Purposes, Forces walking when checked",
+        _hardcoreManager._forcedWalk,
+        v => _hardcoreManager.SetForcedWalk(!_hardcoreManager._forcedWalk)
+        );
+
+        if(ImGui.Button("Reset All")) {
+            _actionManager.RestoreSavedSlots();
+        }
 
         ImGuiUtil.Center("None of these features currently work and are WIP");
     }

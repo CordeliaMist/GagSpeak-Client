@@ -25,7 +25,6 @@ public class HC_RestraintProperties
         _mildStimulationProperty = false;
         _heavyStimulationProperty = false;
     }
-
     public JObject Serialize() {
         return new JObject() {
             ["LegsRestraintedProperty"] = _legsRestraintedProperty,

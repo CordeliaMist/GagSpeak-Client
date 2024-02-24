@@ -55,7 +55,9 @@ public class MainWindow : Window
 		// Next let's set the size of the window
 		SizeConstraints = new WindowSizeConstraints() {
 			MinimumSize = new Vector2(565, 540),     // Minimum size of the window
-			MaximumSize = new Vector2(650, 1000)     // Maximum size of the window
+      // set max size possible
+      MaximumSize = ImGui.GetIO().DisplaySize,
+      //MaximumSize = new Vector2(650, 1000)     // Maximum size of the window
 		};
 
     //Size = new Vector2(540, 525);
