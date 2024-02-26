@@ -58,8 +58,8 @@ public class RestraintSetSelector
     }
 
 #region  RestraintSetSelector
-    public void DrawRestraintSetSelector(float width, float height, Vector2 ItemSpacing) {
-        using var child = ImRaii.Child("##Selector", new Vector2(width, height), true);
+    public void DrawRestraintSetSelector(float width, float height, Vector2 ItemSpacing, bool borderAllowed = true) {
+        using var child = ImRaii.Child("##Selector", new Vector2(width, height), borderAllowed);
         if (!child)
             return;
 
@@ -89,16 +89,22 @@ public class RestraintSetSelector
             _restraintSetManager.AddNewRestraintSet();
         }
         ImGui.SameLine();
-        if (ImGui.Button("Remove Set", new Vector2(buttonWidth.X+ImGuiHelpers.GlobalScale*10, buttonWidth.Y))) {
-            // if the set only has one item, just replace it with a blank template
-            if (_restraintSetManager._restraintSets.Count == 1) {
-                _restraintSetManager._restraintSets[0] = new RestraintSet();
-                _restraintSetManager.Save();
-                _restraintSetManager._selectedIdx = 0;
-            } else {
-                _restraintSetManager.DeleteRestraintSet(_restraintSetManager._selectedIdx);
-                _restraintSetManager._selectedIdx = 0;
+        if(_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._enabled) { ImGui.BeginDisabled();}
+        // draw out the remove button
+        try{
+            if (ImGui.Button("Remove Set", new Vector2(buttonWidth.X+ImGuiHelpers.GlobalScale*10, buttonWidth.Y))) {
+                // if the set only has one item, just replace it with a blank template
+                if (_restraintSetManager._restraintSets.Count == 1) {
+                    _restraintSetManager._restraintSets[0] = new RestraintSet();
+                    _restraintSetManager.Save();
+                    _restraintSetManager._selectedIdx = 0;
+                } else {
+                    _restraintSetManager.DeleteRestraintSet(_restraintSetManager._selectedIdx);
+                    _restraintSetManager._selectedIdx = 0;
+                }
             }
+        } finally {
+            if(_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._enabled) { ImGui.EndDisabled();}
         }
         ImGui.SameLine();
         // copy restraint set list button

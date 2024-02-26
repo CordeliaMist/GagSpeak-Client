@@ -27,6 +27,7 @@ public class ConfigSettingsTab : ITab
     private             string[]                        _currentDialects;       // the array of language names
     private             string                          _activeDialect;         // the dialect selected
     private             string?                         _globalTriggerPhrase;        // the language selected
+    private             string                          _tempPassword;          // the temp password for the safeword
 
     /// <summary> Initializes a new instance of the <see cref="ConfigSettingsTab"/> class. <summary>
     public ConfigSettingsTab(GagSpeakConfig config, CharacterHandler characterHandler,
@@ -40,6 +41,8 @@ public class ConfigSettingsTab : ITab
             { "French", new string[] { "France", "Quebec" } },
             { "Japanese", new string[] { "Japan" } }
         };
+        // set password to blank
+        _tempPassword = "";
 
         _currentDialects = _languages[_config.language]; // put all dialects into an array
         _activeDialect = GetDialectFromConfigDialect();  // set the active dialect to the one in the config
@@ -310,7 +313,6 @@ public class ConfigSettingsTab : ITab
                 i++;
             }
             ImGui.NewLine();
-            ImGui.NewLine();
             ImGui.AlignTextToFramePadding();
             ImGui.Text("Puppeteer Channels:");
             if(ImGui.IsItemHovered()) {
@@ -343,6 +345,23 @@ public class ConfigSettingsTab : ITab
             }
             ImGui.PopStyleVar();
             if(_characterHandler.playerChar._directChatGarblerLocked == true) {ImGui.EndDisabled();}
+            // admin key password field
+            ImGui.NewLine();
+            ImGui.Spacing();
+            var password  = _tempPassword; // temp storage to hold until we de-select the text input
+            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*150);
+            if (ImGui.InputTextWithHint($"BetaTester: {_config.AdminMode}##TestingPassKey", "TestingPassKey", ref password, 128, ImGuiInputTextFlags.None))
+                _tempPassword = password;
+            if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
+                var passwordBytes = System.Text.Encoding.UTF8.GetBytes(password);
+                var base64Password = System.Convert.ToBase64String(passwordBytes);
+                if(base64Password == "SGFyZGNvcmVCb25kYWdlR2FtZXJzIEFkbWluQmV0YVRlc3RpbmcgUGFzc3dvcmQgS2V5") {
+                    _config.AdminMode = true;
+                } else {
+                    _config.AdminMode = false;
+                }
+                _tempPassword = "";
+            }
         }
     }
 

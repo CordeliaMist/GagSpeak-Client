@@ -8,6 +8,8 @@ using System.IO;
 using Newtonsoft.Json;
 using Penumbra.GameData.Structs;
 using GagSpeak.Events;
+using Dalamud.Plugin.Services;
+using System.Threading.Tasks;
 
 namespace GagSpeak.Wardrobe;
 
@@ -19,6 +21,8 @@ public class RestraintSetManager : ISavable
     [JsonIgnore]
     private readonly SaveService _saveService;
     [JsonIgnore]
+    private readonly IClientState _clientState;
+    [JsonIgnore]
     private readonly GagSpeakGlamourEvent _glamourEvent;
     [JsonIgnore]
     private readonly RestraintSetListChanged _restraintSetListChanged;
@@ -26,18 +30,18 @@ public class RestraintSetManager : ISavable
     private readonly RS_ToggleEvent _RS_ToggleEvent;
     
     public RestraintSetManager(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent,
-    RestraintSetListChanged restraintSetListChanged, RS_ToggleEvent RS_ToggleEvent) {
+    RestraintSetListChanged restraintSetListChanged, RS_ToggleEvent RS_ToggleEvent, IClientState clientState) {
         _saveService = saveService;
         _glamourEvent = gagSpeakGlamourEvent;
         _restraintSetListChanged = restraintSetListChanged;
         _RS_ToggleEvent = RS_ToggleEvent;
+        _clientState = clientState;
         
         // load the information from our storage file
         Load();
         // if the load failed, meaning our _restraintSets is empty, then we need to add a default set
         if (_restraintSets == null || !_restraintSets.Any()) {
             _restraintSets = new List<RestraintSet> { new RestraintSet() };
-            Save();
         }
         // correctly account for any non-updated timed locked sets
         foreach (var set in _restraintSets) {
@@ -45,12 +49,37 @@ public class RestraintSetManager : ISavable
                 set._locked = false;
             }
         }
+        // if any of our sets are enabled, then prime the events
+        if (_restraintSets.Any(set => set._enabled)) {
+            // get the active index of the set that is enabled
+            int activeIdx = _restraintSets.FindIndex(set => set._enabled);
+            MonitorLoginAndInvokeEvent(activeIdx);
+        }
+        // save to the file 
+        Save();
 
         // update our variables dependant on the restraint set lists:
         _restraintSetListChanged.Invoke(ListUpdateType.SizeIntegrityCheck, _restraintSets.Count);
     }
     
-    #region Manager Methods
+
+#region Handle On-Login
+    public void MonitorLoginAndInvokeEvent(int idxToActivate) {
+        Task.Run(async () =>
+        {
+            while (!_clientState.IsLoggedIn || _clientState.LocalPlayer == null || _clientState.LocalPlayer.Address == IntPtr.Zero) {
+                await Task.Delay(1000); // Wait for 1 second before checking the login status again
+            }
+            // once we are logged in, delay another 2 seconds to let other plugins like glamourer process, then load
+            await Task.Delay(2000);
+            // invoke the events
+            _glamourEvent.Invoke(UpdateType.UpdateRestraintSet);
+            _RS_ToggleEvent.Invoke(RestraintSetToggleType.Enabled, idxToActivate, "self");
+        });
+    }
+#endregion Handle On-Login
+
+#region Manager Methods
 
     public int GetSelectedIdx() => _selectedIdx;
 

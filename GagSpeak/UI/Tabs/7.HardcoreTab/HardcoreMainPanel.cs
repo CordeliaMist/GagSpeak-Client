@@ -23,30 +23,35 @@ public enum HardcoreSubTab {
 public class HardcoreMainPanel
 {
     private readonly    HC_RestraintSetProperties   _restraintSetProperties; // for getting the restraint set properties
-    private readonly    HC_OrdersControl          _movementControl; // for getting the movement control
+    private readonly    HC_OrdersControl            _movementControl; // for getting the movement control
     private readonly    HC_Humiliation              _humiliation; // for getting the humiliation
-    private             HardcoreSubTab              _activeTab;
+    private             HardcoreSubTab              _hcActiveTab;
+    private             GagSpeakConfig              _config;
     public HardcoreMainPanel(HC_RestraintSetProperties restraintSetProperties,
-    HC_OrdersControl movementControl, HC_Humiliation humiliation) {
+    HC_OrdersControl movementControl, HC_Humiliation humiliation, GagSpeakConfig config) {
         _restraintSetProperties = restraintSetProperties;
         _movementControl = movementControl;
         _humiliation = humiliation;
+        _config = config;
 
-        _activeTab = HardcoreSubTab.RestraintSetProperties;        
+        _hcActiveTab = HardcoreSubTab.RestraintSetProperties;        
     }
 
     public void Draw() {
+        if(_hcActiveTab != _config.ActiveTab) {
+            _hcActiveTab = _config.ActiveTab;
+        }
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         using (var group = ImRaii.Group()) {
             DrawShelfSelection();
-            if(_activeTab == HardcoreSubTab.RestraintSetProperties) {
+            if(_hcActiveTab == HardcoreSubTab.RestraintSetProperties) {
                 _restraintSetProperties.Draw();
             }
-            else if(_activeTab == HardcoreSubTab.MovementControl) {
+            else if(_hcActiveTab == HardcoreSubTab.MovementControl) {
                 _movementControl.Draw();
             }
-            else if(_activeTab == HardcoreSubTab.Humiliation) {
+            else if(_hcActiveTab == HardcoreSubTab.Humiliation) {
                 _humiliation.Draw();
             }
         }
@@ -60,23 +65,23 @@ public class HardcoreMainPanel
         // tab selection
         if (ImGuiUtil.DrawDisabledButton("Restraint Properties", buttonSize,
         "Configure Lockable Restraint sets that can act as an overlay for your glamour!",
-        _activeTab == HardcoreSubTab.RestraintSetProperties))
+        _hcActiveTab == HardcoreSubTab.RestraintSetProperties))
         {
-            _activeTab = HardcoreSubTab.RestraintSetProperties;
+            _config.SetActiveHcTab(HardcoreSubTab.RestraintSetProperties);
         }
         ImGui.SameLine();
-        if (ImGuiUtil.DrawDisabledButton("Movement Control", buttonSize,
+        if (ImGuiUtil.DrawDisabledButton("Orders / Control", buttonSize,
         "Configure movement control settings!",
-        _activeTab == HardcoreSubTab.MovementControl)) 
+        _hcActiveTab == HardcoreSubTab.MovementControl)) 
         {
-            _activeTab = HardcoreSubTab.MovementControl;
+            _config.SetActiveHcTab(HardcoreSubTab.MovementControl);
         }
         ImGui.SameLine();
         if (ImGuiUtil.DrawDisabledButton("Humiliation", buttonSize,
         "Configure humiliation settings!",
-        _activeTab == HardcoreSubTab.Humiliation)) 
+        _hcActiveTab == HardcoreSubTab.Humiliation)) 
         {
-            _activeTab = HardcoreSubTab.Humiliation;
+            _config.SetActiveHcTab(HardcoreSubTab.Humiliation);
         }
     }
 }

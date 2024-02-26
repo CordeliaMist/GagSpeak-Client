@@ -15,12 +15,20 @@ namespace GagSpeak.Hardcore;
 public static class ActionDataCore
 {
     // collection for Adventurer
-    public static Dictionary<uint, AcReqProps[]> Adventurer = new Dictionary<uint, AcReqProps[]>();
+    public static Dictionary<uint, AcReqProps[]> Adventurer = new Dictionary<uint, AcReqProps[]>()
+    {
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
+    };
 
     // Collection for Gladiator
     public static Dictionary<uint, AcReqProps[]> Gladiator = new Dictionary<uint, AcReqProps[]>()
     {
-        { 4,    new AcReqProps[]{AcReqProps.Movement}},                             // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},                             // Sprint
         { 7,    new AcReqProps[]{AcReqProps.None}},                             // Teleport
         { 8,    new AcReqProps[]{AcReqProps.None}},                             // Return
         { 28,   new AcReqProps[]{AcReqProps.Movement} },                        // Toggle Iron Will
@@ -46,110 +54,195 @@ public static class ActionDataCore
     // Collection for Pugilist
     public static Dictionary<uint, AcReqProps[]> Pugilist = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Marauder
     public static Dictionary<uint, AcReqProps[]> Marauder = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Lancer
     public static Dictionary<uint, AcReqProps[]> Lancer = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Archer
     public static Dictionary<uint, AcReqProps[]> Archer = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Conjurer
     public static Dictionary<uint, AcReqProps[]> Conjurer = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Thaumaturge
     public static Dictionary<uint, AcReqProps[]> Thaumaturge = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Carpenter
     public static Dictionary<uint, AcReqProps[]> Carpenter = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Blacksmith
     public static Dictionary<uint, AcReqProps[]> Blacksmith = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Armorer
     public static Dictionary<uint, AcReqProps[]> Armorer = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Goldsmith
     public static Dictionary<uint, AcReqProps[]> Goldsmith = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Leatherworker
     public static Dictionary<uint, AcReqProps[]> Leatherworker = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Weaver
     public static Dictionary<uint, AcReqProps[]> Weaver = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Alchemist
     public static Dictionary<uint, AcReqProps[]> Alchemist = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Culinarian
     public static Dictionary<uint, AcReqProps[]> Culinarian = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Miner
     public static Dictionary<uint, AcReqProps[]> Miner = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Botanist
     public static Dictionary<uint, AcReqProps[]> Botanist = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Fisher
     public static Dictionary<uint, AcReqProps[]> Fisher = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Paladin
     public static Dictionary<uint, AcReqProps[]> Paladin = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.Movement}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -228,7 +321,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> Monk = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.Movement}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -293,7 +386,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> Warrior = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.Movement}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -364,7 +457,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> Dragoon = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.Movement}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -432,6 +525,12 @@ public static class ActionDataCore
     // Collection for Bard
     public static Dictionary<uint, AcReqProps[]> Bard = new Dictionary<uint, AcReqProps[]>()
     {
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
         // Arms Length
         { 7548, new AcReqProps[]{AcReqProps.Movement}},
         // Head Graze
@@ -492,7 +591,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> WhiteMage = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.Movement}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -563,7 +662,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> BlackMage = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.None}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -633,14 +732,19 @@ public static class ActionDataCore
     // Collection for Arcanist
     public static Dictionary<uint, AcReqProps[]> Arcanist = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Summoner
     public static Dictionary<uint, AcReqProps[]> Summoner = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.None}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -701,7 +805,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> Scholar = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.None}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -776,14 +880,19 @@ public static class ActionDataCore
     // Collection for Rogue
     public static Dictionary<uint, AcReqProps[]> Rogue = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Ninja
     public static Dictionary<uint, AcReqProps[]> Ninja = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.None}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -849,6 +958,12 @@ public static class ActionDataCore
     // Collection for Machinist
     public static Dictionary<uint, AcReqProps[]> Machinist = new Dictionary<uint, AcReqProps[]>()
     {
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
         // Arms Length
         { 7548, new AcReqProps[]{AcReqProps.Movement}},
         // Head Graze
@@ -905,7 +1020,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> DarkKnight = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.Movement}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -978,7 +1093,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> Astrologian = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.None}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -1053,7 +1168,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> Samurai = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.None}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -1118,7 +1233,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> RedMage = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.None}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -1186,14 +1301,19 @@ public static class ActionDataCore
     // Collection for BlueMage
     public static Dictionary<uint, AcReqProps[]> BlueMage = new Dictionary<uint, AcReqProps[]>()
     {
-
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
     };
 
     // Collection for Gunbreaker
     public static Dictionary<uint, AcReqProps[]> Gunbreaker = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.Movement}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -1265,6 +1385,12 @@ public static class ActionDataCore
     // Collection for Dancer
     public static Dictionary<uint, AcReqProps[]> Dancer = new Dictionary<uint, AcReqProps[]>()
     {
+        // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
+        // Teleport
+        { 7,    new AcReqProps[]{AcReqProps.None}},
+        // Return
+        { 8,    new AcReqProps[]{AcReqProps.None}},
         // Arms Length
         { 7548, new AcReqProps[]{AcReqProps.Movement}},
         // Head Graze
@@ -1325,7 +1451,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> Reaper = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.None}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return
@@ -1394,7 +1520,7 @@ public static class ActionDataCore
     public static Dictionary<uint, AcReqProps[]> Sage = new Dictionary<uint, AcReqProps[]>()
     {
         // Sprint
-        { 4,    new AcReqProps[]{AcReqProps.None}},
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},
         // Teleport
         { 7,    new AcReqProps[]{AcReqProps.None}},
         // Return

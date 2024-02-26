@@ -141,6 +141,7 @@ public static class ServiceHandler
         => services.AddSingleton<HardcoreManager>()
             .AddSingleton<GsActionManager>()
             .AddSingleton<MovementManager>()
+            .AddSingleton<HotbarLocker>()
             .AddSingleton<MoveMemory>(_ => {
                 var interop = _.GetRequiredService<IGameInteropProvider>();
                 return new MoveMemory(interop);});

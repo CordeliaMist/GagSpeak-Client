@@ -57,44 +57,7 @@ public class HC_Humiliation
                 var petBar = isNormalBar ? &hotbarModule->PetHotBar : &hotbarModule->PetCrossHotBar;
                 DrawHotbar(hotbarModule, petBar);                
                 ImGui.EndTabItem();
-            }
-            // New tab for hotbarSkills
-            if (ImGui.BeginTabItem("Hotbar Skills##hotbarskills")) {
-                ImGui.Columns(10, "##hotbarskillscolumns", true);
-                for (var i = 0; i < _actionManager.hotbarSkills.Length; i++) {
-                    ImGui.Text($"{_actionManager.hotbarSkills[i]}");
-                    ImGui.NextColumn();
-                }
-                ImGui.Columns(1);
-                ImGui.EndTabItem();
-            }
-
-            // new tab for drawing all icons
-            if (ImGui.BeginTabItem("All Icons##allicons")) {
-                ImGui.Columns(10, "##allicons", true);
-                for (var i = 0; i < 1000; i++) {
-                    var iconGood = false;
-                    Dalamud.Interface.Internal.IDalamudTextureWrap? icon = null;
-                    try{
-                        icon = _iconManager.GetIconTexture(i % 1000000, i >= 1000000);
-                        if (icon != null) {
-                            ImGui.Image(icon.ImGuiHandle, new Vector2(32));
-                            iconGood = true;
-                        }
-                    } catch (System.Exception e) {
-                        GagSpeak.Log.Error($"{e}");
-                    }
-                    if (!iconGood) {
-                        ImGui.GetWindowDrawList().AddRect(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + new Vector2(32), 0xFF0000FF, 4);
-                        ImGui.GetWindowDrawList().AddText(ImGui.GetCursorScreenPos(), 0xFFFFFFFF, $"{i}");
-                        
-                        ImGui.Dummy(new Vector2(32));
-                    }
-                    ImGui.NextColumn();
-                }
-                ImGui.Columns(1);
-                ImGui.EndTabItem();
-            }
+            } 
             ImGui.EndTabBar();
         }
     }
@@ -271,7 +234,7 @@ public class HC_Humiliation
         if (!child)
             return;
 
-        ImGuiUtil.Center("whats this? Idk.");
+        ImGuiUtil.Center("Data Snagging.... [WIP SECTOR]");
         ImGui.Separator();
         if (ImGui.BeginTabBar("##hotbarDebugDisplay")) {
         try{

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
+using Dalamud.Plugin.Services;
 using GagSpeak.Services;
 
 namespace GagSpeak.Interop;
@@ -11,9 +12,10 @@ namespace GagSpeak.Interop;
 /// <summary>
 /// Create a sealed class for our interop manager.
 /// </summary>
-public sealed class GlamourerService
+public sealed class GlamourerService : IDisposable
 {
     private readonly DalamudPluginInterface _pluginInterface; // the plugin interface
+    private readonly IClientState _clientState; // the client state utility
     private readonly OnFrameworkService _OnFrameworkService; // the game framework utility
     
     /// <summary> Initialize the IPC Subscriber callgates:  </summary>
@@ -32,9 +34,10 @@ public sealed class GlamourerService
     public readonly uint LockCode = 0x6D617265; // setting a lock code for our plugin
     private bool _Available = false; // defines if glamourer is currently interactable at all or not.
 
-    public GlamourerService(DalamudPluginInterface pluginInterface, OnFrameworkService OnFrameworkService) {
+    public GlamourerService(DalamudPluginInterface pluginInterface, OnFrameworkService OnFrameworkService, IClientState clientState) {
         _pluginInterface = pluginInterface; // initialize the plugin interface
         _OnFrameworkService = OnFrameworkService; // initialize the game framework utility
+        _clientState = clientState; // initialize the client state utility
         // API callgate
         _ApiVersions = _pluginInterface.GetIpcSubscriber<(int, int)>("Glamourer.ApiVersions");
         // customization callgates
@@ -52,7 +55,13 @@ public sealed class GlamourerService
         _SetItemOnce = _pluginInterface.GetIpcSubscriber<GameObject?, byte, ulong, byte, uint, int>("Glamourer.SetItem"); 
         // also subscribe to the state changed event so we know whenever they try to change an outfit
         _StateChangedSubscriber = _pluginInterface.GetIpcSubscriber<int, nint, Lazy<string>, object?>("Glamourer.StateChanged");
-        GagSpeak.Log.Debug("[GlamourerService] GLAMOURER SERVICE INITIALIZED");
+    }
+
+    public void Dispose() {
+        // revert our character back to the base game state
+        if(_clientState.LocalPlayer != null && _clientState.LocalPlayer.Address != IntPtr.Zero) {
+            Task.Run(()=>GlamourerRevertCharacter(_clientState.LocalPlayer.Address));
+        }
     }
 
     /// <summary> Checks if Glamourer is active and installed. </summary>

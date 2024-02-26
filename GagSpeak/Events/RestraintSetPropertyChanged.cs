@@ -1,20 +1,18 @@
 using System;
 namespace GagSpeak.Events;
 public enum HardcoreChangeType {
-    RS_PropertyModified,
-    // LegsRestraint,
-    // ArmsRestraint,
-    // Gagged,
-    // Blindfolded,
-    // Immobile,
-    // Weighty,
-    // LightStimulation,
-    // MildStimulation,
-    // HeavyStimulation, 
-    ForcedWalk,
+    LegsRestraint,
+    ArmsRestraint,
+    Gagged,
+    Blindfolded,
+    Immobile,
+    Weighty,
+    LightStimulation,
+    MildStimulation,
+    HeavyStimulation, 
     ForcedSit,
     ForcedFollow,
-    MovementDisabled,
+    ForcedToStay,
     Safeword,
 }
 /// <summary>

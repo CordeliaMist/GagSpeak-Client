@@ -20,6 +20,7 @@ public enum AcReqProps // "Action Required Properties"
     ArmMovement,    // if the action requires dramatic movement from arms (punches ext.)
     Speech,         // if the action requires a verbal scream or use of their mouth
     Sight,          // if the action requires direct sight / contact to point at something with, such as ordering a pet to attack something
+    Weighted,       // if the action requires a heavy object to be lifted or moved
 }
 
 public enum JobType : uint

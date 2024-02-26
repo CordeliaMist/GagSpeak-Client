@@ -30,6 +30,9 @@ using Lumina.Excel.GeneratedSheets;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using GagSpeak.Services;
 using GagSpeak.Gagsandlocks;
+using GagSpeak.Hardcore.Movement;
+using ImGuiNET;
+using FFXIVClientStructs.Interop.Attributes;
 
 namespace GagSpeak.Hardcore.Actions;
 public unsafe class GsActionManager : IDisposable
@@ -45,6 +48,7 @@ public unsafe class GsActionManager : IDisposable
     private readonly GagSpeakConfig _config;
     private readonly HardcoreManager _hardcoreManager;
     private readonly RestraintSetManager _restraintSetManager;
+    private readonly HotbarLocker _hotbarLocker;
     private readonly GagSpeakGlamourEvent _glamourEvent;
     private readonly RS_PropertyChangedEvent _rsPropertyChangedEvent;
     private readonly RS_ToggleEvent _setToggleEvent;
@@ -52,21 +56,20 @@ public unsafe class GsActionManager : IDisposable
     public FFXIVClientStructs.FFXIV.Client.Game.Control.Control* gameControl = FFXIVClientStructs.FFXIV.Client.Game.Control.Control.Instance(); // instance to have control over our walking
     // attempt to get the rapture hotbar module so we can modify the display of hotbar items
     public FFXIVClientStructs.FFXIV.Client.UI.Misc.RaptureHotbarModule* raptureHotarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
-    // for getting virtual key code access
-    delegate ref int GetRefValue(int vkCode); // virtual key code
-    static GetRefValue getRefValue; // virtual key value
-
     // hook creation for the action manager
     internal delegate bool UseActionDelegate(FFXIVClientStructs.FFXIV.Client.Game.ActionManager* am, ActionType type, uint acId, long target, uint a5, uint a6, uint a7, void* a8);
     internal Hook<UseActionDelegate> UseActionHook;
 #endregion ClassIncludes
 #region Attributes
-    // any attributes here is needed
+    public Dictionary<uint, AcReqProps[]> CurrentJobBannedActions; // will be updated by the job change event, also used to cancel actions
+    private Dictionary<int, Tuple<float, DateTime>> CooldownList;
+    private double multiplier;
+    public bool AnyPropertiesEnabled;
 #endregion Attributes
     public unsafe GsActionManager(IClientState clientState, IFramework framework, GagSpeakGlamourEvent glamourEvent,
     IKeyState keyState, IGameInteropProvider interop, ICondition condition, IObjectTable gameObjects,
     RestraintSetManager restraintSetManager, HardcoreManager hardcoreManager, RS_PropertyChangedEvent RS_PropertyChangedEvent,
-    IDataManager dataManager, RS_ToggleEvent setToggleEvent, GagSpeakConfig config)
+    IDataManager dataManager, RS_ToggleEvent setToggleEvent, GagSpeakConfig config, HotbarLocker hotbarLocker)
     {
         // set our attributes
         _config = config;
@@ -75,8 +78,11 @@ public unsafe class GsActionManager : IDisposable
         _glamourEvent = glamourEvent;
         _framework = framework;
         _keyState = keyState;
+        _hotbarLocker = hotbarLocker;
         _gameInteropProvider = interop;
         _dataManager = dataManager;
+        _condition = condition;
+        _objectTable = gameObjects;
         _restraintSetManager = restraintSetManager;
         _rsPropertyChangedEvent = RS_PropertyChangedEvent;
         _setToggleEvent = setToggleEvent;
@@ -87,32 +93,67 @@ public unsafe class GsActionManager : IDisposable
         _framework.Update += framework_Update;
 
         // set up a hook to fire every time the address signature is detected in our game.
-
         UseActionHook = _gameInteropProvider.HookFromAddress<UseActionDelegate>((nint)FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Addresses.UseAction.Value, UseActionDetour);
         UseActionHook.Enable();
 
-        getRefValue = (GetRefValue)Delegate.CreateDelegate(typeof(GetRefValue), _keyState,
-                    _keyState.GetType().GetMethod("GetRefValue", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(int) }, null));
-        _condition = condition;
-        _objectTable = gameObjects;
-        
-        GagSpeak.Log.Debug($"[Action Manager] Rapture HotbarModule:    x {(ulong)raptureHotarModule:X})");
-        GagSpeak.Log.Debug($"[Action Manager] ActionManager Game Ctrl: x {(ulong)gameControl:X})");
+        // set the attributes
+        CurrentJobBannedActions = new Dictionary<uint, AcReqProps[]>();
+        CooldownList = new Dictionary<int, Tuple<float, DateTime>>();
+        multiplier = 1.0;
+        AnyPropertiesEnabled = false;
+
+        // see if we should enable the sets incase we load this prior to the restraint set manager loading.
+        if(_restraintSetManager._restraintSets.Any(x => x._enabled)){
+            // if any of our sets are enabled, we should call our function to start enabling the properties
+            // get the index of the enabled set
+            var index = _restraintSetManager._restraintSets.FindIndex(x => x._enabled);
+            EnableProperties(index);
+        }
+
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         // unsub from events and stuff
+        _glamourEvent.GlamourEventFired -= JobChangeEventFired;
         _setToggleEvent.SetToggled -= OnRestraintSetToggled;
         _rsPropertyChangedEvent.SetChanged -= OnRestraintSetPropertyChanged;
         _framework.Update -= framework_Update;
         // dispose of the hook
-        UseActionHook.Disable();
-        UseActionHook.Dispose();
+        if (UseActionHook != null) {
+            if (UseActionHook.IsEnabled) {
+                UseActionHook.Disable();
+            }
+            UseActionHook.Dispose();
+            UseActionHook = null;
+        }
+    }
+#region Properties
+    private void EnableProperties(int index) {
+        _hardcoreManager.ActiveSetIdxEnabled = index;
+        // set properties to true
+        if(_hardcoreManager._rsProperties[_hardcoreManager.ActiveSetIdxEnabled].AnyPropertyTrue()) {
+            AnyPropertiesEnabled = true;
+            // apply stimulation modifier
+            _hardcoreManager.ApplyMultipler();
+            // activate hotbar lock
+            _hotbarLocker.SetHotbarLockState(true);
+        }
     }
 
-    // this doesnt account for controller hotbars, but it should be a good start for now.
-    public (uint CommandId, HotbarSlotType CommandType)[] hotbarSkills = new (uint, HotbarSlotType)[10*12];
+    private void DisableProperties() {
+        // set the active set to -1
+        _hardcoreManager.ActiveSetIdxEnabled = -1;
+        // reset multiplier
+        _hardcoreManager.StimulationMultipler = 1.0;
+        // if the set is disabled, regardless of if we have any properties or not enabled the set is inactive.
+        // because of this we should set the AnyPropertiesEnabled to false
+        AnyPropertiesEnabled = false;
+        // we should also restore hotbar slots
+        RestoreSavedSlots();
+        // we should also unlock hotbar lock
+        _hotbarLocker.SetHotbarLockState(false);
+    }
+#endregion Properties
 
 #region SlotManagment
     public void RestoreSavedSlots() {
@@ -134,6 +175,7 @@ public unsafe class GsActionManager : IDisposable
         }
     }
 
+    // fired on framework tick while a set is active
     private void UpdateSlots() {
         // before we get the hotbar rapture, let's 
         var baseSpan = raptureHotarModule->StandardHotBars; // the length of our hotbar count
@@ -151,30 +193,41 @@ public unsafe class GsActionManager : IDisposable
                     // if it is a valid action, scan to see if the commandID is equyal to any of our banned actions
                     if (isAction && CurrentJobBannedActions.TryGetValue(slot->CommandId, out var props)) {
                         // see if any of the indexes in the array contain a AcReqPros
-                        if(_hardcoreManager._rsProperties[ActivelyEnabledRestraintSetIdx]._legsRestraintedProperty
-                        && props.Contains(AcReqProps.LegMovement)) {
-                            // legs should be restrained, so remove any actions requireing leg movement
-                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 25788);
-                        }
-                        if(_hardcoreManager._rsProperties[ActivelyEnabledRestraintSetIdx]._armsRestraintedProperty
-                        && props.Contains(AcReqProps.ArmMovement)) {
-                            // arms should be restrained, so remove any actions requireing arm movement
-                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 25788);
-                        }
-                        if(_hardcoreManager._rsProperties[ActivelyEnabledRestraintSetIdx]._gaggedProperty
+                        if(_hardcoreManager._rsProperties[_hardcoreManager.ActiveSetIdxEnabled]._gaggedProperty
                         && props.Contains(AcReqProps.Speech)) {
                             // speech should be restrained, so remove any actions requireing speech
-                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 25788);
+                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 2886);
+                            continue;
                         }
-                        if(_hardcoreManager._rsProperties[ActivelyEnabledRestraintSetIdx]._blindfoldedProperty
+                        if(_hardcoreManager._rsProperties[_hardcoreManager.ActiveSetIdxEnabled]._blindfoldedProperty
                         && props.Contains(AcReqProps.Sight)) {
                             // sight should be restrained, so remove any actions requireing sight
-                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 25788);
+                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 99);
+                            continue;
                         }
-                        if(_hardcoreManager._rsProperties[ActivelyEnabledRestraintSetIdx]._immobileProperty
+                        if(_hardcoreManager._rsProperties[_hardcoreManager.ActiveSetIdxEnabled]._weightyProperty
+                        && props.Contains(AcReqProps.Weighted)) {
+                            // weighted should be restrained, so remove any actions requireing weight
+                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 151);
+                            continue;
+                        }
+                        if(_hardcoreManager._rsProperties[_hardcoreManager.ActiveSetIdxEnabled]._immobileProperty
                         && props.Contains(AcReqProps.Movement)) {
                             // immobile should be restrained, so remove any actions requireing movement
-                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 25788);
+                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 2883);
+                            continue;
+                        }
+                        if(_hardcoreManager._rsProperties[_hardcoreManager.ActiveSetIdxEnabled]._legsRestraintedProperty
+                        && props.Contains(AcReqProps.LegMovement)) {
+                            // legs should be restrained, so remove any actions requireing leg movement
+                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 55);
+                            continue;
+                        }
+                        if(_hardcoreManager._rsProperties[_hardcoreManager.ActiveSetIdxEnabled]._armsRestraintedProperty
+                        && props.Contains(AcReqProps.ArmMovement)) {
+                            // arms should be restrained, so remove any actions requireing arm movement
+                            slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 68);
+                            continue;
                         }
                     }
                 }
@@ -189,217 +242,159 @@ public unsafe class GsActionManager : IDisposable
             GagSpeak.Log.Debug($"[Action Manager]: Updating job list");
             ActionData.GetJobActionProperties((JobType)_clientState.LocalPlayer.ClassJob.Id, out var bannedJobActions);
             CurrentJobBannedActions = bannedJobActions; // updated our job list
-
-            // we should also update our indexes here
-            // search through the restraint set manager, and see if the current restraint set is enabled, if they are, set that as the active index
-            if(_restraintSetManager._restraintSets.Any(x => x._enabled)) {
-                ActivelyEnabledRestraintSetIdx = _restraintSetManager._restraintSets.FindIndex(x => x._enabled);
+            // only do this if we are logged in
+            if (_clientState.IsLoggedIn 
+            &&  _clientState.LocalPlayer != null
+            && _clientState.LocalPlayer.Address != IntPtr.Zero
+            && raptureHotarModule->StandardHotBars != null) {
+                // if we are logged in, we should also restore our hotbar slots to the saved state over the live state
+                GenerateCooldowns();
             }
-            // the index is now set..
+        } else {
+            GagSpeak.Log.Debug($"[Action Manager]: Player is null, returning");
         }
     }
 
-    // the job listing with our respective action information to scan over the the updateSlots function
-    public Dictionary<uint, AcReqProps[]> CurrentJobBannedActions = new Dictionary<uint, AcReqProps[]>(); // will be updated by the job change event
-    public int ActivelyEnabledRestraintSetIdx = -1; // will be set to the index of whichever set get's enabled
-
+    private void GenerateCooldowns() {
+        // if our current dictionary is not empty, empty it
+        if(CooldownList.Count > 0) {
+            CooldownList.Clear();
+        }
+        // get the current job actions
+        var baseSpan = raptureHotarModule->StandardHotBars; // the length of our hotbar count
+        for(var i=0; i < baseSpan.Length; i++) {
+            // get our hotbar row
+            var hotbar = baseSpan.GetPointer(i);
+            // if the hotbar is not null, we can get the slots data
+            if (hotbar != null) {
+                // get the slots data...
+                for (var j = 0; j < 16; j++) {
+                    var slot = hotbar->SlotsSpan.GetPointer(j);
+                    if (slot == null) break;
+                    if (slot->CommandType == HotbarSlotType.Action) {
+                        // we will want to add the tuple for each slot, the tuple should contain the cooldown group
+                        var adjustedId = FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance()->GetAdjustedActionId(slot->CommandId);
+                        // get the cooldown group
+                        var cooldownGroup = -1;
+                        var action = _dataManager.Excel.GetSheet<Lumina.Excel.GeneratedSheets.Action>()!.GetRow(adjustedId);
+                        if (action == null) { break; }
+                        // there is a minus one offset for actions, while general actions do not have them.
+                        cooldownGroup = action.CooldownGroup -1;
+                        // get recast time
+                        var recastTime = ActionManager.GetAdjustedRecastTime(ActionType.Action, adjustedId);
+                        recastTime = (int)(recastTime * _hardcoreManager.StimulationMultipler);
+                        // if it is an action or general action, append it
+                        //GagSpeak.Log.Debug($"[Action Manager]: SlotID {slot->CommandId} Cooldown group {cooldownGroup} with recast time {recastTime}");
+                        if (!CooldownList.ContainsKey(cooldownGroup)) {
+                            CooldownList.Add(cooldownGroup, new Tuple<float, DateTime>(recastTime, DateTime.MinValue));
+                        }
+                    } else {
+                        //GagSpeak.Log.Verbose($"[Action Manager]: SlotID {slot->CommandId} is not an action or general action");
+                    }
+                }
+            }                   
+        }
+    }
 
 #endregion SlotManagment
 #region EventHandlers
     private void JobChangeEventFired(object sender, GagSpeakGlamourEventArgs e) {
+        // update our stored job list so we know which job actions are banned for our current class
         if(e.UpdateType == UpdateType.JobChange) {
-            // update our job list
             UpdateJobList();
         }
     }
-
     private void OnRestraintSetToggled(object sender, RS_ToggleEventArgs e) {
-        // we should see if the set is enabled or disabled
+        // when restraint set is active, change the actively enabled restraint set index so that
+        // we know which set is active when we try applying affects to the hotbar
         if(e.ToggleType == RestraintSetToggleType.Enabled) {
-            // if it is enabled, we should check if the assigner is in the whitelist
-            ActivelyEnabledRestraintSetIdx = e.SetIndex;
+            EnableProperties(e.SetIndex);
             GagSpeak.Log.Debug($"[Action Manager]: Restraint set index {e.SetIndex} is now active");
         }
-        // if the set is disabled, we need to restore our slots to their original state
+        // if we are disabling the restraint set, we should restore our hotbar slots to the saved state over the live state
         if(e.ToggleType == RestraintSetToggleType.Disabled) {
-            // if the set is disabled, we need to restore our slots to their original state
-            ActivelyEnabledRestraintSetIdx = -1;
-            RestoreSavedSlots();
+            DisableProperties();
             GagSpeak.Log.Debug($"[Action Manager]: Restraint set index {e.SetIndex} is now disabled");
         }
     }
 
     private void OnRestraintSetPropertyChanged(object sender, RS_PropertyChangedEventArgs e) {
-        // if we have just turned off our force walk, allow us to move again
-        if (e.PropertyType == HardcoreChangeType.ForcedWalk && e.ChangeType == RestraintSetChangeType.Disabled) {
-            GagSpeak.Log.Debug($"[Action Manager]: Letting you run again");
-            System.Threading.Tasks.Task.Delay(200);
-            Marshal.WriteByte((IntPtr)gameControl, 23163, 0x0);
-        }
-        // if a restraint set property updates, do a refresh on our saveslots before updating them again
-        if(e.PropertyType == HardcoreChangeType.RS_PropertyModified) {
-            RestoreSavedSlots();
-        }
-
-        // if we are not being forced to walk, we need to go through all our action slots and store them to our memory
-        if (e.PropertyType == HardcoreChangeType.ForcedWalk && e.ChangeType == RestraintSetChangeType.Enabled) {
-            GagSpeak.Log.Debug($"[Action Manager]: Forcing you to walk");
-        }
-
-        // forced follow enable
-        if (e.PropertyType == HardcoreChangeType.ForcedFollow && e.ChangeType == RestraintSetChangeType.Enabled) {
-            GagSpeak.Log.Debug($"[Action Manager]: Forcing you to follow");
-        }
-
-        // if we are no longer being forced to follow, we need to restore our slots to their original state
-        if (e.PropertyType == HardcoreChangeType.ForcedFollow && e.ChangeType == RestraintSetChangeType.Disabled) {
-            GagSpeak.Log.Debug($"[Action Manager]: Letting you run again");
-            // restore all hotbar slots
-            RestoreSavedSlots();
+        // refresh hotbars whenever property is turned off
+        switch(e.PropertyType) {
+            // cases that cause us to update our saved slots
+            case HardcoreChangeType.LegsRestraint:
+            case HardcoreChangeType.ArmsRestraint:
+            case HardcoreChangeType.Gagged:
+            case HardcoreChangeType.Blindfolded:
+            case HardcoreChangeType.Immobile:
+            case HardcoreChangeType.Weighty:
+            {
+                RestoreSavedSlots();
+                break;
+            }
+            // cases that cause us to update our stored recast timers
+            case HardcoreChangeType.LightStimulation:
+            case HardcoreChangeType.MildStimulation:
+            case HardcoreChangeType.HeavyStimulation:
+            {
+                GenerateCooldowns();
+                break;
+            }
         }
     }
-
-
 #endregion EventHandlers
 #region Framework Updates
-    private void framework_Update(IFramework framework) {
+    private void framework_Update(IFramework framework) => FrameworkOnUpdateInternal();
+    private unsafe void FrameworkOnUpdateInternal() {
         // make sure we only do checks when we are properly logged in and have a character loaded
         if (_clientState.LocalPlayer?.IsDead ?? false) {
-            GagSpeak.Log.Debug($"[FrameworkUpdate]  Player is dead, returning");
             return;
         }
         if (_clientState.IsLoggedIn 
         &&  _clientState.LocalPlayer != null
         && _clientState.LocalPlayer.Address != IntPtr.Zero
-        && _config.AdminMode) {
-
-            // create our current job list if we are scanning for the first time
-            if(CurrentJobBannedActions.Count == 0) {
-                UpdateJobList();
-            }
-
-            if(_hardcoreManager._forcedWalk) {
-                uint isWalking = Marshal.ReadByte((IntPtr)gameControl, 23163);
-                if (_condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Mounted] || 
-                    _condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BoundByDuty] || 
-                    _condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.InCombat] ||
-                    _condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BoundByDuty56] ||
-                    _condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BoundByDuty95] ||
-                    _condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BoundToDuty97])
-                {
-                    GagSpeak.Log.Debug($"[Action Manager]: {isWalking}");
-                    if (isWalking == 1) {
-                        // let them run again if they are in combat, mounted, or bound by duty
-                        Marshal.WriteByte((IntPtr)gameControl, 23163, 0x0);
-                    }
-                }
-                else if (isWalking == 0) {
-                    Marshal.WriteByte((IntPtr)gameControl, 23163, 0x1);
-                }
-            }
-            // update our slots with our respective implied restrictions when forcedwalk is enabeled
-            if(_hardcoreManager._forcedFollow) {
-                
-            }
+        && CurrentJobBannedActions != null
+        && _config.AdminMode)
+        {
+            // create our current job list if we are scanning for the first time (This is just so we dont crash and get a million errors)
+            if(CurrentJobBannedActions.Count == 0) { UpdateJobList(); }
 
             // obtain our current restraint set active index and 
-            if(ActivelyEnabledRestraintSetIdx != -1 && _restraintSetManager._restraintSets[ActivelyEnabledRestraintSetIdx]._enabled) {
+            if(_hardcoreManager.ActiveSetIdxEnabled != -1 && AnyPropertiesEnabled) {
+                // update our slots with our respective implied restrictions when forcedwalk is enabeled
                 UpdateSlots();
             }
-            //FFXIVClientStructs.FFXIV.Client.UI.AddonSelectYesno
-
-            /*var skip = false;
-            if (!skip && _clientState != null && _clientState.LocalPlayer != null && _clientState.LocalPlayer.IsCasting)
-            {
-                //_keyState.SetRawValue(Dalamud.Game.ClientState.Keys.VirtualKey.ESCAPE, 1);
-                //_keyState.SetRawValue(Dalamud.Game.ClientState.Keys.VirtualKey.ESCAPE, 0);
-                var raw = _keyState.GetRawValue(VirtualKey.ESCAPE);
-                getRefValue((int)VirtualKey.SPACE) = 3;
-                skip = true;
-                //getRefValue((int)VirtualKey.ESCAPE) = raw;
-                _log.Debug($"[Action Manager]: aa");
-                //_log.Debug($"[Action Manager]: {_clientState.LocalPlayer.CastActionId} {_clientState.LocalPlayer.CastActionType} {_clientState.LocalPlayer.CastTargetObjectId} {_clientState.LocalPlayer.ObjectId}");
-
-            }else if (skip && !_clientState.LocalPlayer.IsCasting) {
-                skip = false;
-            }*/
         }
     }
 #endregion Framework Updates
-    private bool UseActionDetour(FFXIVClientStructs.FFXIV.Client.Game.ActionManager* am, ActionType type, uint acId, long target, uint a5, uint a6, uint a7, void* a8)
-    {
+    private bool UseActionDetour(FFXIVClientStructs.FFXIV.Client.Game.ActionManager* am, ActionType type, uint acId, long target, uint a5, uint a6, uint a7, void* a8) {
         try
         {
-            GagSpeak.Log.Debug($"[Action Manager]: {type} {acId} {target} {a5} {a6} {a7}");
-            if (ActionType.Action == type && acId > 7) //!Abilities.general.ContainsKey(acId))
+            if (_clientState != null
+            && _clientState.LocalPlayer != null
+            && _clientState.LocalPlayer.ClassJob != null
+            && _clientState.LocalPlayer.ClassJob.GameData != null)
             {
-                if (_clientState != null
-                    && _clientState.LocalPlayer != null
-                    && _clientState.LocalPlayer.ClassJob != null
-                    && _clientState.LocalPlayer.ClassJob.GameData != null)
-                {
-                    var role = _clientState.LocalPlayer.ClassJob.GameData.Role;
-                    // log the role
-                    GagSpeak.Log.Debug($"[Action Manager]: Role: {role}");
-                    // if (_config.BannedActionRoles.Contains((ActionRoles)role)) {
-                    //     return false;
-                    // }
-
-                    // if (_config.canSelfCast && (ActionRoles)role == ActionRoles.Healer)
-                    // {
-                    //     //_log.Debug($"[Action Manager]: {_objectTable.FirstOrDefault(x => x.ObjectId.Equals(target))?.ObjectKind}");
-                    //     if (_clientState.LocalPlayer.ObjectId == target /*|| _objectTable.FirstOrDefault(x => x.ObjectId.Equals((uint)target))?.ObjectKind != Dalamud.Game.ClientState.Objects.Enums.ObjectKind.Player*/)
-                    //     {
-                    //         return false;
-                    //     }
-                    // }
-                    // log the action used
-                    GagSpeak.Log.Debug($"[Action Manager]: {acId}");
-
-
-                    // if (_config.AbilityRestrictionLevel > 0)
-                    // {                            
-                    //     switch ((ActionRoles)role)
-                    //     {
-                    //         case ActionRoles.NonCombat:
-                    //             break;
-                    //         case ActionRoles.Tank:
-                    //             break;
-                    //         case ActionRoles.MeleeDps:
-                    //             break;
-                    //         case ActionRoles.RangedDps:
-                    //             break;
-                    //         case ActionRoles.Healer:
-                    //             switch (_config.AbilityRestrictionLevel)
-                    //             {
-                    //                 case AbilityRestrictionLevel.Hardcore:
-                    //                     if (!Abilities.SpellsHardcore.Any(x => acId == x))
-                    //                     {
-                    //                         return false;
-                    //                     }
-                    //                     break;
-                    //                 case AbilityRestrictionLevel.Minimal:
-                    //                     if (!Abilities.SpellsMinimal.Any(x => acId == x))
-                    //                     {
-                    //                         return false;
-                    //                     }
-                    //                     break;
-                    //                 case AbilityRestrictionLevel.Advanced:
-                    //                     if (!Abilities.SpellsAdvanced.Any(x => acId == x))
-                    //                     {
-                    //                         return false;
-                    //                     }
-                    //                     break;
-                    //                 case AbilityRestrictionLevel.Spec:
-                    //                     if (!Abilities.SpellsSpec.Any(x => acId == x))
-                    //                     {
-                    //                         return false;
-                    //                     }
-                    //                     break;
-                    //             }
-                    //             break;
-                    //     }
-                    // }
+                if (ActionType.Action == type && acId > 7) {
+                    // Debug current metrics of action
+                    var recastTime = ActionManager.GetAdjustedRecastTime(type, acId);
+                    var adjustedId = am->GetAdjustedActionId(acId);
+                    var recastGroup = am->GetRecastGroup((int)type, adjustedId);
+                    if (CooldownList.ContainsKey(recastGroup)) {
+                        GagSpeak.Log.Debug($"[Action Manager]: GROUP FOUND - Recast Time: {recastTime} | Cast Group: {recastGroup}");
+                        var cooldownData = CooldownList[recastGroup];
+                        // if we are beyond our recast time from the last time used, allow the execution
+                        if (DateTime.Now >= cooldownData.Item2.AddMilliseconds(cooldownData.Item1)) {
+                            // Update the last execution time before execution
+                            GagSpeak.Log.Debug($"[Action Manager]: ACTION COOLDOWN FINISHED");
+                            CooldownList[recastGroup] = new Tuple<float, DateTime>(cooldownData.Item1, DateTime.Now);
+                        } else {
+                            GagSpeak.Log.Debug($"[Action Manager]: ACTION COOLDOWN NOT FINISHED");
+                            return false; // Do not execute the action
+                        }
+                    } else {
+                        GagSpeak.Log.Debug($"[Action Manager]: GROUP NOT FOUND");
+                    }
                 }
             }
         } catch (Exception e) {
@@ -407,6 +402,7 @@ public unsafe class GsActionManager : IDisposable
         }
         // return the original if we reach here
         var ret = UseActionHook.Original(am, type, acId, target, a5, a6, a7, a8);
+        // invoke the action used event
         return ret;
     }
 }

@@ -8,7 +8,8 @@ using GagSpeak.Interop;
 using GagSpeak.ChatMessages;
 using GagSpeak.ChatMessages.ChatControl;
 using GagSpeak.Hardcore.Actions;
-using GagSpeak.Hardcore.Movement;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
+using GagSpeak.Hardcore.Movement;
+using GagSpeak.Hardcore;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
 
 
 // The main namespace for the plugin, aka the same name of our plugin, the highest level

@@ -38,11 +38,20 @@ public class OnFrameworkService : IDisposable
         _address = GetPlayerPointerAsync().GetAwaiter().GetResult();
         // subscribe to the framework update event
         _framework.Update += FrameworkOnUpdate;
+        _clientState.Login += ClientStateOnLogin;
     }
 
     public void Dispose() {
+        _clientState.Login -= ClientStateOnLogin;
         _framework.Update -= FrameworkOnUpdate;
     }
+
+    private void ClientStateOnLogin() {
+        _address = GetPlayerPointerAsync().GetAwaiter().GetResult();
+        _classJobId = (int)(_clientState.LocalPlayer?.ClassJob.Id ?? 0);
+        GagSpeak.Log.Debug($"[ClientStateOnLogin]  Player class job id: {_classJobId}");
+    }
+
 
     /// <summary> The invokable framework function </summary>
     private void FrameworkOnUpdate(IFramework framework) => FrameworkOnUpdateInternal();

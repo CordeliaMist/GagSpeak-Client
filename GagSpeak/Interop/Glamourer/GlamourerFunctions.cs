@@ -139,10 +139,11 @@ public class GlamourerFunctions : IDisposable
             GagSpeak.Log.Verbose($"[GlamourerChanged]: GlamourerChangedEvent was not equipmenttype, stain, or weapon; but rather {enumType}");
         }
     }
-    
+    private static  SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
     public async void GlamourEventFired(object sender, GagSpeakGlamourEventArgs e) {
         // Otherwise, fire the events!
         _cts.Cancel();
+        await semaphore.WaitAsync();
         _config.disableGlamChangeEvent = true;
         // only execute if our wardrobe is enabled
         if(_characterHandler.playerChar._enableWardrobe) {
@@ -250,6 +251,7 @@ public class GlamourerFunctions : IDisposable
             } finally {
                 _gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting = false;
                 _config.finishedDrawingGlamChange = true;
+                semaphore.Release();
             }
         } else {
             GagSpeak.Log.Debug($"[GlamourEventFired]: Wardrobe is disabled, so we wont be updating/applying any gag items");

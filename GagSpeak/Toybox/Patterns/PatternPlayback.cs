@@ -21,10 +21,9 @@ public class PatternPlayback : IDisposable
     private PatternData                 _tempStoredPattern;
     private TimerRecorder               _timerRecorder;
     public Stopwatch                    _recordingStopwatch;
-    private List<byte> storedRecordedPositions = new List<byte>(); // the stored pattern data to playback
-    private double[] currentPos = new double[2];  // The plotted points position on the wavelength graph
+    private List<byte>                  storedRecordedPositions = new List<byte>(); // the stored pattern data to playback
+    private double[]                    currentPos = new double[2];  // The plotted points position on the wavelength graph
     private bool                        _isPlaybackActive;  // Whether the playback is active
-
 
     public PatternPlayback(PlugService plugService, CharacterHandler characterHandler, SoundPlayer soundPlayer) {
         _plugService = plugService;
@@ -92,8 +91,8 @@ public void Draw() {
         ImGui.SetCursorPos(new Vector2(xPos - ImGuiHelpers.GlobalScale * 10, yPos - ImGuiHelpers.GlobalScale * 10));
         var width = ImGui.GetContentRegionAvail().X + ImGuiHelpers.GlobalScale * 10;
         // set up the color map for our plots.
-        ImPlot.PushStyleColor(ImPlotCol.Line, lushPinkLine);
-        ImPlot.PushStyleColor(ImPlotCol.PlotBg, lovenseScrollingBG);
+        ImPlot.PushStyleColor(ImPlotCol.Line, ColorId.LushPinkLine.Value());
+        ImPlot.PushStyleColor(ImPlotCol.PlotBg, ColorId.LovenseScrollingBG.Value());
         // draw the waveform
         ImPlot.SetNextAxesLimits(- 150, 0, -5, 110, ImPlotCond.Always);
         if(ImPlot.BeginPlot("##Waveform", new System.Numerics.Vector2(width, 100), ImPlotFlags.NoBoxSelect | ImPlotFlags.NoMenus
@@ -215,14 +214,4 @@ public void Draw() {
         }
     }
 #endregion Helper Fuctions
-
-    public Vector4 lushPinkLine = new Vector4(.806f, .102f, .407f, 1);
-    public Vector4 lushPinkButton = new Vector4(1, .051f, .462f, 1);
-    public Vector4 lovenseScrollingBG = new Vector4(0.042f, 0.042f, 0.042f, 0.930f);
-    public Vector4 lovenseDragButtonBG = new Vector4(0.110f, 0.110f, 0.110f, 0.930f);
-    public Vector4 lovenseDragButtonBGAlt = new Vector4(0.1f, 0.1f, 0.1f, 0.930f);
-    public Vector4 ButtonDrag = new Vector4(0.097f, 0.097f, 0.097f, 0.930f);
-    public Vector4 SideButton = new Vector4(0.451f, 0.451f, 0.451f, 1);
-    public Vector4 SideButtonBG = new Vector4(0.451f, 0.451f, 0.451f, .25f);
-
 }

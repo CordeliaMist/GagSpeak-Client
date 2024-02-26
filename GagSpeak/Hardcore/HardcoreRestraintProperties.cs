@@ -25,6 +25,22 @@ public class HC_RestraintProperties
         _mildStimulationProperty = false;
         _heavyStimulationProperty = false;
     }
+
+    public bool AnyPropertyTrue()
+    {
+        return ( 
+            _legsRestraintedProperty ||
+            _armsRestraintedProperty ||
+            _gaggedProperty ||
+            _blindfoldedProperty ||
+            _immobileProperty ||
+            _weightyProperty ||
+            _lightStimulationProperty ||
+            _mildStimulationProperty ||
+            _heavyStimulationProperty
+        );
+    }
+    
     public JObject Serialize() {
         return new JObject() {
             ["LegsRestraintedProperty"] = _legsRestraintedProperty,

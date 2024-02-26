@@ -27,6 +27,7 @@ public class GagSpeakChangelog
         Add2_0_0_0(Changelog);
         Add2_2_0_0(Changelog);
         Add2_4_0_0(Changelog);
+        Add2_5_0_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -53,6 +54,18 @@ public class GagSpeakChangelog
             _config.Save();
         }
     }
+
+    private static void Add2_5_0_0(Changelog log)
+        => log.NextVersion("Version 2.5.0.0 Release")
+            .RegisterHighlight("The Hardcore Tab Beta Tester Availablity is live")
+            .RegisterImportant("DO NOT TRY TO BRUTE FORCE THE PASSWORD THIS TIME PLEASE")
+            .RegisterImportant("If you do, and things go south, i am not responcible for what happens to you. You've been warned.")
+            .RegisterImportant("Fixed the recursion issue causing glamourer's to not write")
+            .RegisterEntry("Fixes to the way wardrobe is applied on login, so it enables your active sets on login similar to enabling the plugin")
+            .RegisterEntry("The issue where logging in broke the wardrobe and required a disable and re-enable of the plugin to fix has been resolved")
+            .RegisterEntry("The issue where the workshop and toybox tabs would not load / render properly is fixed")
+            .RegisterEntry("Several more backend functionality for the hardcore tab are now in place")
+            .RegisterEntry("Overall modular improvements to everything.");
 
     private static void Add2_4_0_0(Changelog log)
         => log.NextVersion("Version 2.4.0.0 Release")
