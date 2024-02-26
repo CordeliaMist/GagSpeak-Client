@@ -284,12 +284,10 @@ public unsafe class GsActionManager : IDisposable
                         var recastTime = ActionManager.GetAdjustedRecastTime(ActionType.Action, adjustedId);
                         recastTime = (int)(recastTime * _hardcoreManager.StimulationMultipler);
                         // if it is an action or general action, append it
-                        //GagSpeak.Log.Debug($"[Action Manager]: SlotID {slot->CommandId} Cooldown group {cooldownGroup} with recast time {recastTime}");
+                        GagSpeak.Log.Verbose($"[Action Manager]: SlotID {slot->CommandId} Cooldown group {cooldownGroup} with recast time {recastTime}");
                         if (!CooldownList.ContainsKey(cooldownGroup)) {
                             CooldownList.Add(cooldownGroup, new Tuple<float, DateTime>(recastTime, DateTime.MinValue));
                         }
-                    } else {
-                        //GagSpeak.Log.Verbose($"[Action Manager]: SlotID {slot->CommandId} is not an action or general action");
                     }
                 }
             }                   
@@ -370,30 +368,35 @@ public unsafe class GsActionManager : IDisposable
     private bool UseActionDetour(FFXIVClientStructs.FFXIV.Client.Game.ActionManager* am, ActionType type, uint acId, long target, uint a5, uint a6, uint a7, void* a8) {
         try
         {
-            if (_clientState != null
-            && _clientState.LocalPlayer != null
-            && _clientState.LocalPlayer.ClassJob != null
-            && _clientState.LocalPlayer.ClassJob.GameData != null)
+            if (_clientState.IsLoggedIn &&  _clientState.LocalPlayer != null && _clientState.LocalPlayer.Address != IntPtr.Zero
+            && CurrentJobBannedActions != null && _config.AdminMode)
             {
-                if (ActionType.Action == type && acId > 7) {
-                    // Debug current metrics of action
-                    var recastTime = ActionManager.GetAdjustedRecastTime(type, acId);
-                    var adjustedId = am->GetAdjustedActionId(acId);
-                    var recastGroup = am->GetRecastGroup((int)type, adjustedId);
-                    if (CooldownList.ContainsKey(recastGroup)) {
-                        GagSpeak.Log.Debug($"[Action Manager]: GROUP FOUND - Recast Time: {recastTime} | Cast Group: {recastGroup}");
-                        var cooldownData = CooldownList[recastGroup];
-                        // if we are beyond our recast time from the last time used, allow the execution
-                        if (DateTime.Now >= cooldownData.Item2.AddMilliseconds(cooldownData.Item1)) {
-                            // Update the last execution time before execution
-                            GagSpeak.Log.Debug($"[Action Manager]: ACTION COOLDOWN FINISHED");
-                            CooldownList[recastGroup] = new Tuple<float, DateTime>(cooldownData.Item1, DateTime.Now);
+                // if we are in hardcore mode, and we have an active set enabled, and we have any property enabled
+                if(_hardcoreManager.ActiveSetIdxEnabled != -1 &&
+                (_hardcoreManager._rsProperties[_hardcoreManager.ActiveSetIdxEnabled]._lightStimulationProperty
+                || _hardcoreManager._rsProperties[_hardcoreManager.ActiveSetIdxEnabled]._mildStimulationProperty
+                || _hardcoreManager._rsProperties[_hardcoreManager.ActiveSetIdxEnabled]._heavyStimulationProperty))
+                {
+                    if (ActionType.Action == type && acId > 7) {
+                        // Debug current metrics of action
+                        var recastTime = ActionManager.GetAdjustedRecastTime(type, acId);
+                        var adjustedId = am->GetAdjustedActionId(acId);
+                        var recastGroup = am->GetRecastGroup((int)type, adjustedId);
+                        if (CooldownList.ContainsKey(recastGroup)) {
+                            GagSpeak.Log.Debug($"[Action Manager]: GROUP FOUND - Recast Time: {recastTime} | Cast Group: {recastGroup}");
+                            var cooldownData = CooldownList[recastGroup];
+                            // if we are beyond our recast time from the last time used, allow the execution
+                            if (DateTime.Now >= cooldownData.Item2.AddMilliseconds(cooldownData.Item1)) {
+                                // Update the last execution time before execution
+                                GagSpeak.Log.Debug($"[Action Manager]: ACTION COOLDOWN FINISHED");
+                                CooldownList[recastGroup] = new Tuple<float, DateTime>(cooldownData.Item1, DateTime.Now);
+                            } else {
+                                GagSpeak.Log.Debug($"[Action Manager]: ACTION COOLDOWN NOT FINISHED");
+                                return false; // Do not execute the action
+                            }
                         } else {
-                            GagSpeak.Log.Debug($"[Action Manager]: ACTION COOLDOWN NOT FINISHED");
-                            return false; // Do not execute the action
+                            GagSpeak.Log.Debug($"[Action Manager]: GROUP NOT FOUND");
                         }
-                    } else {
-                        GagSpeak.Log.Debug($"[Action Manager]: GROUP NOT FOUND");
                     }
                 }
             }
