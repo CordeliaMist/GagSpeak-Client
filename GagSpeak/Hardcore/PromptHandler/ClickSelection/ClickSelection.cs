@@ -1,7 +1,6 @@
 using System;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using GagSpeak.Hardcore.ClickSelection.BaseClickLogic;
-
 namespace GagSpeak.Hardcore.ClickSelection;
 
 public sealed unsafe class ClickSelectString : ClickBase<ClickSelectString, AddonSelectString>

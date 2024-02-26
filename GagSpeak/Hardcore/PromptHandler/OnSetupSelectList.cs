@@ -7,7 +7,7 @@ using GagSpeak.Utility;
 
 namespace GagSpeak.Hardcore.BaseListener;
 
-internal abstract class OnSetupSelectListFeature : BaseFeature, IDisposable
+public abstract class OnSetupSelectListFeature : BaseFeature, IDisposable
 {
     private Hook<OnItemSelectedDelegate>? onItemSelectedHook = null;
     private readonly ITargetManager _targetManager;

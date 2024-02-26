@@ -4,8 +4,8 @@ using GagSpeak.Hardcore.ClickSelection.BaseClickLogic;
 
 namespace GagSpeak.Hardcore.ClickSelection;
 
-// This will click either the yes or no button in the dialogue
-public sealed unsafe class ClickSelectYesNo : ClickBase<ClickSelectYesNo, AddonSelectYesno>
+// This will click either the yes or no button in the dialogue (was sealed)
+public unsafe class ClickSelectYesNo : ClickBase<ClickSelectYesNo, AddonSelectYesno>
 {
     public ClickSelectYesNo(IntPtr addon = default) : base("SelectYesno", addon) { }
 

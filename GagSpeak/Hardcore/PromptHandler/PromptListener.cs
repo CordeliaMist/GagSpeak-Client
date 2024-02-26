@@ -12,10 +12,9 @@ using GagSpeak.Hardcore.BaseListener;
 using GagSpeak.Hardcore.ClickSelection;
 using GagSpeak.Utility;
 
-
 namespace GagSpeak.Hardcore;
 
-internal class OptionPromptListeners : OnSetupSelectListFeature
+public class OptionPromptListeners : OnSetupSelectListFeature
 {
     private readonly ITargetManager _targetManager;
     private readonly IGameInteropProvider _gameInteropProvider;

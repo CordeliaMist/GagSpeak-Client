@@ -56,7 +56,7 @@ public class GagSpeakChangelog
     }
 
     private static void Add2_5_0_0(Changelog log)
-        => log.NextVersion("Version 2.5.1.0 Release")
+        => log.NextVersion("Version 2.5.2.0 Release")
             .RegisterHighlight("The Hardcore Tab Beta Tester Availablity is live")
             .RegisterImportant("DO NOT TRY TO BRUTE FORCE THE PASSWORD THIS TIME PLEASE")
             .RegisterImportant("If you do, and things go south, i am not responcible for what happens to you. You've been warned.")

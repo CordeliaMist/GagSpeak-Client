@@ -75,7 +75,9 @@ public partial class WhitelistPanel {
     public void Draw(ref bool _interactions)
     {
         // update temp vars for easier code if a change occurs
-        if(_tempWhitelistIdx != _characterHandler.activeListIdx) {
+        if(_tempWhitelistIdx != _characterHandler.activeListIdx
+        || _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name != _tempWhitelistChar._name)
+        {
             _tempWhitelistIdx = _characterHandler.activeListIdx;
             _tempWhitelistChar = _characterHandler.whitelistChars[_tempWhitelistIdx];
         }
