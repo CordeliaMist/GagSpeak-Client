@@ -17,6 +17,7 @@ using GagSpeak.Gagsandlocks;
 using GagSpeak.Interop;
 using System.Numerics;
 using GagSpeak.UI.Tabs.HardcoreTab;
+using Dalamud.Game.ClientState.Keys;
 
 namespace GagSpeak;
 
@@ -24,47 +25,56 @@ namespace GagSpeak;
 public class GagSpeakConfig : IPluginConfiguration, ISavable
 {   
     // Plugin information
-    public          ChangeLogDisplayType                ChangeLogDisplayType { get; set; } = ChangeLogDisplayType.New;
-    public          int                                 LastSeenVersion { get; set; } = GagSpeakChangelog.LastChangelogVersion; // look more into ottergui to figure out how to implement this later.
-    public          int                                 Version { get; set; } = 0;                              // Version of the plugin
-    public          bool                                FreshInstall { get; set; } = true;                      // Is user on a fresh install?
-    public          bool                                Enabled { get; set; } = true;                           // Is plugin enabled?
+    public  ChangeLogDisplayType                ChangeLogDisplayType { get; set; } = ChangeLogDisplayType.New;
+    public  int                                 LastSeenVersion { get; set; } = GagSpeakChangelog.LastChangelogVersion; // look more into ottergui to figure out how to implement this later.
+    public  int                                 Version { get; set; } = 0;                              // Version of the plugin
+    public  bool                                FreshInstall { get; set; } = true;                      // Is user on a fresh install?
+    public  bool                                Enabled { get; set; } = true;                           // Is plugin enabled?
     // additonal information below
-    public          List<ChatChannel.ChatChannels>      ChannelsGagSpeak { get; set; }                          // Which channels are currently enabled / allowed?
-    public          List<ChatChannel.ChatChannels>      ChannelsPuppeteer { get; set; }                         // Which channels are currently enabled / allowed?
-    public          TabType                             SelectedTab { get; set; } = TabType.General;            // Default to the general tab
-    public          bool                                viewingRestraintCompartment { get; set; } = false;      // Is viewing the restraint shelf tab in wardrobe?
-    public          bool                                ToyboxLeftSubTabActive { get; set; } = false;           // Which subtab is active in the toybox?
-    public          HardcoreSubTab                      ActiveTab { get; set; } = HardcoreSubTab.RestraintSetProperties; // Which subtab is active in the hardcore tab?
-    public          string                              sendInfoName { get; set; } = "";                                // Name of the person you are sending info to
-    public          bool                                acceptingInfoRequests { get; set; } = true;             // Are you accepting info requests? (for cooldowns)//
-    public          bool                                processingInfoRequest { get; set; } = false;            // Are you processing an info request?
-    public          bool                                hardcoreMode { get; set; } = false;                     // Is the plugin in hardcore mode
-    public          bool                                UiOpenOnEnable { get; set; } = true;                    // Should the UI open when the plugin is enabled
-    public          Dictionary<string,DateTimeOffset>   timerData { get; set; }                                 // stores the timer data for the plugin
+    public  List<ChatChannel.ChatChannels>      ChannelsGagSpeak { get; set; }                          // Which channels are currently enabled / allowed?
+    public  List<ChatChannel.ChatChannels>      ChannelsPuppeteer { get; set; }                         // Which channels are currently enabled / allowed?
+    public  TabType                             SelectedTab { get; set; } = TabType.General;            // Default to the general tab
+    public  bool                                viewingRestraintCompartment { get; set; } = false;      // Is viewing the restraint shelf tab in wardrobe?
+    public  bool                                ToyboxLeftSubTabActive { get; set; } = false;           // Which subtab is active in the toybox?
+    public  HardcoreSubTab                      ActiveTab { get; set; } = HardcoreSubTab.RestraintSetProperties; // Which subtab is active in the hardcore tab?
+    public  string                              sendInfoName { get; set; } = "";                                // Name of the person you are sending info to
+    public  bool                                acceptingInfoRequests { get; set; } = true;             // Are you accepting info requests? (for cooldowns)//
+    public  bool                                processingInfoRequest { get; set; } = false;            // Are you processing an info request?
+    public  bool                                hardcoreMode { get; set; } = false;                     // Is the plugin in hardcore mode
+    public  bool                                UiOpenOnEnable { get; set; } = true;                    // Should the UI open when the plugin is enabled
+    public  Dictionary<string,DateTimeOffset>   timerData { get; set; }                                 // stores the timer data for the plugin
     // stuff for the gaglistingDrawer
-    public          List<bool>                          isLocked { get; set; }                                  // determines if the gaglisting should have its UI locked
-    public          List<string>                        displaytext { get; set; }                               // stores the display time remaining for each locked gag in general tab
-    public          List<PadlockIdentifier>             padlockIdentifier { get; set; }                         // stores the padlock identifier for each gaglisting
-    public          PadlockIdentifier                   whitelistPadlockIdentifier {get; set; }                 // stores the padlock identifier for the whitelist
+    public  List<bool>                          isLocked { get; set; }                                  // determines if the gaglisting should have its UI locked
+    public  List<string>                        displaytext { get; set; }                               // stores the display time remaining for each locked gag in general tab
+    public  List<PadlockIdentifier>             padlockIdentifier { get; set; }                         // stores the padlock identifier for each gaglisting
+    public  PadlockIdentifier                   whitelistPadlockIdentifier {get; set; }                 // stores the padlock identifier for the whitelist
     // stuff for the wardrobemanager
-    public          bool                                disableGlamChangeEvent { get; set; } = false;           // disables the glam change event
-    public          bool                                finishedDrawingGlamChange { get; set; } = false;        // disables the glamourer
+    public  bool                                disableGlamChangeEvent { get; set; } = false;           // disables the glam change event
+    public  bool                                finishedDrawingGlamChange { get; set; } = false;        // disables the glamourer
     // stuff for the garbler
-    public          string                              language { get; set; } = "English";                     // The language dialect to use for the IPA conversion
-    public          string                              languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
-    public          List<string>                        phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
+    public  string                              language { get; set; } = "English";                     // The language dialect to use for the IPA conversion
+    public  string                              languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
+    public  List<string>                        phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
     // stuff for the toybox
-    public          string                              intifacePortValue { get; set; } = "ws://localhost:12345";              // The port value for the intiface server
-    public          bool                                AdminMode { get; set; } = false;                       // Is the plugin in admin mode                  
+    public  string                              intifacePortValue { get; set; } = "ws://localhost:12345"; // The port value for the intiface server
+    public  bool                                AdminMode { get; set; } = false;                        // Is the plugin in admin mode                  
     
-    [JsonIgnore]
-    private readonly SaveService            _saveService;                                                       // Save service for the GagSpeak plugin
-
     /// <summary> Gets or sets the colors used within our UI </summary>
     public Dictionary<ColorId, Vector4> Colors { get; private set; }
         = Enum.GetValues<ColorId>().ToDictionary(c => c, c => c.Data().DefaultColor);
 
+    /// <summary> Contains the list of keys to block when blocking movement. </summary>
+    public HashSet<VirtualKey> MoveKeys = new() {
+        VirtualKey.W,
+        VirtualKey.A,
+        VirtualKey.S,
+        VirtualKey.D,
+        VirtualKey.SPACE,
+    };
+
+    [JsonIgnore]
+    private readonly SaveService            _saveService;
+    
     /// <summary> Initializes a new instance of the <see cref="GagSpeakConfig"/> class </summary>
     public GagSpeakConfig(SaveService saveService, ConfigMigrationService migrator)
     {

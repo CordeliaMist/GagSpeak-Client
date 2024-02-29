@@ -9,7 +9,9 @@ using GagSpeak.ChatMessages;
 using GagSpeak.ChatMessages.ChatControl;
 using GagSpeak.Hardcore.Actions;
 using GagSpeak.Hardcore.Movement;
-using GagSpeak.Hardcore;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
+using GagSpeak.Hardcore;
+using GagSpeak.Events;
+using Lumina.Excel.GeneratedSheets2;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
 
 
 // The main namespace for the plugin, aka the same name of our plugin, the highest level
@@ -50,16 +52,17 @@ public class GagSpeak : IDalamudPlugin
            As for why it invokes the safewordcommand used and not the info request event, idk, im still figuring that out.
            All I know is that if you have a class struggling to initialize, you can call it here.
           */ 
-          _services.GetService<GagSpeakWindowManager>(); // Initialize the UI
-          _services.GetService<CommandManager>(); // Initialize the command manager
-          _services.GetService<OnChatMsgManager>(); // Initialize the OnChatMessage
-          _services.GetService<ChatInputProcessor>(); // Initialize the chat message detour
-          _services.GetService<InfoRequestService>(); // Because the info request service is being a stubborn bitch and needs to subscribe to events and not be lazy.
-          _services.GetService<GlamourerFunctions>();  // force loading here because nhothing else loads it so it is initialized as lazy
-          _services.GetService<OnFrameworkService>(); // get the charahandler
+          _services.GetService<GagSpeakWindowManager>();  // Initialize the UI
+          _services.GetService<CommandManager>();         // Initialize the command manager
+          _services.GetService<OnChatMsgManager>();       // Initialize the OnChatMessage
+          _services.GetService<ChatInputProcessor>();     // Initialize the chat message detour
+          _services.GetService<InfoRequestService>();     // Because the info request service is being a stubborn bitch and needs to subscribe to events and not be lazy.
+          _services.GetService<GlamourerFunctions>();     // force loading here because nhothing else loads it so it is initialized as lazy
+          _services.GetService<OnFrameworkService>();     // get the charahandler
           // for hardcore stuff
-          _services.GetService<GsActionManager>();
-          _services.GetService<MovementManager>();
+          _services.GetService<GsActionManager>();        // Get the action manager
+          _services.GetService<MovementManager>();        // get the movement manager
+          _services.GetService<OptionPromptListeners>();  // Make sure we are listening for the interactions
           Log.Information($"GagSpeak v{Version} loaded successfully."); // Log the version to the /xllog menu
       }
       catch

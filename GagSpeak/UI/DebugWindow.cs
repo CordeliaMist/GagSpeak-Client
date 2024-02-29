@@ -43,7 +43,7 @@ public class DebugWindow : Window //, IDisposable
 {
     private          GagSpeakConfig         _config;                        // for retrieving the config data to display to the window
     private readonly CharacterHandler       _characterHandler;
-    private readonly HardcoreManager        _hardcoreManager;               // for knowing the information in the hardcore manager
+    private readonly HardcoreManager        _hcManager;               // for knowing the information in the hardcore manager
     private readonly RestraintSetManager    _restraintSetManager;           // for knowing the information in the currently equipped restraints
     private readonly IpaParserEN_FR_JP_SP   _translatorLanguage;            // creates an instance of the EnglishToIPA class
     private readonly GagGarbleManager       _gagManager;                    // for knowing what gags are equipped
@@ -75,7 +75,7 @@ public class DebugWindow : Window //, IDisposable
         _translatorLanguage = translatorLanguage;
         _restraintSetManager = restraintSetManager;
         _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
-        _hardcoreManager = hardcoreManager;
+        _hcManager = hardcoreManager;
     }
 
 
@@ -83,6 +83,8 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Text($"IsGagSpeakGlamourEventExecuting: {_gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting}");
         ImGui.Text($"IsFinishedDrawingGlamChange: {_config.finishedDrawingGlamChange}");
         ImGui.Text($"DisableGlamChangeEvent: {_config.disableGlamChangeEvent}");
+        ImGui.Text($"_hcManager.ActivePlayerCfgListIdx: {_hcManager.ActivePlayerCfgListIdx}");
+        ImGui.Text($"_hcManager.ActiveHCsetIdx: {_hcManager.ActiveHCsetIdx}");
         DrawPlayerCharInfo();
         DrawWhitelistCharactersAndLocks();
         DrawRestraintSetOverview();
@@ -151,25 +153,25 @@ public class DebugWindow : Window //, IDisposable
         //     ImGui.Text($"Allow Changing toy state: {uniquePlayer._allowChangingToyState}");
         //     ImGui.Text($"Allow pattern execution: {uniquePlayer._allowUsingPatterns}");
         //     ImGui.Text($"RestraintSetProperties");
-        //     for(int j = 0; j < _hardcoreManager._rsProperties.Count; j++) {
+        //     for(int j = 0; j < _hcManager._rsProperties.Count; j++) {
         //         ImGui.Text($"Properties for restraint set {j}");
-        //         ImGui.Text($"Legs:{_hardcoreManager._rsProperties[j]._legsRestraintedProperty}||");
+        //         ImGui.Text($"Legs:{_hcManager._rsProperties[j]._legsRestraintedProperty}||");
         //         ImGui.SameLine();
-        //         ImGui.Text($"Arms:{_hardcoreManager._rsProperties[j]._armsRestraintedProperty}||");
+        //         ImGui.Text($"Arms:{_hcManager._rsProperties[j]._armsRestraintedProperty}||");
         //         ImGui.SameLine();
-        //         ImGui.Text($"Gagged:{_hardcoreManager._rsProperties[j]._gaggedProperty}||");
+        //         ImGui.Text($"Gagged:{_hcManager._rsProperties[j]._gaggedProperty}||");
         //         ImGui.SameLine();
-        //         ImGui.Text($"Blindfolded:{_hardcoreManager._rsProperties[j]._blindfoldedProperty}||");
+        //         ImGui.Text($"Blindfolded:{_hcManager._rsProperties[j]._blindfoldedProperty}||");
         //         ImGui.SameLine();
-        //         ImGui.Text($"Immobile:{_hardcoreManager._rsProperties[j]._immobileProperty}||");
+        //         ImGui.Text($"Immobile:{_hcManager._rsProperties[j]._immobileProperty}||");
         //         ImGui.SameLine();
-        //         ImGui.Text($"Weighty:{_hardcoreManager._rsProperties[j]._weightyProperty}||");
+        //         ImGui.Text($"Weighty:{_hcManager._rsProperties[j]._weightyProperty}||");
         //         ImGui.SameLine();
-        //         ImGui.Text($"LightStim:{_hardcoreManager._rsProperties[j]._lightStimulationProperty}||");
+        //         ImGui.Text($"LightStim:{_hcManager._rsProperties[j]._lightStimulationProperty}||");
         //         ImGui.SameLine();
-        //         ImGui.Text($"MildStim:{_hardcoreManager._rsProperties[j]._mildStimulationProperty}||");
+        //         ImGui.Text($"MildStim:{_hcManager._rsProperties[j]._mildStimulationProperty}||");
         //         ImGui.SameLine();
-        //         ImGui.Text($"HeavyStim:{_hardcoreManager._rsProperties[j]._heavyStimulationProperty}||");
+        //         ImGui.Text($"HeavyStim:{_hcManager._rsProperties[j]._heavyStimulationProperty}||");
         //     }
         
     }

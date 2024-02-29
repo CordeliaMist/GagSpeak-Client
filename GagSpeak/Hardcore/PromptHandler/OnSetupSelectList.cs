@@ -12,20 +12,27 @@ public abstract class OnSetupSelectListFeature : BaseFeature, IDisposable
     private Hook<OnItemSelectedDelegate>? onItemSelectedHook = null;
     private readonly ITargetManager _targetManager;
     private readonly IGameInteropProvider _gameInteropProvider;
-    private readonly HardcoreManager _hardcoreManager;
+    private readonly HardcoreManager _hcManager;
     protected OnSetupSelectListFeature(ITargetManager targetManager, 
     IGameInteropProvider gameInteropProvider, HardcoreManager hardcoreManager) {
         _targetManager = targetManager;
         _gameInteropProvider = gameInteropProvider;
-        _hardcoreManager = hardcoreManager;
+        _hcManager = hardcoreManager;
     }
 
     private delegate byte OnItemSelectedDelegate(IntPtr popupMenu, uint index, IntPtr a3, IntPtr a4);
 
     public void Dispose() {
-        GagSpeak.Log.Debug("OnSetupSelectListFeature: Dispose");
-        this.onItemSelectedHook?.Disable();
-        this.onItemSelectedHook?.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing) {
+        if (disposing) {
+            GagSpeak.Log.Debug("OnSetupSelectListFeature: Dispose");
+            this.onItemSelectedHook?.Disable();
+            this.onItemSelectedHook?.Dispose();
+        }
     }
 
     protected unsafe void CompareNodesToEntryTexts(IntPtr addon, PopupMenu* popupMenu) {
@@ -57,12 +64,12 @@ public abstract class OnSetupSelectListFeature : BaseFeature, IDisposable
             var popupMenuPtr = (PopupMenu*)popupMenu;
             if (index < popupMenuPtr->EntryCount) {
                 var entryPtr = popupMenuPtr->EntryNames[index];
-                var entryText = _hardcoreManager.LastSeenListSelection = entryPtr != null
+                var entryText = _hcManager.LastSeenListSelection = entryPtr != null
                     ? GS_GetSeString.GetSeStringText(entryPtr)
                     : string.Empty;
 
                 var target = _targetManager.Target;
-                var targetName = _hardcoreManager.LastSeenListTarget = target != null
+                var targetName = _hcManager.LastSeenListTarget = target != null
                     ? GS_GetSeString.GetSeStringText(target.Name)
                     : string.Empty;
 

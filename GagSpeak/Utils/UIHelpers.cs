@@ -115,7 +115,7 @@ public static class UIHelpers
     /// <item><c>setter</c><param name="setter"> - The setter for the checkbox</param></item>
     /// </list> </summary>
     public static void CheckboxNoConfig(string label, string tooltip, bool current, Action<bool> setter) {
-        using var id  = ImRaii.PushId(label);
+        using var id  = ImRaii.PushId($"{label}-{tooltip}");
         var       tmp = current;
         if (ImGui.Checkbox(string.Empty, ref tmp) && tmp != current) {
             setter(tmp);

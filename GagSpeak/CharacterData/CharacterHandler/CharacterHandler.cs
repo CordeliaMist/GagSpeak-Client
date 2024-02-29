@@ -23,10 +23,12 @@ public partial class CharacterHandler : ISavable
     private readonly GagSpeakGlamourEvent _gagSpeakGlamourEvent;
     [JsonIgnore]
     private readonly GagStorageManager _gagStorageManager;
-
+    [JsonIgnore]
+    private readonly InitializationManager _initializationManager;
     public CharacterHandler(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent,
-    GagStorageManager gagStorageManager) {
+    GagStorageManager gagStorageManager, InitializationManager initializationManager) {
         _saveService = saveService;
+        _initializationManager = initializationManager;
         _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
         _gagStorageManager = gagStorageManager;
         // initialize blank data
@@ -37,6 +39,9 @@ public partial class CharacterHandler : ISavable
         Load();
         // ensure all lists have the correct sizes
         _saveService.QueueSave(this);
+        // let the initialization manager know that we have loaded the character handler
+        GagSpeak.Log.Debug("======================== [ Completing CharacterHandler Initialization ] ========================");
+        _initializationManager.CompleteStep(InitializationSteps.CharacterHandlerInitialized);
     }
 
 

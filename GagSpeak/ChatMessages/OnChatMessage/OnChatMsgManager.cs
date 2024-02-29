@@ -26,13 +26,15 @@ public class OnChatMsgManager
     private readonly    RealChatInteraction    _realChatInteraction;// real chat interaction
     private readonly    EncodedMsgDetector     _encodedMsgDetector; // detector for encoded messages
     private readonly    TriggerWordDetector    _triggerWordDetector;// detector for trigger words
+    private readonly    HardcoreMsgDetector    _hardcoreMsgDetector;// detector for hardcore features
     public              Queue<string>          messageQueue;        // stores any messages to be sent on the next framework update
     private             Stopwatch              messageTimer;        // timer for the queue of messages to be sent
 
     /// <summary> This is the constructor for the OnChatMsgManager class. </summary>
     public OnChatMsgManager(IChatGui clientChat, IClientState clientState, IFramework framework,
     GagSpeakConfig config, CharacterHandler characterHandler, PuppeteerMediator puppeteerMediator,
-    RealChatInteraction realChatInteraction, EncodedMsgDetector encodedMsgDetector, TriggerWordDetector triggerWordDetector) {
+    RealChatInteraction realChatInteraction, EncodedMsgDetector encodedMsgDetector,
+    TriggerWordDetector triggerWordDetector, HardcoreMsgDetector hardcoreMsgDetector) {
         _clientChat = clientChat;
         _clientState = clientState;
         _framework = framework;
@@ -42,6 +44,7 @@ public class OnChatMsgManager
         _realChatInteraction = realChatInteraction;
         _encodedMsgDetector = encodedMsgDetector;
         _triggerWordDetector = triggerWordDetector;
+        _hardcoreMsgDetector = hardcoreMsgDetector;
         // set variables
         messageQueue = new Queue<string>();
         messageTimer = new Stopwatch();
@@ -161,11 +164,14 @@ public class OnChatMsgManager
             }
         }
 
-        // check for incoming verbal hardcore features (future) [ Ruukki Project]
-        if(senderName != null  && _config.hardcoreMode && isHandled == false
-        && _characterHandler.IsPlayerInWhitelist(senderName))
+        // check for incoming verbal hardcore features (future)
+        if(senderName != null  && _config.AdminMode && isHandled == false && _characterHandler.IsPlayerInWhitelist(senderName))
         {
-            // scan for any verbal related hardcore features
+            if(_hardcoreMsgDetector.IsValidMsgTrigger(senderName, chatmessage, type, out SeString messageToSend)) {
+                // if we are in a valid chatchannel, then send it
+                GagSpeak.Log.Debug($"[OnChatMsgManager] Hardcore message to send: {messageToSend.TextValue}");
+                messageQueue.Enqueue("/" + messageToSend.TextValue);
+            }
         }
 
         // check for handling triggers for the vibe toybox (future) [MsTress Project]

@@ -14,22 +14,33 @@ using GagSpeak.Utility;
 
 namespace GagSpeak.Hardcore;
 
-public class OptionPromptListeners : OnSetupSelectListFeature
+public class OptionPromptListeners : OnSetupSelectListFeature, IDisposable
 {
     private readonly ITargetManager _targetManager;
     private readonly IGameInteropProvider _gameInteropProvider;
-    private readonly HardcoreManager _hardcoreManager;
+    private readonly HardcoreManager _hcManager;
     private readonly IAddonLifecycle _addonLifecycle;
     public OptionPromptListeners(ITargetManager targetManager, IGameInteropProvider gameInteropProvider, HardcoreManager hardcoreManager,
     IAddonLifecycle addonLifecycle) : base(targetManager, gameInteropProvider, hardcoreManager) {
         _addonLifecycle = addonLifecycle;
         _targetManager = targetManager;
         _gameInteropProvider = gameInteropProvider;
-        _hardcoreManager = hardcoreManager;
+        _hcManager = hardcoreManager;
+        Enable();
+    }
+
+    protected override void Dispose(bool disposing) {
+        if (disposing) {
+            // Call the base Dispose method
+            base.Dispose(disposing);
+            // Add any additional dispose logic for OptionPromptListeners here
+            Disable();
+        }
     }
  
     public override void Enable() {
         base.Enable();
+        GagSpeak.Log.Debug("[GagSpeak] Activating Listeners");
         _addonLifecycle.RegisterListener(AddonEvent.PostSetup, "SelectString", AddonStrSetup);
         _addonLifecycle.RegisterListener(AddonEvent.PostSetup, "SelectYesno", AddonYNSetup);
     }
@@ -43,18 +54,19 @@ public class OptionPromptListeners : OnSetupSelectListFeature
     protected unsafe void AddonYNSetup(AddonEvent eventType, AddonArgs addonInfo) {
         var addon = (AtkUnitBase*)addonInfo.Addon;
 
-        if (!_hardcoreManager._forcedToStay)
+        if (!_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedToStay) {
             return;
+        }
 
         var dataPtr = (AddonSelectYesNoOnSetupData*)addon;
         if (dataPtr == null)
             return;   
 
         var text = GS_GetSeString.GetSeStringText(new nint(addon->AtkValues[0].String));
-        _hardcoreManager.LastSeenDialogText = Tuple.Create(text, new List<string>{ "Yes", "No" });
-        GagSpeak.Log.Debug($"AddonSelectYesNo: text={text}");
+        _hcManager.LastSeenDialogText = Tuple.Create(text, new List<string>{ "Yes", "No" });
+        GagSpeak.Log.Debug($"[GagSpeak] YesNo Prompt Text => {text}");
 
-        var nodes = _hardcoreManager.GetAllNodes().OfType<TextEntryNode>();
+        var nodes = _hcManager.GetAllNodes().OfType<TextEntryNode>();
         foreach (var node in nodes)
         {
             if (!node.Enabled || string.IsNullOrEmpty(node.Text))
@@ -109,7 +121,7 @@ public class OptionPromptListeners : OnSetupSelectListFeature
     {
         var addon = (AtkUnitBase*)addonInfo.Addon;
 
-        if (!_hardcoreManager._forcedToStay)
+        if (!_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedToStay)
             return;
 
         var addonPtr = (AddonSelectString*)addon;
@@ -120,9 +132,9 @@ public class OptionPromptListeners : OnSetupSelectListFeature
 
         var text = options[0] ?? string.Empty;
         var text2 = GS_GetSeString.GetSeStringText(new nint(addon->AtkValues[0].String)) ?? string.Empty;
-        _hardcoreManager.LastSeenDialogText = Tuple.Create(text2, options);
+        _hcManager.LastSeenDialogText = Tuple.Create(text2, options);
 
-        var nodes = _hardcoreManager.GetAllNodes().OfType<TextEntryNode>();
+        var nodes = _hcManager.GetAllNodes().OfType<TextEntryNode>();
         for (int i = 0; i < options.Count; i++)
         {
             foreach (var node in nodes)

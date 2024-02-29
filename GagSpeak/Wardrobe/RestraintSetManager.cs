@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace GagSpeak.Wardrobe;
 
-public class RestraintSetManager : ISavable
+public class RestraintSetManager : ISavable, IDisposable
 {
     public List<RestraintSet> _restraintSets = []; // stores the restraint sets
     public int _selectedIdx = 0;
@@ -28,9 +28,12 @@ public class RestraintSetManager : ISavable
     private readonly RestraintSetListChanged _restraintSetListChanged;
     [JsonIgnore]
     private readonly RS_ToggleEvent _RS_ToggleEvent;
+    [JsonIgnore]
+    private readonly InitializationManager _manager;
     
-    public RestraintSetManager(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent,
+    public RestraintSetManager(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent, InitializationManager initializationManager,
     RestraintSetListChanged restraintSetListChanged, RS_ToggleEvent RS_ToggleEvent, IClientState clientState) {
+        _manager = initializationManager;
         _saveService = saveService;
         _glamourEvent = gagSpeakGlamourEvent;
         _restraintSetListChanged = restraintSetListChanged;
@@ -49,34 +52,49 @@ public class RestraintSetManager : ISavable
                 set._locked = false;
             }
         }
-        // if any of our sets are enabled, then prime the events
-        if (_restraintSets.Any(set => set._enabled)) {
-            // get the active index of the set that is enabled
-            int activeIdx = _restraintSets.FindIndex(set => set._enabled);
-            MonitorLoginAndInvokeEvent(activeIdx);
-        }
         // save to the file 
         Save();
-
-        // update our variables dependant on the restraint set lists:
-        _restraintSetListChanged.Invoke(ListUpdateType.SizeIntegrityCheck, _restraintSets.Count);
+        // wait for character handler to finish initializing, then do updates to our options requiring the character handler.
+        _manager.CharacterHandlerInitialized += OnStepCompleted;
+        // ready for the next step
+        _manager._rsManagerReadyForEvent.SetResult(true);
     }
-    
-
+#region ConstructorOrder
+    // fired when our character handler finishes loading, aka this is the 2nd main component that should load
+    private void OnStepCompleted() {
+        GagSpeak.Log.Debug("======================== [ Completing Restraint Set Manager Initialization ] ========================");
+        // if any of our sets are enabled, then prime the events
+        MonitorLoginAndInvokeEvent();
+    }
+    public void Dispose() {
+        _manager.CharacterHandlerInitialized -= OnStepCompleted;
+    }
+#endregion ConstructorOrder
 #region Handle On-Login
-    public void MonitorLoginAndInvokeEvent(int idxToActivate) {
+    public void MonitorLoginAndInvokeEvent() {
         Task.Run(async () =>
         {
-            while (!_clientState.IsLoggedIn || _clientState.LocalPlayer == null || _clientState.LocalPlayer.Address == IntPtr.Zero) {
-                await Task.Delay(1000); // Wait for 1 second before checking the login status again
+            if(!IsPlayerLoggedIn()) {
+                GagSpeak.Log.Debug($"[RestraintSetManager] Waiting for login to complete before activating restraint set");
+                while (!_clientState.IsLoggedIn || _clientState.LocalPlayer == null || _clientState.LocalPlayer.Address == IntPtr.Zero) {
+                    await Task.Delay(1000); // Wait for 1 second before checking the login status again
+                }
+                // once we are logged in, delay for some time before load so we let glamourer load any automation, so that concurrency issues dont occur
+                await Task.Delay(4000);
             }
-            // once we are logged in, delay another 2 seconds to let other plugins like glamourer process, then load
-            await Task.Delay(2000);
-            // invoke the events
-            _glamourEvent.Invoke(UpdateType.UpdateRestraintSet);
-            _RS_ToggleEvent.Invoke(RestraintSetToggleType.Enabled, idxToActivate, "self");
+            // do update checks for active sets
+            if (_restraintSets.Any(set => set._enabled)) {
+                // get the active index of the set that is enabled
+                int activeIdx = _restraintSets.FindIndex(set => set._enabled);
+                _glamourEvent.Invoke(UpdateType.UpdateRestraintSet);
+                _RS_ToggleEvent.Invoke(RestraintSetToggleType.Enabled, activeIdx, "self");
+            }
+            // still invoke the hardcore manager setup
+            _manager.CompleteStep(InitializationSteps.RS_ManagerInitialized);
         });
     }
+
+    private bool IsPlayerLoggedIn() => _clientState.IsLoggedIn && _clientState.LocalPlayer != null && _clientState.LocalPlayer.Address != IntPtr.Zero;
 #endregion Handle On-Login
 
 #region Manager Methods
@@ -160,13 +178,17 @@ public class RestraintSetManager : ISavable
         // if we are wanting to enable this set, be sure to disable all other sets first
         if(isEnabled) {
             // we want to set this to true, so first disable all other sets
-            foreach (var set in _restraintSets) {
-                if (set._enabled) {
-                    set._enabled = false;
+            for (int i = 0; i < _restraintSets.Count; i++) {
+                if (_restraintSets[i]._enabled) {
+                    GagSpeak.Log.Debug($"[RestraintSetManager] Disabling set {i} before enabling set {restraintSetIdx}");
+                    _restraintSets[i].SetIsEnabled(false, assignerName);
+                    // invoke the toggledSet event so we know which set was disabled, to send off to the hardcore panel
+                    _RS_ToggleEvent.Invoke(RestraintSetToggleType.Disabled, i, assignerName);
                 }
             }
+            GagSpeak.Log.Debug($"[RestraintSetManager] Enabling set {restraintSetIdx}");
             // then set this one to true
-            _restraintSets[restraintSetIdx].SetIsEnabled(true);
+            _restraintSets[restraintSetIdx].SetIsEnabled(true, assignerName);
             // and update our restraint set
             _glamourEvent.Invoke(UpdateType.UpdateRestraintSet);
             // invoke the toggledSet event so we know which set was enabled, to send off to the hardcore panel
@@ -175,7 +197,8 @@ public class RestraintSetManager : ISavable
         // OTHERWISE, we want to set it to false, so just disable it 
         else {
             // disable it
-            _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled);
+            GagSpeak.Log.Debug($"[RestraintSetManager] Disabling set {restraintSetIdx}");
+            _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled, assignerName);
             // then fire a disable restraint set event to revert to automation
             _glamourEvent.Invoke(UpdateType.DisableRestraintSet);
             // invoke the toggledSet event so we know which set was disabled, to send off to the hardcore panel

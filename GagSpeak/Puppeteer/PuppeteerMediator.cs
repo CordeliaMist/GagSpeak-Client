@@ -206,7 +206,7 @@ public class PuppeteerMediator
 
     private Match MatchTriggerWord(string message, string triggerWord)
     {
-        var triggerRegex = $@"(?<=^|\s){triggerWord}(?=\s)";
+        var triggerRegex = $@"(?<=^|\s){triggerWord}(?=[^a-z])";
         return Regex.Match(message, triggerRegex);
     }
 }

@@ -60,7 +60,7 @@ public sealed class GlamourerService : IDisposable
     public void Dispose() {
         // revert our character back to the base game state
         if(_clientState.LocalPlayer != null && _clientState.LocalPlayer.Address != IntPtr.Zero) {
-            Task.Run(()=>GlamourerRevertCharacter(_clientState.LocalPlayer.Address));
+            Task.Run(()=>GlamourerRevertCharacterToAutomation(_clientState.LocalPlayer.Address));
         }
     }
 

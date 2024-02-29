@@ -13,6 +13,7 @@ public class RestraintSet //: IDisposable
     public string _description; // lets you define the description of the set
     public bool _enabled; // lets you define if the set is enabled
     public bool _locked; // lets you define if the set is locked
+    public string _wasEnabledBy; // know who toggled the set
     public string _wasLockedBy; // lets you define the name of the character that equipped the set
     public DateTimeOffset _lockedTimer { get; set; } // stores the timespan left until unlock of the player.
 
@@ -24,6 +25,7 @@ public class RestraintSet //: IDisposable
         _description = "This is a blank description!\nYou can right click the title or description to modify them!";
         _enabled = false;
         _locked = false;
+        _wasEnabledBy = "";
         _wasLockedBy = "";
         _lockedTimer = DateTimeOffset.Now;
         // create the new dictionaries
@@ -43,8 +45,13 @@ public class RestraintSet //: IDisposable
         _description = description;
     }
 
-    public void SetIsEnabled(bool enabled) {
+    public void SetIsEnabled(bool enabled, string wasEnabledBy = "self") {
         _enabled = enabled;
+        if(enabled) {
+            _wasEnabledBy = wasEnabledBy;
+        } else {
+            _wasEnabledBy = "";
+        }
     }
 
     public void SetPieceIsEnabled(EquipSlot slot, bool enabled) {
@@ -78,6 +85,7 @@ public class RestraintSet //: IDisposable
             ["Description"] = _description,
             ["IsEnabled"] = _enabled,
             ["Locked"] = _locked,
+            ["WasEnabledBy"] = _wasEnabledBy,
             ["WasLockedBy"] = _wasLockedBy,
             ["LockedTimer"] = _lockedTimer.ToString(),
             ["DrawData"] = drawDataArray
@@ -90,6 +98,7 @@ public class RestraintSet //: IDisposable
         _description = jsonObject["Description"]?.Value<string>() ?? string.Empty;
         _enabled = jsonObject["IsEnabled"]?.Value<bool>() ?? false;
         _locked = jsonObject["Locked"]?.Value<bool>() ?? false;
+        _wasEnabledBy = jsonObject["WasEnabledBy"]?.Value<string>() ?? string.Empty;
         _wasLockedBy = jsonObject["WasLockedBy"]?.Value<string>() ?? string.Empty;
         _lockedTimer = jsonObject["LockedTimer"] != null ? DateTimeOffset.Parse(jsonObject["LockedTimer"].Value<string>()) : default;
 

@@ -32,6 +32,7 @@ using GagSpeak.UI.Tabs.HardcoreTab;
 using GagSpeak.Hardcore.Movement;
 using GagSpeak.Hardcore.Actions;
 using GagSpeak.Utility;
+using GagSpeak.Hardcore.BaseListener;
 
 namespace GagSpeak.Services;
 
@@ -96,6 +97,7 @@ public static class ServiceHandler
             .AddSingleton<OnChatMsgManager>()
             .AddSingleton<EncodedMsgDetector>()
             .AddSingleton<TriggerWordDetector>()
+            .AddSingleton<HardcoreMsgDetector>()
             .AddSingleton<DecodedMessageMediator>()
 
             // for the xivcommon chat detour/injection classes
@@ -122,7 +124,8 @@ public static class ServiceHandler
             .AddSingleton<ActiveDeviceChangedEvent>()
             .AddSingleton<RS_ToggleEvent>()
             .AddSingleton<RS_PropertyChangedEvent>()
-            .AddSingleton<RestraintSetListChanged>();
+            .AddSingleton<RestraintSetListChanged>()
+            .AddSingleton<InitializationManager>();
 
     /// <summary> Classes to add to the service collection from the [GagsAndLocks] folder </summary>
     private static ServiceManager AddGagsAndLocks(this ServiceManager services)
@@ -142,9 +145,10 @@ public static class ServiceHandler
             .AddSingleton<GsActionManager>()
             .AddSingleton<MovementManager>()
             .AddSingleton<HotbarLocker>()
-            .AddSingleton<MoveMemory>(_ => {
-                var interop = _.GetRequiredService<IGameInteropProvider>();
-                return new MoveMemory(interop);});
+            .AddSingleton<OptionPromptListeners>()
+            .AddSingleton<OnSetupSelectListFeature>()
+            .AddSingleton<BaseFeature>()
+            .AddSingleton<Ordersler>();
 
     /// <summary> Classes to add to the service collection from the [Interop] folder </summary>
     private static ServiceManager AddInterop(this ServiceManager services)
@@ -191,8 +195,9 @@ public static class ServiceHandler
             .AddSingleton<HardcoreSelector>()
             .AddSingleton<HardcoreMainPanel>()
             .AddSingleton<HC_RestraintSetProperties>()
-            .AddSingleton<HC_OrdersControl>()
-            .AddSingleton<HC_Humiliation>()
+            .AddSingleton<HC_Orders>()
+            .AddSingleton<HC_ControlHumiliation>()
+            .AddSingleton<ActionDataSnagger>()
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HelpPageTab>()
             .AddSingleton<TutorialWindow>()
@@ -200,6 +205,7 @@ public static class ServiceHandler
             .AddSingleton<SavePatternWindow>()
             .AddSingleton<DebugWindow>()
             .AddSingleton<GagSpeakChangelog>()
+            .AddSingleton<BlindfoldWindow>()
             
             .AddSingleton<IconManager>();
 

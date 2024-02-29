@@ -154,6 +154,10 @@ public class GlamourerFunctions : IDisposable
                 if(e.UpdateType == UpdateType.UpdateRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip) {
                     GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Restraint Set Update");
                     await ApplyRestrainSetToCachedCharacterData(); // correct
+                    // if any of our gags are not none
+                    if(_characterHandler.playerChar._allowItemAutoEquip && _characterHandler.playerChar._selectedGagTypes.Any(g => g != "None")) {
+                        await ApplyGagItemsToCachedCharacterData();
+                    }
                 }
                 // condition 2 --> it was an disable restraint set event, we should revert back to automation, but then reapply the gags
                 if(e.UpdateType == UpdateType.DisableRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip) {

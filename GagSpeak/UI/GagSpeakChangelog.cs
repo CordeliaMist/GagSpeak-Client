@@ -28,6 +28,7 @@ public class GagSpeakChangelog
         Add2_2_0_0(Changelog);
         Add2_4_0_0(Changelog);
         Add2_5_0_0(Changelog);
+        Add2_6_0_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -54,6 +55,15 @@ public class GagSpeakChangelog
             _config.Save();
         }
     }
+
+    private static void Add2_6_0_0(Changelog log)
+        => log.NextVersion("Version 2.6.0.0 Release")
+            .RegisterHighlight("Hardcore tab features now work on a per-player basis")
+            .RegisterEntry("A LOT OF HARDCORE TAB THINGS LIKELY WILL JUST NOT WORK AT ALL, PLEASE DONT REPORT THESE I WILL BE TESTING TODAY")
+            .RegisterEntry("If things work but are broken, then feel free to report them.")
+            .RegisterEntry("Made hideUI the default option")
+            .RegisterEntry("There is now a blindfold (beta)")
+            .RegisterHighlight("You can try out the blindfold for now with /gagspeak blindfold");
 
     private static void Add2_5_0_0(Changelog log)
         => log.NextVersion("Version 2.5.2.0 Release")
