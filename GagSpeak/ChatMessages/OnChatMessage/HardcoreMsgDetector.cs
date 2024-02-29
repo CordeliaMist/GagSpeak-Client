@@ -40,7 +40,7 @@ public class HardcoreMsgDetector
         // set our object to scan as the object in the same index of the list
         HC_PerPlayerConfig playerConfig = _hardcoreManager._perPlayerConfigs[senderIdx];
         // check to see if the message even matched before performing logic
-        if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0]}, follow me.")) {
+        if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, follow me.")) {
             // if allowed forced follow, then scan to see if the incoming message contains the phrase required for our forced follow
             if(playerConfig._allowForcedFollow) {
                 // we should first make sure that the player is somewhere in our current object table
@@ -63,7 +63,7 @@ public class HardcoreMsgDetector
         // if allowed forced sit, then scan to see if the incoming message contains the phrase required for our forced sit
         if(playerConfig._allowForcedSit) {
             // if the message is the type to enable sitting
-            if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0]}, sit.")) {
+            if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, sit.")) {
                 // and we are not already forced to sit
                 if(playerConfig._forcedSit == false) {
                     // then we should set forced to sit to true, locking our movement
@@ -75,7 +75,7 @@ public class HardcoreMsgDetector
                 }
             }
             // otherwise, see if we the command is to end our forced sit
-            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"you may stand now {_client.LocalPlayer!.Name.ToString().Split(' ')[0]}.")) {
+            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"you may stand now {_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}.")) {
                 // and we are already forced to sit
                 if(playerConfig._forcedSit) {
                     // then we should set forced to sit to false, unlocking our movement
@@ -89,7 +89,7 @@ public class HardcoreMsgDetector
         // if allowed forced to stay, then scan to see if the incoming message contains the phrase required for our forced to stay
         if(playerConfig._allowForcedToStay) {
             // if the message contains the phrase to enable forced to stay
-            if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0]}, stay here until i return.")) {
+            if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, stay here until i return.")) {
                 // and we are not already forced to stay
                 if(playerConfig._forcedToStay == false) {
                     // then we should set forced to stay to true, locking our movement
@@ -99,7 +99,7 @@ public class HardcoreMsgDetector
                 }
             }
             // if the message contains the phrase to end forced to stay
-            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"thank you for waiting, {_client.LocalPlayer!.Name.ToString().Split(' ')[0]}.")) {
+            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"thank you for waiting, {_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}.")) {
                 // and we are already forced to stay
                 if(playerConfig._forcedToStay) {
                     // then we should set forced to stay to false, unlocking our movement

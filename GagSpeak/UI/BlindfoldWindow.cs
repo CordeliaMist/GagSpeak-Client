@@ -45,9 +45,10 @@ public class BlindfoldWindow : Window, IDisposable
     public override unsafe void PreDraw()
     {
         // get the size of the screen and set it
-        ImGui.SetNextWindowSize(ImGuiHelpers.MainViewport.Size);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f);
+        ImGui.SetNextWindowPos(Vector2.Zero); // start at top left of the screen
+        ImGui.SetNextWindowSize(ImGuiHelpers.MainViewport.Size); // draw across the whole screen
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero); // set the padding to 0
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f); // set the border size to 0
     }
 
     public override void Draw() {
