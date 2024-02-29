@@ -70,6 +70,7 @@ public static class ServiceHandler
     /// <summary> Adds the existing services to the service collection </summary>
     private static ServiceManager AddServiceClasses(this ServiceManager services)
         => services.AddSingleton<MessageService>()
+            .AddSingleton<ListMediator>()
             .AddSingleton<FilenameService>()
             .AddSingleton<BackupService>()
             .AddSingleton<FrameworkManager>()
@@ -148,7 +149,7 @@ public static class ServiceHandler
             .AddSingleton<OptionPromptListeners>()
             .AddSingleton<OnSetupSelectListFeature>()
             .AddSingleton<BaseFeature>()
-            .AddSingleton<Ordersler>();
+            .AddSingleton<MoveController>();
 
     /// <summary> Classes to add to the service collection from the [Interop] folder </summary>
     private static ServiceManager AddInterop(this ServiceManager services)

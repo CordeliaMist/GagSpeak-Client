@@ -10,6 +10,7 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
 using GagSpeak.Interop;
+using GagSpeak.Services;
 using GagSpeak.Utility;
 using ImGuiNET;
 using Newtonsoft.Json;
@@ -20,15 +21,16 @@ namespace GagSpeak.UI.Tabs.WhitelistTab;
 /// <summary> This class is used to handle the whitelist tab. </summary>
 public class WhitelistSelector
 {
-    private readonly    CharacterHandler    _characterHandler;   // for getting the whitelist
+    //private readonly    CharacterHandler    _characterHandler;   // for getting the whitelist
+    private readonly    ListMediator        _listMediator;       // for keeping the hardcore list and whitelist in sync
     private readonly    IClientState        _clientState;        // for getting the local player
     private readonly    IDataManager        _dataManager;        // for getting the world name
     private             Vector2             _defaultItemSpacing; // for setting the item spacing
     
-    public WhitelistSelector(CharacterHandler characterHandler, IClientState clientState, IDataManager dataManager) {
-        _characterHandler = characterHandler;
+    public WhitelistSelector(IClientState clientState, IDataManager dataManager, ListMediator listMediator) {
         _clientState = clientState;
         _dataManager = dataManager;
+        _listMediator = listMediator;
     }
 
     private void DrawWhitelistHeader(float width, Action<bool> setInteractions, bool _interactions) // Draw our header
@@ -41,7 +43,7 @@ public class WhitelistSelector
             .Push(ImGuiStyleVar.FrameRounding, 0); // and make them recantuclar instead of rounded buttons
         DrawWhitelistHeader(width, setInteractions, _interactions);
         // make content disabled
-        DrawWhitelistSelector(width);
+        _listMediator.DrawWhitelistSelector(width, _defaultItemSpacing);
         if(!_interactions) { ImGui.BeginDisabled(); }
         try{
             DrawWhitelistButtons(width);
@@ -49,27 +51,6 @@ public class WhitelistSelector
             if(!_interactions) { ImGui.EndDisabled(); }
         }
         style.Pop();
-        }
-    }
-
-    private void DrawWhitelistSelector(float width) {
-        using var child = ImRaii.Child("##WhitelistSelector", new Vector2(width, -(3*ImGui.GetFrameHeight() + 2*ImGuiHelpers.GlobalScale)), true);
-        if (!child)
-            return;
-
-        using var style     = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, _defaultItemSpacing);
-        var       skips     = OtterGui.ImGuiClip.GetNecessarySkips(ImGui.GetTextLineHeight());
-        var       remainder = OtterGui.ImGuiClip.ClippedDraw(
-                                    _characterHandler.whitelistChars, skips, DrawSelectable);
-        OtterGui.ImGuiClip.DrawEndDummy(remainder, ImGui.GetTextLineHeight());
-    }
-
-    private void DrawSelectable(WhitelistedCharacterInfo characterInfo) {
-        var equals = _characterHandler.activeListIdx == _characterHandler.GetWhitelistIndex(characterInfo._name);
-        if (ImGui.Selectable(characterInfo._name, equals) && !equals)
-        {
-            // update the active list index
-            _characterHandler.activeListIdx = _characterHandler.GetWhitelistIndex(characterInfo._name);
         }
     }
 
@@ -106,12 +87,12 @@ public class WhitelistSelector
                     GagSpeak.Log.Debug($"[Whitelist]: Targeted Player: {targetName} from {world}, {worldName}");
 
                     // And now, if the player is not already in our _characterHandler.whitelistChars, we will add them. Otherwise just do nothing.
-                    if (!_characterHandler.whitelistChars.Any(item => item._name == targetName)) {
+                    if (!_listMediator.IsPlayerInWhitelist(targetName)) {
                         GagSpeak.Log.Debug($"[Whitelist]: Adding targeted player to _characterHandler.whitelistChars {_clientState.LocalPlayer.TargetObject})");
-                        if(_characterHandler.whitelistChars.Count == 1 && _characterHandler.whitelistChars[0]._name == "None None") { // If our _characterHandler.whitelistChars just shows none, replace it with first addition.
-                            _characterHandler.ReplaceWhitelistItem(0, targetName, worldName);
+                        if(_listMediator.GetNewWhitelistCount() == 1 && _listMediator.GetNameAtIndexZero() == "None None") {
+                            _listMediator.ReplacePlayerInList(0, targetName, worldName);
                         } else {
-                            _characterHandler.AddNewWhitelistItem(targetName, worldName); // Add the player to the _characterHandler.whitelistChars
+                            _listMediator.AddPlayerToList(targetName, worldName); // Add the player to the _characterHandler.whitelistChars
                         }
                     }
                 }
@@ -123,14 +104,14 @@ public class WhitelistSelector
         var yPos = ImGui.GetCursorPosY();
         ImGui.SetCursorPos(new Vector2(xPos, yPos + ImGuiHelpers.GlobalScale));
         if (ImGui.Button("Remove Player", buttonWidth)) {
-            if (_characterHandler.whitelistChars.Count == 1) {
-                _characterHandler.ReplaceWhitelistItem(0, "None None","None");
+            if (_listMediator.GetNewWhitelistCount() == 1) {
+                _listMediator.ReplacePlayerInList(0, "None None","None");
             } else {
-                _characterHandler.RemoveWhitelistItem(_characterHandler.activeListIdx);
+                _listMediator.RemovePlayerInList();
             }
-            var newIdx = _characterHandler.whitelistChars.Count - 1;
+            var newIdx = _listMediator.GetNewWhitelistCount() - 1;
             if (newIdx < 0) { newIdx = 0; }
-            _characterHandler.activeListIdx = newIdx;
+            _listMediator.SetNewActiveIndex(newIdx);
         }
         xPos = ImGui.GetCursorPosX();
         yPos = ImGui.GetCursorPosY();
@@ -138,20 +119,20 @@ public class WhitelistSelector
         // display the three buttons for pasting in restraint set data, alias commands, and pattern lists
         buttonWidth = new Vector2(width/3, 0);
         if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Handcuffs.ToIconString(), buttonWidth,
-        $"Paste {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s copied restraint set list", false, true)) {
-            GagSpeak.Log.Debug($"[Whitelist]: Pasting in restraint set list for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}");
+        $"Paste {_listMediator.GetActiveListName()}'s copied restraint set list", false, true)) {
+            GagSpeak.Log.Debug($"[Whitelist]: Pasting in restraint set list for {_listMediator.GetActiveListName()}");
             ImportRestraintSetList();
         }
         ImGui.SameLine();
         if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.FilePen.ToIconString(), buttonWidth,
-        $"Paste {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s copied alias command list", false, true)) {
-            GagSpeak.Log.Debug($"[Whitelist]: Pasting in alias command list for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}");
+        $"Paste {_listMediator.GetActiveListName()}'s copied alias command list", false, true)) {
+            GagSpeak.Log.Debug($"[Whitelist]: Pasting in alias command list for {_listMediator.GetActiveListName()}");
             ImportAliasCommandList();
         }
         ImGui.SameLine();
         if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.FileMedicalAlt.ToIconString(), buttonWidth,
-        $"Paste {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}'s copied pattern list", false, true)) {
-            GagSpeak.Log.Debug($"[Whitelist]: Pasting in pattern list for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}");
+        $"Paste {_listMediator.GetActiveListName()}'s copied pattern list", false, true)) {
+            GagSpeak.Log.Debug($"[Whitelist]: Pasting in pattern list for {_listMediator.GetActiveListName()}");
             ImportPatternList();
         }
         // pop style
@@ -159,7 +140,7 @@ public class WhitelistSelector
     }
 
     private WindowHeader.Button InteractionsButton(Action<bool> setInteractions, bool _enableInteractions)
-            => !_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)
+            => !_listMediator.IsWhitelistIndexInBounds()
                 ? WindowHeader.Button.Invisible
                 : _enableInteractions
                     ? new WindowHeader.Button {
@@ -189,7 +170,7 @@ public class WhitelistSelector
             // Deserialize the string back to a list
             List<string> restraintSetList = JsonConvert.DeserializeObject<List<string>>(decompressed) ?? new List<string>();
             // Set the restraint set list
-            _characterHandler.StoreRestraintListForPlayer(_characterHandler.activeListIdx, restraintSetList);
+            _listMediator.StoreRestraintSetList(restraintSetList);
             GagSpeak.Log.Debug($"Set restraint set list from clipboard");
         } catch (Exception ex) {
             GagSpeak.Log.Warning($"{ex.Message} Could not set restraint set list from clipboard.");
@@ -203,7 +184,7 @@ public class WhitelistSelector
             var version = bytes[0];
             version = bytes.DecompressToString(out var decompressed);
             Dictionary<string, string> aliasCommandList = JsonConvert.DeserializeObject<Dictionary<string, string>>(decompressed) ?? new Dictionary<string, string>();
-            _characterHandler.StoredAliasDetailsForPlayer(_characterHandler.activeListIdx, aliasCommandList);
+            _listMediator.StoreAliasDetailsForWhitelistePlayer(aliasCommandList);
             GagSpeak.Log.Debug($"Set alias command list from clipboard");
         } catch (Exception ex) {
             GagSpeak.Log.Warning($"{ex.Message} Could not set alias command list from clipboard.");
@@ -217,7 +198,7 @@ public class WhitelistSelector
             var version = bytes[0];
             version = bytes.DecompressToString(out var decompressed);
             List<string> patternList = JsonConvert.DeserializeObject<List<string>>(decompressed) ?? new List<string>();
-            _characterHandler.StorePatternNames(_characterHandler.activeListIdx, patternList);
+            _listMediator.StorePatternsForWhitelistedPlayer(patternList);
             GagSpeak.Log.Debug($"Set pattern list from clipboard");
         } catch (Exception ex) {
             GagSpeak.Log.Warning($"{ex.Message} Could not set pattern list from clipboard.");

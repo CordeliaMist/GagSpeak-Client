@@ -38,6 +38,7 @@ public class HardcoreMsgDetector
         // first, let us get the index of the sender name since we already know they are in our whitelist 
         int senderIdx = _characterHandler.GetWhitelistIndex(senderName);
         // set our object to scan as the object in the same index of the list
+        GagSpeak.Log.Debug($"Sender Index: {senderIdx}");
         HC_PerPlayerConfig playerConfig = _hardcoreManager._perPlayerConfigs[senderIdx];
         // check to see if the message even matched before performing logic
         if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, follow me.")) {

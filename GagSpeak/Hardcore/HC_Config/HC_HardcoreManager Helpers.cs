@@ -98,6 +98,17 @@ public partial class HardcoreManager
         }
     }
 
+    public void ListIntegrityCheck(int whitelistSize) {
+        // perform an integrity check to each playerSettings in the list
+        if(_perPlayerConfigs.Count < whitelistSize) {
+            for(int i = _perPlayerConfigs.Count; i < whitelistSize; i++) {
+                _perPlayerConfigs.Add(new HC_PerPlayerConfig(_rsPropertyChanged));
+            }
+        } else if(_perPlayerConfigs.Count > whitelistSize) {
+            _perPlayerConfigs.RemoveRange(whitelistSize, _perPlayerConfigs.Count - whitelistSize);
+        }
+    }
+
     // run integrity check to make sure the size of _rsProperties is the same as the restraint set size
     private void IntegrityCheck(int setIndex) {
         // perform an integrity check to each playerSettings in the list
@@ -127,96 +138,96 @@ public partial class HardcoreManager
 #endregion Manager Methods
 
 #region property setters
-    public void SetAllowForcedFollow(bool forcedFollow) {
+    public void SetAllowForcedFollow(int playerIdx, bool forcedFollow) {
         GagSpeak.Log.Debug($"[HardcoreManager] Setting AllowForcedFollow to {forcedFollow}");
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetAllowForcedFollow(forcedFollow);
+        _perPlayerConfigs[playerIdx].SetAllowForcedFollow(forcedFollow);
         Save();
     }
     
-    public void SetForcedFollow(bool forcedFollow) {
+    public void SetForcedFollow(int playerIdx, bool forcedFollow) {
         GagSpeak.Log.Debug($"[HardcoreManager] Setting ForcedFollow to {forcedFollow}");
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetForcedFollow(forcedFollow);
+        _perPlayerConfigs[playerIdx].SetForcedFollow(forcedFollow);
         _saveService.QueueSave(this);
     }
 
-    public void SetAllowForcedSit(bool forcedSit) { 
+    public void SetAllowForcedSit(int playerIdx, bool forcedSit) { 
         GagSpeak.Log.Debug($"[HardcoreManager] Setting AllowForcedSit to {forcedSit}");
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetAllowForcedSit(forcedSit);
+        _perPlayerConfigs[playerIdx].SetAllowForcedSit(forcedSit);
         Save();
     }
 
-    public void SetForcedSit(bool forcedSit) { 
+    public void SetForcedSit(int playerIdx, bool forcedSit) { 
         GagSpeak.Log.Debug($"[HardcoreManager] Setting ForcedSit to {forcedSit}");
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetForcedSit(forcedSit);
+        _perPlayerConfigs[playerIdx].SetForcedSit(forcedSit);
         _saveService.QueueSave(this);
     }
 
-    public void SetAllowForcedToStay(bool forcedToStay) {
+    public void SetAllowForcedToStay(int playerIdx, bool forcedToStay) {
         GagSpeak.Log.Debug($"[HardcoreManager] Setting AllowForcedToStay to {forcedToStay}");
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetAllowForcedToStay(forcedToStay);
+        _perPlayerConfigs[playerIdx].SetAllowForcedToStay(forcedToStay);
         Save();
     }
 
-    public void SetForcedToStay(bool forcedToStay) {
+    public void SetForcedToStay(int playerIdx, bool forcedToStay) {
         GagSpeak.Log.Debug($"[HardcoreManager] Setting ForcedToStay to {forcedToStay}");
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetForcedToStay(forcedToStay);
+        _perPlayerConfigs[playerIdx].SetForcedToStay(forcedToStay);
         _saveService.QueueSave(this);
     }
 
-    public void SetAllowBlindfold(bool allowBlindfold) { 
+    public void SetAllowBlindfold(int playerIdx, bool allowBlindfold) { 
         GagSpeak.Log.Debug($"[HardcoreManager] Setting AllowBlindfold to {allowBlindfold}");
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetAllowBlindfold(allowBlindfold); 
+        _perPlayerConfigs[playerIdx].SetAllowBlindfold(allowBlindfold); 
         Save();
     }
 
-    public void SetBlindfolded(bool blindfolded) {
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetBlindfolded(blindfolded);
+    public void SetBlindfolded(int playerIdx, bool blindfolded) {
+        _perPlayerConfigs[playerIdx].SetBlindfolded(blindfolded);
         _saveService.QueueSave(this);
     }
 
-    public void SetLegsRestraintedProperty(int setIndex, bool value) {
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetLegsRestraintedProperty(setIndex, value);
+    public void SetLegsRestraintedProperty(int playerIdx, int setIndex, bool value) {
+        _perPlayerConfigs[playerIdx].SetLegsRestraintedProperty(setIndex, value);
         _saveService.QueueSave(this);
     }
 
-    public void SetArmsRestraintedProperty(int setIndex, bool value) {
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetArmsRestraintedProperty(setIndex, value);
+    public void SetArmsRestraintedProperty(int playerIdx, int setIndex, bool value) {
+        _perPlayerConfigs[playerIdx].SetArmsRestraintedProperty(setIndex, value);
         _saveService.QueueSave(this);
     }
 
-    public void SetGaggedProperty(int setIndex, bool value) {
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetGaggedProperty(setIndex, value);
+    public void SetGaggedProperty(int playerIdx, int setIndex, bool value) {
+        _perPlayerConfigs[playerIdx].SetGaggedProperty(setIndex, value);
         _saveService.QueueSave(this);
     }
 
-    public void SetBlindfoldedProperty(int setIndex, bool value) {
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetBlindfoldedProperty(setIndex, value);
+    public void SetBlindfoldedProperty(int playerIdx, int setIndex, bool value) {
+        _perPlayerConfigs[playerIdx].SetBlindfoldedProperty(setIndex, value);
         _saveService.QueueSave(this);
     }
 
-    public void SetImmobileProperty(int setIndex, bool value) {
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetImmobileProperty(setIndex, value);
+    public void SetImmobileProperty(int playerIdx, int setIndex, bool value) {
+        _perPlayerConfigs[playerIdx].SetImmobileProperty(setIndex, value);
         _saveService.QueueSave(this);
     }
 
-    public void SetWeightedProperty(int setIndex, bool value) {
-        _perPlayerConfigs[ActivePlayerCfgListIdx].SetWeightedProperty(setIndex, value);
+    public void SetWeightedProperty(int playerIdx, int setIndex, bool value) {
+        _perPlayerConfigs[playerIdx].SetWeightedProperty(setIndex, value);
         _saveService.QueueSave(this);
     }
 
-    public void SetLightStimulationProperty(int setIndex, bool newValue) {
+    public void SetLightStimulationProperty(int playerIdx, int setIndex, bool newValue) {
         // if it is curretly active
         if(newValue == true) {
             // turn off the other two
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._lightStimulationProperty = true;
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._mildStimulationProperty  = false;
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._heavyStimulationProperty = false;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._lightStimulationProperty = true;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._mildStimulationProperty  = false;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._heavyStimulationProperty = false;
             // and change the multiplier
             StimulationMultipler = 1.125;
         }
         // otherwise, we are disabling it, so just disable it and reset the multiplier
         else {
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._lightStimulationProperty = false;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._lightStimulationProperty = false;
             // and change the multiplier
             StimulationMultipler = 1.0;
         }
@@ -225,19 +236,19 @@ public partial class HardcoreManager
         _rsPropertyChanged.Invoke(HardcoreChangeType.LightStimulation, newValue ? RestraintSetChangeType.Enabled : RestraintSetChangeType.Disabled);
     }
 
-    public void SetMildStimulationProperty(int setIndex, bool newValue) {
+    public void SetMildStimulationProperty(int playerIdx, int setIndex, bool newValue) {
         // if it is curretly active
         if(newValue == true) {
             // turn off the other two
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._lightStimulationProperty = false;
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._mildStimulationProperty  = true;
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._heavyStimulationProperty = false;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._lightStimulationProperty = false;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._mildStimulationProperty  = true;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._heavyStimulationProperty = false;
             // and change the multiplier
             StimulationMultipler = 1.25;
         }
         // otherwise, we are disabling it, so just disable it and reset the multiplier
         else {
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._mildStimulationProperty = false;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._mildStimulationProperty = false;
             // and change the multiplier
             StimulationMultipler = 1.0;
         }
@@ -246,13 +257,13 @@ public partial class HardcoreManager
         _rsPropertyChanged.Invoke(HardcoreChangeType.MildStimulation, newValue ? RestraintSetChangeType.Enabled : RestraintSetChangeType.Disabled);
     }
 
-    public void SetHeavyStimulationProperty(int setIndex, bool newValue) {
+    public void SetHeavyStimulationProperty(int playerIdx, int setIndex, bool newValue) {
         // if it is curretly active
         if(newValue == true) {
             // turn off the other two
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._lightStimulationProperty = false;
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._mildStimulationProperty  = false;
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._heavyStimulationProperty = true;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._lightStimulationProperty = false;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._mildStimulationProperty  = false;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._heavyStimulationProperty = true;
             // and change the multiplier
             StimulationMultipler = 1.5;
         }

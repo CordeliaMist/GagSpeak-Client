@@ -49,8 +49,8 @@ public class HC_ControlHumiliation
         // draw out the options
         UIHelpers.CheckboxNoConfig($"{name} can blindfold you.",
         $"Whenever {name} wants, they can blindfold you. Either can toggle off",
-        _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._allowBlindfold,
-        v => _hcManager.SetAllowBlindfold(v)
+        _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowBlindfold,
+        v => _hcManager.SetAllowBlindfold(_charHandler.activeListIdx, v)
         );
         ImGui.Spacing();
         ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1.0f));

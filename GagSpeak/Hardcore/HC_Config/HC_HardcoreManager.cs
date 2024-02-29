@@ -10,6 +10,7 @@ using GagSpeak.Wardrobe;
 using Dalamud.Game.ClientState.Keys;
 using GagSpeak.CharacterData;
 using System.Threading.Tasks;
+using GagSpeak.ToyboxandPuppeteer;
 namespace GagSpeak.Hardcore;
 public partial class HardcoreManager : ISavable, IDisposable
 {
@@ -57,10 +58,10 @@ public partial class HardcoreManager : ISavable, IDisposable
 
     #pragma warning disable CS8618
     public HardcoreManager(SaveService saveService, RestraintSetListChanged restraintSetListChanged,
-    InitializationManager manager, RS_PropertyChangedEvent propertyChanged, CharacterHandler handler, 
+    InitializationManager manager, RS_PropertyChangedEvent propertyChanged, CharacterHandler characterHandler, 
     RestraintSetManager restraintSetManager, RS_ToggleEvent rsToggleEvent) {
         _saveService = saveService;
-        _characterHandler = handler;
+        _characterHandler = characterHandler;
         _rsPropertyChanged = propertyChanged;
         _manager = manager;
         _restraintSetListChanged = restraintSetListChanged;
@@ -71,9 +72,7 @@ public partial class HardcoreManager : ISavable, IDisposable
         // load the information from our storage file
         Load();
         // if the size of the list is still 0, set it to the size of our whitelist
-        if (_perPlayerConfigs.Count == 0) {
-            _perPlayerConfigs = _characterHandler.whitelistChars.Select(chara => new HC_PerPlayerConfig(_rsPropertyChanged)).ToList();
-        }
+        ListIntegrityCheck(_characterHandler.whitelistChars.Count);
         // save the information
         Save();
         // subscribe to the events
@@ -125,6 +124,34 @@ public partial class HardcoreManager : ISavable, IDisposable
         _restraintSetListChanged.SetListModified -= OnRestraintSetListModified;
     }
 #endregion Manager Helpers
+
+    public void AddNewPlayerConfig() {
+        _perPlayerConfigs.Add(new HC_PerPlayerConfig(_rsPropertyChanged));
+        // Perform integrity check
+        _perPlayerConfigs[_perPlayerConfigs.Count - 1].IntegrityCheck(_perPlayerConfigs.Count);
+        // Save
+        _saveService.QueueSave(this);
+    }
+
+    public void ReplacePlayerConfig(int index) {
+        if (index < 0 || index >= _perPlayerConfigs.Count)
+            throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range of the _perPlayerConfigs list.");
+
+        _perPlayerConfigs[index] = new HC_PerPlayerConfig(_rsPropertyChanged);
+        // Perform integrity check
+        _perPlayerConfigs[index].IntegrityCheck(index);
+        // Save
+        _saveService.QueueSave(this);
+    }
+
+    public void RemovePlayerConfig(int index) {
+        if (index < 0 || index >= _perPlayerConfigs.Count)
+            throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range of the _perPlayerConfigs list.");
+
+        _perPlayerConfigs.RemoveAt(index);
+        // Save
+        _saveService.QueueSave(this);
+    }
 
     public string ToFilename(FilenameService filenameService)
         => filenameService.HardcoreSettingsFile;

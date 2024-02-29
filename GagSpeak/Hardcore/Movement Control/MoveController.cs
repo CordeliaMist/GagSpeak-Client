@@ -1,8 +1,10 @@
 using System;
+using Dalamud.Hooking;
+using Dalamud.Plugin.Services;
 using Dalamud.Utility.Signatures;
 
 namespace GagSpeak.Hardcore.Movement;
-public unsafe class Ordersler : IDisposable
+public unsafe class MoveController : IDisposable
 {
     private readonly HardcoreManager _hcManager;
     // If true, we should enable the forcedisablemovement pointer. If false, we should only disable the virutual keys
@@ -13,10 +15,13 @@ public unsafe class Ordersler : IDisposable
     // controls the complete blockage of movement from the player (Still allows for /follow)
     [Signature("F3 0F 10 05 ?? ?? ?? ?? 0F 2E C6 0F 8A", ScanType = ScanType.StaticAddress, Fallibility = Fallibility.Infallible)]
     private nint forceDisableMovementPtr;
-    internal ref int ForceDisableMovement => ref *(int*)(forceDisableMovementPtr + 4);
+    private ref int ForceDisableMovement => ref *(int*)(forceDisableMovementPtr + 4);
 
-    public Ordersler(HardcoreManager hardcoreManager) {
+    public MoveController(HardcoreManager hardcoreManager, IGameInteropProvider interopProvider) {
         _hcManager = hardcoreManager;
+
+        // initialize from attributes
+        interopProvider.InitializeFromAttributes(this);
     }
 
     public void Dispose() {

@@ -2,7 +2,6 @@ using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using FFXIVClientStructs.FFXIV.Application.Network.WorkDefinitions;
 using GagSpeak.CharacterData;
 using GagSpeak.Hardcore;
 using GagSpeak.Services;
@@ -144,60 +143,60 @@ public class HC_RestraintSetProperties
             UIHelpers.CheckboxNoConfig("Legs Are Restrained",
             "Actions for your current class that involve primary Leg movement are restricted.\n"+
             "(( Only modifies live hotbar display, no hotbar data can be lost ))",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_curSetIdx]._legsRestraintedProperty,
-            v => _hcManager.SetLegsRestraintedProperty(_curSetIdx, v));
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._rsProperties[_curSetIdx]._legsRestraintedProperty,
+            v => _hcManager.SetLegsRestraintedProperty(_charHandler.activeListIdx, _curSetIdx, v));
             ImGui.TableNextColumn();
             ImGui.Spacing();
             UIHelpers.CheckboxNoConfig("Arms Are Restrained",
             "Actions for your current class that involve primary Arm movement are restricted.\n"+
             "(( Only modifies live hotbar display, no hotbar data can be lost ))",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_curSetIdx]._armsRestraintedProperty,
-            v => _hcManager.SetArmsRestraintedProperty(_curSetIdx, v)
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._rsProperties[_curSetIdx]._armsRestraintedProperty,
+            v => _hcManager.SetArmsRestraintedProperty(_charHandler.activeListIdx, _curSetIdx, v)
             );
             ImGui.TableNextColumn();
             UIHelpers.CheckboxNoConfig("Gagged",
             "Actions for your current class that involve orders to pets or verbal spells are restricted.\n"+
             "(( Only modifies live hotbar display, no hotbar data can be lost ))",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_curSetIdx]._gaggedProperty,
-            v => _hcManager.SetGaggedProperty(_curSetIdx, v));
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._rsProperties[_curSetIdx]._gaggedProperty,
+            v => _hcManager.SetGaggedProperty(_charHandler.activeListIdx, _curSetIdx, v));
             ImGui.TableNextColumn();    
             UIHelpers.CheckboxNoConfig("Blindfolded",
             "Actions for your current class that are ranged instant cast moves where you need to know where the target is are restricted.\n"+
             "(( Only modifies live hotbar display, no hotbar data can be lost ))",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_curSetIdx]._blindfoldedProperty,
-            v => _hcManager.SetBlindfoldedProperty(_curSetIdx, v));
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._rsProperties[_curSetIdx]._blindfoldedProperty,
+            v => _hcManager.SetBlindfoldedProperty(_charHandler.activeListIdx, _curSetIdx, v));
             ImGui.TableNextColumn();
             UIHelpers.CheckboxNoConfig("Immobile",
             "Actions for your current class that involving movement of any kind are restricted. You are also locked in place and cannot move.\n"+
             "(( Only modifies live hotbar display, no hotbar data can be lost ))\n"+
             "(( All movement keys are thrown away before they are sent to the game, so there is nothing to worry about. ))",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_curSetIdx]._immobileProperty,
-            v => _hcManager.SetImmobileProperty(_curSetIdx,
-            !_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_curSetIdx]._immobileProperty)
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._rsProperties[_curSetIdx]._immobileProperty,
+            v => _hcManager.SetImmobileProperty(_charHandler.activeListIdx, _curSetIdx,
+            !_hcManager._perPlayerConfigs[_charHandler.activeListIdx]._rsProperties[_curSetIdx]._immobileProperty)
             );
             ImGui.TableNextColumn();
             UIHelpers.CheckboxNoConfig("Weighty",
             "Your body is weighted down by the restraints, slowing your movement...",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_curSetIdx]._weightyProperty,
-            v => _hcManager.SetWeightedProperty(_curSetIdx, v));
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._rsProperties[_curSetIdx]._weightyProperty,
+            v => _hcManager.SetWeightedProperty(_charHandler.activeListIdx, _curSetIdx, v));
             ImGui.TableNextColumn();
             UIHelpers.CheckboxNoConfig("Light Stimulation",
             "If one is under stimulation, their mind can become slightly distracted...\n\n"+
             "(( Recast Time Multiplier for all action groups are multiplied by 1.1x))",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_curSetIdx]._lightStimulationProperty,
-            v => _hcManager.SetLightStimulationProperty(_curSetIdx, v));
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._rsProperties[_curSetIdx]._lightStimulationProperty,
+            v => _hcManager.SetLightStimulationProperty(_charHandler.activeListIdx, _curSetIdx, v));
             ImGui.TableNextColumn();
             UIHelpers.CheckboxNoConfig("Mild Stimulation",
             "If one is under mild stimulation, you begin to loose focus on the action at hand before you...\n\n"+
             "(( Recast Time Multiplier for all action groups are multiplied by 1.25x))",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_curSetIdx]._mildStimulationProperty,
-            v => _hcManager.SetMildStimulationProperty(_curSetIdx, v));
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._rsProperties[_curSetIdx]._mildStimulationProperty,
+            v => _hcManager.SetMildStimulationProperty(_charHandler.activeListIdx, _curSetIdx, v));
             ImGui.TableNextColumn();
             UIHelpers.CheckboxNoConfig("Heavy Stimulation",
             "Under heavy stimulation, you start caring more about your own pleasure than the combat before you...\n\n"+
             "(( Recast Time Multiplier for all action groups are multiplied by 1.5x))",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_curSetIdx]._heavyStimulationProperty,
-            v => _hcManager.SetHeavyStimulationProperty(_curSetIdx, v));
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._rsProperties[_curSetIdx]._heavyStimulationProperty,
+            v => _hcManager.SetHeavyStimulationProperty(_charHandler.activeListIdx, _curSetIdx, v));
             ImGui.TableNextColumn();
         }
     }

@@ -51,12 +51,12 @@ public class HC_Orders
         // draw out the options
         UIHelpers.CheckboxNoConfig($"{name} can order you to follow them.",
         $"Automatically follow {name} when they say to you \"{yourName}, follow me.\" in any channel.",
-        _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._allowForcedFollow,
-        v => _hcManager.SetAllowForcedFollow(v));
+        _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowForcedFollow,
+        v => _hcManager.SetAllowForcedFollow(_charHandler.activeListIdx, v));
         ImGui.SameLine();
         UIHelpers.CheckboxNoConfig("", $"Enable the forced follow from {name}, over allow forced follow",
-        _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedFollow,
-        v => _hcManager.SetForcedFollow(v));
+        _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._forcedFollow,
+        v => _hcManager.SetForcedFollow(_charHandler.activeListIdx, v));
         ImGui.Spacing();
         ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1.0f));
         try {
@@ -69,12 +69,12 @@ public class HC_Orders
         UIHelpers.CheckboxNoConfig($"{name} can order you to sit.",
         $"You will be forcibily sat down on your nees when {name} says to you \"{yourName}, sit.\" in any channel.\n"+
         $"Your movement is restricted until they say \"you may stand now {yourName}.\"",
-        _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._allowForcedSit,
-        v => _hcManager.SetAllowForcedSit(v));
+        _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowForcedSit,
+        v => _hcManager.SetAllowForcedSit(_charHandler.activeListIdx, v));
         ImGui.SameLine();
         UIHelpers.CheckboxNoConfig("", $"Enable the forced sit from {name}, over allow forced sit",
-        _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedSit,
-        v => _hcManager.SetForcedSit(v));
+        _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._forcedSit,
+        v => _hcManager.SetForcedSit(_charHandler.activeListIdx, v));
         ImGui.Spacing();
         ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1.0f));
         try {
@@ -98,11 +98,11 @@ public class HC_Orders
             $"If {name} says to you, \"{yourName}, stay here until I return.\" your teleport & return actions become blocked. "+
             "You are also unable to leave any private chamblers or estates while this is active.\n"+
             $"Restrictions reverted when {name} says \"thank you for waiting, {yourName}.\"",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._allowForcedToStay,
-            v => _hcManager.SetAllowForcedToStay(v));
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowForcedToStay,
+            v => _hcManager.SetAllowForcedToStay(_charHandler.activeListIdx, v));
             UIHelpers.CheckboxNoConfig("", $"{name} Can lock you away.",
-            _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedToStay,
-            v => _hcManager.SetForcedToStay(v));
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._forcedToStay,
+            v => _hcManager.SetForcedToStay(_charHandler.activeListIdx, v));
             ImGui.Spacing();
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1.0f));
             try {

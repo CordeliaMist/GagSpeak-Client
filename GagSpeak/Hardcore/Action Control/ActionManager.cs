@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using GagSpeak.Wardrobe;
+using GagSpeak.Gagsandlocks;
 
 namespace GagSpeak.Hardcore.Actions;
 public unsafe class GsActionManager : IDisposable
@@ -38,7 +39,7 @@ public unsafe class GsActionManager : IDisposable
 #region Attributes
     public Dictionary<uint, AcReqProps[]> CurrentJobBannedActions = new Dictionary<uint, AcReqProps[]>(); // stores the current job actions
     public Dictionary<int, Tuple<float, DateTime>> CooldownList = new Dictionary<int, Tuple<float, DateTime>>(); // stores the recast timers for each action
-    public bool AnyPropertiesEnabled;
+    
 #endregion Attributes
     public unsafe GsActionManager(IClientState clientState, IFramework framework, IGameInteropProvider interop,
     RestraintSetManager restraintSetManager, HardcoreManager hardcoreManager, RS_PropertyChangedEvent RS_PropertyChangedEvent,
@@ -59,9 +60,6 @@ public unsafe class GsActionManager : IDisposable
         // set up a hook to fire every time the address signature is detected in our game.
         UseActionHook = _gameInteropProvider.HookFromAddress<UseActionDelegate>((nint)ActionManager.Addresses.UseAction.Value, UseActionDetour);
         UseActionHook.Enable();
-
-        // set the attributes
-        AnyPropertiesEnabled = false;
 
         _setToggleEvent.SetToggled += OnRestraintSetToggled;
         _rsPropertyChangedEvent.SetChanged += OnRestraintSetPropertyChanged;
@@ -90,7 +88,6 @@ public unsafe class GsActionManager : IDisposable
         _hcManager.ActiveHCsetIdx = index;
         // set properties to true
         if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx].AnyPropertyTrue() && _hcManager.ActiveHCsetIdx != -1) {
-            AnyPropertiesEnabled = true;
             // apply stimulation modifier
             _hcManager.ApplyMultipler();
             // activate hotbar lock
@@ -103,9 +100,6 @@ public unsafe class GsActionManager : IDisposable
         _hcManager.ActiveHCsetIdx = -1;
         // reset multiplier
         _hcManager.StimulationMultipler = 1.0;
-        // if the set is disabled, regardless of if we have any properties or not enabled the set is inactive.
-        // because of this we should set the AnyPropertiesEnabled to false
-        AnyPropertiesEnabled = false;
         // we should also restore hotbar slots
         RestoreSavedSlots();
         // we should also unlock hotbar lock
@@ -254,16 +248,17 @@ public unsafe class GsActionManager : IDisposable
 #region EventHandlers
     private void OnMovementManagerInitialized() {
         GagSpeak.Log.Debug("======================== [ Completing Action Manager Initialization ] ========================");
-        _framework.Update += framework_Update;
         // if we are ready to initialize the actions, we should update our job list
         UpdateJobList();
         // see if we should enable the sets incase we load this prior to the restraint set manager loading.
         if(_restraintSetManager._restraintSets.Any(x => x._enabled)){
-            // if any of our sets are enabled, we should call our function to start enabling the properties
-            // get the index of the enabled set
             var index = _restraintSetManager._restraintSets.FindIndex(x => x._enabled);
+            GagSpeak.Log.Debug($"[Action Manager]: Restraint set index {index} is now active");            
             EnableProperties(index);
+        } else {
+            GagSpeak.Log.Debug($"[Action Manager]: No restraint sets are active");
         }
+        _framework.Update += framework_Update;
         // invoke the actionManagerFinished method
         _manager.CompleteStep(InitializationSteps.ActionManagerInitialized);
     }
@@ -321,8 +316,7 @@ public unsafe class GsActionManager : IDisposable
         && _config.AdminMode)
         {
             // obtain our current restraint set active index and 
-            if(_hcManager.ActiveHCsetIdx != -1 && AnyPropertiesEnabled) {
-                // update our slots with our respective implied restrictions when forcedwalk is enabeled
+            if(_hcManager.ActiveHCsetIdx != -1 && _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx].AnyPropertyTrue()) {
                 UpdateSlots();
             }
         }

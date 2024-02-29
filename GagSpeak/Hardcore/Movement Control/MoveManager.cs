@@ -25,7 +25,7 @@ public unsafe class MovementManager : IDisposable
     private readonly    RS_PropertyChangedEvent _rsPropertyChangedEvent;
     private readonly    InitializationManager    _manager;
     // for having the movement memory -- was originally private static, revert back if it causes issues.
-    private             Ordersler      _Ordersler;
+    private             MoveController      _MoveController;
     // for controlling walking speed, follow movement manager, and sitting/standing.
     public              XivControl.Control*     gameControl = XivControl.Control.Instance(); // instance to have control over our walking
     public              AgentMap*               agentMap = AgentMap.Instance(); // instance to have control over our walking
@@ -36,13 +36,13 @@ public unsafe class MovementManager : IDisposable
 
     // the list of keys that are blocked while movement is disabled. Req. to be static, must be set here.
     public unsafe MovementManager(ICondition condition, IKeyState keyState,
-    Ordersler Ordersler, HardcoreManager hardcoreManager,
+    MoveController MoveController, HardcoreManager hardcoreManager,
     RS_PropertyChangedEvent RS_PropertyChangedEvent, IFramework framework, 
     IClientState clientState, GagSpeakConfig config, InitializationManager manager) {
         _config = config;
         _condition = condition;
         _clientState = clientState;
-        _Ordersler = Ordersler;
+        _MoveController = MoveController;
         _framework = framework;
         _keyState = keyState;
         _hcManager = hardcoreManager;
@@ -87,48 +87,6 @@ public unsafe class MovementManager : IDisposable
             System.Threading.Tasks.Task.Delay(200);
             Marshal.WriteByte((IntPtr)gameControl, 23163, 0x0);
         }
-        // roundabout way of saying "If any other options are already active, there is no need to activate it again
-        if(RestraintSetChangeType.Enabled == e.ChangeType) {
-            switch(e.PropertyType) {
-                case HardcoreChangeType.Immobile:
-                case HardcoreChangeType.ForcedSit:
-                case HardcoreChangeType.ForcedFollow: {
-                    if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedFollow
-                    || _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedSit
-                    || (_hcManager.ActiveHCsetIdx != -1  && _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._weightyProperty))
-                    {
-                        // if any of these are already active, dont worry about activating movement more, so return
-                        return;
-                    }
-                    // otherwise, disable movement
-                    else {
-                        _Ordersler.DisableMouseMoving();
-                    }
-                }
-                break;
-            }
-        }
-        // roundabout way of saying "If any other options are already active, then we shouldnt be able to deactive them"
-        if(RestraintSetChangeType.Disabled == e.ChangeType) {
-            switch(e.PropertyType) {
-                case HardcoreChangeType.Immobile:
-                case HardcoreChangeType.ForcedSit:
-                case HardcoreChangeType.ForcedFollow: {
-                    if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedFollow
-                    || _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedSit
-                    || (_hcManager.ActiveHCsetIdx != -1  && _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._weightyProperty))
-                    {
-                        // if any of these are already active, dont worry about activating movement more, so return
-                        return;
-                    }
-                    // otherwise, enable movement
-                    else {
-                        _Ordersler.EnableMouseMoving();
-                    }
-                }
-                break;
-            }
-        }
     }
 
 #endregion EventHandlers
@@ -155,7 +113,7 @@ public unsafe class MovementManager : IDisposable
             }
             // otherwise, we should enable movement and any blocked virtual keys
             else {
-                _Ordersler.EnableMouseMoving();
+                _MoveController.EnableMouseMoving();
                 ResetCancelledMoveKeys();
             }
 
@@ -175,7 +133,7 @@ public unsafe class MovementManager : IDisposable
                     // otherwise, we should check if the player has been standing still for 5000ms.
                     if((DateTimeOffset.Now - _lastMovementTime).TotalMilliseconds > 5000) {
                         // if they have, then we need to force them to move again
-                        _hcManager.SetForcedFollow(false);
+                        _hcManager.SetForcedFollow(_hcManager.ActivePlayerCfgListIdx, false);
                         GagSpeak.Log.Debug($"[MovementManager]: Player has been standing still for too long, forcing them to move again");
                     }
                 }
@@ -222,11 +180,11 @@ public unsafe class MovementManager : IDisposable
         if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedSit
         || _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedFollow) {
             // we should block mouse movement
-            _Ordersler.DisableMouseMoving();
+            _MoveController.DisableMouseMoving();
         }
         // otherwise, we should allow mouse movement
         else {
-            _Ordersler.EnableMouseMoving();
+            _MoveController.EnableMouseMoving();
         }
         // regardless, if any movement prevention is present, we should cancel any movement keys
         CancelMoveKeys();
