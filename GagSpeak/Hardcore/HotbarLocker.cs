@@ -14,12 +14,14 @@ public unsafe class HotbarLocker
     private readonly IGameGui _gameGui;
     private readonly RestraintSetManager _restraintSetManager;
     private readonly RS_ToggleEvent _rsToggleEvent;
+    public           bool           _lockState;
     public HotbarLocker(RestraintSetManager restraintSetManager, RS_ToggleEvent rsToggleEvent, IGameGui gameGui) {
         _restraintSetManager = restraintSetManager;
         _rsToggleEvent = rsToggleEvent;
         _gameGui = gameGui;
     }
     public void SetHotbarLockState(bool state) {
+        _lockState = state;
         // set the lock state
         var actionBar = GetUnitBase("_ActionBar");
         if (actionBar == null) return;

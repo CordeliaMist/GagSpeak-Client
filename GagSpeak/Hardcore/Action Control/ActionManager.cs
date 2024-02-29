@@ -39,7 +39,7 @@ public unsafe class GsActionManager : IDisposable
 #region Attributes
     public Dictionary<uint, AcReqProps[]> CurrentJobBannedActions = new Dictionary<uint, AcReqProps[]>(); // stores the current job actions
     public Dictionary<int, Tuple<float, DateTime>> CooldownList = new Dictionary<int, Tuple<float, DateTime>>(); // stores the recast timers for each action
-    
+
 #endregion Attributes
     public unsafe GsActionManager(IClientState clientState, IFramework framework, IGameInteropProvider interop,
     RestraintSetManager restraintSetManager, HardcoreManager hardcoreManager, RS_PropertyChangedEvent RS_PropertyChangedEvent,
@@ -318,6 +318,7 @@ public unsafe class GsActionManager : IDisposable
             // obtain our current restraint set active index and 
             if(_hcManager.ActiveHCsetIdx != -1 && _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx].AnyPropertyTrue()) {
                 UpdateSlots();
+                _hotbarLocker.SetHotbarLockState(false);
             }
         }
     }
