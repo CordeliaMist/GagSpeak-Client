@@ -29,6 +29,7 @@ public class GagSpeakChangelog
         Add2_4_0_0(Changelog);
         Add2_5_0_0(Changelog);
         Add2_6_0_0(Changelog);
+        Add2_7_0_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -56,8 +57,19 @@ public class GagSpeakChangelog
         }
     }
 
+    private static void Add2_7_0_0(Changelog log)
+        => log.NextVersion("Version 2.7.0.0 Release")
+            .RegisterImportant("YIPEEEEE!!!! I FINALLY GOT PROPER MOVEMENT PREVENTION CODE IN PLACE!!!")
+            .RegisterEntry("To all beta testers: thank you for the paitence, I have been in touch with lots of other devs and reverse engineers to figure out a proper way to do this.")
+            .RegisterEntry("You literally have no idea how much effort i put in and things I had to learn just to make forcefollow and forcesit work properly.")
+            .RegisterImportant("Literally nobody (at least according to the 20+ hours of asking everywhere has told me) has figured out how to stop movement on LMB+RMB properly before now, so you're welcome for the new feature.")
+            .RegisterEntry("/gagspeak blindfold no longer works, and has been moved under the hardcore tab's blindfold control")
+            .RegisterEntry("forced /follow now properly works, I would recommend you make sure you are testing it with someone and not by yourself!")
+            .RegisterEntry("forced /sit SHOULD not work")
+            .RegisterImportant("I am working on fixing the glamourer issues, a lot changed in the latest update with the new Glamourer IPC, so please be patient.");
+
     private static void Add2_6_0_0(Changelog log)
-        => log.NextVersion("Version 2.6.3.0 Release")
+        => log.NextVersion("Version 2.6.0.0 Release")
             .RegisterHighlight("Hardcore tab features now work on a per-player basis")
             .RegisterEntry("A LOT OF HARDCORE TAB THINGS LIKELY WILL JUST NOT WORK AT ALL, PLEASE DONT REPORT THESE I WILL BE TESTING TODAY")
             .RegisterEntry("If things work but are broken, then feel free to report them.")

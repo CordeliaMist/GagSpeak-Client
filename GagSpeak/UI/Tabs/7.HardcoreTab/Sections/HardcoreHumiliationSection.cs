@@ -52,6 +52,11 @@ public class HC_ControlHumiliation
         _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowBlindfold,
         v => _hcManager.SetAllowBlindfold(_charHandler.activeListIdx, v)
         );
+        ImGui.SameLine();
+        UIHelpers.CheckboxNoConfig($"", $"{name} can force you to follow.", 
+        _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._blindfolded,
+        v => _hcManager.SetBlindfolded(_charHandler.activeListIdx, v)
+        );
         ImGui.Spacing();
         ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1.0f));
         try {

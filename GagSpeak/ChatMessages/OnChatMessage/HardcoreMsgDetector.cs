@@ -1,3 +1,4 @@
+using System;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
@@ -15,7 +16,7 @@ namespace GagSpeak.ChatMessages;
 public class HardcoreMsgDetector
 {
     public FFXIVClientStructs.FFXIV.Client.Game.Control.EmoteController EmoteController;
-    private readonly HardcoreManager    _hardcoreManager; // hardcore manager
+    private readonly HardcoreManager    _hcManager; // hardcore manager
     private readonly CharacterHandler   _characterHandler; // character handler
     private readonly IClientState       _client; // client state
     private readonly ITargetManager     _targetManager; // target manager
@@ -24,7 +25,7 @@ public class HardcoreMsgDetector
     
     public HardcoreMsgDetector(HardcoreManager hardcoreManager, CharacterHandler characterHandler,
     IClientState clientState, ITargetManager targetManager, IObjectTable objectTable) {
-        _hardcoreManager = hardcoreManager;
+        _hcManager = hardcoreManager;
         _characterHandler = characterHandler;
         _client = clientState;
         _targetManager = targetManager;
@@ -39,7 +40,7 @@ public class HardcoreMsgDetector
         int senderIdx = _characterHandler.GetWhitelistIndex(senderName);
         // set our object to scan as the object in the same index of the list
         GagSpeak.Log.Debug($"Sender Index: {senderIdx}");
-        HC_PerPlayerConfig playerConfig = _hardcoreManager._perPlayerConfigs[senderIdx];
+        HC_PerPlayerConfig playerConfig = _hcManager._perPlayerConfigs[senderIdx];
         // check to see if the message even matched before performing logic
         if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, follow me.")) {
             // if allowed forced follow, then scan to see if the incoming message contains the phrase required for our forced follow
@@ -49,7 +50,8 @@ public class HardcoreMsgDetector
                     // the player is valid, and they are targetable, and we have forced to follow set to false
                     if(playerConfig._forcedFollow == false && SenderObj != null && SenderObj.IsTargetable) {
                         // we meet all the conditions to perform our logic, so we should set forced to folloow to true, locking our movement
-                        playerConfig.SetForcedFollow(true);
+                        _hcManager.LastMovementTime = DateTimeOffset.Now;
+                        _hcManager.SetForcedFollow(senderIdx, true);
                         // then we should target the player
                         SetTarget(SenderObj);
                         // then we should execute /follow
@@ -68,7 +70,7 @@ public class HardcoreMsgDetector
                 // and we are not already forced to sit
                 if(playerConfig._forcedSit == false) {
                     // then we should set forced to sit to true, locking our movement
-                    playerConfig.SetForcedSit(true);
+                    _hcManager.SetForcedSit(senderIdx, true);
                     // then we should execute /sit
                     messageToSend = "sit";
                     // it is a valid trigger, so return true
@@ -80,7 +82,7 @@ public class HardcoreMsgDetector
                 // and we are already forced to sit
                 if(playerConfig._forcedSit) {
                     // then we should set forced to sit to false, unlocking our movement
-                    playerConfig.SetForcedSit(false);
+                    _hcManager.SetForcedSit(senderIdx, false);
                     // while we performed the logic, we dont want to execute any chat commands, so return false
                     return false;
                 }
@@ -94,7 +96,7 @@ public class HardcoreMsgDetector
                 // and we are not already forced to stay
                 if(playerConfig._forcedToStay == false) {
                     // then we should set forced to stay to true, locking our movement
-                    playerConfig.SetForcedToStay(true);
+                    _hcManager.SetForcedToStay(senderIdx, true);
                     // it is a valid trigger, but we only want the logic, so return false
                     return false;
                 }
@@ -104,7 +106,7 @@ public class HardcoreMsgDetector
                 // and we are already forced to stay
                 if(playerConfig._forcedToStay) {
                     // then we should set forced to stay to false, unlocking our movement
-                    playerConfig.SetForcedToStay(false);
+                    _hcManager.SetForcedToStay(senderIdx, false);
                     // it is a valid trigger, but we only want the logic, so return false
                     return false;
                 }

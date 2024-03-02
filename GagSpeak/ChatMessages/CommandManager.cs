@@ -37,7 +37,6 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly    ICommandManager         _commands;
     private readonly    MainWindow              _mainWindow;
     private readonly    DebugWindow             _debugWindow;
-    private readonly    BlindfoldWindow         _blindfoldWindow;
     private readonly    IChatGui                _chat;
     private readonly    GagSpeakConfig          _config;
     private readonly    OnChatMsgManager             _chatManager;
@@ -48,21 +47,22 @@ public class CommandManager : IDisposable // Our main command list manager
     private readonly    GagGarbleManager        _gagManager;
     private readonly    GagStorageManager       _gagStorageManager;
     private readonly    RestraintSetManager     _restriantSetManager;
+    private readonly    HardcoreManager         _hardcoreManager;
     private readonly    GlamourerService        _glamourerInterop;
     private readonly    CharacterHandler        _characterHandler;
     private readonly    SafewordUsedEvent       _safewordCommandEvent;
     private readonly    GagSpeakGlamourEvent    _glamourEvent;
     // Constructor for the command manager
     public CommandManager(ICommandManager command, MainWindow mainwindow, DebugWindow debugWindow,
-    GagSpeakGlamourEvent glamourEvent, RestraintSetManager restraintSetManager,
+    GagSpeakGlamourEvent glamourEvent, RestraintSetManager restraintSetManager, HardcoreManager hardcoreManager,
     IChatGui chat, GagSpeakConfig config, OnChatMsgManager chatManager, IClientState clientState,
     GlamourerService GlamourerService, GagService gagService, CharacterHandler characterHandler,
     GagGarbleManager GagGarbleManager, RealChatInteraction realchatinteraction, TimerService timerService,
-    SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder, GagStorageManager gagStorageManager,
-    BlindfoldWindow blindfoldWindow)
+    SafewordUsedEvent safewordCommandEvent, MessageEncoder messageEncoder, GagStorageManager gagStorageManager)
     {
         // set the private readonly's to the passed in data of the respective names
         _commands = command;
+        _hardcoreManager = hardcoreManager;
         _glamourEvent = glamourEvent;
         _mainWindow = mainwindow;
         _debugWindow = debugWindow;
@@ -80,7 +80,6 @@ public class CommandManager : IDisposable // Our main command list manager
         _restriantSetManager = restraintSetManager;
         _glamourerInterop = GlamourerService;
         _characterHandler = characterHandler;
-        _blindfoldWindow = blindfoldWindow;
 
         // Add handlers to the main commands
         _commands.AddHandler(MainCommandString, new CommandInfo(OnGagSpeak) {
@@ -137,10 +136,6 @@ public class CommandManager : IDisposable // Our main command list manager
             case "debug":
                 _debugWindow.Toggle();     // when [/gagspeak debug] is typed
                 return;
-            case "blindfold": {
-                _blindfoldWindow.Toggle();
-                return;
-            }
             case "":
                 _mainWindow.Toggle(); // when [/gagspeak] is typed
                 return;
@@ -175,6 +170,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 _config.SetHardcoreMode(false);
                 _gagStorageManager.ResetEverythingDueToSafeword();
                 _restriantSetManager.ResetEverythingDueToSafeword();
+                
                 _timerService.ClearRestraintSetTimer();
                 _glamourEvent.Invoke(UpdateType.Safeword); // revert to game state
                 try{

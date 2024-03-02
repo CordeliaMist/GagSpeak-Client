@@ -11,6 +11,8 @@ using Dalamud.Game.ClientState.Keys;
 using GagSpeak.CharacterData;
 using System.Threading.Tasks;
 using GagSpeak.ToyboxandPuppeteer;
+using GagSpeak.Hardcore.Movement;
+using GagSpeak.UI;
 namespace GagSpeak.Hardcore;
 public partial class HardcoreManager : ISavable, IDisposable
 {
@@ -38,6 +40,8 @@ public partial class HardcoreManager : ISavable, IDisposable
     
     [JsonIgnore] // stores the last seen list selection, will always be temp, and localized here as a source location to pull info from
     public string LastSeenListSelection { get; set; } = string.Empty;
+    [JsonIgnore]
+    public DateTimeOffset LastMovementTime = DateTimeOffset.Now;
 
 
     [JsonIgnore]
@@ -58,10 +62,11 @@ public partial class HardcoreManager : ISavable, IDisposable
 
     #pragma warning disable CS8618
     public HardcoreManager(SaveService saveService, RestraintSetListChanged restraintSetListChanged,
-    InitializationManager manager, RS_PropertyChangedEvent propertyChanged, CharacterHandler characterHandler, 
-    RestraintSetManager restraintSetManager, RS_ToggleEvent rsToggleEvent) {
+    BlindfoldWindow blindfoldWindow, InitializationManager manager, RS_PropertyChangedEvent propertyChanged,
+    CharacterHandler characterHandler, RestraintSetManager restraintSetManager, RS_ToggleEvent rsToggleEvent) {
         _saveService = saveService;
         _characterHandler = characterHandler;
+        _blindfoldWindow = blindfoldWindow;
         _rsPropertyChanged = propertyChanged;
         _manager = manager;
         _restraintSetListChanged = restraintSetListChanged;
@@ -118,10 +123,15 @@ public partial class HardcoreManager : ISavable, IDisposable
         _manager.CompleteStep(InitializationSteps.HardcoreManagerInitialized);
     }
     public void Dispose() {
-        // unsubscribe from the events
         _rsToggleEvent.SetToggled -= OnRestraintSetToggled;
         _manager.RS_ManagerInitialized -= ManagerReadyForHardcoreManager;
         _restraintSetListChanged.SetListModified -= OnRestraintSetListModified;
+        // reset movement controls
+        if(GagSpeakConfig.usingLegacyControls == false
+        && GameConfig.UiControl.GetBool("MoveMode") == true) {
+            // we have legacy on but dont normally have it on, so make sure that we set it back to normal!
+            GameConfig.UiControl.Set("MoveMode", (int)MovementMode.Standard);
+        }
     }
 #endregion Manager Helpers
 

@@ -18,6 +18,7 @@ using GagSpeak.Interop;
 using System.Numerics;
 using GagSpeak.UI.Tabs.HardcoreTab;
 using Dalamud.Game.ClientState.Keys;
+using GagSpeak.Hardcore.Movement;
 
 namespace GagSpeak;
 
@@ -43,6 +44,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public  bool                                hardcoreMode { get; set; } = false;                     // Is the plugin in hardcore mode
     public  bool                                UiOpenOnEnable { get; set; } = true;                    // Should the UI open when the plugin is enabled
     public  Dictionary<string,DateTimeOffset>   timerData { get; set; }                                 // stores the timer data for the plugin
+    public  static bool                         usingLegacyControls = GameConfig.UiControl.GetBool("MoveMode"); // is the client using legacy controls?
     // stuff for the gaglistingDrawer
     public  List<bool>                          isLocked { get; set; }                                  // determines if the gaglisting should have its UI locked
     public  List<string>                        displaytext { get; set; }                               // stores the display time remaining for each locked gag in general tab
@@ -111,16 +113,16 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         if (this.phoneticSymbolList == null || !this.phoneticSymbolList.Any()) {
             GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
             this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
-
+        
+        
+        // for glamourersync stuff
         disableGlamChangeEvent = false;
         acceptingInfoRequests = true;
         processingInfoRequest = false;
+        // for toybox stuff
         if(intifacePortValue.Length < 10) {
             intifacePortValue = "ws://localhost:12345";
         }
-            
-        // finished!
-        GagSpeak.Log.Debug("[Configuration File] Constructor Finished Initializing and setting default values, and previous data restored.");
     }
 
     public void SetHardcoreMode(bool value) { hardcoreMode = value; Save(); }

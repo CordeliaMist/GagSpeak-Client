@@ -8,10 +8,17 @@ using System.Linq;
 using GagSpeak.Events;
 using GagSpeak.Wardrobe;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using GagSpeak.Hardcore.Movement;
+using GagSpeak.UI;
+using System.Threading.Tasks;
 
 namespace GagSpeak.Hardcore;
 public partial class HardcoreManager
 {
+    // for camera manager
+    public unsafe GameCameraManager* cameraManager = GameCameraManager.Instance(); // for the camera manager object
+    private readonly BlindfoldWindow _blindfoldWindow;
+
 #region NodeManagement
     public IEnumerable<ITextNode> GetAllNodes() {
         return new ITextNode[]{StoredEntriesFolder}.Concat(GetAllNodes(StoredEntriesFolder.Children));
@@ -118,22 +125,10 @@ public partial class HardcoreManager
     }
 
     public void ApplyMultipler() {
-        if(_perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[ActiveHCsetIdx]._lightStimulationProperty)
-        {
-            StimulationMultipler = 1.125;
-        }
-        else if(_perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[ActiveHCsetIdx]._mildStimulationProperty)
-        {
-            StimulationMultipler = 1.25;
-        }
-        else if(_perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[ActiveHCsetIdx]._heavyStimulationProperty)
-        {
-            StimulationMultipler = 1.5;
-        }
-        else
-        {
-            StimulationMultipler = 1.0;
-        }
+        if(_perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[ActiveHCsetIdx]._lightStimulationProperty) { StimulationMultipler = 1.125; }
+        else if(_perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[ActiveHCsetIdx]._mildStimulationProperty) { StimulationMultipler = 1.25; }
+        else if(_perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[ActiveHCsetIdx]._heavyStimulationProperty) { StimulationMultipler = 1.5; }
+        else { StimulationMultipler = 1.0; }
     }
 #endregion Manager Methods
 
@@ -145,9 +140,23 @@ public partial class HardcoreManager
     }
     
     public void SetForcedFollow(int playerIdx, bool forcedFollow) {
+        // set the last recorded time
+        LastMovementTime = DateTimeOffset.Now;
+        // log and set it
         GagSpeak.Log.Debug($"[HardcoreManager] Setting ForcedFollow to {forcedFollow}");
         _perPlayerConfigs[playerIdx].SetForcedFollow(forcedFollow);
         _saveService.QueueSave(this);
+        // handle the forced follow logic
+        HandleForcedFollow(playerIdx, forcedFollow);
+    }
+
+    public void HandleForcedFollow(int playerIdx, bool newState) {
+        // toggle movement type to legacy if we are not on legacy
+        if(GagSpeakConfig.usingLegacyControls == false && playerIdx != -1) {
+            // if forced follow is still on, dont switch it back to false
+            uint mode = newState ? (uint)MovementMode.Legacy : (uint)MovementMode.Standard;
+            GameConfig.UiControl.Set("MoveMode", mode);
+        }
     }
 
     public void SetAllowForcedSit(int playerIdx, bool forcedSit) { 
@@ -160,6 +169,7 @@ public partial class HardcoreManager
         GagSpeak.Log.Debug($"[HardcoreManager] Setting ForcedSit to {forcedSit}");
         _perPlayerConfigs[playerIdx].SetForcedSit(forcedSit);
         _saveService.QueueSave(this);
+        // no need to toggle movement type, player will be immobile completely
     }
 
     public void SetAllowForcedToStay(int playerIdx, bool forcedToStay) {
@@ -183,6 +193,46 @@ public partial class HardcoreManager
     public void SetBlindfolded(int playerIdx, bool blindfolded) {
         _perPlayerConfigs[playerIdx].SetBlindfolded(blindfolded);
         _saveService.QueueSave(this);
+        // apply the blindfold logic
+        HandleBlindfoldLogic(playerIdx, blindfolded);
+    }
+
+    public async void HandleBlindfoldLogic(int playerIdx, bool newState) {
+        // if the idx is not -1, process logic
+        if(playerIdx != -1) {
+            // toggle our window based on conditions
+            if(newState == true && !_blindfoldWindow.IsOpen) {
+                _blindfoldWindow.ActivateWindow();
+            }
+            if (newState == false && _blindfoldWindow.IsOpen) {
+                _blindfoldWindow.DeactivateWindow();
+            }
+            if(newState) {
+                // go in right away
+                DoCamerVoodoo(playerIdx, newState);
+            } else {
+                // wait a bit before doing the camera voodoo
+                await Task.Delay(2000);
+                DoCamerVoodoo(playerIdx, newState);
+            }
+        }
+    }
+
+    private unsafe void DoCamerVoodoo(int playerIdx, bool newValue) {
+        // force the camera to first person, but dont loop the force
+        if(newValue) {
+            if(cameraManager != null && cameraManager->Camera != null
+            && cameraManager->Camera->Mode != (int)CameraControlMode.FirstPerson)
+            {
+                cameraManager->Camera->Mode = (int)CameraControlMode.FirstPerson;
+            }
+        } else {
+            if(cameraManager != null && cameraManager->Camera != null
+            && cameraManager->Camera->Mode == (int)CameraControlMode.FirstPerson)
+            {
+                cameraManager->Camera->Mode = (int)CameraControlMode.ThirdPerson;
+            }
+        }
     }
 
     public void SetLegsRestraintedProperty(int playerIdx, int setIndex, bool value) {

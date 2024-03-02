@@ -50,7 +50,7 @@ public partial class HC_PerPlayerConfig
             ["AllowForcedSit"] = _allowForcedSit,
             ["ForcedSit"] = _forcedSit,
             ["AllowForcedFollow"] = _allowForcedFollow,
-            ["ForcedFollow"] = _forcedFollow,
+            ["ForcedFollow"] = false,
             ["AllowForcedToStay"] = _allowForcedToStay,
             ["ForcedToStay"] = _forcedToStay,
             ["AllowBlindfold"] = _allowBlindfold,
@@ -64,7 +64,7 @@ public partial class HC_PerPlayerConfig
             _allowForcedSit = jsonObject["AllowForcedSit"]?.Value<bool>() ?? false;
             _forcedSit = jsonObject["ForcedSit"]?.Value<bool>() ?? false;
             _allowForcedFollow = jsonObject["AllowForcedFollow"]?.Value<bool>() ?? false;
-            _forcedFollow = jsonObject["ForcedFollow"]?.Value<bool>() ?? false;
+            _forcedFollow = false;
             _allowForcedToStay = jsonObject["AllowForcedToStay"]?.Value<bool>() ?? false;
             _forcedToStay = jsonObject["ForcedToStay"]?.Value<bool>() ?? false;
             _allowBlindfold = jsonObject["AllowBlindfold"]?.Value<bool>() ?? false;
