@@ -54,17 +54,17 @@ public class MoveController : IDisposable
     {
         UnkTargetFollowStruct* temp = unk1;
         //targetFollowVar = unk1;
-        GagSpeak.Log.Debug($"PRE:       UnkTargetFollowStruct: {((IntPtr)unk1).ToString("X")}");
-        GagSpeak.Log.Debug($"---------------------------------");
-        GagSpeak.Log.Debug($"PRE: Unk_0x450.Unk_GameObjectID0: {unk1->Unk_0x450.Unk_GameObjectID0.ToString("X")};");
-        try {
-            GagSpeak.Log.Debug($"PRE      Struct target4 Unk_0x10: {unk1->Unk_0x450.Unk_0x10};");
-            GagSpeak.Log.Debug($"PRE      Struct target4 Unk_0x54: {unk1->Unk_0x450.Unk_0x54};");
-        } catch (Exception ex) {
-            GagSpeak.Log.Error($"Error converting Unk_0x10 to string: {ex}");
-        }
-        GagSpeak.Log.Debug($"PRE:             FollowingTarget: {unk1->FollowingTarget.ToString("X")}");
-        GagSpeak.Log.Debug($"PRE:                 Follow Type: {unk1->FollowType.ToString("X")}");
+        // GagSpeak.Log.Debug($"PRE:       UnkTargetFollowStruct: {((IntPtr)unk1).ToString("X")}");
+        // GagSpeak.Log.Debug($"---------------------------------");
+        // GagSpeak.Log.Debug($"PRE: Unk_0x450.Unk_GameObjectID0: {unk1->Unk_0x450.Unk_GameObjectID0.ToString("X")};");
+        // try {
+        //     GagSpeak.Log.Debug($"PRE      Struct target4 Unk_0x10: {unk1->Unk_0x450.Unk_0x10};");
+        //     GagSpeak.Log.Debug($"PRE      Struct target4 Unk_0x54: {unk1->Unk_0x450.Unk_0x54};");
+        // } catch (Exception ex) {
+        //     GagSpeak.Log.Error($"Error converting Unk_0x10 to string: {ex}");
+        // }
+        // GagSpeak.Log.Debug($"PRE:             FollowingTarget: {unk1->FollowingTarget.ToString("X")}");
+        // GagSpeak.Log.Debug($"PRE:                 Follow Type: {unk1->FollowType.ToString("X")}");
         foreach (Dalamud.Game.ClientState.Objects.Types.GameObject obj in _objectTable)
         {
             if (obj.ObjectId == unk1->GameObjectIDToFollow)
@@ -81,16 +81,16 @@ public class MoveController : IDisposable
             // output the original
             TestHook.Original(unk1, unk2);
         }
-        try {
-            GagSpeak.Log.Debug($"POST       UnkTargetFollowStruct: {((IntPtr)unk1).ToString("X")}");
-            GagSpeak.Log.Debug($"---------------------------------");
-            GagSpeak.Log.Debug($"POST Unk_0x450.Unk_GameObjectID0: {unk1->Unk_0x450.Unk_GameObjectID0.ToString("X")};");
-            GagSpeak.Log.Debug($"POST     Struct target4 Unk_0x54: {unk1->Unk_0x450.Unk_0x54};");
-            GagSpeak.Log.Debug($"POST             FollowingTarget: {unk1->FollowingTarget.ToString("X")}");
-            GagSpeak.Log.Debug($"POST                 Follow Type: {unk1->FollowType.ToString("X")}");
-        } catch (Exception ex) {
-            GagSpeak.Log.Error($"Error {ex}");
-        }
+        // try {
+        //     GagSpeak.Log.Debug($"POST       UnkTargetFollowStruct: {((IntPtr)unk1).ToString("X")}");
+        //     GagSpeak.Log.Debug($"---------------------------------");
+        //     GagSpeak.Log.Debug($"POST Unk_0x450.Unk_GameObjectID0: {unk1->Unk_0x450.Unk_GameObjectID0.ToString("X")};");
+        //     GagSpeak.Log.Debug($"POST     Struct target4 Unk_0x54: {unk1->Unk_0x450.Unk_0x54};");
+        //     GagSpeak.Log.Debug($"POST             FollowingTarget: {unk1->FollowingTarget.ToString("X")}");
+        //     GagSpeak.Log.Debug($"POST                 Follow Type: {unk1->FollowType.ToString("X")}");
+        // } catch (Exception ex) {
+        //     GagSpeak.Log.Error($"Error {ex}");
+        // }
         foreach (Dalamud.Game.ClientState.Objects.Types.GameObject obj in _objectTable)
         {
             if (obj.ObjectId == unk1->GameObjectIDToFollow)

@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.Linq;
 using System.Threading.Tasks;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 
 namespace GagSpeak.Hardcore.Movement;
 public class MovementManager : IDisposable
@@ -106,6 +107,15 @@ public class MovementManager : IDisposable
             GagSpeak.Log.Debug($"[Action Manager]: Letting you run again");
             System.Threading.Tasks.Task.Delay(200);
             Marshal.WriteByte((IntPtr)gameControl, 23163, 0x0);
+        }
+
+        if((e.PropertyType == HardcoreChangeType.ForcedFollow && e.ChangeType == RestraintSetChangeType.Disabled)
+        || (e.PropertyType == HardcoreChangeType.ForcedSit && e.ChangeType == RestraintSetChangeType.Disabled)) {
+            if(!_hcManager._perPlayerConfigs.Any(x => x._forcedSit) && !_hcManager._perPlayerConfigs.Any(x => x._forcedFollow)) {
+                _MoveController.CompletelyEnableMovement();
+                ResetCancelledMoveKeys();
+            }
+
         }
     }
 

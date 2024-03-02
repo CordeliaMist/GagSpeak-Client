@@ -58,7 +58,7 @@ public class GagSpeakChangelog
     }
 
     private static void Add2_7_0_0(Changelog log)
-        => log.NextVersion("Version 2.7.0.0 Release")
+        => log.NextVersion("Version 2.7.1.0 Release")
             .RegisterImportant("YIPEEEEE!!!! I FINALLY GOT PROPER MOVEMENT PREVENTION CODE IN PLACE!!!")
             .RegisterEntry("To all beta testers: thank you for the paitence, I have been in touch with lots of other devs and reverse engineers to figure out a proper way to do this.")
             .RegisterEntry("You literally have no idea how much effort i put in and things I had to learn just to make forcefollow and forcesit work properly.")
