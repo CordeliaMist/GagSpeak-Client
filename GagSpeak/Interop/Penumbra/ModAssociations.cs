@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
@@ -43,14 +44,14 @@ public class ModAssociations : IDisposable
         // if the set is being enabled, we should toggle on the mods
         if(_clientState.IsLoggedIn && _clientState.LocalContentId != 0) {
             if (e.ToggleType == RestraintSetToggleType.Enabled) {
-                foreach (var (mod, settings) in _manager._restraintSets[e.SetIndex]._associatedMods) {
-                    _penumbra.SetMod(mod, settings, true, _manager._restraintSets[e.SetIndex]._disableModsWhenInactive[e.SetIndex]);
+                foreach (var (mod, settings, disableWhenInactive) in _manager._restraintSets[e.SetIndex]._associatedMods) {
+                    _penumbra.SetMod(mod, settings, true, disableWhenInactive);
                 }
             }
             // otherwise, we should toggle off the mods
             else {
-                foreach (var (mod, settings) in _manager._restraintSets[e.SetIndex]._associatedMods) {
-                    _penumbra.SetMod(mod, settings, false, _manager._restraintSets[e.SetIndex]._disableModsWhenInactive[e.SetIndex]);
+                foreach (var (mod, settings, disableWhenInactive) in _manager._restraintSets[e.SetIndex]._associatedMods) {
+                    _penumbra.SetMod(mod, settings, false, disableWhenInactive);
                 }
             }
         }
@@ -73,29 +74,39 @@ public class ModAssociations : IDisposable
         ImGui.TableHeadersRow();
 
         Mod? removedMod = null;
-        (Mod mod, ModSettings settings)? updatedMod = null;
-        foreach (var ((mod, settings), idx) in _manager._restraintSets[_manager._selectedIdx]._associatedMods.WithIndex())
-        {
+        (Mod mod, ModSettings settings, bool disableWhenInactive)? updatedMod = null;
+
+        foreach (var ((mod, settings, disableWhenInactive), idx) in _manager._restraintSets[_manager._selectedIdx]._associatedMods.WithIndex()) {
             using var id = ImRaii.PushId(idx);
-            DrawAssociatedModRow(mod, settings, out var removedModTmp, out var updatedModTmp);
-            if (removedModTmp.HasValue)
+            DrawAssociatedModRow(mod, settings, disableWhenInactive, out var removedModTmp, out var updatedModTmp);
+            if (removedModTmp.HasValue) {
                 removedMod = removedModTmp;
-            if (updatedModTmp.HasValue)
+            }
+            if (updatedModTmp.HasValue) {
                 updatedMod = updatedModTmp;
+            }
         }
 
         DrawNewModRow();
 
-        if (removedMod.HasValue)
+        if (removedMod.HasValue) {
             _manager.RemoveMod(_manager._selectedIdx, removedMod.Value);
+        }
         
-        if (updatedMod.HasValue)
-            _manager.UpdateMod(_manager._selectedIdx, updatedMod.Value.mod, updatedMod.Value.settings);
+        if (updatedMod.HasValue) {
+            _manager.UpdateMod(_manager._selectedIdx, updatedMod.Value.mod, updatedMod.Value.settings, updatedMod.Value.disableWhenInactive);
+        }
     }
 
-    private void DrawAssociatedModRow(Mod mod, ModSettings settings, out Mod? removedMod, out (Mod, ModSettings)? updatedMod) {
+    private void DrawAssociatedModRow(Mod mod, ModSettings settings, bool disableWhenInactive, out Mod? removedMod, out (Mod, ModSettings, bool)? updatedMod) {
         removedMod = null;
         updatedMod = null;
+        // get the index of this mod
+        var currentModIndex = _manager._restraintSets[_manager._selectedIdx]._associatedMods.FindIndex(x => x.mod == mod);
+        if (currentModIndex == -1) {
+            // Handle the case where the mod is not found in the list
+            return;
+        }
         ImGui.TableNextColumn();
         // delete icon
         if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), new Vector2(ImGui.GetFrameHeight()),
@@ -108,13 +119,14 @@ public class ModAssociations : IDisposable
         if(ImGui.IsItemHovered()) { ImGui.SetTooltip("Mod to be enabled when restraint set it turned on."); }
         // if we should enable or disable this mod list (all buttons should sync)
         ImGui.TableNextColumn();
-        var iconText = _manager._restraintSets[_manager._selectedIdx]._disableModsWhenInactive[_manager._selectedIdx] ? FontAwesomeIcon.Check : FontAwesomeIcon.Times;
-        var helpText = _manager._restraintSets[_manager._selectedIdx]._disableModsWhenInactive[_manager._selectedIdx] ? "Mods are disabled when set is disabled" : "Mods will stay enabled after set is turned off";
+        // get the current mod we are looking at
+        var currentMod = _manager._restraintSets[_manager._selectedIdx]._associatedMods[currentModIndex];
+        // set icon and help text
+        var iconText = currentMod.disableWhenInactive ? FontAwesomeIcon.Check : FontAwesomeIcon.Times;
+        var helpText = currentMod.disableWhenInactive ? "Mods are disabled when set is disabled" : "Mods will stay enabled after set is turned off";
         if (ImGuiUtil.DrawDisabledButton(iconText.ToIconString(), new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetFrameHeight()),
         helpText, false, true)) {
-            _manager._restraintSets[_manager._selectedIdx]._disableModsWhenInactive[_manager._selectedIdx] 
-            = !_manager._restraintSets[_manager._selectedIdx]._disableModsWhenInactive[_manager._selectedIdx];
-            _manager.Save();
+            updatedMod = (mod, settings, !disableWhenInactive);
         }
         // button to update the status the mod from penumbra
         ImGui.TableNextColumn();
@@ -123,7 +135,7 @@ public class ModAssociations : IDisposable
         if (ImGui.IsItemHovered()) {
             var (_, newSettings) = _penumbra.GetMods().FirstOrDefault(m => m.Mod == mod);
             if (ImGui.IsItemClicked()) {
-                updatedMod = (mod, newSettings);
+                updatedMod = (mod, newSettings, disableWhenInactive);
             }
             
             using var style = ImRaii.PushStyle(ImGuiStyleVar.PopupBorderSize, 2 * ImGuiHelpers.GlobalScale);
@@ -149,35 +161,13 @@ public class ModAssociations : IDisposable
             }
         }
     }
-
-    private static void DrawAssociatedModTooltip(ModSettings settings)
-    {
-        if (settings is not { Enabled: true, Settings.Count: > 0 } || !ImGui.IsItemHovered())
-            return;
-
-        using var t = ImRaii.Tooltip();
-        ImGui.TextUnformatted("This will also try to apply the following settings to the current collection:");
-
-        ImGui.NewLine();
-        using (var _ = ImRaii.Group())
-        {
-            ModCombo.DrawSettingsLeft(settings);
-        }
-
-        ImGui.SameLine(ImGui.GetContentRegionAvail().X / 2);
-        using (var _ = ImRaii.Group())
-        {
-            ModCombo.DrawSettingsRight(settings);
-        }
-    }
-
     private void DrawNewModRow()
     {
         var currentName = _modCombo.CurrentSelection.Mod.Name;
         ImGui.TableNextColumn();
         var tt = currentName.IsNullOrEmpty()
             ? "Please select a mod first."
-            : _manager._restraintSets[_manager._selectedIdx]._associatedMods.ContainsKey(_modCombo.CurrentSelection.Mod)
+            : _manager._restraintSets[_manager._selectedIdx]._associatedMods.Any(x => x.mod == _modCombo.CurrentSelection.Mod)
                 ? "The design already contains an association with the selected mod."
                 : string.Empty;
 

@@ -263,11 +263,11 @@ public class RestraintSetManager : ISavable, IDisposable
 #region ModAssociations
     /// <summary> Add an associated mod to a design. </summary>
     public void AddMod(int setIndex, Mod mod, ModSettings settings) {
-        if (!_restraintSets[setIndex]._associatedMods.TryAdd(mod, settings)) {
+        var modTuple = (mod, settings, false);
+        if (_restraintSets[setIndex]._associatedMods.Any(x => x.Item1 == mod && x.Item2 == settings)) {
             return;
         }
-        // add the bool
-        _restraintSets[setIndex]._disableModsWhenInactive.Add(false);
+        _restraintSets[setIndex]._associatedMods.Add(modTuple);
         Save();
         GagSpeak.Log.Debug($"Added associated mod {mod.DirectoryName} to Restraint Set: "+
         $"{_restraintSets[setIndex]._name}.");
@@ -275,23 +275,22 @@ public class RestraintSetManager : ISavable, IDisposable
 
     /// <summary> Remove an associated mod from a design. </summary>
     public void RemoveMod(int setIndex, Mod mod) {
-        var index = _restraintSets[setIndex]._associatedMods.IndexOfKey(mod);
-        // remove it from the list
-        if (!_restraintSets[setIndex]._associatedMods.Remove(mod, out var settings)) {
+        var modTuple = _restraintSets[setIndex]._associatedMods.FirstOrDefault(x => x.mod == mod);
+        if (modTuple == default) {
             return;
         }
-        // remove the disabled option at the index of the removed mod
-        _restraintSets[setIndex]._disableModsWhenInactive.RemoveAt(index);
+        _restraintSets[setIndex]._associatedMods.Remove(modTuple);
         Save();
         GagSpeak.Log.Debug($"Removed associated mod {mod.DirectoryName} from Restraint Set: "+
         $"{_restraintSets[setIndex]._name}.");
     }
 
-    public void UpdateMod(int setIndex, Mod mod, ModSettings settings) {
-        if (!_restraintSets[setIndex]._associatedMods.ContainsKey(mod)) {
+    public void UpdateMod(int setIndex, Mod mod, ModSettings settings, bool disableWhenInactive) {
+        var modIndex = _restraintSets[setIndex]._associatedMods.FindIndex(x => x.mod == mod);
+        if (modIndex == -1) {
             return;
         }
-        _restraintSets[setIndex]._associatedMods[mod] = settings;
+        _restraintSets[setIndex]._associatedMods[modIndex] = (mod, settings, disableWhenInactive);
         Save();
         GagSpeak.Log.Debug($"Updated associated mod {mod.DirectoryName} from Restraint Set: "+
         $"{_restraintSets[setIndex]._name}.");

@@ -20,8 +20,7 @@ public class RestraintSet //: IDisposable
     public string _wasLockedBy; // lets you define the name of the character that equipped the set
     public DateTimeOffset _lockedTimer { get; set; } // stores the timespan left until unlock of the player.
     public Dictionary<EquipSlot, EquipDrawData> _drawData; // stores the equipment draw data for the set
-    public SortedList<Mod, ModSettings> _associatedMods { get; private set; }  = []; // the associated mods to enable with this set
-    public List<bool> _disableModsWhenInactive { get; set; } // lets you define if the mods should be disabled when the set is disabled
+    public List<(Mod mod, ModSettings modSettings, bool disableWhenInactive)> _associatedMods { get; private set; }  = []; // the associated mods to enable with this set
 
     public RestraintSet() {
         // define default data for the set
@@ -40,8 +39,7 @@ public class RestraintSet //: IDisposable
             _drawData[slot].SetDrawDataIsEnabled(false);
         }
         // create the new associated mods list
-        _associatedMods = new SortedList<Mod, ModSettings>();
-        _disableModsWhenInactive = new List<bool>();
+        _associatedMods = new List<(Mod, ModSettings, bool)>();
     }
 
     public void ChangeSetName(string name) {
@@ -97,29 +95,25 @@ public class RestraintSet //: IDisposable
             ["LockedTimer"] = _lockedTimer.ToString(),
             ["DrawData"] = drawDataArray,
             ["AssociatedMods"] = SerializeMods(),
-            ["DisableModsWhenInactive"] = JToken.FromObject(_disableModsWhenInactive),
         };
     }
 
     private JArray SerializeMods() {
         // otherwise we will create a new array to store the mods
         var ret = new JArray();
-        // for each mod in are associated mods
-        foreach (var (mod, settings) in _associatedMods) {
-            // create a jobject representing it
+        foreach (var (mod, settings, disableWhenInactive) in _associatedMods) {
             var obj = new JObject() {
                 ["Name"]      = mod.Name,
                 ["Directory"] = mod.DirectoryName,
                 ["Enabled"]   = settings.Enabled,
+                ["DisableWhenInactive"] = disableWhenInactive,
             };
             if (settings.Enabled) {
                 obj["Priority"] = settings.Priority;
                 obj["Settings"] = JObject.FromObject(settings.Settings);
             }
-            // and add it to the JArray
             ret.Add(obj);
         }
-
         return ret;
     }
 
@@ -148,7 +142,6 @@ public class RestraintSet //: IDisposable
         }
         // load the mods
         DeserializeMods(jsonObject["AssociatedMods"]);
-        _disableModsWhenInactive = jsonObject["DisableModsWhenInactive"]?.ToObject<List<bool>>() ?? new List<bool>();
         #pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }
 
@@ -160,6 +153,7 @@ public class RestraintSet //: IDisposable
             var name      = tok["Name"]?.ToObject<string>();
             var directory = tok["Directory"]?.ToObject<string>();
             var enabled   = tok["Enabled"]?.ToObject<bool>();
+            var disableWhenInactive = tok["DisableWhenInactive"]?.ToObject<bool>() ?? false;
             if (name == null || directory == null || enabled == null) {
                 GagSpeak.Messager.NotificationMessage("The loaded design contains an invalid mod, skipped.", NotificationType.Warning);
                 continue;
@@ -171,8 +165,7 @@ public class RestraintSet //: IDisposable
             var mod = new Mod(name, directory);
             var modSettings = new ModSettings(settingsDict, priority, enabled.Value);
 
-            if (!_associatedMods.TryAdd(mod, modSettings))
-                GagSpeak.Messager.NotificationMessage("The loaded design contains a mod more than once, skipped.", NotificationType.Warning);
+            _associatedMods.Add((mod, modSettings, disableWhenInactive));
         }
     }
 }

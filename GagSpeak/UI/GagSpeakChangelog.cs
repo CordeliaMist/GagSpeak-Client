@@ -59,7 +59,7 @@ public class GagSpeakChangelog
     }
 
     private static void Add2_8_0_0(Changelog log)
-        => log.NextVersion("Version 2.8.0.0 Release")
+        => log.NextVersion("Version 2.8.1.0 Release")
             .RegisterImportant("The Hardcore Tab is now in a fully functional state.")
             .RegisterEntry("Major reported issues patched, hotbar issue is known and working on logic for it")
             .RegisterHighlight("You can now bind certain penumbra mods to restraint sets, so they activate when you enable the set!")
