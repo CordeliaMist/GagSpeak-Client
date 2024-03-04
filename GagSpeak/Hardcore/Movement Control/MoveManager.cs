@@ -87,6 +87,9 @@ public class MovementManager : IDisposable
         _rsPropertyChangedEvent.SetChanged -= OnRestraintSetPropertyChanged;
         _framework.Update -= framework_Update;
         _manager.HardcoreManagerInitialized -= OnHardcoreManagerInitialized;
+        // enable movement
+        _MoveController.CompletelyEnableMovement();
+        ResetCancelledMoveKeys();
     }
 
     private bool IsPlayerLoggedIn() => _clientState.IsLoggedIn && _clientState.LocalPlayer != null && _clientState.LocalPlayer.Address != IntPtr.Zero;

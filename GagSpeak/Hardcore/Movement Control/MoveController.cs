@@ -47,7 +47,7 @@ public class MoveController : IDisposable
 
     public unsafe delegate void TestDelegate(UnkTargetFollowStruct* unk1, IntPtr unk2);
     [Signature("48 89 5c 24 08 48 89 74 24 10 57 48 83 ec 20 48 8b d9 48 8b fa 0f b6 89 59 05 00 00 be 00 00 00 e0", DetourName = nameof(TestUpdate), Fallibility = Fallibility.Auto)]
-    private static Hook<TestDelegate>? TestHook { get; set; }
+    private static Hook<TestDelegate>? UnfollowHook { get; set; }
     
     [return: MarshalAs(UnmanagedType.U1)]
     public unsafe void TestUpdate(UnkTargetFollowStruct* unk1, IntPtr unk2)
@@ -79,7 +79,7 @@ public class MoveController : IDisposable
             return; // do an early return to prevent processing
         } else {
             // output the original
-            TestHook.Original(unk1, unk2);
+            UnfollowHook.Original(unk1, unk2);
         }
         // try {
         //     GagSpeak.Log.Debug($"POST       UnkTargetFollowStruct: {((IntPtr)unk1).ToString("X")}");
@@ -110,25 +110,27 @@ public class MoveController : IDisposable
     }
 
     // Hook enablers
-    public void EnableMovementHook() => MovementUpdateHook?.Enable(); // for enabling the prevention of LMB+RMB movement
-    public void EnableUnfollowPrevention() => TestHook?.Enable(); // makes it so you cant unfollow the target
+    public void EnableHooks() {
+        MovementUpdateHook?.Enable(); // for enabling the prevention of LMB+RMB movement
+        UnfollowHook?.Enable(); // makes it so you cant unfollow the target
+    }
+
     // Hook disablers
-    public void DisableMovementHook() => MovementUpdateHook?.Disable(); // for disabling the prevention of LMB+RMB movement
-    public void DisableUnfollowPrevention() => TestHook?.Disable(); // makes it so you can unfollow the target
+    public void DisableHooks() {
+        MovementUpdateHook?.Disable(); // for disabling the prevention of LMB+RMB movement
+        UnfollowHook?.Disable(); // makes it so you can unfollow the target
+    }
 
     // the disposer
     public void Dispose() {
-        // disable hooks
-        if(DisablingMouseMovement) {
-            CompletelyEnableMovement();
-        } else {
-            // manual disable
-            DisableMovementHook();
-            DisableUnfollowPrevention();
-        }
+        GagSpeak.Log.Debug($"Disposing of MoveController: {DisablingALLMovement}, {DisablingMouseMovement}");
+        DisableHooks(); // disable the hooks
+
         // dispose of the hooks
         MovementUpdateHook?.Dispose();
-        TestHook?.Dispose();
+        MovementUpdateHook = null; // make sure they are disposed of
+        UnfollowHook?.Dispose();
+        UnfollowHook = null; // make sure they are disposed of
     }
 
     // controls the movement toggle of the player (Still allows for /follow)
@@ -147,8 +149,7 @@ public class MoveController : IDisposable
         if(DisablingMouseMovement) {
             GagSpeak.Log.Debug($"Enabling mouse");
             // let our code know we are no longer preventing mouse movement
-            DisableMovementHook();
-            DisableUnfollowPrevention();
+            DisableHooks();
             DisablingMouseMovement = false;
         }
     }
@@ -165,8 +166,7 @@ public class MoveController : IDisposable
         }
         // if we are currenelty not preventing mouse movement, and we want to disable mouse movement, we should set it to true
         if (!DisablingMouseMovement && toggleMouse) {
-            EnableMovementHook();
-            EnableUnfollowPrevention();
+            EnableHooks();
             GagSpeak.Log.Debug($"Disabling mouse");
             DisablingMouseMovement = true;
         }

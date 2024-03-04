@@ -10,6 +10,7 @@ using Penumbra.GameData.Structs;
 using GagSpeak.Events;
 using Dalamud.Plugin.Services;
 using System.Threading.Tasks;
+using GagSpeak.Interop.Penumbra;
 
 namespace GagSpeak.Wardrobe;
 
@@ -25,21 +26,23 @@ public class RestraintSetManager : ISavable, IDisposable
     [JsonIgnore]
     private readonly GagSpeakGlamourEvent _glamourEvent;
     [JsonIgnore]
-    private readonly RestraintSetListChanged _restraintSetListChanged;
+    private readonly RS_ListChanged _restraintSetListChanged;
     [JsonIgnore]
     private readonly RS_ToggleEvent _RS_ToggleEvent;
     [JsonIgnore]
     private readonly InitializationManager _manager;
     
-    public RestraintSetManager(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent, InitializationManager initializationManager,
-    RestraintSetListChanged restraintSetListChanged, RS_ToggleEvent RS_ToggleEvent, IClientState clientState) {
+    public RestraintSetManager(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent,
+    InitializationManager initializationManager, RS_ListChanged restraintSetListChanged,
+    RS_ToggleEvent RS_ToggleEvent, IClientState clientState) {
         _manager = initializationManager;
         _saveService = saveService;
         _glamourEvent = gagSpeakGlamourEvent;
         _restraintSetListChanged = restraintSetListChanged;
         _RS_ToggleEvent = RS_ToggleEvent;
         _clientState = clientState;
-        
+        //_penumbra = penumbra;
+        GagSpeak.Log.Debug($"[RestraintSetManager] Attempting to load restraint sets p1");
         // load the information from our storage file
         Load();
         // if the load failed, meaning our _restraintSets is empty, then we need to add a default set
@@ -141,7 +144,6 @@ public class RestraintSetManager : ISavable, IDisposable
         }
     }
 
-
     /// <summary> Renames a restraint set spesified by index if it exists. </summary>
     public void ChangeRestraintSetName(int restraintSetIdx, string newName) {
         // Check if a set with the same name already exists
@@ -208,6 +210,7 @@ public class RestraintSetManager : ISavable, IDisposable
     }
 
 
+
     /// <summary> Toggle the enabled state of a slot piece in a spesified restraint set if it exists. </summary>
     public void ToggleRestraintSetPieceEnabledState(int restraintSetIdx, EquipSlot slot) {
         // get the current state
@@ -256,7 +259,45 @@ public class RestraintSetManager : ISavable, IDisposable
         _saveService.QueueSave(this);
         return true;
     }
+#endregion Manager Methods
+#region ModAssociations
+    /// <summary> Add an associated mod to a design. </summary>
+    public void AddMod(int setIndex, Mod mod, ModSettings settings) {
+        if (!_restraintSets[setIndex]._associatedMods.TryAdd(mod, settings)) {
+            return;
+        }
+        // add the bool
+        _restraintSets[setIndex]._disableModsWhenInactive.Add(false);
+        Save();
+        GagSpeak.Log.Debug($"Added associated mod {mod.DirectoryName} to Restraint Set: "+
+        $"{_restraintSets[setIndex]._name}.");
+    }
 
+    /// <summary> Remove an associated mod from a design. </summary>
+    public void RemoveMod(int setIndex, Mod mod) {
+        var index = _restraintSets[setIndex]._associatedMods.IndexOfKey(mod);
+        // remove it from the list
+        if (!_restraintSets[setIndex]._associatedMods.Remove(mod, out var settings)) {
+            return;
+        }
+        // remove the disabled option at the index of the removed mod
+        _restraintSets[setIndex]._disableModsWhenInactive.RemoveAt(index);
+        Save();
+        GagSpeak.Log.Debug($"Removed associated mod {mod.DirectoryName} from Restraint Set: "+
+        $"{_restraintSets[setIndex]._name}.");
+    }
+
+    public void UpdateMod(int setIndex, Mod mod, ModSettings settings) {
+        if (!_restraintSets[setIndex]._associatedMods.ContainsKey(mod)) {
+            return;
+        }
+        _restraintSets[setIndex]._associatedMods[mod] = settings;
+        Save();
+        GagSpeak.Log.Debug($"Updated associated mod {mod.DirectoryName} from Restraint Set: "+
+        $"{_restraintSets[setIndex]._name}.");
+    }
+#endregion ModAssociations
+#region Setters
     public void ChangeRestraintSetNewLockEndTime(int restraintSetIdx, DateTimeOffset newEndTime) {
         _restraintSets[restraintSetIdx].DeclareNewEndTimeForSet(newEndTime);
         _saveService.QueueSave(this);
@@ -312,10 +353,8 @@ public class RestraintSetManager : ISavable, IDisposable
         GagSpeak.Log.Debug($"[RestraintSetManager] Reset all restraint sets due to safeword!");
         Save();
     }
-
-    #endregion Manager Methods
-
-    #region Json ISavable & Loads
+#endregion Setters
+#region Json ISavable & Loads
     public string ToFilename(FilenameService filenameService)
         => filenameService.RestraintSetsFile;
 
@@ -343,17 +382,20 @@ public class RestraintSetManager : ISavable, IDisposable
     }
 
     public void Load() {
-        #pragma warning disable CS8604, CS8602 // Possible null reference argument.
         var file = _saveService.FileNames.RestraintSetsFile;
         _restraintSets.Clear();
         if (!File.Exists(file)) {
             return;
         }
+        GagSpeak.Log.Debug($"[RestraintSetManager] Attempting to load restraint sets p2");
         try {
             var text = File.ReadAllText(file);
             var jsonObject = JObject.Parse(text);
             _selectedIdx = jsonObject["ActiveSetIdx"]?.Value<int>() ?? 0;
             var restraintSetsArray = jsonObject["RestraintSets"]?.Value<JArray>();
+            if(restraintSetsArray == null) {
+                throw new Exception("RestraintSets.json is missing the RestraintSets array.");
+            }
             foreach (var item in restraintSetsArray) {
                 var restraintSet = new RestraintSet();
                 restraintSet.Deserialize(item.Value<JObject>());
@@ -364,7 +406,6 @@ public class RestraintSetManager : ISavable, IDisposable
         } finally {
             GagSpeak.Log.Debug($"[GagStorageManager] RestraintSets.json loaded! Loaded {_restraintSets.Count} restraint sets.");
         }
-        #pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }
 }
 #endregion Json ISavable & Loads

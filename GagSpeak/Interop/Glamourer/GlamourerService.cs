@@ -29,7 +29,7 @@ public sealed class GlamourerService : IDisposable
     public readonly ICallGateSubscriber<GameObject?, uint, object?> _RevertCharacterLock; // Unlocks yourself, and reverts you back to base game state
     public readonly ICallGateSubscriber<GameObject?, uint, bool> _RevertToAutomationCharacter; // reverts your character to the automation design state of that job.
     public readonly ICallGateSubscriber<GameObject?, byte, ulong, byte, uint, int> _SetItemOnce; // sets an item to your character
-    public readonly ICallGateSubscriber<int, nint, Lazy<string>, object?> _StateChangedSubscriber;
+    public readonly ICallGateSubscriber<StateChangeType, nint, Lazy<string>, object?> _StateChangedSubscriber;
 
     public readonly uint LockCode = 0x6D617265; // setting a lock code for our plugin
     private bool _Available = false; // defines if glamourer is currently interactable at all or not.
@@ -54,7 +54,7 @@ public sealed class GlamourerService : IDisposable
         // set item callgate
         _SetItemOnce = _pluginInterface.GetIpcSubscriber<GameObject?, byte, ulong, byte, uint, int>("Glamourer.SetItem"); 
         // also subscribe to the state changed event so we know whenever they try to change an outfit
-        _StateChangedSubscriber = _pluginInterface.GetIpcSubscriber<int, nint, Lazy<string>, object?>("Glamourer.StateChanged");
+        _StateChangedSubscriber = _pluginInterface.GetIpcSubscriber<StateChangeType, nint, Lazy<string>, object?>("Glamourer.StateChanged");
     }
 
     public void Dispose() {
@@ -149,15 +149,12 @@ public sealed class GlamourerService : IDisposable
                 var gameObj = _OnFrameworkService.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
-                    GagSpeak.Log.Verbose("[SetItemOnceToCharacterAsync] Calling on IPC: GlamourSetItemToCharacter");
-                    _SetItemOnce!.InvokeFunc(c, slot, item, dye, variant);
+                    _SetItemOnce!.InvokeFunc(c, slot, item, dye, 1337);
                 }
-                // otherwise, just return an empty string.
-                return;
-            }).ConfigureAwait(false);
+            }).ConfigureAwait(true);
         } catch(Exception ex) {
             // if at any point this errors, return an empty string as well.
-            GagSpeak.Log.Warning($"[SetItemOnceToCharacterAsync] Failed to set item to character with slot {slot}, item {item}, dye {dye}, and variant {variant}, {ex}");
+            GagSpeak.Log.Warning($"[SetItemOnceToCharacterAsync] Failed to set item to character with slot {slot}, item {item}, dye {dye}, and key {variant}, {ex}");
             return;
         }
     }

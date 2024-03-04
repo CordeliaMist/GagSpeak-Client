@@ -18,6 +18,7 @@ public class UniquePlayerPerms {
     public bool _allowChangingToyState { get; set; } = false;       // [TIER 1] Basically, "They can turn on my vibe, at my selected slider position"
     public bool _allowIntensityControl { get; set; } = false;       // [TIER 3] Basically says "This person can adjust the intensity slider"
     public bool _allowUsingPatterns { get; set; } = false;          // [TIER 4] if the whitelisted player is allowed to execute stored patterns
+    public bool _allowUsingTriggers { get; set; } = false;          // [TIER 4] if the whitelisted player is allowed to execute triggers
     ///////////////////////////////////////// HARDCORE OPTOINS FOR EACH WHITELIST USER ////////////////////////////////////////////////////
 
     public UniquePlayerPerms() { }
@@ -37,6 +38,7 @@ public class UniquePlayerPerms {
             ["AllowChangingToyState"] = _allowChangingToyState,
             ["AllowIntensityControl"] = _allowIntensityControl,
             ["AllowUsingPatterns"] = _allowUsingPatterns,
+            ["AllowUsingTriggers"] = _allowUsingTriggers
         };
     }
 
@@ -54,6 +56,7 @@ public class UniquePlayerPerms {
             _allowChangingToyState = jsonObject["AllowChangingToyState"]?.Value<bool>() ?? false;
             _allowIntensityControl = jsonObject["AllowIntensityControl"]?.Value<bool>() ?? false;
             _allowUsingPatterns = jsonObject["AllowUsingPatterns"]?.Value<bool>() ?? false;
+            _allowUsingTriggers = jsonObject["AllowUsingTriggers"]?.Value<bool>() ?? false;
         } catch (Exception e) {
             GagSpeak.Log.Error($"[UniquePlayerPerms]: Error deserializing UniquePlayerPerms: {e.Message}");
         }

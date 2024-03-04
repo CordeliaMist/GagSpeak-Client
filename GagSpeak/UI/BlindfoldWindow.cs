@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
-using System.Threading.Tasks;
 using System.Timers;
 using Dalamud.Interface;
 using Dalamud.Interface.Internal;
@@ -44,7 +43,6 @@ public class BlindfoldWindow : Window, IDisposable
     }
 
     public void Dispose() {
-        textureWrap.Dispose();
         _timerRecorder.Dispose();
     }
 

@@ -30,6 +30,7 @@ public class GagSpeakChangelog
         Add2_5_0_0(Changelog);
         Add2_6_0_0(Changelog);
         Add2_7_0_0(Changelog);
+        Add2_8_0_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -57,8 +58,22 @@ public class GagSpeakChangelog
         }
     }
 
+    private static void Add2_8_0_0(Changelog log)
+        => log.NextVersion("Version 2.8.0.0 Release")
+            .RegisterImportant("The Hardcore Tab is now in a fully functional state.")
+            .RegisterEntry("Major reported issues patched, hotbar issue is known and working on logic for it")
+            .RegisterHighlight("You can now bind certain penumbra mods to restraint sets, so they activate when you enable the set!")
+            .RegisterEntry("Enabled sets have their associated mods priority enabled in the current collection and have their priority set to 99 while active.")
+            .RegisterEntry("Disabled sets have their associated mods priority disabled in the current collection and have their priority set to their original priority they had before")
+            .RegisterHighlight("You can now ALT+RIGHT CLICK to apply an item in a penumbra mods changed item list to your active restraint set in the wardrobe tab!")
+            .RegisterEntry("You can select if you watn each of the associated mods to stay enabled when the set is is toggled off, or to disable the mod again when the set is toggled off.")
+            .RegisterEntry("Fixed the memeory corruption issue with texture rendering causing the whole plugin to break.")
+            .RegisterEntry("Fixed the issue where the plugin would crash if you tried to use the toybox tab without having the hardcore tab enabled.")
+            .RegisterEntry("Fixed multiple instances where you would have your whole screen become disabled")
+            .RegisterEntry("Added a big fat warning screen when trying to enable hardcore mode so you don't enable it by accident.");
+
     private static void Add2_7_0_0(Changelog log)
-        => log.NextVersion("Version 2.7.1.0 Release")
+        => log.NextVersion("Version 2.7.0.0 Release")
             .RegisterImportant("YIPEEEEE!!!! I FINALLY GOT PROPER MOVEMENT PREVENTION CODE IN PLACE!!!")
             .RegisterEntry("To all beta testers: thank you for the paitence, I have been in touch with lots of other devs and reverse engineers to figure out a proper way to do this.")
             .RegisterEntry("You literally have no idea how much effort i put in and things I had to learn just to make forcefollow and forcesit work properly.")

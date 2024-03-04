@@ -21,10 +21,13 @@ public class HardcoreTab : ITab
     public void DrawContent()
     {
         if(!_config.AdminMode) { ImGui.BeginDisabled(); }
-        _selector.Draw(GetSetSelectorSize());
-        ImGui.SameLine();
-        _panel.Draw();
-        if(!_config.AdminMode) { ImGui.EndDisabled(); }
+        try{
+            _selector.Draw(GetSetSelectorSize());
+            ImGui.SameLine();
+            _panel.Draw();
+        } finally {
+            if(!_config.AdminMode) { ImGui.EndDisabled(); }
+        }
     }
 
     public float GetSetSelectorSize() {

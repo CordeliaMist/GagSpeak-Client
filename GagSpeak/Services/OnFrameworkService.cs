@@ -2,7 +2,6 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
 using System;
 using System.Threading.Tasks;
-using GagSpeak.Events;
 using GagSpeak.CharacterData;
 
 /// <summary> 
@@ -22,12 +21,12 @@ public class OnFrameworkService : IDisposable
     private readonly    CharacterHandler                _characterHandler;
     //============= Personal Client Character Variables =================//
     public              IntPtr                          _address;                   // player address
-    public              int                             _classJobId;                // player class job id
+    public              uint                            _classJobId;                // player class job id
     private             bool                            _sentBetweenAreas = false;  // if we sent a between areas message
     private             ushort                          _lastZone = 0;              // last zone we were in
 
     public OnFrameworkService(IChatGui chat, IClientState clientState, ICondition condition, IFramework framework,
-    IObjectTable objectTable, GagSpeakConfig config, CharacterHandler characterHandler) {
+    IObjectTable objectTable, CharacterHandler characterHandler) {
         _chat = chat;
         _clientState = clientState;
         _condition = condition;
@@ -48,7 +47,7 @@ public class OnFrameworkService : IDisposable
 
     private void ClientStateOnLogin() {
         _address = GetPlayerPointerAsync().GetAwaiter().GetResult();
-        _classJobId = (int)(_clientState.LocalPlayer?.ClassJob.Id ?? 0);
+        _classJobId = _clientState.LocalPlayer?.ClassJob.Id ?? 0;
         GagSpeak.Log.Debug($"[ClientStateOnLogin]  Player class job id: {_classJobId}");
     }
 

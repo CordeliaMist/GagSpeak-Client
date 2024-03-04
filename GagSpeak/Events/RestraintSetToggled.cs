@@ -6,8 +6,8 @@ using System;
 namespace GagSpeak.Events;
 /// <summary> Determines if the set is being enabled or disabled
 public enum RestraintSetToggleType {
-    Enabled,
     Disabled,
+    Enabled,
 }
 
 public class RS_ToggleEvent

@@ -5,6 +5,7 @@ using Dalamud.Plugin.Services;
 using Dalamud.Game.Text.SeStringHandling;
 using OtterGui.Classes;
 using GagSpeak.UI.Tabs.HelpPageTab;
+using GagSpeak.Interop.Penumbra;
 
 namespace GagSpeak.UI;
 /// <summary> This class is used to handle the window manager. </summary>
@@ -14,15 +15,17 @@ public class GagSpeakWindowManager : IDisposable
     private readonly UiBuilder                  _uiBuilder;
     private readonly MainWindow                 _ui;
     private readonly IChatGui                   _chatGui;
+    private readonly PenumbraChangedItemTooltip _penumbraTooltip;
 
     /// <summary> Initializes a new instance of the <see cref="GagSpeakWindowManager"/> class.</summary>
     public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config, IChatGui chatGui,
     DebugWindow uiDebug, GagSpeakChangelog changelog, UserProfileWindow userProfile, TutorialWindow tutorialWindow,
-    SavePatternWindow savePatternWindow, BlindfoldWindow blindfoldWindow) {
+    SavePatternWindow savePatternWindow, BlindfoldWindow blindfoldWindow, PenumbraChangedItemTooltip penumbraTooltip) {
         // set the main ui window
         _uiBuilder       = uiBuilder;
         _ui              = ui;
         _chatGui         = chatGui;
+        _penumbraTooltip = penumbraTooltip;
         _windowSystem.AddWindow(ui);
         _windowSystem.AddWindow(uiDebug);
         _windowSystem.AddWindow(userProfile);

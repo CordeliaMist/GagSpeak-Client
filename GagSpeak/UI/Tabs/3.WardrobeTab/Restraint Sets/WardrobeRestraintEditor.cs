@@ -53,7 +53,7 @@ public class RestraintSetEditor
     public void Draw() {
         _comboLength = DefaultWidth * ImGuiHelpers.GlobalScale;
         using var style = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        using var child = ImRaii.Child("WardrobeRestraintCompartmentChild", new Vector2(0, -1));
+        using var child = ImRaii.Child("WardrobeRestraintCompartmentChild", new Vector2(0, 280*ImGuiHelpers.GlobalScale), false);
         if (!child) {return;}
         //draw out two column table
         var xPos = ImGui.GetCursorPosX();
@@ -80,7 +80,10 @@ public class RestraintSetEditor
                 // display either eyeslash or eye based on if it is enabled or not
                 if(ImGuiUtil.DrawDisabledButton($"{_eyeIcon[i]}##{slot}VisibilityButton",
                 new Vector2(ImGui.GetContentRegionAvail().X, 2*ImGui.GetFrameHeight() + ImGui.GetStyle().ItemSpacing.Y),
-                "Enable or Disable this piece from being visible. [[ Does nothing right now ]]", false, true)) {
+                "Toggles the applicatoin of this item to \"Glamour\" or \"Overlay\" Mode\n\n"+
+                "EYE W/ NO SLASH == Glamour Mode: If left blank, slot will clear the respective slot on your glamour.\n"+
+                "EYE W/ A SLASH == Overlay Mode: If left blank, the slot will be skipped over when applying the set to your glamour.",
+                false, true)) {
                     // if we click this, we should toggle between states with a visable eye icon
                     _restraintSetManager.ToggleRestraintSetPieceEnabledState(_restraintSetManager._selectedIdx, slot);
                 }
@@ -99,7 +102,10 @@ public class RestraintSetEditor
                 // display either eyeslash or eye based on if it is enabled or not
                 if(ImGuiUtil.DrawDisabledButton($"{_eyeIcon[i]}##{slot}VisibilityButton",
                 new Vector2(ImGui.GetContentRegionAvail().X, 2*ImGui.GetFrameHeight() + ImGui.GetStyle().ItemSpacing.Y),
-                "Enable or Disable this piece from being visible. [[ Does nothing right now ]]", false, true)) {
+                "Toggles the applicatoin of this item to \"Glamour\" or \"Overlay\" Mode\n\n"+
+                "EYE W/ NO SLASH == Glamour Mode: If left blank, slot will clear the respective slot on your glamour.\n"+
+                "EYE W/ A SLASH == Overlay Mode: If left blank, the slot will be skipped over when applying the set to your glamour.",
+                false, true)) {
                     // if we click this, we should toggle between states with a visable eye icon
                     _restraintSetManager.ToggleRestraintSetPieceEnabledState(_restraintSetManager._selectedIdx, slot);
                     _eyeIcon[i] = _restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._drawData[slot]._isEnabled 
@@ -133,7 +139,7 @@ public class RestraintSetEditor
     /// <item><c>bool</c><paramref name="clear"> Whether or not to clear the item.</paramref></item>
     /// <item><c>bool</c><paramref name="open"> Whether or not to open the combo.</paramref></item>
     /// </list> </summary>
-    private void DrawItem(int SetIndex, EquipSlot slot, out string label,bool clear, bool open, float width, 
+    private void DrawItem(int SetIndex, EquipSlot slot, out string label, bool clear, bool open, float width, 
     GameItemCombo[] _gameItemCombo) {
         // draw the item combo
         var combo = _gameItemCombo[_restraintSetManager._restraintSets[SetIndex]._drawData[slot]._activeSlotListIdx];

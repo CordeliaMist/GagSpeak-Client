@@ -12,6 +12,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using GagSpeak.Wardrobe;
 using GagSpeak.Gagsandlocks;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using GagSpeak.Services;
 
 namespace GagSpeak.Hardcore.Actions;
 public unsafe class GsActionManager : IDisposable
@@ -27,6 +29,8 @@ public unsafe class GsActionManager : IDisposable
     private readonly HotbarLocker _hotbarLocker;
     private readonly RS_PropertyChangedEvent _rsPropertyChangedEvent;
     private readonly RS_ToggleEvent _setToggleEvent;
+    private readonly OnFrameworkService _onFrameworkService;
+    private readonly GagSpeakGlamourEvent _glamourEvent;
     private readonly InitializationManager _manager;
     // for direct access inspection
     public Control* gameControl = Control.Instance(); // instance to have control over our walking
@@ -44,7 +48,7 @@ public unsafe class GsActionManager : IDisposable
     public unsafe GsActionManager(IClientState clientState, IFramework framework, IGameInteropProvider interop,
     RestraintSetManager restraintSetManager, HardcoreManager hardcoreManager, RS_PropertyChangedEvent RS_PropertyChangedEvent,
     IDataManager dataManager, RS_ToggleEvent setToggleEvent, GagSpeakConfig config, HotbarLocker hotbarLocker,
-    InitializationManager manager)
+    InitializationManager manager, GagSpeakGlamourEvent glamourEvent, OnFrameworkService onFrameworkService)
     {
         _clientState = clientState;
         _framework = framework;
@@ -54,9 +58,11 @@ public unsafe class GsActionManager : IDisposable
         _rsPropertyChangedEvent = RS_PropertyChangedEvent;
         _dataManager = dataManager;
         _setToggleEvent = setToggleEvent;
+        _onFrameworkService = onFrameworkService;
         _config = config;
         _hotbarLocker = hotbarLocker;
         _manager = manager;
+        _glamourEvent = glamourEvent;
         // set up a hook to fire every time the address signature is detected in our game.
         UseActionHook = _gameInteropProvider.HookFromAddress<UseActionDelegate>((nint)ActionManager.Addresses.UseAction.Value, UseActionDetour);
         UseActionHook.Enable();
@@ -315,10 +321,21 @@ public unsafe class GsActionManager : IDisposable
         && CurrentJobBannedActions != null
         && _config.AdminMode)
         {
+            // if the class job is different than the one stored, then we have a class job change (CRITICAL TO UPDATING PROPERLY)
+            if (_clientState.LocalPlayer.ClassJob.Id != _onFrameworkService._classJobId) {
+                // update the stored class job
+                _onFrameworkService._classJobId = _clientState.LocalPlayer.ClassJob.Id;
+                // invoke jobChangedEvent to call the job changed glamour event
+                _glamourEvent.Invoke(UpdateType.JobChange);
+                // regenerate our slots
+                UpdateJobList();
+                RestoreSavedSlots();
+                return;
+            }
+
             // obtain our current restraint set active index and 
             if(_hcManager.ActiveHCsetIdx != -1 && _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx].AnyPropertyTrue()) {
                 UpdateSlots();
-                _hotbarLocker.SetHotbarLockState(false);
             }
         }
     }

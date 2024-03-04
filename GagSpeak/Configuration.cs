@@ -19,6 +19,8 @@ using System.Numerics;
 using GagSpeak.UI.Tabs.HardcoreTab;
 using Dalamud.Game.ClientState.Keys;
 using GagSpeak.Hardcore.Movement;
+using GagSpeak.UI.Tabs.ToyboxTab;
+using GagSpeak.UI.Tabs.WardrobeTab;
 
 namespace GagSpeak;
 
@@ -35,14 +37,14 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public  List<ChatChannel.ChatChannels>      ChannelsGagSpeak { get; set; }                          // Which channels are currently enabled / allowed?
     public  List<ChatChannel.ChatChannels>      ChannelsPuppeteer { get; set; }                         // Which channels are currently enabled / allowed?
     public  TabType                             SelectedTab { get; set; } = TabType.General;            // Default to the general tab
-    public  bool                                viewingRestraintCompartment { get; set; } = false;      // Is viewing the restraint shelf tab in wardrobe?
-    public  bool                                ToyboxLeftSubTabActive { get; set; } = false;           // Which subtab is active in the toybox?
+    public  WardrobeSubTab                      WardrobeActiveTab { get; set; } = WardrobeSubTab.GagStorage; // Is viewing the restraint shelf tab in wardrobe?
+    public  ToyboxSubTab                        ToyboxActiveTab { get; set; } = ToyboxSubTab.Setup;     // Which subtab is active in the toybox tab?
     public  HardcoreSubTab                      ActiveTab { get; set; } = HardcoreSubTab.RestraintSetProperties; // Which subtab is active in the hardcore tab?
     public  string                              sendInfoName { get; set; } = "";                                // Name of the person you are sending info to
     public  bool                                acceptingInfoRequests { get; set; } = true;             // Are you accepting info requests? (for cooldowns)//
     public  bool                                processingInfoRequest { get; set; } = false;            // Are you processing an info request?
     public  bool                                hardcoreMode { get; set; } = false;                     // Is the plugin in hardcore mode
-    public  bool                                UiOpenOnEnable { get; set; } = true;                    // Should the UI open when the plugin is enabled
+    public  bool                                UiOpenOnEnable { get; set; } = false;                   // Should the UI open when the plugin is enabled
     public  Dictionary<string,DateTimeOffset>   timerData { get; set; }                                 // stores the timer data for the plugin
     public  static bool                         usingLegacyControls = GameConfig.UiControl.GetBool("MoveMode"); // is the client using legacy controls?
     // stuff for the gaglistingDrawer
@@ -50,9 +52,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public  List<string>                        displaytext { get; set; }                               // stores the display time remaining for each locked gag in general tab
     public  List<PadlockIdentifier>             padlockIdentifier { get; set; }                         // stores the padlock identifier for each gaglisting
     public  PadlockIdentifier                   whitelistPadlockIdentifier {get; set; }                 // stores the padlock identifier for the whitelist
-    // stuff for the wardrobemanager
-    public  bool                                disableGlamChangeEvent { get; set; } = false;           // disables the glam change event
-    public  bool                                finishedDrawingGlamChange { get; set; } = false;        // disables the glamourer
     // stuff for the garbler
     public  string                              language { get; set; } = "English";                     // The language dialect to use for the IPA conversion
     public  string                              languageDialect { get; set; } = "IPA_US";               // The language dialect to use for the IPA conversion
@@ -114,10 +113,6 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
             GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
             this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
         
-        
-        // for glamourersync stuff
-        disableGlamChangeEvent = false;
-        acceptingInfoRequests = true;
         processingInfoRequest = false;
         // for toybox stuff
         if(intifacePortValue.Length < 10) {
@@ -131,7 +126,9 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public void SetprocessingInfoRequest(bool value) { processingInfoRequest = value; _saveService.QueueSave(this); }
     public void SetIntifacePortValue(string value) { intifacePortValue = value; Save(); }
     public void SetUiOpenOnEnable(bool value) { UiOpenOnEnable = value; Save(); }
+    public void SetWardrobeActiveTab(WardrobeSubTab tab) { WardrobeActiveTab = tab; Save(); }
     public void SetActiveHcTab(HardcoreSubTab tab) { ActiveTab = tab; Save(); }
+    public void SetToyboxActiveTab(ToyboxSubTab tab) { ToyboxActiveTab = tab; Save(); }
 
 
     /// <summary> Saves the config to our save service and updates the garble level to its new value. </summary>

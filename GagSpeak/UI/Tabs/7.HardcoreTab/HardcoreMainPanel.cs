@@ -17,7 +17,7 @@ namespace GagSpeak.UI.Tabs.HardcoreTab;
 public enum HardcoreSubTab {
     RestraintSetProperties,
     Orders,
-    Humiliation,
+    Restrictions,
     Debugger,
 }
 
@@ -25,16 +25,16 @@ public class HardcoreMainPanel
 {
     private readonly    HC_RestraintSetProperties   _restraintSetProperties; // for getting the restraint set properties
     private readonly    HC_Orders                   _Orders; // for getting the movement control
-    private readonly    HC_ControlHumiliation       _humiliation; // for getting the humiliation
+    private readonly    HC_ControlRestrictions       _Restrictions; // for getting the Restrictions
     private readonly    ActionDataSnagger           _actionDataSnagger; // for getting the action data
     private             HardcoreSubTab              _hcActiveTab;
     private             GagSpeakConfig              _config;
     public HardcoreMainPanel(HC_RestraintSetProperties restraintSetProperties,
-    HC_Orders Orders, HC_ControlHumiliation humiliation, ActionDataSnagger actionDataSnagger, 
+    HC_Orders Orders, HC_ControlRestrictions Restrictions, ActionDataSnagger actionDataSnagger, 
     GagSpeakConfig config) {
         _restraintSetProperties = restraintSetProperties;
         _Orders = Orders;
-        _humiliation = humiliation;
+        _Restrictions = Restrictions;
         _actionDataSnagger = actionDataSnagger;
         _config = config;
 
@@ -55,8 +55,8 @@ public class HardcoreMainPanel
             else if(_hcActiveTab == HardcoreSubTab.Orders) {
                 _Orders.Draw();
             }
-            else if(_hcActiveTab == HardcoreSubTab.Humiliation) {
-                _humiliation.Draw();
+            else if(_hcActiveTab == HardcoreSubTab.Restrictions) {
+                _Restrictions.Draw();
             }
             else if(_hcActiveTab == HardcoreSubTab.Debugger) {
                 _actionDataSnagger.Draw();
@@ -68,27 +68,31 @@ public class HardcoreMainPanel
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero).
                         Push(ImGuiStyleVar.FrameRounding, 0);
         // button size
+        var initialWidth = ImGui.GetContentRegionAvail().X-ImGui.GetFrameHeight();
+        var width1 = initialWidth *.35f;
+        var width2 = initialWidth *.3f;
+        var width3 = initialWidth *.35f;
         var buttonSize = new Vector2((ImGui.GetContentRegionAvail().X-ImGui.GetFrameHeight()) / 3, ImGui.GetFrameHeight());
         // tab selection
-        if (ImGuiUtil.DrawDisabledButton("Restraint Properties", buttonSize,
+        if (ImGuiUtil.DrawDisabledButton("Restraint Properties", new Vector2(width1, ImGui.GetFrameHeight()),
         "Configure Lockable Restraint sets that can act as an overlay for your glamour!",
         _hcActiveTab == HardcoreSubTab.RestraintSetProperties))
         {
             _config.SetActiveHcTab(HardcoreSubTab.RestraintSetProperties);
         }
         ImGui.SameLine();
-        if (ImGuiUtil.DrawDisabledButton("Orders / Control", buttonSize,
+        if (ImGuiUtil.DrawDisabledButton("Orders", new Vector2(width2, ImGui.GetFrameHeight()),
         "Configure movement control settings!",
         _hcActiveTab == HardcoreSubTab.Orders)) 
         {
             _config.SetActiveHcTab(HardcoreSubTab.Orders);
         }
         ImGui.SameLine();
-        if (ImGuiUtil.DrawDisabledButton("Humiliation", buttonSize,
-        "Configure humiliation settings!",
-        _hcActiveTab == HardcoreSubTab.Humiliation)) 
+        if (ImGuiUtil.DrawDisabledButton("Restrictions", new Vector2(width3, ImGui.GetFrameHeight()),
+        "Configure Restriction settings!",
+        _hcActiveTab == HardcoreSubTab.Restrictions)) 
         {
-            _config.SetActiveHcTab(HardcoreSubTab.Humiliation);
+            _config.SetActiveHcTab(HardcoreSubTab.Restrictions);
         }
         ImGui.SameLine();
         if(ImGuiUtil.DrawDisabledButton("?", new Vector2(ImGui.GetFrameHeight(), ImGui.GetFrameHeight()),

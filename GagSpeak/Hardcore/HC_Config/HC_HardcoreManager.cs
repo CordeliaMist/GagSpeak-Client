@@ -51,7 +51,7 @@ public partial class HardcoreManager : ISavable, IDisposable
     [JsonIgnore]
     private readonly CharacterHandler _characterHandler;
     [JsonIgnore]
-    private readonly RestraintSetListChanged _restraintSetListChanged;
+    private readonly RS_ListChanged _restraintSetListChanged;
     [JsonIgnore]
     private readonly RS_ToggleEvent _rsToggleEvent;
     [JsonIgnore]
@@ -61,7 +61,7 @@ public partial class HardcoreManager : ISavable, IDisposable
 #endregion Ignores
 
     #pragma warning disable CS8618
-    public HardcoreManager(SaveService saveService, RestraintSetListChanged restraintSetListChanged,
+    public HardcoreManager(SaveService saveService, RS_ListChanged restraintSetListChanged,
     BlindfoldWindow blindfoldWindow, InitializationManager manager, RS_PropertyChangedEvent propertyChanged,
     CharacterHandler characterHandler, RestraintSetManager restraintSetManager, RS_ToggleEvent rsToggleEvent) {
         _saveService = saveService;

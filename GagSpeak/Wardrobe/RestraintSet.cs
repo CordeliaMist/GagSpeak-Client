@@ -4,6 +4,9 @@ using Penumbra.GameData.Enums;
 using Newtonsoft.Json.Linq;
 using GagSpeak.UI.Equipment;
 using GagSpeak.Utility;
+using GagSpeak.Interop.Penumbra;
+using OtterGui.Classes;
+using Dalamud.Interface.Internal.Notifications;
 
 namespace GagSpeak.Wardrobe;
 
@@ -16,8 +19,9 @@ public class RestraintSet //: IDisposable
     public string _wasEnabledBy; // know who toggled the set
     public string _wasLockedBy; // lets you define the name of the character that equipped the set
     public DateTimeOffset _lockedTimer { get; set; } // stores the timespan left until unlock of the player.
-
     public Dictionary<EquipSlot, EquipDrawData> _drawData; // stores the equipment draw data for the set
+    public SortedList<Mod, ModSettings> _associatedMods { get; private set; }  = []; // the associated mods to enable with this set
+    public List<bool> _disableModsWhenInactive { get; set; } // lets you define if the mods should be disabled when the set is disabled
 
     public RestraintSet() {
         // define default data for the set
@@ -35,6 +39,9 @@ public class RestraintSet //: IDisposable
             _drawData[slot].SetDrawDataSlot(slot);
             _drawData[slot].SetDrawDataIsEnabled(false);
         }
+        // create the new associated mods list
+        _associatedMods = new SortedList<Mod, ModSettings>();
+        _disableModsWhenInactive = new List<bool>();
     }
 
     public void ChangeSetName(string name) {
@@ -88,8 +95,32 @@ public class RestraintSet //: IDisposable
             ["WasEnabledBy"] = _wasEnabledBy,
             ["WasLockedBy"] = _wasLockedBy,
             ["LockedTimer"] = _lockedTimer.ToString(),
-            ["DrawData"] = drawDataArray
+            ["DrawData"] = drawDataArray,
+            ["AssociatedMods"] = SerializeMods(),
+            ["DisableModsWhenInactive"] = JToken.FromObject(_disableModsWhenInactive),
         };
+    }
+
+    private JArray SerializeMods() {
+        // otherwise we will create a new array to store the mods
+        var ret = new JArray();
+        // for each mod in are associated mods
+        foreach (var (mod, settings) in _associatedMods) {
+            // create a jobject representing it
+            var obj = new JObject() {
+                ["Name"]      = mod.Name,
+                ["Directory"] = mod.DirectoryName,
+                ["Enabled"]   = settings.Enabled,
+            };
+            if (settings.Enabled) {
+                obj["Priority"] = settings.Priority;
+                obj["Settings"] = JObject.FromObject(settings.Settings);
+            }
+            // and add it to the JArray
+            ret.Add(obj);
+        }
+
+        return ret;
     }
 
     public void Deserialize(JObject jsonObject) {
@@ -115,8 +146,33 @@ public class RestraintSet //: IDisposable
                 }
             }
         }
+        // load the mods
+        DeserializeMods(jsonObject["AssociatedMods"]);
+        _disableModsWhenInactive = jsonObject["DisableModsWhenInactive"]?.ToObject<List<bool>>() ?? new List<bool>();
         #pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }
 
+    private void DeserializeMods(JToken? mods) {
+        if (mods is not JArray array)
+            return;
 
+        foreach (var tok in array) {
+            var name      = tok["Name"]?.ToObject<string>();
+            var directory = tok["Directory"]?.ToObject<string>();
+            var enabled   = tok["Enabled"]?.ToObject<bool>();
+            if (name == null || directory == null || enabled == null) {
+                GagSpeak.Messager.NotificationMessage("The loaded design contains an invalid mod, skipped.", NotificationType.Warning);
+                continue;
+            }
+
+            var settingsDict = tok["Settings"]?.ToObject<Dictionary<string, IList<string>>>() ?? new Dictionary<string, IList<string>>();
+            var priority = tok["Priority"]?.ToObject<int>() ?? 0;
+
+            var mod = new Mod(name, directory);
+            var modSettings = new ModSettings(settingsDict, priority, enabled.Value);
+
+            if (!_associatedMods.TryAdd(mod, modSettings))
+                GagSpeak.Messager.NotificationMessage("The loaded design contains a mod more than once, skipped.", NotificationType.Warning);
+        }
+    }
 }

@@ -33,6 +33,7 @@ using GagSpeak.Hardcore.Movement;
 using GagSpeak.Hardcore.Actions;
 using GagSpeak.Utility;
 using GagSpeak.Hardcore.BaseListener;
+using GagSpeak.Interop.Penumbra;
 
 namespace GagSpeak.Services;
 
@@ -125,7 +126,7 @@ public static class ServiceHandler
             .AddSingleton<ActiveDeviceChangedEvent>()
             .AddSingleton<RS_ToggleEvent>()
             .AddSingleton<RS_PropertyChangedEvent>()
-            .AddSingleton<RestraintSetListChanged>()
+            .AddSingleton<RS_ListChanged>()
             .AddSingleton<InitializationManager>();
 
     /// <summary> Classes to add to the service collection from the [GagsAndLocks] folder </summary>
@@ -154,7 +155,9 @@ public static class ServiceHandler
     /// <summary> Classes to add to the service collection from the [Interop] folder </summary>
     private static ServiceManager AddInterop(this ServiceManager services)
         => services.AddSingleton<GlamourerService>()
-            .AddSingleton<GlamourerFunctions>();
+            .AddSingleton<GlamourerFunctions>()
+            .AddSingleton<PenumbraService>()
+            .AddSingleton<ModAssociations>();
 
     /// <summary> Classes to add to the service collection from the [Toybox] folder </summary>
     private static ServiceManager AddToybox(this ServiceManager services)
@@ -171,34 +174,42 @@ public static class ServiceHandler
             .AddSingleton<MainWindow>()
             .AddSingleton<GeneralTab>()
             .AddSingleton<GagListingsDrawer>()
+
             .AddSingleton<WhitelistTab>()
             .AddSingleton<WhitelistSelector>()
             .AddSingleton<WhitelistPanel>()
+
             .AddSingleton<WardrobeTab>()
             .AddSingleton<WardrobeGagCompartment>()
             .AddSingleton<GagStorageSelector>()
             .AddSingleton<GagStorageDetails>()
             .AddSingleton<WardrobeRestraintCompartment>()
             .AddSingleton<RestraintSetSelector>()
+            .AddSingleton<RestraintSetOverview>()
             .AddSingleton<RestraintSetEditor>()
+
             .AddSingleton<PuppeteerTab>()
             .AddSingleton<PuppeteerSelector>()
             .AddSingleton<PuppeteerPanel>()
             .AddSingleton<PuppeteerAliasTable>()
+
             .AddSingleton<ToyboxTab>()
             .AddSingleton<ToyboxSelector>()
             .AddSingleton<ToyboxPanel>()
-            .AddSingleton<SetupAndInfoSubtab>()
+            .AddSingleton<PermsAndInfoSubtab>()
             .AddSingleton<PatternSubtab>()
             .AddSingleton<TriggersSubtab>()
+
             .AddSingleton<WorkshopTab>()
             .AddSingleton<HardcoreTab>()
+
             .AddSingleton<HardcoreSelector>()
             .AddSingleton<HardcoreMainPanel>()
             .AddSingleton<HC_RestraintSetProperties>()
             .AddSingleton<HC_Orders>()
-            .AddSingleton<HC_ControlHumiliation>()
+            .AddSingleton<HC_ControlRestrictions>()
             .AddSingleton<ActionDataSnagger>()
+
             .AddSingleton<ConfigSettingsTab>()
             .AddSingleton<HelpPageTab>()
             .AddSingleton<TutorialWindow>()
@@ -208,6 +219,7 @@ public static class ServiceHandler
             .AddSingleton<GagSpeakChangelog>()
             .AddSingleton<BlindfoldWindow>()
             
+            .AddSingleton<PenumbraChangedItemTooltip>()
             .AddSingleton<IconManager>();
 
     /// <summary> Classes to add to the service collection from the [Wardrobe] folder </summary>

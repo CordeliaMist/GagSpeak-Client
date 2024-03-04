@@ -12,7 +12,7 @@ public enum ListUpdateType {
     NameChanged,
 }
 
-public class RestraintSetListChanged
+public class RS_ListChanged
 {
     public delegate void RestraintSetListChangedHandler(object sender, RestraintSetListChangedArgs e); // define the event handler
     public event RestraintSetListChangedHandler? SetListModified;                                 // define the event

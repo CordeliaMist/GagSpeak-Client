@@ -32,7 +32,7 @@ public class GagSpeakGlamourEvent
 
     /// <summary> Manually triggered event invoker </summary>
     public void Invoke(UpdateType updateType, string gagType = "None", string assignerName = "") {
-        GagSpeak.Log.Debug($"[GagSpoeakGlamourEvent] Invoked Type: {updateType} with gagtype: {gagType} from {assignerName}");
+        GagSpeak.Log.Debug($"[GagSpeakGlamourEvent] Invoked Type: {updateType} with gagtype: {gagType} from {assignerName}");
         IsGagSpeakGlamourEventExecuting = true;
         GlamourEventFired?.Invoke(this, new GagSpeakGlamourEventArgs(updateType, gagType, assignerName));
     }

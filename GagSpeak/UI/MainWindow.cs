@@ -48,8 +48,8 @@ public class MainWindow : Window
     /// <para> Note: The 'MainWindow' is the window space hosting the UI when you type /gagspeak, not any independant tab.
     /// </para> </summary>
     public MainWindow(DalamudPluginInterface pluginInt, GagSpeakConfig config, GeneralTab general,
-	WhitelistTab whitelist, ConfigSettingsTab configsettings, WardrobeTab wardrobeTab, PuppeteerTab puppeteer,
-  ToyboxTab toybox, WorkshopTab workshopTab, HardcoreTab hardcoreTab, HelpPageTab helpPageTab): base(GetLabel()) {
+	  WhitelistTab whitelist, ConfigSettingsTab configsettings, WardrobeTab wardrobeTab, PuppeteerTab puppeteer,
+    ToyboxTab toybox, WorkshopTab workshopTab, HardcoreTab hardcoreTab, HelpPageTab helpPageTab): base(GetLabel()) {
 		// Let's first make sure that we disable the plugin while inside of gpose.
 		pluginInt.UiBuilder.DisableGposeUiHide = true;
 		// Next let's set the size of the window
@@ -77,12 +77,12 @@ public class MainWindow : Window
 		_tabs = new ITab[]
 		{
 			general,
-			whitelist,
 			wardrobeTab,
+      whitelist,
 			puppeteer,
+      hardcoreTab,
 			toybox,
       workshopTab,
-      hardcoreTab,
 			configsettings,
 			helpPageTab
 		};

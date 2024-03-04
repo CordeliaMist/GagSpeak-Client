@@ -177,6 +177,11 @@ public partial class CharacterHandler
         _saveService.QueueSave(this);
     }
 
+    public void ToggleAllowToyboxTriggers(int idx) {
+        playerChar._uniquePlayerPerms[activeListIdx]._allowUsingTriggers = !playerChar._uniquePlayerPerms[activeListIdx]._allowUsingTriggers;
+        _saveService.QueueSave(this);
+    }
+
     public void ToggleToyboxUILocking() {
         playerChar._lockToyboxUI = !playerChar._lockToyboxUI;
         _saveService.QueueSave(this);

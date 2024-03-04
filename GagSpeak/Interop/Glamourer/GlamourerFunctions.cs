@@ -16,26 +16,14 @@ using GagSpeak.Services;
 
 namespace GagSpeak.Interop;
 
-/// <summary> the type of statechange provided by glamourerIPC </summary>
-public enum StateChangeType {
-    Model,
-    EntireCustomize,
-    Customize,
-    Equip,
-    Weapon,
-    Stain,
-    Crest,
-    Parameter,
-    Design,
-    Reset,
-    Other,
-}
-
 /// <summary>
 /// Create a sealed class for our interop manager.
 /// </summary>
+
 public class GlamourerFunctions : IDisposable
 {
+    public static bool disableGlamChangeEvent { get; set; } = false;           // disables the glam change event
+    public static bool finishedDrawingGlamChange { get; set; } = false;        // disables the glamourer
     private readonly    GagSpeakConfig                  _config;                // the plugin interface
     private readonly    GagStorageManager               _gagStorageManager;     // the gag storage manager
     private readonly    RestraintSetManager             _restraintSetManager;   // the restraint set manager
@@ -44,7 +32,7 @@ public class GlamourerFunctions : IDisposable
     private readonly    IFramework                      _framework;             // the framework for running tasks on the main thread
     private readonly    GagSpeakGlamourEvent            _gagSpeakGlamourEvent;  // for whenever glamourer changes
     private readonly    OnFrameworkService              _onFrameworkService;      // character data updates/helpers (framework based)
-    private             Action<int, nint, Lazy<string>> _ChangedDelegate;       // delgate for  GlamourChanged, so it is subscribed and disposed properly
+    private             Action<StateChangeType, nint, Lazy<string>> _ChangedDelegate;       // delgate for  GlamourChanged, so it is subscribed and disposed properly
     private             CancellationTokenSource         _cts;
 
     public GlamourerFunctions(GagSpeakConfig gagSpeakConfig, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager,
@@ -79,35 +67,25 @@ public class GlamourerFunctions : IDisposable
 
     public void FrameworkUpdate(IFramework framework) {
         // if we have finiahed drawing
-        if(_config.finishedDrawingGlamChange){
+        if(finishedDrawingGlamChange){
             // and we have disabled the glamour change event still
-            if(_config.disableGlamChangeEvent) {
+            if(disableGlamChangeEvent) {
                 // make sure to turn that off and reset it
-                _config.finishedDrawingGlamChange = false;
-                _config.disableGlamChangeEvent = false;
+                finishedDrawingGlamChange = false;
+                disableGlamChangeEvent = false;
                 GagSpeak.Log.Debug($"[FrameworkUpdate] Re-Allowing Glamour Change Event");
             }
         } 
     }
 
     // we must account for certain situations, and perform an early exit return or access those functions if they are true.
-    private unsafe void GlamourerChanged(int type, nint address) {
+    // another slim
+
+    private void GlamourerChanged(StateChangeType type, nint address) {
         // just know the type and address
         if (address != _onFrameworkService._address) {
             GagSpeak.Log.Verbose($"[GlamourerChanged]: Change not from Character, IGNORING"); return;
         }
-        // if the address is us, check to see if we changed jobs
-        var chara = (Character*)address;
-        var classJob = chara->CharacterData.ClassJob;
-        // if the class job is different than the one stored, then we have a class job change (CRITICAL TO UPDATING PROPERLY)
-        if (classJob != _onFrameworkService._classJobId) {
-            GagSpeak.Log.Verbose($"[CHARA HANDLER UPDATE] classjob changed from {_onFrameworkService._classJobId} to {classJob}");
-            // update the stored class job
-            _onFrameworkService._classJobId = classJob;
-            // invoke jobChangedEvent to call the glamourerRevert
-            _gagSpeakGlamourEvent.Invoke(UpdateType.JobChange);
-            return;
-        } 
         
         // make sure we have wardrobe enabled
         if(!_characterHandler.playerChar._enableWardrobe) {
@@ -116,13 +94,13 @@ public class GlamourerFunctions : IDisposable
         }
         
         // make sure we are not already processing a glamour event
-        if(_gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting || _config.disableGlamChangeEvent) {
+        if(_gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting || disableGlamChangeEvent) {
             GagSpeak.Log.Verbose($"[GlamourerChanged]: Blocked due to request variables");
             return;
         }
         
         // if it is a design change, then we should reapply the gags and restraint sets
-        if(type == (int)StateChangeType.Design) {
+        if(type == StateChangeType.Design || type == StateChangeType.Reapply ||  type == StateChangeType.Reset) {
             GagSpeak.Log.Verbose($"[GlamourerChanged]: StateChangeType is Design, Re-Applying any Gags or restraint sets configured if conditions are satisfied");
             // process the latest glamourerData and append our alterations
             _gagSpeakGlamourEvent.Invoke(UpdateType.RefreshAll);
@@ -130,7 +108,7 @@ public class GlamourerFunctions : IDisposable
         }
         
         // CONDITION FIVE: The StateChangeType is an equip or Stain, meaning that the player changed classes in game, or gearsets, causing multiple events to trigger
-        if(type == (int)StateChangeType.Equip || type == (int)StateChangeType.Stain || type == (int)StateChangeType.Weapon) {
+        if(type == StateChangeType.Equip || type == StateChangeType.Stain || type == StateChangeType.Weapon) {
             var enumType = (StateChangeType)type;  
             GagSpeak.Log.Verbose($"[GlamourerChanged]: StateChangeType is {enumType}");
             _gagSpeakGlamourEvent.Invoke(UpdateType.RefreshAll);
@@ -139,12 +117,13 @@ public class GlamourerFunctions : IDisposable
             GagSpeak.Log.Verbose($"[GlamourerChanged]: GlamourerChangedEvent was not equipmenttype, stain, or weapon; but rather {enumType}");
         }
     }
+
     private static  SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
     public async void GlamourEventFired(object sender, GagSpeakGlamourEventArgs e) {
         // Otherwise, fire the events!
         _cts.Cancel();
         await semaphore.WaitAsync();
-        _config.disableGlamChangeEvent = true;
+        disableGlamChangeEvent = true;
         // only execute if our wardrobe is enabled
         if(_characterHandler.playerChar._enableWardrobe) {
             GagSpeak.Log.Debug($"================= [ "+ e.UpdateType.ToString().ToUpper()+" GLAMOUR EVENT FIRED ] ====================");
@@ -242,7 +221,7 @@ public class GlamourerFunctions : IDisposable
                 // condition 7 --> it was a refresh all event, we should reapply all the gags and restraint sets
                 if(e.UpdateType == UpdateType.RefreshAll || e.UpdateType == UpdateType.ZoneChange || e.UpdateType == UpdateType.Login) {
                     GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Refresh All // Zone Change // Login // Job Change");
-                    await UpdateCachedCharacterData();
+                    await Task.Run(() => _onFrameworkService.RunOnFrameworkThread(UpdateCachedCharacterData));
                 }
                 // condition 8 --> it was a safeword event, we should revert to the game, then to game and disable toys
                 if(e.UpdateType == UpdateType.Safeword) {
@@ -254,7 +233,7 @@ public class GlamourerFunctions : IDisposable
                 GagSpeak.Log.Error($"[GlamourEventFired]: Error processing glamour event: {ex.Message}");
             } finally {
                 _gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting = false;
-                _config.finishedDrawingGlamChange = true;
+                finishedDrawingGlamChange = true;
                 semaphore.Release();
             }
         } else {

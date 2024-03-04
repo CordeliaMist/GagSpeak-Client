@@ -81,11 +81,10 @@ public class DebugWindow : Window //, IDisposable
 
     public override void Draw() {
         ImGui.Text($"IsGagSpeakGlamourEventExecuting: {_gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting}");
-        ImGui.Text($"IsFinishedDrawingGlamChange: {_config.finishedDrawingGlamChange}");
-        ImGui.Text($"DisableGlamChangeEvent: {_config.disableGlamChangeEvent}");
         ImGui.Text($"_hcManager.ActivePlayerCfgListIdx: {_hcManager.ActivePlayerCfgListIdx}");
         ImGui.Text($"_hcManager.ActiveHCsetIdx: {_hcManager.ActiveHCsetIdx}");
-        DrawPlayerCharInfo();
+        ImGui.Text($"restraint set active index: {_restraintSetManager._selectedIdx}");
+        ImGui.Text($"whitelist active index: {_characterHandler.activeListIdx}");
         DrawWhitelistCharactersAndLocks();
         DrawRestraintSetOverview();
         DrawAdvancedGarblerInspector();
@@ -139,40 +138,6 @@ public class DebugWindow : Window //, IDisposable
         var triggerlist = _characterHandler.playerChar._triggerAliases[_characterHandler.activeListIdx];
         ImGui.Text($"Trigger Aliases: || "); ImGui.SameLine(); foreach (var alias in triggerlist._aliasTriggers) { ImGui.Text(alias._inputCommand); };
         ImGui.Separator();
-        // int i = 0;
-        // foreach(var uniquePlayer in _characterHandler.playerChar._uniquePlayerPerms) {
-        //     ImGui.Text($"Lock Times: {uniquePlayer._grantExtendedLockTimes}");
-        //     ImGui.Text($"Enable Restraints: {uniquePlayer._enableRestraintSets}");
-        //     ImGui.Text($"Enable Set Locking: {uniquePlayer._restraintSetLocking}");
-        //     ImGui.Text($"Trigger Phrase for them: {uniquePlayer._triggerPhraseForPuppeteer}");
-        //     ImGui.Text($"Trigger start char: {uniquePlayer._StartCharForPuppeteerTrigger}");
-        //     ImGui.Text($"Trigger end char: {uniquePlayer._EndCharForPuppeteerTrigger}");
-        //     ImGui.Text($"Allow sitting: {uniquePlayer._allowSitRequests}");
-        //     ImGui.Text($"Allow emotes: {uniquePlayer._allowMotionRequests}");
-        //     ImGui.Text($"Allow all: {uniquePlayer._allowAllCommands}");
-        //     ImGui.Text($"Allow Changing toy state: {uniquePlayer._allowChangingToyState}");
-        //     ImGui.Text($"Allow pattern execution: {uniquePlayer._allowUsingPatterns}");
-        //     ImGui.Text($"RestraintSetProperties");
-        //     for(int j = 0; j < _hcManager._rsProperties.Count; j++) {
-        //         ImGui.Text($"Properties for restraint set {j}");
-        //         ImGui.Text($"Legs:{_hcManager._rsProperties[j]._legsRestraintedProperty}||");
-        //         ImGui.SameLine();
-        //         ImGui.Text($"Arms:{_hcManager._rsProperties[j]._armsRestraintedProperty}||");
-        //         ImGui.SameLine();
-        //         ImGui.Text($"Gagged:{_hcManager._rsProperties[j]._gaggedProperty}||");
-        //         ImGui.SameLine();
-        //         ImGui.Text($"Blindfolded:{_hcManager._rsProperties[j]._blindfoldedProperty}||");
-        //         ImGui.SameLine();
-        //         ImGui.Text($"Immobile:{_hcManager._rsProperties[j]._immobileProperty}||");
-        //         ImGui.SameLine();
-        //         ImGui.Text($"Weighty:{_hcManager._rsProperties[j]._weightyProperty}||");
-        //         ImGui.SameLine();
-        //         ImGui.Text($"LightStim:{_hcManager._rsProperties[j]._lightStimulationProperty}||");
-        //         ImGui.SameLine();
-        //         ImGui.Text($"MildStim:{_hcManager._rsProperties[j]._mildStimulationProperty}||");
-        //         ImGui.SameLine();
-        //         ImGui.Text($"HeavyStim:{_hcManager._rsProperties[j]._heavyStimulationProperty}||");
-        //     }
         
     }
 

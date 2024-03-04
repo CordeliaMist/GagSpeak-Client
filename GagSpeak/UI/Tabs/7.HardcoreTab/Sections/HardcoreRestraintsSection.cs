@@ -70,7 +70,7 @@ public class HC_RestraintSetProperties
             ImGuiHelpers.GlobalScale*235f);
             // set up the list
             var _defaultItemSpacing = ImGui.GetStyle().ItemSpacing;
-            _restraintSetSelector.DrawRestraintSetSelector(ImGui.GetContentRegionAvail().X, ImGuiHelpers.GlobalScale*210f, _defaultItemSpacing);
+            _restraintSetSelector.DrawRestraintSetSelector(ImGui.GetContentRegionAvail().X, ImGuiHelpers.GlobalScale*235f - ImGui.GetFrameHeightWithSpacing(), _defaultItemSpacing);
             // draw the currently selected set preview
             ImGui.TableNextColumn();
             // draw the header label

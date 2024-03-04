@@ -230,7 +230,7 @@ public class ActionDataSnagger
     }
 
     public unsafe void Draw() {
-        using var child = ImRaii.Child("##HC_Humiliation", new Vector2(ImGui.GetContentRegionAvail().X, -1), true);
+        using var child = ImRaii.Child("##HC_Restrictions", new Vector2(ImGui.GetContentRegionAvail().X, -1), true);
         if (!child)
             return;
 

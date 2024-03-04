@@ -16,6 +16,7 @@ using GagSpeak.Utility;
 using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.CharacterData;
 using Dalamud.Interface.Utility;
+using OtterGui;
 
 namespace GagSpeak.UI.Tabs.ConfigSettingsTab;
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>
@@ -23,6 +24,7 @@ public class ConfigSettingsTab : ITab
 {
     private readonly    GagSpeakConfig                  _config;                // for getting the config
     private readonly    CharacterHandler                _characterHandler;      // for getting the whitelist
+    private readonly    FontService                     _fontService;           // for getting the font
     private             Dictionary<string, string[]>    _languages;             // the dictionary of languages & dialects 
     private             string[]                        _currentDialects;       // the array of language names
     private             string                          _activeDialect;         // the dialect selected
@@ -31,9 +33,10 @@ public class ConfigSettingsTab : ITab
 
     /// <summary> Initializes a new instance of the <see cref="ConfigSettingsTab"/> class. <summary>
     public ConfigSettingsTab(GagSpeakConfig config, CharacterHandler characterHandler,
-    GagListingsDrawer gagListingsDrawer, GagService gagService) {
+    GagListingsDrawer gagListingsDrawer, GagService gagService, FontService fontService) {
         _config = config;
         _characterHandler = characterHandler;
+        _fontService = fontService;
         // load the dropdown info
         _languages = new Dictionary<string, string[]> {
             { "English", new string[] { "US", "UK" } },
@@ -88,12 +91,56 @@ public class ConfigSettingsTab : ITab
             ImGui.SetCursorPosY(yPos - 2*ImGuiHelpers.GlobalScale);
             ///////////////////////////// HARDCORE MODE /////////////////////////////\
             if(_config.hardcoreMode) {ImGui.BeginDisabled();}
-            UIHelpers.CheckboxNoConfig("Hardcore Mode (README)", 
-                "CAN ONLY BE TURNED OFF WITH A SAFEWORD, USE WITH CAUTION\n"+
-                "Enabling removes ability to toggle any options in whitelist tab once two-way commitment is made.",
-                _config.hardcoreMode,
-                v => _config.SetHardcoreMode(!_config.hardcoreMode)
-            );
+            var tmp = _config.hardcoreMode;
+            if (ImGui.Checkbox("##Hardcore Mode", ref tmp) && tmp != _config.hardcoreMode) {
+                // open the popup
+                ImGui.OpenPopup("Hardcore Warning");
+            }
+            ImGui.SameLine();
+            ImGuiUtil.LabeledHelpMarker("Hardcore Mode", "CAN ONLY BE TURNED OFF WITH A SAFEWORD, USE WITH CAUTION\n"+
+            "Enabling removes ability to toggle any options in whitelist tab once two-way commitment is made.");
+
+            ImGui.SetNextWindowSize(new Vector2(750, 375));
+            if (ImGui.BeginPopup("Hardcore Warning")) {
+                ImGui.PushFont(_fontService.UidFont);
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
+                try{
+                    ImGuiUtil.Center("READ THIS WARNING BEFORE HITTING CONFIRM");
+                    ImGui.Separator();
+                } finally {
+                    ImGui.PopStyleColor();
+                    ImGui.PopFont();
+                }
+                ImGui.Spacing();
+                ImGui.PushFont(_fontService.UidFont);
+                try{
+                    ImGuiUtil.Center("Hardcore mode, once enabled, CAN ONLY BE DISABLED WITH A SAFEWORD.");
+                    ImGui.Spacing();
+                    ImGuiUtil.Center("Your settings for someone in whitelist become locked after a two-way commitment.");
+                    ImGui.Spacing();
+                    ImGuiUtil.Center("Ensure you're comfortable with your dynamic tiers before enabling.");
+                    ImGui.Spacing();
+                    ImGuiUtil.Center("In the hardcore tab, you can customize settings for each player.");
+                    ImGui.Spacing();
+                    ImGuiUtil.Center("No modifications can be made in the hardcore tab by anyone not in your whitelist.");
+                    ImGui.Spacing();
+                    ImGuiUtil.Center("You cannot trigger anything in the hardcore tab yourself.");
+                    ImGui.Spacing();
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
+                    ImGui.Separator();
+                    ImGuiUtil.Center("Surrender your Movement, Speech, Hotbar, Vision, Recast Speed, & Dialogue Options?...");
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (ImGuiHelpers.GlobalScale*700/2-ImGuiHelpers.GlobalScale*350/2));
+                    if (ImGui.Button("CONFIRM", new Vector2(ImGuiHelpers.GlobalScale*350, 0))) {
+                        _config.SetHardcoreMode(!_config.hardcoreMode);
+                        ImGui.CloseCurrentPopup();
+                    }
+                } finally {
+                    ImGui.PopStyleColor();
+                    ImGui.PopFont();
+                }
+                ImGui.EndPopup();
+            }
+
             if(_config.hardcoreMode) {ImGui.EndDisabled();}
             ///////////////////////////// COMMAND SETTINGS /////////////////////////////
             // should we allow commands from friends not in whitelist?
@@ -124,6 +171,13 @@ public class ConfigSettingsTab : ITab
                 _characterHandler.playerChar._liveGarblerWarnOnZoneChange,
                 v => _characterHandler.ToggleZoneWarnings()
             );
+            UIHelpers.CheckboxNoConfig("Auto-Open UI",
+                "Opens the GagSpeak UI on login or plugin enable automatically",
+                _config.UiOpenOnEnable,
+                v => _config.SetUiOpenOnEnable(!_config.UiOpenOnEnable)
+            );
+        
+
             ///////////////////////////// WARDROBE SETTINGS /////////////////////////////
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
             ImGui.Text("Wardrobe Settings:");
@@ -219,12 +273,6 @@ public class ConfigSettingsTab : ITab
                 v => _characterHandler.ToggleEnableToybox()
             );
 
-            UIHelpers.CheckboxNoConfig("Auto-Open UI",
-                "Opens the GagSpeak UI on login or plugin enable automatically",
-                _config.UiOpenOnEnable,
-                v => _config.SetUiOpenOnEnable(!_config.UiOpenOnEnable)
-            );
-        
 
             // channel listings
             ImGui.TableNextColumn();

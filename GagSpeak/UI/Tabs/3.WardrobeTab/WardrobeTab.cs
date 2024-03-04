@@ -4,44 +4,42 @@ using ImGuiNET;
 using OtterGui.Raii;
 using OtterGui.Widgets;
 using OtterGui;
-using Dalamud.Interface.Utility;
 
 namespace GagSpeak.UI.Tabs.WardrobeTab;
-/// <summary> This class is used to handle the ConfigSettings Tab. </summary>
+public enum WardrobeSubTab {
+    GagStorage,
+    RestraintSetCompartment,
+}
+
 public class WardrobeTab : ITab
 {
     private readonly    GagSpeakConfig                  _config;                // for getting the config
     private readonly    WardrobeGagCompartment          _GagCompartment;              // for getting the gag shelf
     private readonly    WardrobeRestraintCompartment    _RestraintCompartment;        // for getting the restraint shelf
-
-    // for toggling the restraint shelf tab
-    private bool ViewingRestraintCompartment {
-        get => _config.viewingRestraintCompartment;
-        set {
-            _config.viewingRestraintCompartment = value;
-            _config.Save();
-        }
-    } 
+    private             WardrobeSubTab                  _subTab;                // for getting the sub tab
 
     public WardrobeTab(GagSpeakConfig config, WardrobeGagCompartment GagCompartment, WardrobeRestraintCompartment RestraintCompartment) {
         _config = config;
         _GagCompartment = GagCompartment;
         _RestraintCompartment = RestraintCompartment;
-        _config.viewingRestraintCompartment = false;
+        _subTab = _config.WardrobeActiveTab;
     }
 
     public ReadOnlySpan<byte> Label => "Wardrobe"u8; // apply the tab label
 
     /// <summary> This Function draws the content for the window of the ConfigSettings Tab </summary>
     public void DrawContent() {
+        if(_subTab != _config.WardrobeActiveTab) {
+            _subTab = _config.WardrobeActiveTab;
+        }
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         DrawShelfSelection();
-        if(ViewingRestraintCompartment) {
-            _RestraintCompartment.DrawContent();
+        if(_subTab == WardrobeSubTab.GagStorage) {
+            _GagCompartment.DrawContent();
         }
         else {
-            _GagCompartment.DrawContent();
+            _RestraintCompartment.DrawContent();
         }
     }
 
@@ -51,11 +49,17 @@ public class WardrobeTab : ITab
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero).Push(ImGuiStyleVar.FrameRounding, 0);
         var buttonSize = new Vector2(ImGui.GetContentRegionAvail().X / 2, ImGui.GetFrameHeight());
         // draw out the buttons for the compartments of our kink wardrobe
-        if (ImGuiUtil.DrawDisabledButton("Gag Storage Compartment", buttonSize, "Shows all of your stored gag's and lets you configure unique settings for each!", !ViewingRestraintCompartment))
-            ViewingRestraintCompartment = false;
+        if (ImGuiUtil.DrawDisabledButton("Gag Storage Compartment", buttonSize, "Shows all of your stored gag's and lets you configure unique settings for each!",
+        _subTab == WardrobeSubTab.GagStorage))
+        {
+            _config.SetWardrobeActiveTab(WardrobeSubTab.GagStorage);
+        }
         ImGui.SameLine();
-        if (ImGuiUtil.DrawDisabledButton("Restraint Outfits Compartment", buttonSize, "Configure Lockable Restraint sets that can act as an overlay for your glamour!", ViewingRestraintCompartment))
-            ViewingRestraintCompartment = true;
+        if (ImGuiUtil.DrawDisabledButton("Restraint Outfits Compartment", buttonSize, "Configure Lockable Restraint sets that can act as an overlay for your glamour!",
+        _subTab == WardrobeSubTab.RestraintSetCompartment))
+        {
+            _config.SetWardrobeActiveTab(WardrobeSubTab.RestraintSetCompartment);
+        }
         // end the style
         style.Pop();
     }
