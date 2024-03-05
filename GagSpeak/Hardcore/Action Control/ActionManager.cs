@@ -115,7 +115,7 @@ public unsafe class GsActionManager : IDisposable
 #region SlotManagment
     public void RestoreSavedSlots() {
         if(_clientState.LocalPlayer != null && _clientState.LocalPlayer.ClassJob != null && raptureHotarModule != null) {
-            GagSpeak.Log.Debug($"[Action Manager]: Restoring saved slots");
+            GSLogger.LogType.Debug($"[Action Manager]: Restoring saved slots");
             // restore all hotbar slots (DOES NOT WORK ON CROSS HOTBARS FROM WHAT I KNOW, USE AT OWN RISK)
             var baseSpan = raptureHotarModule->StandardHotBars; // the length of our hotbar count
             for(int i=0; i < baseSpan.Length; i++) {
@@ -128,7 +128,7 @@ public unsafe class GsActionManager : IDisposable
                 }
             }
         } else {
-            GagSpeak.Log.Debug($"[Action Manager]: Player is null, returning");
+            GSLogger.LogType.Debug($"[Action Manager]: Player is null, returning");
         }
     }
 
@@ -196,7 +196,7 @@ public unsafe class GsActionManager : IDisposable
     private void UpdateJobList() {
         // this will be called by the job changed event. When it does, we will update our job list with the new job.
         if(_clientState.LocalPlayer != null && _clientState.LocalPlayer.ClassJob != null) {
-            GagSpeak.Log.Debug($"[Action Manager]: Updating job list");
+            GSLogger.LogType.Debug($"[Action Manager]: Updating job list");
             ActionData.GetJobActionProperties((JobType)_clientState.LocalPlayer.ClassJob.Id, out var bannedJobActions);
             CurrentJobBannedActions = bannedJobActions; // updated our job list
             // only do this if we are logged in
@@ -208,7 +208,7 @@ public unsafe class GsActionManager : IDisposable
                 GenerateCooldowns();
             }
         } else {
-            GagSpeak.Log.Debug($"[Action Manager]: Player is null, returning");
+            GSLogger.LogType.Debug($"[Action Manager]: Player is null, returning");
         }
     }
 
@@ -241,7 +241,7 @@ public unsafe class GsActionManager : IDisposable
                         var recastTime = ActionManager.GetAdjustedRecastTime(ActionType.Action, adjustedId);
                         recastTime = (int)(recastTime * _hcManager.StimulationMultipler);
                         // if it is an action or general action, append it
-                        GagSpeak.Log.Verbose($"[Action Manager]: SlotID {slot->CommandId} Cooldown group {cooldownGroup} with recast time {recastTime}");
+                        GSLogger.LogType.Verbose($"[Action Manager]: SlotID {slot->CommandId} Cooldown group {cooldownGroup} with recast time {recastTime}");
                         if (!CooldownList.ContainsKey(cooldownGroup)) {
                             CooldownList.Add(cooldownGroup, new Tuple<float, DateTime>(recastTime, DateTime.MinValue));
                         }
@@ -254,16 +254,16 @@ public unsafe class GsActionManager : IDisposable
 #endregion SlotManagment
 #region EventHandlers
     private void OnMovementManagerInitialized() {
-        GagSpeak.Log.Debug("======================== [ Completing Action Manager Initialization ] ========================");      
+        GSLogger.LogType.Information(" Completing Action Manager Initialization ");
         // if we are ready to initialize the actions, we should update our job list
         UpdateJobList();
         // see if we should enable the sets incase we load this prior to the restraint set manager loading.
         if(_restraintSetManager._restraintSets.Any(x => x._enabled)){
             var index = _restraintSetManager._restraintSets.FindIndex(x => x._enabled);
-            GagSpeak.Log.Debug($"[Action Manager]: Restraint set index {index} is now active");            
+            GSLogger.LogType.Debug($"[Action Manager]: Restraint set index {index} is now active");            
             EnableProperties(index);
         } else {
-            GagSpeak.Log.Debug($"[Action Manager]: No restraint sets are active");
+            GSLogger.LogType.Debug($"[Action Manager]: No restraint sets are active");
         }
         _framework.Update += framework_Update;
         // invoke the actionManagerFinished method
@@ -275,12 +275,12 @@ public unsafe class GsActionManager : IDisposable
         // we know which set is active when we try applying affects to the hotbar
         if(e.ToggleType == RestraintSetToggleType.Enabled) {
             EnableProperties(e.SetIndex);
-            GagSpeak.Log.Debug($"[Action Manager]: Restraint set index {e.SetIndex} is now active");
+            GSLogger.LogType.Debug($"[Action Manager]: Restraint set index {e.SetIndex} is now active");
         }
         // if we are disabling the restraint set, we should restore our hotbar slots to the saved state over the live state
         if(e.ToggleType == RestraintSetToggleType.Disabled) {
             DisableProperties();
-            GagSpeak.Log.Debug($"[Action Manager]: Restraint set index {e.SetIndex} is now disabled");
+            GSLogger.LogType.Debug($"[Action Manager]: Restraint set index {e.SetIndex} is now disabled");
         }
     }
 
@@ -359,25 +359,25 @@ public unsafe class GsActionManager : IDisposable
                         var adjustedId = am->GetAdjustedActionId(acId);
                         var recastGroup = am->GetRecastGroup((int)type, adjustedId);
                         if (CooldownList.ContainsKey(recastGroup)) {
-                            GagSpeak.Log.Debug($"[Action Manager]: GROUP FOUND - Recast Time: {recastTime} | Cast Group: {recastGroup}");
+                            GSLogger.LogType.Debug($"[Action Manager]: GROUP FOUND - Recast Time: {recastTime} | Cast Group: {recastGroup}");
                             var cooldownData = CooldownList[recastGroup];
                             // if we are beyond our recast time from the last time used, allow the execution
                             if (DateTime.Now >= cooldownData.Item2.AddMilliseconds(cooldownData.Item1)) {
                                 // Update the last execution time before execution
-                                GagSpeak.Log.Debug($"[Action Manager]: ACTION COOLDOWN FINISHED");
+                                GSLogger.LogType.Debug($"[Action Manager]: ACTION COOLDOWN FINISHED");
                                 CooldownList[recastGroup] = new Tuple<float, DateTime>(cooldownData.Item1, DateTime.Now);
                             } else {
-                                GagSpeak.Log.Debug($"[Action Manager]: ACTION COOLDOWN NOT FINISHED");
+                                GSLogger.LogType.Debug($"[Action Manager]: ACTION COOLDOWN NOT FINISHED");
                                 return false; // Do not execute the action
                             }
                         } else {
-                            GagSpeak.Log.Debug($"[Action Manager]: GROUP NOT FOUND");
+                            GSLogger.LogType.Debug($"[Action Manager]: GROUP NOT FOUND");
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            GagSpeak.Log.Error(e.ToString());
+            GSLogger.LogType.Error(e.ToString());
         }
         // return the original if we reach here
         var ret = UseActionHook.Original(am, type, acId, target, a5, a6, a7, a8);

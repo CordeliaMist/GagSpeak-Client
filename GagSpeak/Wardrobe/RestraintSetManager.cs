@@ -46,7 +46,7 @@ public class RestraintSetManager : ISavable, IDisposable
         _RS_ToggleEvent = RS_ToggleEvent;
         _clientState = clientState;
         //_penumbra = penumbra;
-        GagSpeak.Log.Debug($"[RestraintSetManager] Attempting to load restraint sets p1");
+        GSLogger.LogType.Debug($"[RestraintSetManager] Attempting to load restraint sets p1");
         // load the information from our storage file
         Load();
         // if the load failed, meaning our _restraintSets is empty, then we need to add a default set
@@ -69,7 +69,7 @@ public class RestraintSetManager : ISavable, IDisposable
 #region ConstructorOrder
     // fired when our character handler finishes loading, aka this is the 2nd main component that should load
     private void OnStepCompleted() {
-        GagSpeak.Log.Debug("======================== [ Completing Restraint Set Manager Initialization ] ========================");
+        GSLogger.LogType.Information("  Completing Restraint Set Manager Initialization ");
         // if any of our sets are enabled, then prime the events
         MonitorLoginAndInvokeEvent();
     }
@@ -82,7 +82,7 @@ public class RestraintSetManager : ISavable, IDisposable
         Task.Run(async () =>
         {
             if(!IsPlayerLoggedIn()) {
-                GagSpeak.Log.Debug($"[RestraintSetManager] Waiting for login to complete before activating restraint set");
+                GSLogger.LogType.Debug($"[RestraintSetManager] Waiting for login to complete before activating restraint set");
                 while (!_clientState.IsLoggedIn || _clientState.LocalPlayer == null || _clientState.LocalPlayer.Address == IntPtr.Zero) {
                     await Task.Delay(1000); // Wait for 1 second before checking the login status again
                 }
@@ -188,13 +188,13 @@ public class RestraintSetManager : ISavable, IDisposable
             // we want to set this to true, so first disable all other sets
             for (int i = 0; i < _restraintSets.Count; i++) {
                 if (_restraintSets[i]._enabled) {
-                    GagSpeak.Log.Debug($"[RestraintSetManager] Disabling set {i} before enabling set {restraintSetIdx}");
+                    GSLogger.LogType.Debug($"[RestraintSetManager] Disabling set {i} before enabling set {restraintSetIdx}");
                     _restraintSets[i].SetIsEnabled(false, assignerName);
                     // invoke the toggledSet event so we know which set was disabled, to send off to the hardcore panel
                     _RS_ToggleEvent.Invoke(RestraintSetToggleType.Disabled, i, assignerName);
                 }
             }
-            GagSpeak.Log.Debug($"[RestraintSetManager] Enabling set {restraintSetIdx}");
+            GSLogger.LogType.Debug($"[RestraintSetManager] Enabling set {restraintSetIdx}");
             // then set this one to true
             _restraintSets[restraintSetIdx].SetIsEnabled(true, assignerName);
             // and update our restraint set
@@ -205,7 +205,7 @@ public class RestraintSetManager : ISavable, IDisposable
         // OTHERWISE, we want to set it to false, so just disable it 
         else {
             // disable it
-            GagSpeak.Log.Debug($"[RestraintSetManager] Disabling set {restraintSetIdx}");
+            GSLogger.LogType.Debug($"[RestraintSetManager] Disabling set {restraintSetIdx}");
             _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled, assignerName);
             // then fire a disable restraint set event to revert to automation
             _glamourEvent.Invoke(UpdateType.DisableRestraintSet);
@@ -221,7 +221,7 @@ public class RestraintSetManager : ISavable, IDisposable
     public void ToggleRestraintSetPieceEnabledState(int restraintSetIdx, EquipSlot slot) {
         // get the current state
         bool currentState = _restraintSets[restraintSetIdx]._drawData[slot]._isEnabled;
-        GagSpeak.Log.Debug($"[RestraintSetManager] Toggled {slot} visibility ({!currentState})");
+        GSLogger.LogType.Debug($"[RestraintSetManager] Toggled {slot} visibility ({!currentState})");
         // invert the state
         _restraintSets[restraintSetIdx].SetPieceIsEnabled(slot, !currentState);
         // save the set
@@ -235,7 +235,7 @@ public class RestraintSetManager : ISavable, IDisposable
     public void LockRestraintSet(int restraintSetIdx, string wasLockedBy = "") {
         // if the set is not enabled, then you cant lock it
         if (!_restraintSets[restraintSetIdx]._enabled) {
-            GagSpeak.Log.Debug($"[RestraintSetManager] Cannot lock a disabled set!");
+            GSLogger.LogType.Debug($"[RestraintSetManager] Cannot lock a disabled set!");
             return;
         }
         _restraintSets[restraintSetIdx].SetIsLocked(true, wasLockedBy);
@@ -245,12 +245,12 @@ public class RestraintSetManager : ISavable, IDisposable
     public bool TryUnlockRestraintSet(int restraintSetIdx, string UnlockerName = "") {
         // if the set is not locked, then you cant unlock it
         if (!_restraintSets[restraintSetIdx]._locked) {
-            GagSpeak.Log.Debug($"[RestraintSetManager] Cannot unlock an unlocked set!");
+            GSLogger.LogType.Debug($"[RestraintSetManager] Cannot unlock an unlocked set!");
             return false;
         }
         // if the set is not enabled, then you cant unlock it
         if (!_restraintSets[restraintSetIdx]._enabled) {
-            GagSpeak.Log.Debug($"[RestraintSetManager] Cannot unlock a disabled set!");
+            GSLogger.LogType.Debug($"[RestraintSetManager] Cannot unlock a disabled set!");
             return false;
         }
         // if the set is locked by someone else, then you cant unlock it
@@ -258,7 +258,7 @@ public class RestraintSetManager : ISavable, IDisposable
         && _restraintSets[restraintSetIdx]._wasLockedBy != "self"
         && _restraintSets[restraintSetIdx]._wasLockedBy != "")
         {
-            GagSpeak.Log.Debug($"[RestraintSetManager] Cannot unlock a set locked by someone else!");
+            GSLogger.LogType.Debug($"[RestraintSetManager] Cannot unlock a set locked by someone else!");
             return false;
         }
         _restraintSets[restraintSetIdx].SetIsLocked(false);
@@ -275,7 +275,7 @@ public class RestraintSetManager : ISavable, IDisposable
         }
         _restraintSets[setIndex]._associatedMods.Add(modTuple);
         Save();
-        GagSpeak.Log.Debug($"Added associated mod {mod.DirectoryName} to Restraint Set: "+
+        GSLogger.LogType.Debug($"Added associated mod {mod.DirectoryName} to Restraint Set: "+
         $"{_restraintSets[setIndex]._name}.");
     }
 
@@ -287,7 +287,7 @@ public class RestraintSetManager : ISavable, IDisposable
         }
         _restraintSets[setIndex]._associatedMods.Remove(modTuple);
         Save();
-        GagSpeak.Log.Debug($"Removed associated mod {mod.DirectoryName} from Restraint Set: "+
+        GSLogger.LogType.Debug($"Removed associated mod {mod.DirectoryName} from Restraint Set: "+
         $"{_restraintSets[setIndex]._name}.");
     }
 
@@ -298,7 +298,7 @@ public class RestraintSetManager : ISavable, IDisposable
         }
         _restraintSets[setIndex]._associatedMods[modIndex] = (mod, settings, disableWhenInactive);
         Save();
-        GagSpeak.Log.Debug($"Updated associated mod {mod.DirectoryName} from Restraint Set: "+
+        GSLogger.LogType.Debug($"Updated associated mod {mod.DirectoryName} from Restraint Set: "+
         $"{_restraintSets[setIndex]._name}.");
     }
 #endregion ModAssociations
@@ -355,7 +355,7 @@ public class RestraintSetManager : ISavable, IDisposable
             set._wasLockedBy = "";
             set._lockedTimer = DateTimeOffset.Now; 
         }
-        GagSpeak.Log.Debug($"[RestraintSetManager] Reset all restraint sets due to safeword!");
+        GSLogger.LogType.Debug($"[RestraintSetManager] Reset all restraint sets due to safeword!");
         Save();
     }
 #endregion Setters
@@ -392,7 +392,7 @@ public class RestraintSetManager : ISavable, IDisposable
         if (!File.Exists(file)) {
             return;
         }
-        GagSpeak.Log.Debug($"[RestraintSetManager] Attempting to load restraint sets p2");
+        GSLogger.LogType.Debug($"[RestraintSetManager] Attempting to load restraint sets p2");
         try {
             var text = File.ReadAllText(file);
             var jsonObject = JObject.Parse(text);
@@ -407,9 +407,9 @@ public class RestraintSetManager : ISavable, IDisposable
                 _restraintSets.Add(restraintSet);
             }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"Failure to load automated designs: Error during parsing. {ex}");
+            GSLogger.LogType.Error($"Failure to load automated designs: Error during parsing. {ex}");
         } finally {
-            GagSpeak.Log.Debug($"[GagStorageManager] RestraintSets.json loaded! Loaded {_restraintSets.Count} restraint sets.");
+            GSLogger.LogType.Debug($"[GagStorageManager] RestraintSets.json loaded! Loaded {_restraintSets.Count} restraint sets.");
         }
     }
 }

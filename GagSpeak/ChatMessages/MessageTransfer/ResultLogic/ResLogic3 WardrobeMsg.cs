@@ -26,7 +26,7 @@ public partial class ResultLogic {
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Gag Storage UI Lock has been toggled to "+
                 $"{_characterHandler.playerChar._lockGagStorageOnGagLock}.").AddItalicsOff().BuiltString);
                 // log the result
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling gag storage UI lock");
+                GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling gag storage UI lock");
                 return true;
             } else {
                 isHandled = true;
@@ -57,7 +57,7 @@ public partial class ResultLogic {
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Enable Restraint Sets has been toggled "+
                 $"to {_characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._enableRestraintSets}.").AddItalicsOff().BuiltString);
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling enable restraint sets");
+                GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling enable restraint sets");
                 return true;
             } else {
                 isHandled = true;
@@ -87,7 +87,7 @@ public partial class ResultLogic {
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Allow Restraint Locking "+
                 $"has been toggled to {_characterHandler.playerChar._uniquePlayerPerms[idx]._restraintSetLocking}.").AddItalicsOff().BuiltString);
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling allow restraint locking");
+                GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling allow restraint locking");
                 return true;
             } else {
                 isHandled = true;
@@ -127,7 +127,7 @@ public partial class ResultLogic {
                 _restraintSetManager.ChangeRestraintSetState(setIdx, !_restraintSetManager._restraintSets[setIdx]._enabled, playerName);
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Restraint Set {decodedMessageMediator.setToLockOrUnlock} has been enabled.").AddItalicsOff().BuiltString);
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for enabling restraint set");
+                GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for enabling restraint set");
                 return true;
             } else {
                 isHandled = true;
@@ -179,7 +179,7 @@ public partial class ResultLogic {
                         // notify the user that the request as been sent. 
                         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Restraint Set "+
                         $"{decodedMessageMediator.setToLockOrUnlock} has been locked for {decodedMessageMediator.layerTimer[0]}.").AddItalicsOff().BuiltString);
-                        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for locking restraint set");
+                        GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for locking restraint set");
                         return true;
                     } else {
                         isHandled = true;
@@ -214,7 +214,7 @@ public partial class ResultLogic {
             if(_lockManager.UnlockRestraintSet(decodedMessageMediator.setToLockOrUnlock, playerName)) {
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Restraint Set {decodedMessageMediator.setToLockOrUnlock} has been unlocked.").AddItalicsOff().BuiltString);
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for unlocking restraint set");
+                GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for unlocking restraint set");
             } else {
                 isHandled = true;
                 LogError($"[MsgResultLogic]: Restraint Set {decodedMessageMediator.setToLockOrUnlock} could not be unlocked. {playerName} tried, but unlockrestraintset logic failed!");

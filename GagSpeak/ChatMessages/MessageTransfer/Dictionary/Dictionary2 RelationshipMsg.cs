@@ -9,7 +9,7 @@ public partial class MessageDictionary {
         if (textVal.Contains("looks down upon the submissive one before them, their pleading eyes forcing a smile across their lips. \"I take "+
         "it you would like for me to become your"))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Mistress/Master/Owner) command");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Mistress/Master/Owner) command");
             decodedMessageMediator.encodedMsgIndex = 11;
             decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
@@ -19,7 +19,7 @@ public partial class MessageDictionary {
         else if (textVal.Contains("looks up at the dominant figure before them pleading eyes, apperciating their presence deeply and desiring "+
         "to grow closer towards them.* \"Would you please take me in as your"))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Slave/Pet) command");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Slave/Pet) command");
             decodedMessageMediator.encodedMsgIndex = 12;
             decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
@@ -29,7 +29,7 @@ public partial class MessageDictionary {
         else if (textVal.Contains("hears the sound of her leash's chain rattling along the floor as she crawls up to your feet. Stopping, looking "+
         "up with pleading eyes in an embarassed tone") && textVal.Contains("Would it be ok if I became your"))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Absolute-Slave) command");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected outgoing /relationship request (Absolute-Slave) command");
             decodedMessageMediator.encodedMsgIndex = 13;
             decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
@@ -38,7 +38,7 @@ public partial class MessageDictionary {
         // Acceptance of a player as your new Mistress/Master/Owner (relation) [ ID == 14 ]
         else if (textVal.Contains("nods in agreement with a smile.* \"Oh yes, most certainly. I would love for you to become my"))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship acceptance (Mistress/Master/Owner) command");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected incoming /relationship acceptance (Mistress/Master/Owner) command");
             decodedMessageMediator.encodedMsgIndex = 14;
             decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
@@ -48,7 +48,7 @@ public partial class MessageDictionary {
         else if (textVal.Contains("smiles upon hearing the request and nods in agreement as their blushed companion. Reaching down to clasp a new "+
         "collar snug around their submissives neck.* \"Yes dearest, I'd love to make you my"))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship acceptance (Slave/Pet) command");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected incoming /relationship acceptance (Slave/Pet) command");
             decodedMessageMediator.encodedMsgIndex = 15;
             decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
@@ -58,7 +58,7 @@ public partial class MessageDictionary {
         else if (textVal.Contains("glanced back down at her companion who had just crawled up to their legs with the pleading look and smiled.* "+
         "\"Verywell. And I hope you're able to devote yourself to the commitment of being my"))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship acceptance (Absolute-Slave) command");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected incoming /relationship acceptance (Absolute-Slave) command");
             decodedMessageMediator.encodedMsgIndex = 16;
             decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
@@ -68,7 +68,7 @@ public partial class MessageDictionary {
         else if (textVal.Contains("smiles gently and shakes their head* \"I'm sorry, I just dont think I have enough space left in my daily life to "+
         "commit to such a bond quite yet.\""))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship decline (Mistress/Master/Owner) command");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected incoming /relationship decline (Mistress/Master/Owner) command");
             decodedMessageMediator.encodedMsgIndex = 17;
             decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
@@ -78,7 +78,7 @@ public partial class MessageDictionary {
         else if (textVal.Contains("shakes their head from side, \"I apologize dear, but I don't think im ready to commit myself to having that kind "+
         "of dynamic at the moment.\""))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship decline (Slave/Pet) command");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected incoming /relationship decline (Slave/Pet) command");
             decodedMessageMediator.encodedMsgIndex = 18;
             decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
@@ -88,7 +88,7 @@ public partial class MessageDictionary {
         else if (textVal.Contains("takes a step back in surprise, \"Oh, I apologize, I didnt think you wanted a commitment that heavy... As much as "+
         "I'd love to oblige, I dont have enough space left in my life to commit to such a thing.\""))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected incoming /relationship decline (Absolute-Slave) command");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected incoming /relationship decline (Absolute-Slave) command");
             decodedMessageMediator.encodedMsgIndex = 19;
             decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;
@@ -98,7 +98,7 @@ public partial class MessageDictionary {
         else if (textVal.Contains("looks up at you with tears in her eyes. She never wanted this moment to come, but also knows due to the "+
         "circumstances it was enivtable.* \"I'm sorry, but I cant keep our relationship going right now, there is just too much going on\""))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing /relationship removal command");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected outgoing /relationship removal command");
             decodedMessageMediator.encodedMsgIndex = 20;
             decodedMessageMediator.msgType = DecodedMessageType.Relationship;
             return true;

@@ -44,7 +44,7 @@ public class PatternHandler : ISavable
             return;
         }
         _patterns[_activePatternIndex]._patternData = data;
-        GagSpeak.Log.Debug($"[Pattern Handler] Imported pattern data: {_patterns[_activePatternIndex]._patternData}");
+        GSLogger.LogType.Debug($"[Pattern Handler] Imported pattern data: {_patterns[_activePatternIndex]._patternData}");
         _saveService.QueueSave(this);
     }
 
@@ -185,9 +185,9 @@ public class PatternHandler : ISavable
             }
             _activePatternIndex = jsonObject["Active Pattern Index"]?.Value<int>() ?? -1;
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"[Pattern Handler] Failure to load patterns: Error during parsing. {ex}");
+            GSLogger.LogType.Error($"[Pattern Handler] Failure to load patterns: Error during parsing. {ex}");
         } finally {
-            GagSpeak.Log.Debug($"[Pattern Handler] PatternStorage.json loaded! Loaded {_patterns.Count} patterns to profile.");
+            GSLogger.LogType.Debug($"[Pattern Handler] PatternStorage.json loaded! Loaded {_patterns.Count} patterns to profile.");
         }
         #pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }

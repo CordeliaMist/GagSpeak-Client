@@ -4,11 +4,15 @@ using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Windows.Forms;
 using PInvoke;
+using Dalamud.Utility;
+using GagSpeak.GSLogger;
+using System.Numerics;
+using ImGuiNET;
 
 namespace GagSpeak.Utility;
 
 /// <summary> A class for all of the UI helpers, including basic functions for drawing repetative yet unique design elements </summary>
-public static class HcHelpers
+public static class GenericHelpers
 {
     /// <summary> A generic function to iterate through a collection and perform an action on each item </summary>
     public static void Each<T>(this IEnumerable<T> collection, Action<T> function) {
@@ -28,7 +32,7 @@ public static class HcHelpers
         } catch (Exception e) {
             // log errors if not surpressed
             if (!suppressErrors) {
-                GagSpeak.Log.Debug($"{e.Message}\n{e.StackTrace ?? ""}");
+                GSLogger.LogType.Debug($"{e.Message}\n{e.StackTrace ?? ""}");
             }
         }
     }
@@ -54,4 +58,55 @@ public static class HcHelpers
 
     // see if the key bit is set
     public static bool IsBitSet(short b, int pos) => (b & (1 << pos)) != 0;
+
+
+    public static bool Copy(string text, bool silent = false) {
+        try {
+            if (text.IsNullOrEmpty()) {
+                Clipboard.Clear();
+                if (!silent) Notify.Success("Clipboard cleared");
+            }
+            else {
+                Clipboard.SetText(text);
+                if (!silent) Notify.Success("Text copied to clipboard");
+            }
+            return true;
+        }
+        catch(Exception e) {
+            if (!silent) {
+                Notify.Error($"Error copying to clipboard:\n{e.Message}\nPlease try again");
+            }
+            GSLogger.LogType.Warning($"Error copying to clipboard:");
+            // e.LogWarning();
+            return false;
+        }
+    }
+
+    public static void TextWrappedCopy(Vector4 col, string text) {
+        TextWrapped(col, text);
+        if (ImGui.IsItemHovered()) {
+            ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+        }
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Left)) {
+            Copy(text);
+        }
+    }
+
+    public static void TextWrapped(Vector4 col, string s) {
+        ImGui.PushTextWrapPos(0);
+        try{
+            ImGui.PushStyleColor(ImGuiCol.Text, col);
+            try {
+                ImGui.TextUnformatted(s);
+            }
+            finally {
+                ImGui.PopStyleColor();
+            }
+        } finally {
+            ImGui.PopTextWrapPos();
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool EqualsIgnoreCase(this string s, string other) => s.Equals(other, StringComparison.OrdinalIgnoreCase);
 }

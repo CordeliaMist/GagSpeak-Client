@@ -75,7 +75,7 @@ public class PuppeteerSelector
         {
             // Check if there is an active pattern
             if (_characterHandler.playerChar._triggerAliases[_characterHandler.activeListIdx]._aliasTriggers.Count() == 0) {
-                GagSpeak.Log.Warning("No Aliases to copy.");
+                GSLogger.LogType.Warning("No Aliases to copy.");
                 return;
             }
             // create a dictionary<string,string> where the key stores the input, and the value stores the output
@@ -91,10 +91,10 @@ public class PuppeteerSelector
             string base64 = Convert.ToBase64String(compressed);
             // Copy the base64 string to the clipboard
             ImGui.SetClipboardText(base64);
-            GagSpeak.Log.Debug($"Copied aliases to clipboard");
+            GSLogger.LogType.Debug($"Copied aliases to clipboard");
         }
         catch (Exception ex) {
-            GagSpeak.Log.Warning($"{ex.Message} Could not copy alias data to clipboard.");
+            GSLogger.LogType.Warning($"{ex.Message} Could not copy alias data to clipboard.");
         }
     }
 }

@@ -26,7 +26,7 @@ public class IpaParserEN_FR_JP_SP
 		_pluginInterface = pluginInterface;
 
 		// Set the path to the JSON file based on the language dialect
-		GagSpeak.Log.Debug($"[IPA Parser] Language dialect: {_config.languageDialect}");
+		GSLogger.LogType.Debug($"[IPA Parser] Language dialect: {_config.languageDialect}");
 		switch (_config.languageDialect) {
 			case "IPA_US":		data_file = "GarblerCore\\jsonFiles\\en_US.json"; break;
 			case "IPA_UK":		data_file = "GarblerCore\\jsonFiles\\en_UK.json"; break;
@@ -47,16 +47,16 @@ public class IpaParserEN_FR_JP_SP
 			// deserialize the json into the obj dictionary
 			obj = JsonConvert.DeserializeObject<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
 			// let log know that the file was read
-			GagSpeak.Log.Debug($"[IPA Parser] File read: {data_file}");
+			GSLogger.LogType.Debug($"[IPA Parser] File read: {data_file}");
 		}
 		catch (FileNotFoundException) {
 			// If the file does not exist, log an error and initialize obj as an empty dictionary
-			GagSpeak.Log.Debug($"[IPA Parser] File does not exist: {data_file}");
+			GSLogger.LogType.Debug($"[IPA Parser] File does not exist: {data_file}");
 			obj = new Dictionary<string, string>();
 		}
 		catch (Exception ex) {
 			// If any other error occurs, log the error and initialize obj as an empty dictionary
-			GagSpeak.Log.Debug($"[IPA Parser] An error occurred while reading the file: {ex.Message}");
+			GSLogger.LogType.Debug($"[IPA Parser] An error occurred while reading the file: {ex.Message}");
 			obj = new Dictionary<string, string>();
 		}
 
@@ -71,7 +71,7 @@ public class IpaParserEN_FR_JP_SP
 			SetUniqueSymbolsString();
 		}
 		catch (Exception ex) {
-			GagSpeak.Log.Debug($"[IPA Parser] An error occurred while extracting unique phonetics: {ex.Message}");
+			GSLogger.LogType.Debug($"[IPA Parser] An error occurred while extracting unique phonetics: {ex.Message}");
 		}
 	}
 
@@ -88,7 +88,7 @@ public class IpaParserEN_FR_JP_SP
 	/// <list type="Bullet"><item><c>input</c><param name="input"> - String to convert</param></item></list>
 	/// </summary><returns> The input string converted to IPA notation</returns>
     public string ToIPAStringDisplay(string input) {
-		GagSpeak.Log.Debug($"[IPA Parser] Parsing IPA string from message: {input}");
+		GSLogger.LogType.Debug($"[IPA Parser] Parsing IPA string from message: {input}");
 		// split the string by the spaces between words
         string[] c_w = (Preprocess(input) + " ").Split(" ");
         // the new string to output
@@ -111,7 +111,7 @@ public class IpaParserEN_FR_JP_SP
                 }
             }
         }
-		GagSpeak.Log.Debug($"[IPA Parser] Parsed IPA string: {str}");
+		GSLogger.LogType.Debug($"[IPA Parser] Parsed IPA string: {str}");
 		//str = ConvertToSpacedPhonetics(str);
         return str;
     }
@@ -131,7 +131,7 @@ public class IpaParserEN_FR_JP_SP
 	/// <returns>A dictionary where each word from the input string maps to a list of its phonetic symbols.</returns></summary>
 	public List<Tuple<string, List<string>>> ToIPAList(string input) {
 		// Log the input string
-		GagSpeak.Log.Debug($"[IPA Parser] Parsing IPA string from original message: {input}");
+		GSLogger.LogType.Debug($"[IPA Parser] Parsing IPA string from original message: {input}");
 		// Split the input string into words
 		string[] c_w = (Preprocess(input) + " ").Split(" ");
 		// Initialize the result dictionary
@@ -183,7 +183,7 @@ public class IpaParserEN_FR_JP_SP
 				}
 			}
 		}
-		GagSpeak.Log.Debug("[IPA Parser] String parsed to list successfully: " +
+		GSLogger.LogType.Debug("[IPA Parser] String parsed to list successfully: " +
 						$"{string.Join(", ", result.Select(t => $"{t.Item1}: [{string.Join(", ", t.Item2)}]"))}");
 		return result;
 	}
@@ -242,7 +242,7 @@ public class IpaParserEN_FR_JP_SP
 	}
 	/*
 	public string ConvertToSpacedPhonetics(string input) {
-		GagSpeak.Log.Debug($"[IPA Parser] Converting phonetics to spaced phonetics: {input}");
+		GSLogger.LogType.Debug($"[IPA Parser] Converting phonetics to spaced phonetics: {input}");
 		string output = "";
 		// Add a placeholder at the start and end of the input string
 		input = " " + input + " ";
@@ -250,7 +250,7 @@ public class IpaParserEN_FR_JP_SP
 		string[] phoneticRepresentations = Regex.Split(input, @"(?<=\))\s*(?=\()");
 		// Iterate over the phonetic representations
 		foreach (var representation in phoneticRepresentations) {
-			GagSpeak.Log.Debug($"[IPA Parser] Phonetic representation: {representation}");
+			GSLogger.LogType.Debug($"[IPA Parser] Phonetic representation: {representation}");
 			// Remove the placeholders
 			string phonetics = representation.Trim();
 			// Check if the representation has a phonetic representation
@@ -288,7 +288,7 @@ public class IpaParserEN_FR_JP_SP
 				output += phonetics + " ";
 			}
 		}
-		GagSpeak.Log.Debug($"[IPA Parser] Converted phonetics to spaced phonetics: {output}");
+		GSLogger.LogType.Debug($"[IPA Parser] Converted phonetics to spaced phonetics: {output}");
 		// Remove the trailing space and return the output
 		return output.TrimEnd();
 	}*/

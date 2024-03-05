@@ -175,7 +175,7 @@ public partial class ResultLogic {
 
     /// <summary> A simple helper function to log errors to both /xllog and your chat. </summary>
     bool LogError(string errorMessage) {
-        GagSpeak.Log.Debug($"[Result Logic] {errorMessage}");
+        GSLogger.LogType.Debug($"[Result Logic] {errorMessage}");
         _clientChat.PrintError($"[Result Logic] {errorMessage}");
         return false;
     }

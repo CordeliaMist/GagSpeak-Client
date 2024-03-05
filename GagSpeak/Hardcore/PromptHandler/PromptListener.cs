@@ -40,7 +40,7 @@ public class OptionPromptListeners : OnSetupSelectListFeature, IDisposable
  
     public override void Enable() {
         base.Enable();
-        GagSpeak.Log.Debug("[GagSpeak] Activating Listeners");
+        GSLogger.LogType.Debug("[GagSpeak] Activating Listeners");
         _addonLifecycle.RegisterListener(AddonEvent.PostSetup, "SelectString", AddonStrSetup);
         _addonLifecycle.RegisterListener(AddonEvent.PostSetup, "SelectYesno", AddonYNSetup);
     }
@@ -53,7 +53,7 @@ public class OptionPromptListeners : OnSetupSelectListFeature, IDisposable
 
     protected unsafe void AddonYNSetup(AddonEvent eventType, AddonArgs addonInfo) {
         var addon = (AtkUnitBase*)addonInfo.Addon;
-
+        // FIX THIS
         if (!_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._forcedToStay) {
             return;
         }
@@ -64,7 +64,7 @@ public class OptionPromptListeners : OnSetupSelectListFeature, IDisposable
 
         var text = GS_GetSeString.GetSeStringText(new nint(addon->AtkValues[0].String));
         _hcManager.LastSeenDialogText = Tuple.Create(text, new List<string>{ "Yes", "No" });
-        GagSpeak.Log.Debug($"[GagSpeak] YesNo Prompt Text => {text}");
+        GSLogger.LogType.Debug($"[GagSpeak] YesNo Prompt Text => {text}");
 
         var nodes = _hcManager.GetAllNodes().OfType<TextEntryNode>();
         foreach (var node in nodes)
@@ -75,7 +75,7 @@ public class OptionPromptListeners : OnSetupSelectListFeature, IDisposable
             if (!EntryMatchesText(node, text))
                 continue;
 
-            GagSpeak.Log.Debug($"AddonSelectYesNo: Matched on {node.Text}");
+            GSLogger.LogType.Debug($"AddonSelectYesNo: Matched on {node.Text}");
             AddonSelectYesNoExecute((nint)addon, node.SelectThisIndex);
             return;
         }
@@ -89,24 +89,24 @@ public class OptionPromptListeners : OnSetupSelectListFeature, IDisposable
             var yesButton = addonPtr->YesButton;
             if (yesButton != null && !yesButton->IsEnabled)
             {
-                GagSpeak.Log.Debug("AddonSelectYesNo: Enabling yes button");
+                GSLogger.LogType.Debug("AddonSelectYesNo: Enabling yes button");
                 var flagsPtr = (ushort*)&yesButton->AtkComponentBase.OwnerNode->AtkResNode.NodeFlags;
                 *flagsPtr ^= 1 << 5;
             }
 
-            GagSpeak.Log.Debug("AddonSelectYesNo: Selecting yes");
+            GSLogger.LogType.Debug("AddonSelectYesNo: Selecting yes");
             ClickSelectYesNo.Using(addon).Yes();
         }
         else
         {
-            GagSpeak.Log.Debug("AddonSelectYesNo: Selecting no");
+            GSLogger.LogType.Debug("AddonSelectYesNo: Selecting no");
             ClickSelectYesNo.Using(addon).No();
         }
     }
 
     private static bool EntryMatchesText(TextEntryNode node, string text)
     {
-        GagSpeak.Log.Debug($"AddonSelectYesNo: Comparing {node.Text} to {text}");
+        GSLogger.LogType.Debug($"AddonSelectYesNo: Comparing {node.Text} to {text}");
         return text.Contains(node.Text);
     }
 
@@ -126,7 +126,7 @@ public class OptionPromptListeners : OnSetupSelectListFeature, IDisposable
 
         var addonPtr = (AddonSelectString*)addon;
         var popupMenu = &addonPtr->PopupMenu.PopupMenu;
-        GagSpeak.Log.Debug($"AddonSelectString: {addonPtr->PopupMenu.PopupMenu.EntryCount}");
+        GSLogger.LogType.Debug($"AddonSelectString: {addonPtr->PopupMenu.PopupMenu.EntryCount}");
         SetupOnItemSelectedHook(popupMenu);
         var options = GetEntryTexts(popupMenu).Select(option => option ?? string.Empty).ToList();
 
@@ -145,7 +145,7 @@ public class OptionPromptListeners : OnSetupSelectListFeature, IDisposable
                 if (!EntryMatchesText(node, options[i]))
                     continue;
 
-                GagSpeak.Log.Debug($"AddonSelectString: Matched on {node.Text}");
+                GSLogger.LogType.Debug($"AddonSelectString: Matched on {node.Text}");
                 SelectItemExecute((IntPtr)addon, node.SelectThisIndex);
                 return;
             }
@@ -154,7 +154,7 @@ public class OptionPromptListeners : OnSetupSelectListFeature, IDisposable
     }
     
     protected override void SelectItemExecute(IntPtr addon, int index) {
-        GagSpeak.Log.Debug($"AddonSelectString: Selecting {index}");
+        GSLogger.LogType.Debug($"AddonSelectString: Selecting {index}");
         ClickSelectString.Using(addon).SelectItem((ushort)index);
     }
 }

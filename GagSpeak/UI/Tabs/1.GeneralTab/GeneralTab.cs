@@ -125,6 +125,7 @@ public class GeneralTab : ITab, IDisposable
                 _characterHandler.playerChar._safeword = safeword;
                 _tempSafeword = null;
             }
+            if(ImGui.IsItemHovered()) { ImGui.SetTooltip("Can be triggered with /safeword (your safeword)\n[obviously without the ()]"); }
             // draw the cooldown timer
             if(_characterHandler.playerChar._safewordUsed) { ImGui.EndDisabled(); }
             ImGui.TableNextColumn();

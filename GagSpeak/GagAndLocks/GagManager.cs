@@ -54,10 +54,10 @@ public class GagGarbleManager : IDisposable
         string outputStr = "";
         try {
             outputStr = ConvertToGagSpeak(inputMessage);
-            GagSpeak.Log.Debug($"[GagGarbleManager] Converted message to GagSpeak: {outputStr}");
+            GSLogger.LogType.Debug($"[GagGarbleManager] Converted message to GagSpeak: {outputStr}");
         }
         catch (Exception e) {
-            GagSpeak.Log.Error($"[GagGarbleManager] Error processing message: {e.Message}");
+            GSLogger.LogType.Error($"[GagGarbleManager] Error processing message: {e.Message}");
         }
         return outputStr;
     }
@@ -70,11 +70,11 @@ public class GagGarbleManager : IDisposable
     public string ConvertToGagSpeak(string inputMessage) {
         // firstly check to see if all gags are None, and if so, just return the original input string
         if (_activeGags.All(gag => gag._gagName == "None")) {
-            GagSpeak.Log.Debug($"[GagGarbleManager] All gags are None, returning original message.");
+            GSLogger.LogType.Debug($"[GagGarbleManager] All gags are None, returning original message.");
             return inputMessage;
         }
         // Initialize the algorithmed scoped variables 
-        GagSpeak.Log.Debug($"[GagGarbleManager] Converting message to GagSpeak, at least one gag is not None.");
+        GSLogger.LogType.Debug($"[GagGarbleManager] Converting message to GagSpeak, at least one gag is not None.");
         StringBuilder finalMessage = new StringBuilder(); // initialize a stringbuilder object so we dont need to make a new string each time
         bool skipTranslation = false;
 
@@ -113,7 +113,7 @@ public class GagGarbleManager : IDisposable
                     // Convert the phonetics to GagSpeak if the list is not empty, otherwise use the original word
                     string gaggedSpeak = entry.Item2.Any() ? ConvertPhoneticsToGagSpeak(entry.Item2, isAllCaps, isFirstLetterCaps) : wordWithoutPunctuation;
                     // Add the GagSpeak to the final message
-                    GagSpeak.Log.Debug($"[GagGarbleManager] Converted [{leadingPunctuation}] + [{word}] + [{trailingPunctuation}]");
+                    GSLogger.LogType.Debug($"[GagGarbleManager] Converted [{leadingPunctuation}] + [{word}] + [{trailingPunctuation}]");
                     finalMessage.Append(leadingPunctuation + gaggedSpeak + trailingPunctuation + " ");
                 } else {
                     finalMessage.Append(word + " "); // append the word to the string
@@ -124,7 +124,7 @@ public class GagGarbleManager : IDisposable
                 }
             }
         } catch (Exception e) {
-            GagSpeak.Log.Error($"[GagGarbleManager] Error converting from IPA Spaced to final output. Puncutation error or other type possible : {e.Message}");
+            GSLogger.LogType.Error($"[GagGarbleManager] Error converting from IPA Spaced to final output. Puncutation error or other type possible : {e.Message}");
         }
         return finalMessage.ToString().Trim();
     }
@@ -159,7 +159,7 @@ public class GagGarbleManager : IDisposable
                 }
             }
             catch (Exception e) {
-                GagSpeak.Log.Error($"[GagGarbleManager] Error converting phonetic {phonetic} to GagSpeak: {e.Message}");
+                GSLogger.LogType.Error($"[GagGarbleManager] Error converting phonetic {phonetic} to GagSpeak: {e.Message}");
             }
         }
         // Return the output string

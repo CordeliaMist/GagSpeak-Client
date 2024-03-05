@@ -172,7 +172,7 @@ public partial class WhitelistPanel {
         if(_tempWhitelistChar._yourStatusToThem == RoleLean.None) {
             ImGui.BeginDisabled();
             if (ImGui.Button("Remove Relation With Player##RemoveOne", buttonWidth2)) {
-                GagSpeak.Log.Debug("[Whitelist]: Sending Request to remove relation to player");
+                GSLogger.LogType.Debug("[Whitelist]: Sending Request to remove relation to player");
                 RequestRelationRemovalToPlayer();
                 // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
             }
@@ -182,7 +182,7 @@ public partial class WhitelistPanel {
             ImGui.EndDisabled();
         } else {
             if (ImGui.Button("Remove Relation With Player##RemoveTwo", buttonWidth2)) {
-                GagSpeak.Log.Debug("[Whitelist]: Sending Request to remove relation to player");
+                GSLogger.LogType.Debug("[Whitelist]: Sending Request to remove relation to player");
                 RequestRelationRemovalToPlayer();
                 // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
             }
@@ -195,7 +195,7 @@ public partial class WhitelistPanel {
         ImGui.SameLine();
         if (ImGui.Button("Request Info", buttonWidth)) {
             // send a message to the player requesting their current info
-            GagSpeak.Log.Debug("[Whitelist]: Sending Request for Player Info");
+            GSLogger.LogType.Debug("[Whitelist]: Sending Request for Player Info");
             InfoSendAndRequestHelpers.RequestInfoFromPlayer(_characterHandler.activeListIdx,
             _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
             // we need to set the sendInfoName to the player name @ world so we know who we are looking for when we start recieving info

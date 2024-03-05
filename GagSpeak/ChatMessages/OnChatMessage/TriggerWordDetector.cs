@@ -36,15 +36,15 @@ public class TriggerWordDetector
                     {
                         return true;
                     } else {
-                        GagSpeak.Log.Debug($"[TriggerWordDetector] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
+                        GSLogger.LogType.Debug($"[TriggerWordDetector] Not an Enabled Chat Channel, or command didnt abide by your settings aborting");
                         return false;
                     }
                 } else {
-                    GagSpeak.Log.Debug($"[TriggerWordDetector] Not an Enabled Chat Channel, aborting");
+                    GSLogger.LogType.Debug($"[TriggerWordDetector] Not an Enabled Chat Channel, aborting");
                     return false;
                 }
             } else {
-                GagSpeak.Log.Debug($"[TriggerWordDetector] Puppeteer message to send was empty, aborting");
+                GSLogger.LogType.Debug($"[TriggerWordDetector] Puppeteer message to send was empty, aborting");
                 return false;
             }
         } else {
@@ -69,19 +69,19 @@ public class TriggerWordDetector
                         if(_puppeteerMediator.MeetsSettingCriteria(senderName, messageToSend)) {
                             return true;
                         } else {
-                            GagSpeak.Log.Debug($"[TriggerWordDetector] Command didnt abide by your settings aborting");
+                            GSLogger.LogType.Debug($"[TriggerWordDetector] Command didnt abide by your settings aborting");
                             return false;
                         }
                     } else {
-                        GagSpeak.Log.Debug($"[TriggerWordDetector] Not an Enabled Chat Channel, aborting");
+                        GSLogger.LogType.Debug($"[TriggerWordDetector] Not an Enabled Chat Channel, aborting");
                         return false;
                     } 
                 } else {
-                    GagSpeak.Log.Debug($"[TriggerWordDetector] Not an Enabled Chat Channel, aborting");
+                    GSLogger.LogType.Debug($"[TriggerWordDetector] Not an Enabled Chat Channel, aborting");
                     return false;
                 }
             } else {
-                GagSpeak.Log.Debug($"[TriggerWordDetector] Puppeteer message to send was empty, aborting");
+                GSLogger.LogType.Debug($"[TriggerWordDetector] Puppeteer message to send was empty, aborting");
                 return false;
             }
         } else {

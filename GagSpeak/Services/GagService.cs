@@ -38,12 +38,12 @@ public class GagService : IDisposable
 		}
 		catch (FileNotFoundException) {
 			// If the file does not exist, log an error and initialize obj as an empty dictionary
-			GagSpeak.Log.Debug($"[IPA Parser] File does not exist");
+			GSLogger.LogType.Debug($"[IPA Parser] File does not exist");
 			_gagData = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
 		}
 		catch (Exception ex) {
 			// If any other error occurs, log the error and initialize obj as an empty dictionary
-			GagSpeak.Log.Debug($"[IPA Parser] An error occurred while reading the file: {ex.Message}");
+			GSLogger.LogType.Debug($"[IPA Parser] An error occurred while reading the file: {ex.Message}");
 			_gagData = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
 		}
 

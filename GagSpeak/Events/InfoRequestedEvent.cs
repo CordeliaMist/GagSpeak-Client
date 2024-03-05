@@ -12,7 +12,7 @@ public class InfoRequestEvent
     public event InfoRequestEventHandler? InfoRequest;
 
     public void Invoke() {
-        GagSpeak.Log.Debug($"[InfoRequestEvent] Invoked");
+        GSLogger.LogType.Debug($"[InfoRequestEvent] Invoked");
         InfoRequest?.Invoke(this, new InfoRequestEventArgs());
     }
 }

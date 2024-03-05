@@ -77,18 +77,18 @@ public class WhitelistSelector
             // prevent possible null in _clientState.LocalPlayer.TargetObject
             if (_clientState.LocalPlayer != null &&_clientState.LocalPlayer.TargetObject != null) {
                 if (_clientState.LocalPlayer.TargetObject.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.Player) { // if the player is targetting another player
-                    GagSpeak.Log.Debug($"[Whitelist]: Targeted Player: {_clientState.LocalPlayer.TargetObject.Name.TextValue}");
+                    GSLogger.LogType.Debug($"[Whitelist]: Targeted Player: {_clientState.LocalPlayer.TargetObject.Name.TextValue}");
                     string targetName = UIHelpers.CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
                     // if the object kind of the target is a player, then get the character parse of that player
                     var targetCharacter = (PlayerCharacter)_clientState.LocalPlayer.TargetObject;
                     // now we can get the name and world from them
                     var world = targetCharacter.HomeWorld.Id;
                     var worldName = _dataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.World>()?.GetRow((uint)world)?.Name?.ToString() ?? "Unknown";
-                    GagSpeak.Log.Debug($"[Whitelist]: Targeted Player: {targetName} from {world}, {worldName}");
+                    GSLogger.LogType.Debug($"[Whitelist]: Targeted Player: {targetName} from {world}, {worldName}");
 
                     // And now, if the player is not already in our _characterHandler.whitelistChars, we will add them. Otherwise just do nothing.
                     if (!_listMediator.IsPlayerInWhitelist(targetName)) {
-                        GagSpeak.Log.Debug($"[Whitelist]: Adding targeted player to _characterHandler.whitelistChars {_clientState.LocalPlayer.TargetObject})");
+                        GSLogger.LogType.Debug($"[Whitelist]: Adding targeted player to _characterHandler.whitelistChars {_clientState.LocalPlayer.TargetObject})");
                         if(_listMediator.GetNewWhitelistCount() == 1 && _listMediator.GetNameAtIndexZero() == "None None") {
                             _listMediator.ReplacePlayerInList(0, targetName, worldName);
                         } else {
@@ -120,19 +120,19 @@ public class WhitelistSelector
         buttonWidth = new Vector2(width/3, 0);
         if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Handcuffs.ToIconString(), buttonWidth,
         $"Paste {_listMediator.GetActiveListName()}'s copied restraint set list", false, true)) {
-            GagSpeak.Log.Debug($"[Whitelist]: Pasting in restraint set list for {_listMediator.GetActiveListName()}");
+            GSLogger.LogType.Debug($"[Whitelist]: Pasting in restraint set list for {_listMediator.GetActiveListName()}");
             ImportRestraintSetList();
         }
         ImGui.SameLine();
         if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.FilePen.ToIconString(), buttonWidth,
         $"Paste {_listMediator.GetActiveListName()}'s copied alias command list", false, true)) {
-            GagSpeak.Log.Debug($"[Whitelist]: Pasting in alias command list for {_listMediator.GetActiveListName()}");
+            GSLogger.LogType.Debug($"[Whitelist]: Pasting in alias command list for {_listMediator.GetActiveListName()}");
             ImportAliasCommandList();
         }
         ImGui.SameLine();
         if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.FileMedicalAlt.ToIconString(), buttonWidth,
         $"Paste {_listMediator.GetActiveListName()}'s copied pattern list", false, true)) {
-            GagSpeak.Log.Debug($"[Whitelist]: Pasting in pattern list for {_listMediator.GetActiveListName()}");
+            GSLogger.LogType.Debug($"[Whitelist]: Pasting in pattern list for {_listMediator.GetActiveListName()}");
             ImportPatternList();
         }
         // pop style
@@ -171,9 +171,9 @@ public class WhitelistSelector
             List<string> restraintSetList = JsonConvert.DeserializeObject<List<string>>(decompressed) ?? new List<string>();
             // Set the restraint set list
             _listMediator.StoreRestraintSetList(restraintSetList);
-            GagSpeak.Log.Debug($"Set restraint set list from clipboard");
+            GSLogger.LogType.Debug($"Set restraint set list from clipboard");
         } catch (Exception ex) {
-            GagSpeak.Log.Warning($"{ex.Message} Could not set restraint set list from clipboard.");
+            GSLogger.LogType.Warning($"{ex.Message} Could not set restraint set list from clipboard.");
         }
     }
 
@@ -185,9 +185,9 @@ public class WhitelistSelector
             version = bytes.DecompressToString(out var decompressed);
             Dictionary<string, string> aliasCommandList = JsonConvert.DeserializeObject<Dictionary<string, string>>(decompressed) ?? new Dictionary<string, string>();
             _listMediator.StoreAliasDetailsForWhitelistePlayer(aliasCommandList);
-            GagSpeak.Log.Debug($"Set alias command list from clipboard");
+            GSLogger.LogType.Debug($"Set alias command list from clipboard");
         } catch (Exception ex) {
-            GagSpeak.Log.Warning($"{ex.Message} Could not set alias command list from clipboard.");
+            GSLogger.LogType.Warning($"{ex.Message} Could not set alias command list from clipboard.");
         }
     }
 
@@ -199,9 +199,9 @@ public class WhitelistSelector
             version = bytes.DecompressToString(out var decompressed);
             List<string> patternList = JsonConvert.DeserializeObject<List<string>>(decompressed) ?? new List<string>();
             _listMediator.StorePatternsForWhitelistedPlayer(patternList);
-            GagSpeak.Log.Debug($"Set pattern list from clipboard");
+            GSLogger.LogType.Debug($"Set pattern list from clipboard");
         } catch (Exception ex) {
-            GagSpeak.Log.Warning($"{ex.Message} Could not set pattern list from clipboard.");
+            GSLogger.LogType.Warning($"{ex.Message} Could not set pattern list from clipboard.");
         }
     }
 

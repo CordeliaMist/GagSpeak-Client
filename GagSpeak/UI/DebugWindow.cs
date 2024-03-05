@@ -255,7 +255,7 @@ public class DebugWindow : Window //, IDisposable
                 _translatedMessageSpaced = _translatorLanguage.ToIPAStringSpacedDisplay(testMessage);
                 _translatedMessageOutput = _gagManager.ProcessMessage(testMessage);
             } catch (Exception ex) {
-                GagSpeak.Log.Debug($"An error occurred while attempting to parse phonetics: {ex.Message}");
+                GSLogger.LogType.Debug($"An error occurred while attempting to parse phonetics: {ex.Message}");
             }
         }
         // DISPLAYS THE ORIGINAL MESSAGE STRING
@@ -315,7 +315,7 @@ public class DebugWindow : Window //, IDisposable
             ImGui.NewLine();
             ImGui.Text($"Error while fetching config in debug: {e}");
             ImGui.NewLine();
-            GagSpeak.Log.Error($"Error while fetching config in debug: {e}");
+            GSLogger.LogType.Error($"Error while fetching config in debug: {e}");
         }
     }
 }

@@ -67,18 +67,18 @@ public sealed class PenumbraChangedItemTooltip : IDisposable
                 switch (ImGui.GetIO().KeyAlt, ImGui.GetIO().KeyShift) 
                 {
                     case (true, false):
-                        GagSpeak.Log.Debug($"Applying {item.Name} to Right Finger.");
+                        GSLogger.LogType.Debug($"Applying {item.Name} to Right Finger.");
                         _manager.ChangeSetDrawDataGameItem(_manager._selectedIdx, EquipSlot.RFinger, item);
                         break;
                     case (true, true):
-                        GagSpeak.Log.Debug($"Applying {item.Name} to Left Finger.");
+                        GSLogger.LogType.Debug($"Applying {item.Name} to Left Finger.");
                         _manager.ChangeSetDrawDataGameItem(_manager._selectedIdx, EquipSlot.LFinger, item);
                         break;
                 }
                 return;
             default:
                 if(ImGui.GetIO().KeyAlt) {
-                    GagSpeak.Log.Debug($"Applying {item.Name} to {slot.ToName()}.");
+                    GSLogger.LogType.Debug($"Applying {item.Name} to {slot.ToName()}.");
                     _manager.ChangeSetDrawDataGameItem(_manager._selectedIdx, slot, item);
                 }
                 return;

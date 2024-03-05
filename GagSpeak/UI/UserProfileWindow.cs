@@ -36,7 +36,7 @@ public class UserProfileWindow : Window, IDisposable
         _uiBuilder = uiBuilder;
         var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "ReallyHeavyGag.png");
         var IconImage = _uiBuilder.LoadImage(imagePath);
-        GagSpeak.Log.Debug($"[Profile Popout]: Loaded mini-profile image sucessfully");
+        GSLogger.LogType.Debug($"[Profile Popout]: Loaded mini-profile image sucessfully");
 
         _dalamudTextureWrap = IconImage;
         SizeConstraints = new WindowSizeConstraints() {

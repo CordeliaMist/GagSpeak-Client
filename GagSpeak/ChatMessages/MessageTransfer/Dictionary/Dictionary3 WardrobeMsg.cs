@@ -6,7 +6,7 @@ public partial class MessageDictionary {
         if (textVal.Contains("held their sluts chin firmly, forcing them to look them in the eyes* \"Let's make "+
         "sure your locks have a little bit more security, shall we?\""))
         {
-            GagSpeak.Log.Debug($"[Message Dictionary]: Detected outgoing GagStorageUILock command");   
+            GSLogger.LogType.Debug($"[Message Dictionary]: Detected outgoing GagStorageUILock command");   
             decodedMessageMediator.encodedMsgIndex = 21;
             decodedMessageMediator.msgType = DecodedMessageType.Wardrobe;
             return true;

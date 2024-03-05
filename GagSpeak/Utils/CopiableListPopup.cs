@@ -67,17 +67,17 @@ public class ListCopier
         try
         {
             if (listOfItemsToCopy.Count == 0) {
-                GagSpeak.Log.Warning("No items to copy.");
+                GSLogger.LogType.Warning("No items to copy.");
                 return;
             }
             string json = JsonConvert.SerializeObject(listOfItemsToCopy);
             var compressed = json.Compress(6);
             string base64 = Convert.ToBase64String(compressed);
             ImGui.SetClipboardText(base64);
-            GagSpeak.Log.Debug($"{sucessText}");
+            GSLogger.LogType.Debug($"{sucessText}");
         }
         catch (Exception ex) {
-            GagSpeak.Log.Warning($"{ex.Message} {failText}");
+            GSLogger.LogType.Warning($"{ex.Message} {failText}");
         }
     }
 }

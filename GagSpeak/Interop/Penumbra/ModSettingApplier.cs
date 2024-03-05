@@ -15,7 +15,7 @@
 //         objects.Update();
 //         if (!objects.TryGetValue(state.Identifier, out var data))
 //         {
-//             GagSpeak.Log.Verbose(
+//             GSLogger.LogType.Verbose(
 //                 $"[Mod Applier] No mod settings applied because no actor for {state.Identifier} could be found to associate collection.");
 //             return;
 //         }
@@ -27,7 +27,7 @@
 //             var (collection, overridden) = overrides.GetCollection(actor, state.Identifier);
 //             if (collection.Length == 0)
 //             {
-//                 GagSpeak.Log.Verbose($"[Mod Applier] Could not obtain associated collection for {actor.Utf8Name}.");
+//                 GSLogger.LogType.Verbose($"[Mod Applier] Could not obtain associated collection for {actor.Utf8Name}.");
 //                 continue;
 //             }
 
@@ -38,9 +38,9 @@
 //             {
 //                 var message = penumbra.SetMod(mod, setting, collection);
 //                 if (message.Length > 0)
-//                     GagSpeak.Log.Verbose($"[Mod Applier] Error applying mod settings: {message}");
+//                     GSLogger.LogType.Verbose($"[Mod Applier] Error applying mod settings: {message}");
 //                 else
-//                     GagSpeak.Log.Verbose(
+//                     GSLogger.LogType.Verbose(
 //                         $"[Mod Applier] Set mod settings for {mod.DirectoryName} in {collection}{(overridden ? " (overridden by settings)" : string.Empty)}.");
 //             }
 //         }

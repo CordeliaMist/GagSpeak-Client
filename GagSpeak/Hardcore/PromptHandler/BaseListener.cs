@@ -7,13 +7,13 @@ public class BaseFeature
 
     public virtual void Enable()
     {
-        GagSpeak.Log.Debug($"Enabling {Key}");
+        GSLogger.LogType.Debug($"Enabling {Key}");
         Enabled = true;
     }
 
     public virtual void Disable()
     {
-        GagSpeak.Log.Debug($"Disabling {Key}");
+        GSLogger.LogType.Debug($"Disabling {Key}");
         Enabled = false;
     }
 }

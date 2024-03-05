@@ -19,10 +19,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle enable toybox option: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle enable toybox option: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle enable toybox option: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle enable toybox option: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -40,10 +40,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle active toybox option: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle active toybox option: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle active toybox option: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle active toybox option: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -62,10 +62,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle active toybox option: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle active toybox option: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle active toybox option: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle active toybox option: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -85,10 +85,10 @@ public partial class MessageDecoder {
                 // intensity level
                 decodedMessageMediator.intensityLevel = int.Parse(match.Groups["intensityLevel"].Value.Trim());
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: update active toy intensity: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: update active toy intensity: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} || (Intensity) {decodedMessageMediator.intensityLevel}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: update active toy intensity: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: update active toy intensity: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -108,10 +108,10 @@ public partial class MessageDecoder {
                 // pattern name
                 decodedMessageMediator.patternNameToExecute = match.Groups["patternName"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: execute stored toy pattern: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: execute stored toy pattern: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} || (Pattern) {decodedMessageMediator.patternNameToExecute}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: execute stored toy pattern: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: execute stored toy pattern: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -129,10 +129,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle lock toybox UI: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle lock toybox UI: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle lock toybox UI: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle lock toybox UI: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -150,10 +150,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle toy on/off: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle toy on/off: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle toy on/off: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle toy on/off: Failed to decode message: {recievedMessage}");
             }
         }
 

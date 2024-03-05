@@ -22,7 +22,7 @@ public partial class ResultLogic {
         // send sucessful message to chat
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You've been gagged by {playerName} with a {_characterHandler.playerChar._selectedGagTypes[decodedMessageMediator.layerIdx]}!").AddItalicsOff().BuiltString);
-        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag apply");
+        GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag apply");
 
         return true; // sucessful parse
     }
@@ -53,7 +53,7 @@ public partial class ResultLogic {
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{assignerName} locked your " +
             $"{_characterHandler.playerChar._selectedGagTypes[decodedMessageMediator.layerIdx]} with a "+
             $"{_characterHandler.playerChar._selectedGagPadlocks[decodedMessageMediator.layerIdx]}.").AddItalicsOff().BuiltString);
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag lock");
+            GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag lock");
             return true; // sucessful parse
         } else {
             isHandled = true; return LogError("[MsgResultLogic]: Invalid /gag lock parameters sent in!");
@@ -85,7 +85,7 @@ public partial class ResultLogic {
         // print the sucessful message
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{assignerName} " +
         $"sucessfully unlocked the {Enum.GetName(typeof(Padlocks), tempPadlock)} from your {_characterHandler.playerChar._selectedGagTypes[decodedMessageMediator.layerIdx]}.").AddItalicsOff().BuiltString);        
-        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag unlock");
+        GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag unlock");
         return true; // sucessful parse
     }
 
@@ -106,7 +106,7 @@ public partial class ResultLogic {
         $"{_characterHandler.playerChar._selectedGagTypes[decodedMessageMediator.layerIdx]}, how sweet.").AddItalicsOff().BuiltString);
         // remove the gag
         _lockManager.RemoveGag(decodedMessageMediator.layerIdx);
-        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag remove");
+        GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag remove");
         return true; // sucessful parse
     }
 
@@ -123,7 +123,7 @@ public partial class ResultLogic {
         // remove all gags
         _lockManager.RemoveAllGags();
         // log result
-        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag removeall");
+        GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag removeall");
         return true; // sucessful parse
     }
 
@@ -150,7 +150,7 @@ public partial class ResultLogic {
         // toggle the live chat garbler
         _characterHandler.ToggleDirectChatGarbler();
         // log result
-        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag toggleLiveChatGarbler");
+        GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag toggleLiveChatGarbler");
         return true; // sucessful parse
     }
 
@@ -173,7 +173,7 @@ public partial class ResultLogic {
         // toggle the live chat garbler lock
         _characterHandler.ToggleDirectChatGarblerLock();
         // log result
-        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag toggleLiveChatGarblerLock");
+        GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag toggleLiveChatGarblerLock");
         return true; // sucessful parse
     }
 
@@ -195,7 +195,7 @@ public partial class ResultLogic {
         // toggle the extended lock times
         _characterHandler.ToggleExtendedLockTimes();
         // log result
-        GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag toggleExtendedLockTimes");
+        GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for /gag toggleExtendedLockTimes");
         return true; // sucessful parse
     }
 }

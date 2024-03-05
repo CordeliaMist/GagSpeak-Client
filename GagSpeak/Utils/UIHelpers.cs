@@ -29,7 +29,7 @@ public static class UIHelpers
     /// <item><c>message</c><param name="message"> - The message to display</param></item>
     /// </list> </summary>
     public static void LogAndPrintGagSpeakMessage(string message, IChatGui chat, string italicBracketText = "[GagSpeak]") {
-        GagSpeak.Log.Debug(message);
+        GSLogger.LogType.Debug(message);
         chat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]")
         .AddText($"{message}").AddItalicsOff().BuiltString);
     }
@@ -223,7 +223,7 @@ public static class UIHelpers
             return false;
         }
         // for valid timers.
-        GagSpeak.Log.Debug($"[UI Helpers]: ValidatingTimer [{timerInput}]");
+        GSLogger.LogType.Debug($"[UI Helpers]: ValidatingTimer [{timerInput}]");
         var match = Regex.Match(timerInput, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
         return match.Success;
     }
@@ -236,7 +236,7 @@ public static class UIHelpers
         if(_clientState.LocalPlayer != null) {
             playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id);
         } else {
-            GagSpeak.Log.Debug("[PayloadFetch]: Failed to get player payload, returning null");
+            GSLogger.LogType.Debug("[PayloadFetch]: Failed to get player payload, returning null");
             throw new Exception("Player is null!");
         }
     }

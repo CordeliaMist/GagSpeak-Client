@@ -31,13 +31,11 @@ public class InitializationManager
 
         // if action manager is done, fire that
         if(CompletedSteps.Contains(InitializationSteps.ActionManagerInitialized)) {
-            //GagSpeak.Log.Debug($"================== Initialization Manager: ActionManager Initialized ==================");
             return;
         }
 
         // if movement control is done, fire that
         if(CompletedSteps.Contains(InitializationSteps.MovementManagerInitialized)) {
-            //GagSpeak.Log.Debug($"================== Initialization Manager: Orders Initialized ==================");
             // await for the action manager to be ready
             _actionManagerReadyForEvent.Task.Wait();
             // then invoke it
@@ -47,7 +45,6 @@ public class InitializationManager
 
         // if hardcore manager is done, fire that
         if(CompletedSteps.Contains(InitializationSteps.HardcoreManagerInitialized)) {
-            //GagSpeak.Log.Debug($"================== Initialization Manager: HardcoreManager Initialized ==================");
             // await for the movement control to be ready
             _OrdersReadyForEvent.Task.Wait();
             // then invoke it
@@ -57,7 +54,6 @@ public class InitializationManager
 
         // if our restraint set manager finished, fire that
         if(step == InitializationSteps.RS_ManagerInitialized) {
-            //GagSpeak.Log.Debug($"================== Initialization Manager: RS_Manager Initialized ==================");
             // await for the character handler to be ready
             _hardcoreManagerReadyForEvent.Task.Wait();
             // then invoke it
@@ -67,7 +63,6 @@ public class InitializationManager
 
         // if our character handler is done, fire that
         if(step == InitializationSteps.CharacterHandlerInitialized) {
-            //GagSpeak.Log.Debug($"================== Initialization Manager: CharHandler Initialized ==================");
             // await for the restraint set manager to be ready
             _rsManagerReadyForEvent.Task.Wait();
             // then invoke it

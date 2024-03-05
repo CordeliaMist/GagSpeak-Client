@@ -136,6 +136,10 @@ public class CommandManager : IDisposable // Our main command list manager
             case "debug":
                 _debugWindow.Toggle();     // when [/gagspeak debug] is typed
                 return;
+            case "logger":
+                _config.DebugMode = !_config.DebugMode; // when [/gagspeak logger] is typed
+                _config.Save();
+                return;
             case "":
                 _mainWindow.Toggle(); // when [/gagspeak] is typed
                 return;
@@ -155,7 +159,7 @@ public class CommandManager : IDisposable // Our main command list manager
         if (_characterHandler.playerChar._safeword == argument) {
             // see if the safeword is on cooldown
             if (!_timerService.timers.ContainsKey("SafewordUsed")) {
-                GagSpeak.Log.Debug($"[Command Manager]: Safeword matched, and is off cooldown, deactivating all gags and locks");
+                GSLogger.LogType.Debug($"[Command Manager]: Safeword matched, and is off cooldown, deactivating all gags and locks");
                 _chat.Print("Safeword matched, and is off cooldown, deactivating all gags and locks");
                 // Disable the ObserveList so we dont trigger the safeword event
                 _characterHandler.playerChar._selectedGagTypes.IsSafewordCommandExecuting = true;
@@ -178,14 +182,14 @@ public class CommandManager : IDisposable // Our main command list manager
                     IntPtr playerAddress = _clientState.LocalPlayer!.Address;
                     Task.Run(async () => await _glamourerInterop.GlamourerRevertCharacterToAutomation(playerAddress));
                 } catch (Exception e) {
-                    GagSpeak.Log.Error($"Error reverting glamourer to automation: {e.Message}");
+                    GSLogger.LogType.Error($"Error reverting glamourer to automation: {e.Message}");
                     _chat.PrintError($"Error reverting glamourer to automation upon safeword usage: {e.Message}");
                 }
                 // Re-enable the ObserveList so we can trigger the safeword event
                 _characterHandler.playerChar._selectedGagTypes.IsSafewordCommandExecuting = false;
                 _characterHandler.playerChar._selectedGagPadlocks.IsSafewordCommandExecuting = false;
                 // Fire the safeword command event
-                GagSpeak.Log.Debug($"[Command Manager]: Firing Invoke from CommandManager");
+                GSLogger.LogType.Debug($"[Command Manager]: Firing Invoke from CommandManager");
                 _safewordCommandEvent.Invoke();
                 // fire the safewordUsed bool to true so that we set the cooldown
                 _characterHandler.SetSafewordUsed(true);
@@ -194,11 +198,11 @@ public class CommandManager : IDisposable // Our main command list manager
             }
             // otherwise inform the user that the cooldown for safeword being used is still present
             else {
-                GagSpeak.Log.Debug($"[Command Manager]: Safeword matched, but the usage is still on cooldown");
+                GSLogger.LogType.Debug($"[Command Manager]: Safeword matched, but the usage is still on cooldown");
                 _chat.Print("Safeword matched, but the usage is still on cooldown");
             }
         } else { // if the safeword is not the same as the one we are trying to set
-            GagSpeak.Log.Debug($"[Command Manager]: Safeword did not match");
+            GSLogger.LogType.Debug($"[Command Manager]: Safeword did not match");
             _chat.Print("Safeword did not match!");
         }
         return;
@@ -278,14 +282,14 @@ public class CommandManager : IDisposable // Our main command list manager
             if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
             else { throw new Exception("Player is null!");}
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"[Command Manager]: /gag apply command sucessful, sending off to Message Encoder.");
+            GSLogger.LogType.Debug($"[Command Manager]: /gag apply command sucessful, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             // unique string for /gag apply == "over your mouth as the"
             _chatManager.SendRealMessage(_gagMessages.GagEncodedApplyMessage(playerPayload, targetPlayer, gagType, layer));
         }
         catch (Exception e) {
-            GagSpeak.Log.Error($"Error sending chat message to player: {e.Message}");
+            GSLogger.LogType.Error($"Error sending chat message to player: {e.Message}");
             _chat.PrintError($"Error sending chat message to player: {e.Message}");
             return false;
         }
@@ -359,7 +363,7 @@ public class CommandManager : IDisposable // Our main command list manager
         // we have passed in the correct arguments, so begin applying the logic.
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"[Command Manager]: /gag lock command sucessful, sending off to Message Encoder.");  
+            GSLogger.LogType.Debug($"[Command Manager]: /gag lock command sucessful, sending off to Message Encoder.");  
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             if (parts.Length == 2) {
                 _chatManager.SendRealMessage(_gagMessages.GagEncodedLockMessage(playerPayload, targetplayer, locktype, layer));
@@ -372,7 +376,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 throw new Exception("[Command Manager]: Something unexpected occured!");
             }
         } catch (Exception e) {
-            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
+            GSLogger.LogType.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
             _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
             return false;
         }
@@ -420,7 +424,7 @@ public class CommandManager : IDisposable // Our main command list manager
             if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
             else { throw new Exception("Player is null!");}
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"[Command Manager]: /gag unlock command sucessful, sending off to Message Encoder.");
+            GSLogger.LogType.Debug($"[Command Manager]: /gag unlock command sucessful, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             if (parts.Length == 2) {
@@ -434,7 +438,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 throw new Exception("[Command Manager]: Something unexpected occured!");
             }
         } catch (Exception e) {
-            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
+            GSLogger.LogType.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
             _chat.PrintError($"[GagSpeak]: Error sending chat message to player: {e.Message}");
             return false;
         }
@@ -469,14 +473,14 @@ public class CommandManager : IDisposable // Our main command list manager
             if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
             else { throw new Exception("Player is null!");}
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"[Command Manager]: /gag remove command extracted sucessfully, sending off to Message Encoder.");
+            GSLogger.LogType.Debug($"[Command Manager]: /gag remove command extracted sucessfully, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             if (layer == "1") { layer = "first"; } else if (layer == "2") { layer = "second"; } else if (layer == "3") { layer = "third"; }
             // unique string for /gag remove == "reaches behind your neck and unfastens the buckle of your"
             _chatManager.SendRealMessage(_gagMessages.GagEncodedRemoveMessage(playerPayload, targetplayer, layer));
         } catch (Exception e) {
             _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
-            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
+            GSLogger.LogType.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
             return false;
         }
         return true; // sucessful!
@@ -503,13 +507,13 @@ public class CommandManager : IDisposable // Our main command list manager
             if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
             else { throw new Exception("Player is null!");}
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"[Command Manager]: /gag removeall command extracted sucessfully, sending off to Message Encoder.");
+            GSLogger.LogType.Debug($"[Command Manager]: /gag removeall command extracted sucessfully, sending off to Message Encoder.");
             // SENDING INCODED MESSAGE TO PLAYER DISGUISED AS A NORMAL TEXT MESSAGE
             // unique string for /gag remove == "reaches behind your neck and unbuckles all of your gagstraps, allowing you to speak freely once more."
             _chatManager.SendRealMessage(_gagMessages.GagEncodedRemoveAllMessage(playerPayload, targetplayer));
         } catch (Exception e) {
             _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
-            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
+            GSLogger.LogType.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
             return false;
         }
         return true; // sucessful!
@@ -541,10 +545,10 @@ public class CommandManager : IDisposable // Our main command list manager
         // we have passed in the correct arguments, so begin applying the logic.
         try{ // try to store the information about the player to the payload, if we fail, throw an exception
             // If sucessful, print our debug messages so we make sure we are sending the correct information
-            GagSpeak.Log.Debug($"[Command Manager]: /restraintset lock command sucessful, sending off to Message Encoder.");  
+            GSLogger.LogType.Debug($"[Command Manager]: /restraintset lock command sucessful, sending off to Message Encoder.");  
             _chatManager.SendRealMessage(_gagMessages.EncodeWardrobeRestraintSetLock(playerPayload, restraintSetName, timer, targetPlayer));
         } catch (Exception e) {
-            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
+            GSLogger.LogType.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
             _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
             return false;
         }
@@ -584,10 +588,10 @@ public class CommandManager : IDisposable // Our main command list manager
             return false;
         }
         try{ 
-            GagSpeak.Log.Debug($"[Command Manager]: /restraintset unlock command now sending off to Message Encoder.");  
+            GSLogger.LogType.Debug($"[Command Manager]: /restraintset unlock command now sending off to Message Encoder.");  
             _chatManager.SendRealMessage(_gagMessages.EncodeWardrobeRestraintSetUnlock(playerPayload, targetPlayer, restraintSetName));
         } catch (Exception e) {
-            GagSpeak.Log.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
+            GSLogger.LogType.Error($"[Command Manager]: Error sending chat message to player: {e.Message}");
             _chat.PrintError($"[GagSpeak] Error sending chat message to player: {e.Message}");
             return false;
         }
@@ -666,7 +670,7 @@ public class CommandManager : IDisposable // Our main command list manager
         }
     }
     private bool ValidateTimer(string _inputTimer) {
-        GagSpeak.Log.Debug($"[Command Manager]: Validating timer: {_inputTimer}");
+        GSLogger.LogType.Debug($"[Command Manager]: Validating timer: {_inputTimer}");
         if(_inputTimer == string.Empty) { return false; } // if we have no timer, return false
         // Timers must be in the format of 00h00m00s
         var match = Regex.Match(_inputTimer, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
@@ -678,14 +682,14 @@ public class CommandManager : IDisposable // Our main command list manager
         if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
         else { throw new Exception("Player is null!");}
         if (playerName == playerPayload.PlayerName) { 
-            GagSpeak.Log.Debug("[Command Manager]: Player is self, returning true");
+            GSLogger.LogType.Debug("[Command Manager]: Player is self, returning true");
             return true;
         }
         if (_characterHandler.whitelistChars.Any(w => playerName.Contains(w._name))) { 
-            GagSpeak.Log.Debug("[Command Manager]: Player is whitelisted, returning true");
+            GSLogger.LogType.Debug("[Command Manager]: Player is whitelisted, returning true");
             return true;
         }
-        GagSpeak.Log.Debug("[Command Manager]: Player is not whitelisted, returning false");
+        GSLogger.LogType.Debug("[Command Manager]: Player is not whitelisted, returning false");
         return false;
         
     }
@@ -715,7 +719,7 @@ public class CommandManager : IDisposable // Our main command list manager
             }
             catch (Exception e) {
                 _chat.PrintError($"[GagSpeak] Error sending message to chatbox: {e.Message}");
-                GagSpeak.Log.Error($"[Command Manager]: Error sending message to chatbox: {e.Message}");
+                GSLogger.LogType.Error($"[Command Manager]: Error sending message to chatbox: {e.Message}");
             }
         } else {
             _chat.Print(new SeStringBuilder().AddRed("Invalid Channel").BuiltString);
@@ -755,6 +759,8 @@ public class CommandManager : IDisposable // Our main command list manager
         // print command arguements
         _chat.Print(new SeStringBuilder().AddCommand("showlist", "Displays the list of padlocks or gags. Use without arguments for help.").BuiltString);
         _chat.Print(new SeStringBuilder().AddCommand("restraintset", "Prints help for restraint set commands. Use alone for help.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddCommand("debug", "Pulls up the debugger window.").BuiltString);
+        _chat.Print(new SeStringBuilder().AddCommand("logger", "Appends the logger window, giving you an in-game visual of ALL channel types for debug info processed by gagspeak.").BuiltString);
         return true;
     }
 

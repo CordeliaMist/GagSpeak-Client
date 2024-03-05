@@ -22,7 +22,7 @@ public partial class ResultLogic {
                 return true;
             } else {
                 // return false
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling all commands");
+                GSLogger.LogType.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling all commands");
                 return false;
             }
         }
@@ -47,7 +47,7 @@ public partial class ResultLogic {
                 return true;
             } else {
                 // return false
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling all commands");
+                GSLogger.LogType.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling all commands");
                 return false;
             }
         }
@@ -72,7 +72,7 @@ public partial class ResultLogic {
                 return true;
             } else {
                 // return false
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling all commands");
+                GSLogger.LogType.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling all commands");
                 return false;
             }
         }

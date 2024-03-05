@@ -46,7 +46,7 @@ public class RestraintSetEditor
         _iconSize    = ImGuiHelpers.ScaledVector2(2*ImGui.GetFrameHeight() + ImGui.GetStyle().ItemSpacing.Y);
         _eyeIcon = new string[EquipSlotExtensions.EqdpSlots.Count];
         // create a new gameItemCombo for each equipment piece type, then store them into the array.
-        _gameItemCombo = EquipSlotExtensions.EqdpSlots.Select(e => new GameItemCombo(_gameData, e, _itemData, GagSpeak.Log)).ToArray();
+        _gameItemCombo = EquipSlotExtensions.EqdpSlots.Select(e => new GameItemCombo(_gameData, e, _itemData,  GagSpeak.Log)).ToArray();
         _stainCombo = new StainColorCombo(DefaultWidth-20, _stainData);
     }
 
@@ -146,7 +146,7 @@ public class RestraintSetEditor
         label = combo.Label;
         if (!_restraintSetManager._restraintSets[SetIndex]._drawData[slot]._locked && open) {
             UIHelpers.OpenCombo($"##RestraintShelf{_restraintSetManager._restraintSets[SetIndex]._name}{combo.Label}");
-            GagSpeak.Log.Debug($"{combo.Label}");
+            GSLogger.LogType.Debug($"{combo.Label}");
         }
         // draw the combo
         using var disabled = ImRaii.Disabled(_restraintSetManager._restraintSets[SetIndex]._drawData[slot]._locked);
@@ -159,7 +159,7 @@ public class RestraintSetEditor
         }
         if (clear || ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
             _restraintSetManager.ResetSetDrawDataGameItem(SetIndex, slot);
-            GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, item reverted to none!");
+            GSLogger.LogType.Debug($"[WardrobeTab] Right Click processed, item reverted to none!");
         }
     }
 
@@ -175,17 +175,17 @@ public class RestraintSetEditor
         if (_stainCombo.Draw($"##GagShelfStain{_restraintSetManager._restraintSets[SetIndex]._name}{slot}", stain.RgbaColor, stain.Name, found, stain.Gloss, width)) {
             if (_stainData.TryGetValue(_stainCombo.CurrentSelection.Key, out stain)) {
                 _restraintSetManager.ChangeSetDrawDataGameStain(SetIndex, slot, stain.RowIndex);
-                GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: {stain.RowIndex}");
+                GSLogger.LogType.Debug($"[WardrobeTab] Stain Changed: {stain.RowIndex}");
             }
             else if (_stainCombo.CurrentSelection.Key == Penumbra.GameData.Structs.Stain.None.RowIndex) {
                 //data.StainSetter(Stain.None.RowIndex);
-                GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: None");
+                GSLogger.LogType.Debug($"[WardrobeTab] Stain Changed: None");
             }
         }
         // conditionals to detect for changes in the combo's via reset
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
             _restraintSetManager.ResetSetDrawDataGameStain(SetIndex, slot);
-            GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, stain reverted to none!");
+            GSLogger.LogType.Debug($"[WardrobeTab] Right Click processed, stain reverted to none!");
         }
     }
 }

@@ -23,7 +23,7 @@ public partial class ResultLogic {
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is requesting an update on your info for the profile viewer." +
                 "Providing Over the next 3 Seconds.").AddItalicsOff().BuiltString);
                 // log it
-                GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");
+                GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");
                 // invoke the interaction button cooldown timer
                 _timerService.StartTimer("InteractionCooldown", "5s", 100, () => {});
             }
@@ -67,7 +67,7 @@ public partial class ResultLogic {
                 decodedMessageMediator.layerTimer,
                 decodedMessageMediator.layerAssigner
             );
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 1 message");
+            GSLogger.LogType.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 1 message");
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Recieved [{senderName}]'s Information details(1/4)").AddItalicsOff().BuiltString);
             return true;
         }
@@ -94,7 +94,7 @@ public partial class ResultLogic {
                 decodedMessageMediator.layerTimer,
                 decodedMessageMediator.layerAssigner
             );
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 2 message");
+            GSLogger.LogType.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 2 message");
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Recieved [{senderName}]'s Information details(2/4)").AddItalicsOff().BuiltString);
             return true;
         } else {
@@ -122,7 +122,7 @@ public partial class ResultLogic {
             _characterHandler.SetWhitelistAllowSitRequests(Idx, decodedMessageMediator.allowSitRequests);
             _characterHandler.SetWhitelistAllowMotionRequests(Idx, decodedMessageMediator.allowMotionRequests);
             _characterHandler.SetWhitelistAllowAllCommands(Idx, decodedMessageMediator.allowAllCommands);
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 3 message");
+            GSLogger.LogType.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 3 message");
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Recieved [{senderName}]'s Information details(3/4)").AddItalicsOff().BuiltString);
             return true;
         } else {
@@ -151,7 +151,7 @@ public partial class ResultLogic {
                 decodedMessageMediator.AllowForcedSit, decodedMessageMediator.ForcedSit, decodedMessageMediator.AllowForcedToStay,
                 decodedMessageMediator.ForcedToStay, decodedMessageMediator.AllowBlindfold, decodedMessageMediator.Blindfolded);
             _characterHandler.SetWhitelistInHardcoreMode(Idx, decodedMessageMediator.inHardcoreMode);
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 4 message");
+            GSLogger.LogType.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 4 message");
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Recieved [{senderName}]'s Information details(4/4)").AddItalicsOff().BuiltString);
             // we have finished revcieving info from this person, make sure to clear the sendInfoName
             _config.SetSendInfoName("");

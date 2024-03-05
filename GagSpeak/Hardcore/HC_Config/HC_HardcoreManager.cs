@@ -95,7 +95,7 @@ public partial class HardcoreManager : ISavable, IDisposable
     #pragma warning restore CS8618
 #region Manager Helpers
     public void ManagerReadyForHardcoreManager() {
-        GagSpeak.Log.Debug("======================== [ Completing Hardcore Manager Initialization ] ========================");
+        GSLogger.LogType.Information(" Completing Hardcore Manager Initialization ");
         // run size integrity check
         IntegrityCheck(_restraintSetManager._restraintSets.Count);
         
@@ -104,7 +104,7 @@ public partial class HardcoreManager : ISavable, IDisposable
         // find who it was that enabled the set, if it is enabled
         if(ActiveHCsetIdx != -1) {
             var EnabledBy = _restraintSetManager._restraintSets[ActiveHCsetIdx]._wasEnabledBy;
-            GagSpeak.Log.Debug($"[HardcoreManager]  Active set was enabled by: {EnabledBy}");
+            GSLogger.LogType.Debug($"[HardcoreManager]  Active set was enabled by: {EnabledBy}");
             // find the index of whitelisted chars which contains the same name as the wasenabled by name, if it is not "self"
             ActivePlayerCfgListIdx = EnabledBy == "self" ? 0 : _characterHandler.whitelistChars.FindIndex(chara => chara._name == EnabledBy);
             // if the index if not -1, set up the multiplier
@@ -214,9 +214,9 @@ public partial class HardcoreManager : ISavable, IDisposable
                 StoredEntriesFolder = storedEntriesFolder;
             }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"[HardcoreManager] Error loading HardcoreManager.json: {ex}");
+            GSLogger.LogType.Error($"[HardcoreManager] Error loading HardcoreManager.json: {ex}");
         } finally {
-            GagSpeak.Log.Debug($"[HardcoreManager] HardcoreManager.json loaded!");
+            GSLogger.LogType.Debug($"[HardcoreManager] HardcoreManager.json loaded!");
 
         }
     }

@@ -41,7 +41,7 @@ public sealed class TextureService : TextureCache, IDisposable
         using var uldWrapper = uiBuilder.LoadUld("ui/uld/ArmouryBoard.uld");
 
         if (!uldWrapper.Valid) {
-            GagSpeak.Log.Error($"[Texture Service] Could not get empty slot uld.");
+            GSLogger.LogType.Error($"[Texture Service] Could not get empty slot uld.");
             return ret;
         }
 
@@ -62,7 +62,7 @@ public sealed class TextureService : TextureCache, IDisposable
             try {
                 ret[slot.ToIndex()] = uldWrapper.LoadTexturePart("ui/uld/ArmouryBoard_hr1.tex", index)!;
             } catch (Exception ex) {
-                GagSpeak.Log.Error($"[Texture Service] Could not get empty slot texture for {slot.ToName()}, icon will be left empty. "
+                GSLogger.LogType.Error($"[Texture Service] Could not get empty slot texture for {slot.ToName()}, icon will be left empty. "
                   + $"This may be because of incompatible mods affecting your character screen interface:\n{ex}");
                 ret[slot.ToIndex()] = null;
             }

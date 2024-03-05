@@ -91,10 +91,10 @@ public class PlayerGlobalPerms : CharacterInfoBase
         var uniquePlayerPermsArray = jsonObject["UniquePlayerPerms"]?.Value<JArray>();
         // see if uniquePlayerPerms is an empty array
         if (uniquePlayerPermsArray == null || uniquePlayerPermsArray.Count == 0) {
-            GagSpeak.Log.Debug($"[PlayerGlobalPerms]: We Have an outdated file!");
+            GSLogger.LogType.Debug($"[PlayerGlobalPerms]: We Have an outdated file!");
             DeserializeOld(jsonObject);
         } else {
-            GagSpeak.Log.Debug($"[PlayerGlobalPerms]: We Have Most Recently updated file!");
+            GSLogger.LogType.Debug($"[PlayerGlobalPerms]: We Have Most Recently updated file!");
             DeserializeNew(jsonObject);
             // will need to clear and then deserialize the trigger aliass
         }
@@ -160,7 +160,7 @@ public class PlayerGlobalPerms : CharacterInfoBase
             }
         }
         catch (System.Exception e) {
-            GagSpeak.Log.Error($"[PlayerCharacterInfo]: Error deserializing PlayerCharacterInfo: {e}");
+            GSLogger.LogType.Error($"[PlayerCharacterInfo]: Error deserializing PlayerCharacterInfo: {e}");
         }
     }
 
@@ -175,7 +175,7 @@ public class PlayerGlobalPerms : CharacterInfoBase
                     alias.Deserialize(item.Value<JObject>());
                     _triggerAliases.Add(alias);
                 }
-                GagSpeak.Log.Debug($"[PlayerGlobalPerms]: Deserialized {triggerAliasesArray.Count} TriggerAliases");
+                GSLogger.LogType.Debug($"[PlayerGlobalPerms]: Deserialized {triggerAliasesArray.Count} TriggerAliases");
             }
             // for the unique player perms
             _uniquePlayerPerms.Clear();
@@ -186,7 +186,7 @@ public class PlayerGlobalPerms : CharacterInfoBase
                     perm.Deserialize(item.Value<JObject>());
                     _uniquePlayerPerms.Add(perm);
                 }
-                GagSpeak.Log.Debug($"[PlayerGlobalPerms]: Deserialized {uniquePlayerPermsArray.Count} UniquePlayerPerms");
+                GSLogger.LogType.Debug($"[PlayerGlobalPerms]: Deserialized {uniquePlayerPermsArray.Count} UniquePlayerPerms");
             }
             // deserialize the rest of the base class
             base.Deserialize(jsonObject);
@@ -205,7 +205,7 @@ public class PlayerGlobalPerms : CharacterInfoBase
 
         }
         catch (System.Exception e) {
-            GagSpeak.Log.Error($"[PlayerGlobalPerms]: Error deserializing PlayerGlobalPerms: {e}");
+            GSLogger.LogType.Error($"[PlayerGlobalPerms]: Error deserializing PlayerGlobalPerms: {e}");
         }
         #pragma warning restore CS8604 // Possible null reference argument.
     }

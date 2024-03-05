@@ -35,6 +35,7 @@ using GagSpeak.Utility;
 using GagSpeak.Hardcore.BaseListener;
 using GagSpeak.Interop.Penumbra;
 using GagSpeak.Utils;
+using GagSpeak.GSLogger;
 
 namespace GagSpeak.Services;
 
@@ -85,7 +86,8 @@ public static class ServiceHandler
             .AddSingleton<TimerService>()
             .AddSingleton<GagSpeakConfig>()
             .AddSingleton<PlugService>()
-            .AddSingleton<TextureService>();
+            .AddSingleton<TextureService>()
+            .AddSingleton<InternalLog>();
                 
     /// <summary> Classes to add to the service collection from the [Character Data] folder </summary>
     private static ServiceManager AddCharacterData(this ServiceManager services)
@@ -222,6 +224,8 @@ public static class ServiceHandler
             
             .AddSingleton<PenumbraChangedItemTooltip>()
             .AddSingleton<AtkHelpers>()
+            .AddSingleton<InternalLoggerWindow>()
+            .AddSingleton<InternalLogTab>()
             .AddSingleton<IconManager>();
 
     /// <summary> Classes to add to the service collection from the [Wardrobe] folder </summary>

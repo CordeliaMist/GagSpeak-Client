@@ -20,7 +20,7 @@ public class RS_ListChanged
     /// <summary> Manually triggered event invoker </summary>
     public void Invoke(ListUpdateType updateType, int setIndex) { // setindex can be size for integrity checks
         // remake this for the list update type
-        GagSpeak.Log.Debug($"[RestraintSetListChangedEvent] Invoked Type: {updateType} with set index {setIndex}");
+        GSLogger.LogType.Debug($"[RestraintSetListChangedEvent] Invoked Type: {updateType} with set index {setIndex}");
         SetListModified?.Invoke(this, new RestraintSetListChangedArgs(updateType, setIndex));
     }
 }

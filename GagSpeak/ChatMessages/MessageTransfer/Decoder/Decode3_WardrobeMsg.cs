@@ -19,10 +19,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: request dominant status: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: request dominant status: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle gag storage UI lock: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle gag storage UI lock: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -41,10 +41,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle EnableRestraintSetsOption: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle EnableRestraintSetsOption: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle _enableRestraintSets: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle _enableRestraintSets: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -61,10 +61,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle AllowRestraintLockingOption: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle AllowRestraintLockingOption: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle AllowRestraintLockingOption: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle AllowRestraintLockingOption: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -84,10 +84,10 @@ public partial class MessageDecoder {
                 // restraint set name
                 decodedMessageMediator.setToLockOrUnlock = match.Groups["restraintSetName"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: enable restraint set: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: enable restraint set: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} || (Restraint Set) {decodedMessageMediator.setToLockOrUnlock}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: enable restraint set: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: enable restraint set: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -109,11 +109,11 @@ public partial class MessageDecoder {
                 // timer
                 decodedMessageMediator.layerTimer[0] = match.Groups["timer"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: lock restraint set: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: lock restraint set: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} || "+
                 $"(Restraint Set) {decodedMessageMediator.setToLockOrUnlock} || (Timer) {decodedMessageMediator.layerTimer[0]}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: lock restraint set: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: lock restraint set: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -133,11 +133,11 @@ public partial class MessageDecoder {
                 // restraint set name
                 decodedMessageMediator.setToLockOrUnlock = match.Groups["restraintSetName"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: unlock restraint set: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: unlock restraint set: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} || "+
                 $"(Restraint Set) {decodedMessageMediator.setToLockOrUnlock}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: unlock restraint set: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: unlock restraint set: Failed to decode message: {recievedMessage}");
             }
         }
     }

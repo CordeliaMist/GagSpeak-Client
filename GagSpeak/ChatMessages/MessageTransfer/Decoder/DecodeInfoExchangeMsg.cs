@@ -19,10 +19,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: request info: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: request info: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: request info: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: request info: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -34,7 +34,7 @@ public partial class MessageDecoder {
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
             if (match.Success) {
-                GagSpeak.Log.Debug($"[Message Decoder]: share info groups: {match.Groups["playerInfo"].Value.Trim()} || {match.Groups["yourStatusToThem"].Value.Trim()} || "+
+                GSLogger.LogType.Debug($"[Message Decoder]: share info groups: {match.Groups["playerInfo"].Value.Trim()} || {match.Groups["yourStatusToThem"].Value.Trim()} || "+
                 $"{match.Groups["theirStatusToYou"].Value.Trim()} || {match.Groups["safewordUsed"].Value.Trim()} || {match.Groups["extendedLocks"].Value.Trim()} || "+
                 $"{match.Groups["gaggedVoice"].Value.Trim()} || {match.Groups["sealedLips"].Value.Trim()}");
                 // command type
@@ -56,7 +56,7 @@ public partial class MessageDecoder {
                 decodedMessageMediator.directChatGarblerLocked = match.Groups["sealedLips"].Value.Trim() == "gagged lips" ? true : false;
                 // layer info
                 string layerInfo = match.Groups["layerInfo"].Value.Trim();
-                GagSpeak.Log.Debug($"[Message Decoder]: share info2: layerInfo: {layerInfo}");
+                GSLogger.LogType.Debug($"[Message Decoder]: share info2: layerInfo: {layerInfo}");
                 // if it contains nothing present, then we know we have a blank entry.
                 if (layerInfo.Contains("nothing present")) {
                     decodedMessageMediator.layerGagName[0] = "None";
@@ -85,12 +85,12 @@ public partial class MessageDecoder {
                 }
 
                 // debug info
-                GagSpeak.Log.Debug($"[Message Decoder]: share info1: (Type) {decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} || "+
+                GSLogger.LogType.Debug($"[Message Decoder]: share info1: (Type) {decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} || "+
                 $"(YourStatusToThem) {decodedMessageMediator.dynamicLean} || (TheirStatusToYou) {decodedMessageMediator.theirDynamicLean} || "+
                 $"(SafewordUsed) {decodedMessageMediator.safewordUsed} || (ExtendedLocks) {decodedMessageMediator.extendedLockTimes} || "+
                 $"(GaggedVoice) {decodedMessageMediator.directChatGarblerActive} || (SealedLips) {decodedMessageMediator.directChatGarblerLocked}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: share info: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: share info: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -112,7 +112,7 @@ public partial class MessageDecoder {
                     string startingWords = i == 0 ? "Over their mouths main layer, " : "Finally on her uppermost layer, ";
                     // store the current regex for this section
                     string layerInfo = layerInfoParts[i];
-                    GagSpeak.Log.Debug($"[Message Decoder]: share info2: layerInfo: {layerInfo}");
+                    GSLogger.LogType.Debug($"[Message Decoder]: share info2: layerInfo: {layerInfo}");
                     // if it contains nothing present, then we know we have a blank entry.
                     if (layerInfo.Contains("nothing present")) {
                         decodedMessageMediator.layerGagName[i+1] = "None";
@@ -141,12 +141,12 @@ public partial class MessageDecoder {
                     }
                 }
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: share info2: (gagtype[1]) {decodedMessageMediator.layerGagName[1]} || (gagtype[2]) {decodedMessageMediator.layerGagName[2]} "+
+                GSLogger.LogType.Debug($"[Message Decoder]: share info2: (gagtype[1]) {decodedMessageMediator.layerGagName[1]} || (gagtype[2]) {decodedMessageMediator.layerGagName[2]} "+
                 $"|| (gagpadlock[1]) {decodedMessageMediator.layerPadlock[1]} || (gagpadlock[2]) {decodedMessageMediator.layerPadlock[2]} || (gagtimer[1]) {decodedMessageMediator.layerTimer[1]} "+
                 $"|| (gagtimer[2]) {decodedMessageMediator.layerTimer[2]} || (gagAssigner[1]) {decodedMessageMediator.layerAssigner[1]} || (gagAssigner[2]) {decodedMessageMediator.layerAssigner[2]} "+
                 $"|| (gagPassword[1]) {decodedMessageMediator.layerPassword[1]} || (gagPassword[2]) {decodedMessageMediator.layerPassword[2]}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: share info2: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: share info2: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -172,7 +172,7 @@ public partial class MessageDecoder {
                 decodedMessageMediator.isPuppeteerEnabled = match.Groups["allowPuppeteer"].Value.Trim() == "loyal as ever when" ? true : false;                
                 // puppeteer trigger
                 string puppeteerTrigger = match.Groups["puppeteerTrigger"].Value.Trim();
-                GagSpeak.Log.Debug($"[Message Decoder]: share info3: puppeteerTrigger: -->{puppeteerTrigger}<--");
+                GSLogger.LogType.Debug($"[Message Decoder]: share info3: puppeteerTrigger: -->{puppeteerTrigger}<--");
                 decodedMessageMediator.triggerStartChar = puppeteerTrigger[0].ToString();
                 decodedMessageMediator.triggerEndChar = puppeteerTrigger[puppeteerTrigger.Length - 1].ToString();
                 if(puppeteerTrigger.Length > 2) {
@@ -187,13 +187,13 @@ public partial class MessageDecoder {
                 // all commands state
                 decodedMessageMediator.allowAllCommands = match.Groups["allCommandsState"].Value.Trim() == "and all of their actions" ? true : false;
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: share info3: (Type) {decodedMessageMediator.encodedCmdType} || (WardrobeState) {decodedMessageMediator.isWardrobeEnabled} || "+
+                GSLogger.LogType.Debug($"[Message Decoder]: share info3: (Type) {decodedMessageMediator.encodedCmdType} || (WardrobeState) {decodedMessageMediator.isWardrobeEnabled} || "+
                 $"(GagStorageState) {decodedMessageMediator.isGagStorageLockUIEnabled} || (RestraintSetEnable) {decodedMessageMediator.isEnableRestraintSets} || "+
                 $"(RestraintLock) {decodedMessageMediator.isRestraintSetLocking} || (PuppeteerTrigger) {decodedMessageMediator.triggerPhrase} || "+
                 $"(SitRequestState) {decodedMessageMediator.allowSitRequests} || (MotionRequestState) {decodedMessageMediator.allowMotionRequests} || "+
                 $"(AllCommandsState) {decodedMessageMediator.allowAllCommands} || (toyboxEnabled) {decodedMessageMediator.isToyboxEnabled}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: share info3: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: share info3: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -229,13 +229,13 @@ public partial class MessageDecoder {
                 // get hardcore mode state
                 decodedMessageMediator.inHardcoreMode = match.Groups["InHardcore"].Value.Trim() == "Left" ? true : false;
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: share info4: (Type) {decodedMessageMediator.encodedCmdType} || (ToggleToyState) {decodedMessageMediator.isChangingToyStateAllowed} || "+
+                GSLogger.LogType.Debug($"[Message Decoder]: share info4: (Type) {decodedMessageMediator.encodedCmdType} || (ToggleToyState) {decodedMessageMediator.isChangingToyStateAllowed} || "+
                 $"(CanControlIntensity) {decodedMessageMediator.isIntensityControlAllowed} || (IntensityLevel) {decodedMessageMediator.intensityLevel} || "+
                 $"(ToyPatternState) {decodedMessageMediator.isUsingPatternsAllowed} || (ToyboxLockState) {decodedMessageMediator.isToyboxLockingAllowed}" 
                 + $" || (ToyActiveState) {decodedMessageMediator.toyState}" + $" || (ToyStepCount) {decodedMessageMediator.toyStepCount}" + $" || (HardcoreSettings) "+
                 $"{match.Groups["hardcoreSettings"].Value.Trim()}" + $" || (InHardcore) {decodedMessageMediator.inHardcoreMode}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: share info4: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: share info4: Failed to decode message: {recievedMessage}");
             }
         
         

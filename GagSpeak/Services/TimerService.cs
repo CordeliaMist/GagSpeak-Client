@@ -75,16 +75,16 @@ public class TimerService : IDisposable
       }
       // Check if a timer with the same name already exists
       if (timers.ContainsKey(timerName)) {
-         GagSpeak.Log.Debug($"[Timer Service]: Timer with name '{timerName}' already exists. Use different name.");
+         GSLogger.LogType.Debug($"[Timer Service]: Timer with name '{timerName}' already exists. Use different name.");
          return;
       }
       // Parse the input string to get the duration
       TimeSpan duration = ParseTimeInput(input);
 
-      GagSpeak.Log.Debug($"[Timer Service]: '{timerName}' started with duration {duration}.");
+      GSLogger.LogType.Debug($"[Timer Service]: '{timerName}' started with duration {duration}.");
       // Check if the duration is valid
       if (duration == TimeSpan.Zero){
-         GagSpeak.Log.Debug($"[Timer Service]: Invalid time format for timer '{timerName}'.");
+         GSLogger.LogType.Debug($"[Timer Service]: Invalid time format for timer '{timerName}'.");
          return;
       }
       // Calculate the end time of the timer
@@ -122,7 +122,7 @@ public class TimerService : IDisposable
          TimeSpan remainingTime = timerData.EndTime - DateTimeOffset.Now;
          // if the remaining time is less than zero, then the timer has expired.
          if (remainingTime <= TimeSpan.Zero) {
-               GagSpeak.Log.Debug($"[Timer Service]: '{timerName}'has reached zero, dumping timer.");
+               GSLogger.LogType.Debug($"[Timer Service]: '{timerName}'has reached zero, dumping timer.");
                timer.Stop(); // stop the timer in the timer service's TIMERS dictionary
                onElapsed?.Invoke(); // invoke the action that you put in the _timerService.StartTimer() method
                timers.Remove(timerName); // remove the timer from the timer service's TIMERS dictionary
@@ -144,9 +144,9 @@ public class TimerService : IDisposable
    /// </summary>
    public void CheckForInfoRequestInvokeConditoin() {
       // first check to see if our interaction cooldown timer is gone, and if so, invoke the info request condition
-      GagSpeak.Log.Debug($"[Timer Service]: Checking for info request invoke condition...");
+      GSLogger.LogType.Debug($"[Timer Service]: Checking for info request invoke condition...");
       if (!timers.ContainsKey("interactionButtonPressed") && !string.IsNullOrEmpty(_config.sendInfoName) && _config.acceptingInfoRequests && _config.processingInfoRequest == false) {
-         GagSpeak.Log.Debug($"[Timer Service]: Info request invoke condition met, invoking event...");
+         GSLogger.LogType.Debug($"[Timer Service]: Info request invoke condition met, invoking event...");
          _infoRequestEvent.Invoke();
       }
    }
@@ -160,14 +160,14 @@ public class TimerService : IDisposable
          // Calculate the remaining time in milliseconds
          var remainingTime = UIHelpers.FormatTimeSpan(pair.Value.EndTime - DateTimeOffset.Now);
          // Print the timer name and remaining time
-         GagSpeak.Log.Debug($"[Timer Service] Timer            : {pair.Key}, Remaining Time: {remainingTime}");
+         GSLogger.LogType.Debug($"[Timer Service] Timer            : {pair.Key}, Remaining Time: {remainingTime}");
       }
       // print the remaining time for each timer in the config.timerdata dictionary
       foreach (var pair in _config.timerData) {
          // Calculate the remaining time in milliseconds
          var remainingTime = UIHelpers.FormatTimeSpan(pair.Value - DateTimeOffset.Now);
          // Print the timer name and remaining time
-         GagSpeak.Log.Debug($"[Timer Service] Config Timer Data: {pair.Key}, Remaining Time: {remainingTime}");
+         GSLogger.LogType.Debug($"[Timer Service] Config Timer Data: {pair.Key}, Remaining Time: {remainingTime}");
       }
    }
 
@@ -251,12 +251,12 @@ public class TimerService : IDisposable
          if(timerName.Contains("_Identifier0")) {
             // Check to see if the timer expired while we were offline, if it is, clear the respective data
             if (remainingTime < TimeSpan.Zero) {
-               GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
+               GSLogger.LogType.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                _config.isLocked[0] = false;
                _config.padlockIdentifier[0].ClearPasswords();
                _config.padlockIdentifier[0].UpdatePadlockInfo(0, !_config.isLocked[0], _characterHandler);
             } else {
-               GagSpeak.Log.Debug($"[Timer Service]: Restoring {timerName} with end time {remainingTime}");
+               GSLogger.LogType.Debug($"[Timer Service]: Restoring {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _config.isLocked[0] = false;
                   _config.padlockIdentifier[0].ClearPasswords();
@@ -268,13 +268,13 @@ public class TimerService : IDisposable
          else if(timerName.Contains("_Identifier1")) {
             // Check to see if the timer expired while we were offline, if it is, clear the respective data
             if (remainingTime < TimeSpan.Zero) {
-               GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
+               GSLogger.LogType.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                _config.isLocked[1] = false;
                _config.padlockIdentifier[1].ClearPasswords();
                _config.padlockIdentifier[1].UpdatePadlockInfo(1, !_config.isLocked[1], _characterHandler);
             } else {
                // Check to see if the timer expired while we were offline, if it is, clear the respective data
-               GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
+               GSLogger.LogType.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _config.isLocked[1] = false;
                   _config.padlockIdentifier[1].ClearPasswords();
@@ -286,13 +286,13 @@ public class TimerService : IDisposable
          else if(timerName.Contains("_Identifier2")) {
             // Check to see if the timer expired while we were offline, if it is, clear the respective data
             if (remainingTime < TimeSpan.Zero) {
-               GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
+               GSLogger.LogType.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                _config.isLocked[2] = false;
                _config.padlockIdentifier[2].ClearPasswords();
                _config.padlockIdentifier[2].UpdatePadlockInfo(2, !_config.isLocked[2], _characterHandler);
             } else {
                // Check to see if the timer expired while we were offline, if it is, clear the respective data
-               GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
+               GSLogger.LogType.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _config.isLocked[2] = false;
                   _config.padlockIdentifier[2].ClearPasswords();
@@ -304,11 +304,11 @@ public class TimerService : IDisposable
          else if(timerName.Contains("SafewordUsed")) {
             // Check to see if the timer expired while we were offline, if it is, clear the respective data
             if (remainingTime < TimeSpan.Zero) {
-               GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
+               GSLogger.LogType.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                _characterHandler.SetSafewordUsed(false);
             } else {
                // Check to see if the timer expired while we were offline, if it is, clear the respective data
-               GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
+               GSLogger.LogType.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _characterHandler.SetSafewordUsed(false);
                });
@@ -318,7 +318,7 @@ public class TimerService : IDisposable
          else if(timerName.Contains("RestraintSet_")) {
             // Check to see if the timer expired while we were offline, if it is, clear the respective data
             if (remainingTime < TimeSpan.Zero) {
-               GagSpeak.Log.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
+               GSLogger.LogType.Debug($"[Timer Service]: {timerName} Expired while you were logged out! (End Time: {remainingTime}). Unlocking and clearing!");
                ClearRestraintSetTimer();
             } else {
                // get the index of the name
@@ -326,7 +326,7 @@ public class TimerService : IDisposable
                // find the index of it
                int setIndex = _restraintSetManager.GetRestraintSetIndex(restraintSetName);
                // Check to see if the timer expired while we were offline, if it is, clear the respective data
-               GagSpeak.Log.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
+               GSLogger.LogType.Debug($"[Timer Service]: Restoring timer {timerName} with end time {remainingTime}");
                StartTimer(timerName, UIHelpers.FormatTimeSpan(remainingTime), 1000, () => {
                   _restraintSetManager.TryUnlockRestraintSet(setIndex, "self");
                   ClearRestraintSetTimer();
@@ -381,7 +381,7 @@ public class TimerService : IDisposable
          timers[key].Timer.Dispose(); // Dispose the timer before removing it
          timers.Remove(key);
       }
-      GagSpeak.Log.Debug($"[Timer Service Timer Cleaner]: Restraint Set Timers Cleared!");
+      GSLogger.LogType.Debug($"[Timer Service Timer Cleaner]: Restraint Set Timers Cleared!");
    }
 
    /// <summary>
@@ -408,10 +408,10 @@ public class TimerService : IDisposable
    /// </summary>
    public void Dispose() {
       // save timers upon unloading, printing all active ones to the debug log.
-      GagSpeak.Log.Debug("[Timer Service] --------Saving & Unloading Timers-------");
+      GSLogger.LogType.Debug("[Timer Service] --------Saving & Unloading Timers-------");
       SaveTimerData(_config);
       DebugPrintRemainingTimers();
-      GagSpeak.Log.Debug("[Timer Service] --------Timers (If Any) Now Saved--------");
+      GSLogger.LogType.Debug("[Timer Service] --------Timers (If Any) Now Saved--------");
       // Dispose all timers
       foreach (var timerData in timers.Values) {
          timerData.Timer.Dispose();

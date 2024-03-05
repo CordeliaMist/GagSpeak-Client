@@ -67,7 +67,7 @@ public class HC_RestraintProperties
         _mildStimulationProperty = jsonObject["MildStimulationProperty"]?.Value<bool>() ?? false;
         _heavyStimulationProperty = jsonObject["HeavyStimulationProperty"]?.Value<bool>() ?? false;
         } catch (Exception e) {
-            GagSpeak.Log.Error($"[HC_RestraintProperties]: Error deserializing HC_RestraintProperties: {e.Message}");
+            GSLogger.LogType.Error($"[HC_RestraintProperties]: Error deserializing HC_RestraintProperties: {e.Message}");
         }
     }
 }

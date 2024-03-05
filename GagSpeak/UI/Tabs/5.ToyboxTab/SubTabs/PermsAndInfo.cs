@@ -193,7 +193,7 @@ public class PermsAndInfoSubtab : IDisposable
                     }
                 }
             } catch (System.Exception e) {
-                GagSpeak.Log.Debug($"{e.Message} Error drawing the setup and info subtab");
+                GSLogger.LogType.Debug($"{e.Message} Error drawing the setup and info subtab");
             } finally {
                 ImGui.PopFont();
             }
@@ -224,7 +224,7 @@ public class PermsAndInfoSubtab : IDisposable
             if(ImGui.VSliderInt("##VertSliderToy", new Vector2(width,ImGui.GetContentRegionAvail().Y), ref intensityResult, 0, maxVal)) {
                 //  (byte)(intensityResult*_plugService.stepCount); formats it back into the same value stored by patterns for fast calculations
                 _charHandler.UpdateIntensityLevel(intensityResult);
-                //GagSpeak.Log.Debug($"[Toybox Overview Panel] Intensity Level: {_charHandler.playerChar._intensityLevel}");
+                //GSLogger.LogType.Debug($"[Toybox Overview Panel] Intensity Level: {_charHandler.playerChar._intensityLevel}");
                 // update the intensity on our device if it is set to active
                 if(_tempSliderValue != intensityResult) {
                     _tempSliderValue = intensityResult;
@@ -253,7 +253,7 @@ public class PermsAndInfoSubtab : IDisposable
             if(_simulatedVibeType == 0) {
                 SwitchToQuietVibe();
             } else {
-                GagSpeak.Log.Debug($"[Toybox Overview Panel] Switching to Loud Vibe");
+                GSLogger.LogType.Debug($"[Toybox Overview Panel] Switching to Loud Vibe");
                 SwitchToLoudVibe();
             }
         }
@@ -300,7 +300,7 @@ public class PermsAndInfoSubtab : IDisposable
                 _ = _plugService.StartScanForDevicesAsync().ContinueWith(t => 
                 {
                     if (t.Exception != null) {
-                        GagSpeak.Log.Error($"[Toybox Overview Panel] Error starting scan for devices: {t.Exception}");
+                        GSLogger.LogType.Error($"[Toybox Overview Panel] Error starting scan for devices: {t.Exception}");
                     }
                 });
             }
@@ -311,12 +311,12 @@ public class PermsAndInfoSubtab : IDisposable
                 _ = _plugService.StopScanForDevicesAsync().ContinueWith(t => 
                 {
                     if (t.Exception != null) {
-                        GagSpeak.Log.Error($"[Toybox Overview Panel] Error stopping scan for devices: {t.Exception}");
+                        GSLogger.LogType.Error($"[Toybox Overview Panel] Error stopping scan for devices: {t.Exception}");
                     }
                 });
             }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"[Toybox Overview Panel] Error generating a list from connected devices {ex.ToString()}");
+            GSLogger.LogType.Error($"[Toybox Overview Panel] Error generating a list from connected devices {ex.ToString()}");
         }
     }
 }

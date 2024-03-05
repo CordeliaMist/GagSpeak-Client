@@ -67,18 +67,18 @@ public class FontService : IDisposable
                 // attempt to load them in
                 UidFont = ImGui.GetIO().Fonts.AddFontFromFileTTF(fontFile, 30f, null, handle.AddrOfPinnedObject());
                 UidFontBuilt = true;
-                GagSpeak.Log.Debug($"[Font] Constructed. DoulosSIL-Regular.ttf");
+                GSLogger.LogType.Debug($"[Font] Constructed. DoulosSIL-Regular.ttf");
             }
             catch (Exception ex) {
-                GagSpeak.Log.Warning($"[Font] Failed to load Font :: {ex.Message}");
+                GSLogger.LogType.Warning($"[Font] Failed to load Font :: {ex.Message}");
             }
         } else {
-            GagSpeak.Log.Debug($"[Font] Error");
+            GSLogger.LogType.Debug($"[Font] Error");
         }
     }
     /// <summary> Dispose of the font service </summary>
     public void Dispose() {
-        GagSpeak.Log.Debug($"[Font] Disposing FontService");
+        GSLogger.LogType.Debug($"[Font] Disposing FontService");
         _pluginInterface.UiBuilder.BuildFonts -= BuildFont;
         #pragma warning restore CS0618 // I dont really care about if it is absolete at the moment
     }

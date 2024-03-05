@@ -42,12 +42,12 @@ public partial class HC_PerPlayerConfig
 
 #region property setters
     public void SetAllowForcedFollow(bool newVal) {
-        GagSpeak.Log.Debug($"[HC_PerPlayerConfig] SetAllowForcedFollow: {newVal}");
+        GSLogger.LogType.Debug($"[HC_PerPlayerConfig] SetAllowForcedFollow: {newVal}");
         _allowForcedFollow = newVal;
     }
 
     public void SetForcedFollow(bool newVal) {
-        GagSpeak.Log.Debug($"[HC_PerPlayerConfig] SetForcedFollow: {newVal}");
+        GSLogger.LogType.Debug($"[HC_PerPlayerConfig] SetForcedFollow: {newVal}");
         _forcedFollow = newVal;
         _rsPropertyChanged.Invoke(HardcoreChangeType.ForcedFollow, newVal ? RestraintSetChangeType.Enabled : RestraintSetChangeType.Disabled);
     }

@@ -81,7 +81,7 @@ public class PatternData
                     .ToList();
             }
         } catch (System.Exception e) {
-            GagSpeak.Log.Debug($"{e} Error deserializing pattern data");
+            GSLogger.LogType.Debug($"{e} Error deserializing pattern data");
         }
     }
 }

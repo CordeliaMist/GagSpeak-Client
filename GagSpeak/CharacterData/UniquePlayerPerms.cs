@@ -58,7 +58,7 @@ public class UniquePlayerPerms {
             _allowUsingPatterns = jsonObject["AllowUsingPatterns"]?.Value<bool>() ?? false;
             _allowUsingTriggers = jsonObject["AllowUsingTriggers"]?.Value<bool>() ?? false;
         } catch (Exception e) {
-            GagSpeak.Log.Error($"[UniquePlayerPerms]: Error deserializing UniquePlayerPerms: {e.Message}");
+            GSLogger.LogType.Error($"[UniquePlayerPerms]: Error deserializing UniquePlayerPerms: {e.Message}");
         }
     }
 #endregion Serialization

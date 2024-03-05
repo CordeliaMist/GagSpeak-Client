@@ -56,7 +56,7 @@ public sealed class GagLockFilterCombo
             }
         }
         catch (Exception e) {
-            GagSpeak.Log.Debug(e.ToString());
+            GSLogger.LogType.Debug(e.ToString());
         }
     }
 
@@ -93,7 +93,7 @@ public sealed class GagLockFilterCombo
                 }
             }
         } catch (Exception e) {
-            GagSpeak.Log.Debug(e.ToString());
+            GSLogger.LogType.Debug(e.ToString());
         }
     }
 }

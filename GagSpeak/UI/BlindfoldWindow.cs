@@ -84,11 +84,11 @@ public class BlindfoldWindow : Window, IDisposable
     }
 
     public void ActivateWindow() {
-        GagSpeak.Log.Debug($"BlindfoldWindow: Activating window");
+        GSLogger.LogType.Debug($"BlindfoldWindow: Activating window");
         // if an active timer is running
         if (_timerRecorder.IsRunning) {
             // we were trying to deactivate the window, so stop the timer and turn off the window
-            GagSpeak.Log.Debug($"BlindfoldWindow: Timer is running, stopping it");
+            GSLogger.LogType.Debug($"BlindfoldWindow: Timer is running, stopping it");
             _timerRecorder.Stop();
             this.Toggle();
         }
@@ -202,5 +202,5 @@ public class BlindfoldWindow : Window, IDisposable
         base.PostDraw();
     }
 
-     private static string GetLabel() => "BlindfoldWindow###BlindfoldWindow";
+    private static string GetLabel() => "BlindfoldWindow###BlindfoldWindow";
 }

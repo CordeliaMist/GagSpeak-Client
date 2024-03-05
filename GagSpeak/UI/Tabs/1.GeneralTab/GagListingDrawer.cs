@@ -87,8 +87,8 @@ public class GagListingsDrawer : IDisposable
                 _requiredComboWidthUnscaled = _gagService._gagTypes.Max(gag => ImGui.CalcTextSize(gag._gagName).X) / ImGuiHelpers.GlobalScale;
             }
             catch (Exception e) {
-                GagSpeak.Log.Error($"Failed to calculate the required combo width for the gag listing drawer. Size of gagtypes was {_gagService._gagTypes.Count}");
-                GagSpeak.Log.Error(e.ToString());
+                GSLogger.LogType.Error($"Failed to calculate the required combo width for the gag listing drawer. Size of gagtypes was {_gagService._gagTypes.Count}");
+                GSLogger.LogType.Error(e.ToString());
             }
         // get the scaled combo width
         _requiredComboWidth = _requiredComboWidthUnscaled * ImGuiHelpers.GlobalScale;
@@ -132,8 +132,8 @@ public class GagListingsDrawer : IDisposable
             }
         }
         catch (Exception e) {
-            GagSpeak.Log.Error($"Failed to draw icon for slot {layerIndex} with gag type {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
-            GagSpeak.Log.Error(e.ToString());
+            GSLogger.LogType.Error($"Failed to draw icon for slot {layerIndex} with gag type {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
+            GSLogger.LogType.Error(e.ToString());
         }
           
         ImGui.NextColumn(); ImGui.SetColumnWidth(1, width+10); // Set the desired widths);
@@ -217,7 +217,7 @@ public class GagListingsDrawer : IDisposable
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
                 // get gagtype before clear
-                GagSpeak.Log.Debug($"[GagListingsDrawer]: Clearing gag type for layer {layerIndex} | {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
+                GSLogger.LogType.Debug($"[GagListingsDrawer]: Clearing gag type for layer {layerIndex} | {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
                 var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(gt => gt.GetGagAlias() == _characterHandler.playerChar._selectedGagTypes[layerIndex]);
                 // clear the gag item from the selectedGagTypes list, resetting it to none
                 if(_gagStorageManager._gagEquipData[gagType]._isEnabled) {

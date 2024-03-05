@@ -8,7 +8,7 @@ public class InteractOrPermButtonEvent
     public event InteractOrPermButtonEventHandler? ButtonPressed;
 
     public void Invoke(int seconds) {
-        GagSpeak.Log.Debug($"[InteractOrPermButtonEvent] Invoked");
+        GSLogger.LogType.Debug($"[InteractOrPermButtonEvent] Invoked");
         ButtonPressed?.Invoke(this, new InteractOrPermButtonEventArgs(seconds));
     }
 }

@@ -10,8 +10,6 @@ using GagSpeak.ChatMessages.ChatControl;
 using GagSpeak.Hardcore.Actions;
 using GagSpeak.Hardcore.Movement;
 using GagSpeak.Hardcore;
-using GagSpeak.Events;
-using Lumina.Excel.GeneratedSheets2;   // REQUIRED for our plugins InfoRequestService requiredservices to be fetched
 
 
 // The main namespace for the plugin, aka the same name of our plugin, the highest level
@@ -20,19 +18,19 @@ namespace GagSpeak;
 public class GagSpeak : IDalamudPlugin
 {
   /// <summary> Gets the name of the plugin. </summary>
-  public string Name => "GagSpeak"; // Define plugin name
+  public static string Name => "GagSpeak"; // Define plugin name
 
   /// <summary> gets the version of our current plugin from the .csproj file </summary>
   public static readonly string Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
   
   /// <summary> initialize the logger for our plugin, which will display debug information to our /xllog in game </summary>
-  public static readonly Logger Log = new(); // initialize the logger for our plugin
+  public static readonly Logger Log = new(); // dalamudside logger
 
   /// <summary> the messager service for this plugin. A part of the otterGui services, and is used to display the changelog </summary>
   public static MessageService Messager { get; private set; } = null!; // initialize the messager service, part of otterGui services.
   
   /// <summary> the service provider for the plugin </summary>
-  private readonly ServiceManager _services; 
+  public static ServiceManager _services { get; private set; } = null!; // initialize the service provider for the plugin
 
   /// <summary> The primary plugin constructor
   public GagSpeak(DalamudPluginInterface pluginInt)
@@ -63,7 +61,7 @@ public class GagSpeak : IDalamudPlugin
           _services.GetService<GsActionManager>();        // Get the action manager
           _services.GetService<MovementManager>();        // get the movement manager
           _services.GetService<OptionPromptListeners>();  // Make sure we are listening for the interactions
-          Log.Information($"GagSpeak v{Version} loaded successfully."); // Log the version to the /xllog menu
+          GSLogger.LogType.Information($"GagSpeak v{Version} loaded successfully."); // Log the version to the /xllog menu
       }
       catch
       {

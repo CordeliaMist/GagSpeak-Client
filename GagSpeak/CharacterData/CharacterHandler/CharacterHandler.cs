@@ -40,7 +40,7 @@ public partial class CharacterHandler : ISavable
         // ensure all lists have the correct sizes
         _saveService.QueueSave(this);
         // let the initialization manager know that we have loaded the character handler
-        GagSpeak.Log.Debug("======================== [ Completing CharacterHandler Initialization ] ========================");
+        GSLogger.LogType.Information(" Completing CharacterHandler Initialization ");
         _initializationManager.CompleteStep(InitializationSteps.CharacterHandlerInitialized);
     }
 
@@ -210,7 +210,7 @@ public partial class CharacterHandler : ISavable
         whitelistChars.Clear();
         if (!File.Exists(file)) {
             CreateNewFile();
-            GagSpeak.Log.Debug($"[CharacterHandler] CharacterData.json not found! Creating new file.");
+            GSLogger.LogType.Debug($"[CharacterHandler] CharacterData.json not found! Creating new file.");
             return;
         }
         try {
@@ -230,9 +230,9 @@ public partial class CharacterHandler : ISavable
                 whitelistChars.Add(listedCharacter);
             }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"Failure to load Whitelisted Data: Error during parsing. {ex}");
+            GSLogger.LogType.Error($"Failure to load Whitelisted Data: Error during parsing. {ex}");
         } finally {
-            GagSpeak.Log.Debug($"[CharacterHandler] CharacterData.json loaded! Loaded {whitelistChars.Count} the whitelist.");
+            GSLogger.LogType.Debug($"[CharacterHandler] CharacterData.json loaded! Loaded {whitelistChars.Count} the whitelist.");
         }
         //#pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }

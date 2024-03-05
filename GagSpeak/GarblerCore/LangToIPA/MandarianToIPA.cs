@@ -47,12 +47,12 @@ public class IpaParserMandarian
 		}
 		catch (FileNotFoundException) {
 			// If the file does not exist, log an error and initialize obj as an empty dictionary
-			GagSpeak.Log.Debug($"[IPA Parser] File does not exist: {data_file}");
+			GSLogger.LogType.Debug($"[IPA Parser] File does not exist: {data_file}");
 			obj = new Dictionary<string, string>();
 		}
 		catch (Exception ex) {
 			// If any other error occurs, log the error and initialize obj as an empty dictionary
-			GagSpeak.Log.Debug($"[IPA Parser] An error occurred while reading the file: {ex.Message}");
+			GSLogger.LogType.Debug($"[IPA Parser] An error occurred while reading the file: {ex.Message}");
 			obj = new Dictionary<string, string>();
 		}
 
@@ -63,7 +63,7 @@ public class IpaParserMandarian
 			uniqueSymbolsString = string.Join(",", uniqueSymbols);
 		}
 		catch (Exception ex) {
-			GagSpeak.Log.Debug($"[IPA Parser] An error occurred while extracting unique phonetics: {ex.Message}");
+			GSLogger.LogType.Debug($"[IPA Parser] An error occurred while extracting unique phonetics: {ex.Message}");
 		}
 
     }
@@ -210,7 +210,7 @@ public class IpaParserMandarian
 
 	public string ConvertToSpacedPhonetics(string input)
 	{
-		GagSpeak.Log.Debug($"[IPA Parser] Converting phonetics to spaced phonetics: {input}");
+		GSLogger.LogType.Debug($"[IPA Parser] Converting phonetics to spaced phonetics: {input}");
 		string output = "";
 		// Add a placeholder at the start and end of the input string
 		input = " " + input + " ";
@@ -218,7 +218,7 @@ public class IpaParserMandarian
 		string[] phoneticRepresentations = Regex.Split(input, @"(?<=\))\s*(?=\()");
 		// Iterate over the phonetic representations
 		foreach (var representation in phoneticRepresentations) {
-			GagSpeak.Log.Debug($"[IPA Parser] Phonetic representation: {representation}");
+			GSLogger.LogType.Debug($"[IPA Parser] Phonetic representation: {representation}");
 			// Remove the placeholders
 			string phonetics = representation.Trim();
 			// Check if the representation has a phonetic representation
@@ -256,7 +256,7 @@ public class IpaParserMandarian
 				output += phonetics + " ";
 			}
 		}
-		GagSpeak.Log.Debug($"[IPA Parser] Converted phonetics to spaced phonetics: {output}");
+		GSLogger.LogType.Debug($"[IPA Parser] Converted phonetics to spaced phonetics: {output}");
 		// Remove the trailing space and return the output
 		return output.TrimEnd();
 	}

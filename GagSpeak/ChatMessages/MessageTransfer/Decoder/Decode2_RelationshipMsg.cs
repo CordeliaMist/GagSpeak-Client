@@ -21,11 +21,11 @@ public partial class MessageDecoder {
                 // relation type
                 decodedMessageMediator.dynamicLean = match.Groups["relationType"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: request dominant status: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: request dominant status: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(RelationType) {decodedMessageMediator.dynamicLean}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: request dominant status: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: request dominant status: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -45,11 +45,11 @@ public partial class MessageDecoder {
                 // relation type
                 decodedMessageMediator.dynamicLean = match.Groups["relationType"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: request submissive status: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: request submissive status: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(RelationType) {decodedMessageMediator.dynamicLean}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: request submissive status: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: request submissive status: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -69,11 +69,11 @@ public partial class MessageDecoder {
                 // relation type
                 decodedMessageMediator.dynamicLean = "AbsoluteSlave";
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: request absolute submission status: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: request absolute submission status: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(RelationType) {decodedMessageMediator.dynamicLean}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: request absolute submission status: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: request absolute submission status: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -93,11 +93,11 @@ public partial class MessageDecoder {
                 // relation type
                 decodedMessageMediator.dynamicLean = match.Groups["relationType"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: accept request dominant status: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: accept request dominant status: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(RelationType) {decodedMessageMediator.dynamicLean}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: accept request dominant status: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: accept request dominant status: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -117,11 +117,11 @@ public partial class MessageDecoder {
                 // relation type
                 decodedMessageMediator.dynamicLean = match.Groups["relationType"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: accept request submissive status: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: accept request submissive status: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(RelationType) {decodedMessageMediator.dynamicLean}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: accept request submissive status: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: accept request submissive status: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -141,11 +141,11 @@ public partial class MessageDecoder {
                 // relation type
                 decodedMessageMediator.dynamicLean = match.Groups["relationType"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: accept request absolute submission status: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: accept request absolute submission status: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(RelationType) {decodedMessageMediator.dynamicLean}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: accept request absolute submission status: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: accept request absolute submission status: Failed to decode message: {recievedMessage}");
             }
         }
     
@@ -163,10 +163,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: decline request dominant status: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: decline request dominant status: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: decline request dominant status: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: decline request dominant status: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -184,10 +184,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: decline request submissive status: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: decline request submissive status: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: decline request submissive status: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: decline request submissive status: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -205,10 +205,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: decline request absolute submission status: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: decline request absolute submission status: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: decline request absolute submission status: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: decline request absolute submission status: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -226,10 +226,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: send relation removal message: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: send relation removal message: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: send relation removal message: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: send relation removal message: Failed to decode message: {recievedMessage}");
             }
         }
     }

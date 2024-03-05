@@ -19,10 +19,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle only sit request option: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle only sit request option: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle only sit request option: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle only sit request option: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -40,10 +40,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle only motion request option: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle only motion request option: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle only motion request option: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle only motion request option: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -61,10 +61,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle all commands option: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle all commands option: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle all commands option: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle all commands option: Failed to decode message: {recievedMessage}");
             }
         }
     }

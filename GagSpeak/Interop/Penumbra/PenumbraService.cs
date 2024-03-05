@@ -95,7 +95,7 @@ public unsafe class PenumbraService : IDisposable
                 .ToList();
         }
         catch (Exception ex) {
-            GagSpeak.Log.Error($"Error fetching mods from Penumbra:\n{ex}");
+            GSLogger.LogType.Error($"Error fetching mods from Penumbra:\n{ex}");
             return Array.Empty<(Mod Mod, ModSettings Settings)>();
         }
     }
@@ -164,7 +164,7 @@ public unsafe class PenumbraService : IDisposable
             _redrawSubscriber.Invoke(playerCharObj, settings);
         }
         catch (Exception e) {
-            GagSpeak.Log.Debug($"Failure redrawing object:\n{e}");
+            GSLogger.LogType.Debug($"Failure redrawing object:\n{e}");
         }
     }
 
@@ -190,10 +190,10 @@ public unsafe class PenumbraService : IDisposable
             _setModPriority     = Ipc.TrySetModPriority.Subscriber(_pluginInterface);
             Available           = true;
             // _penumbraReloaded.Invoke();
-            GagSpeak.Log.Debug("Glamourer attached to Penumbra.");
+            GSLogger.LogType.Debug("Glamourer attached to Penumbra.");
         }
         catch (Exception e) {
-            GagSpeak.Log.Debug($"Could not attach to Penumbra:\n{e}");
+            GSLogger.LogType.Debug($"Could not attach to Penumbra:\n{e}");
         }
     }
 
@@ -203,7 +203,7 @@ public unsafe class PenumbraService : IDisposable
         _clickSubscriber.Disable();
         if (Available) {
             Available = false;
-            GagSpeak.Log.Debug("Glamourer detached from Penumbra.");
+            GSLogger.LogType.Debug("Glamourer detached from Penumbra.");
         }
     }
 

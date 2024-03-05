@@ -79,7 +79,7 @@ public class PlugService : IDisposable
 #region Event Handlers
     /// <summary Fired every time a device is added to the client </summary>
     private void OnDeviceAdded(object? sender, DeviceAddedEventArgs e) {
-        GagSpeak.Log.Debug($"[Toybox Service][Event Handler] Device Added: {e.Device.Name}");
+        GSLogger.LogType.Debug($"[Toybox Service][Event Handler] Device Added: {e.Device.Name}");
         if(client.Devices.Count() > 0 && anyDeviceConnected == false) {
             activeDevice = client.Devices.First();
             GetstepIntervalForActiveDevice();
@@ -95,7 +95,7 @@ public class PlugService : IDisposable
 
     /// <summary Fired every time a device is removed from the client </summary>
     private void OnDeviceRemoved(object? sender, DeviceRemovedEventArgs e) {
-        GagSpeak.Log.Debug($"[Toybox Service][Event Handler] Device Removed: {e.Device.Name}");
+        GSLogger.LogType.Debug($"[Toybox Service][Event Handler] Device Removed: {e.Device.Name}");
         if(HasConnectedDevice() == false) {
             anyDeviceConnected = false;
             deviceIndex = -1;
@@ -104,7 +104,7 @@ public class PlugService : IDisposable
 
     /// <summary Fired when scanning for devices is finished </summary>
     private void OnScanningFinished(object? sender, EventArgs e) {
-        GagSpeak.Log.Debug("[Toybox Service][Event Handler] Scanning Finished");
+        GSLogger.LogType.Debug("[Toybox Service][Event Handler] Scanning Finished");
         isScanning = false;
     }
 
@@ -117,12 +117,12 @@ public class PlugService : IDisposable
         activeDevice = null;
         stepCount = 0;
         batteryLevel = 0;
-        GagSpeak.Log.Debug("[Toybox Service][Event Handler] Server Disconnected");
+        GSLogger.LogType.Debug("[Toybox Service][Event Handler] Server Disconnected");
     }
 
     /// <summary Fired when the active device is changed </summary>
     private void OnActiveDeviceChanged(object? sender, ActiveDeviceChangedEventArgs e) {
-        GagSpeak.Log.Debug($"[Toybox Service][Event Handler] Active Device Index Changed to: {e.DeviceIndex}");
+        GSLogger.LogType.Debug($"[Toybox Service][Event Handler] Active Device Index Changed to: {e.DeviceIndex}");
         // first make sure this index is within valid bounds of our client devices
         if (e.DeviceIndex >= 0 && e.DeviceIndex < client.Devices.Count()) {
             // if it is, set our device index to the new index
@@ -133,7 +133,7 @@ public class PlugService : IDisposable
             GetstepIntervalForActiveDevice();
             GetBatteryLevelForActiveDevice();
         } else {
-            GagSpeak.Log.Error($"[Toybox Service][Event Handler] Active Device Index {e.DeviceIndex} out of bounds, not updating.");
+            GSLogger.LogType.Error($"[Toybox Service][Event Handler] Active Device Index {e.DeviceIndex} out of bounds, not updating.");
         }
     }
 
@@ -164,7 +164,7 @@ public class PlugService : IDisposable
     public async void ConnectToServerAsync() {
         try {
             if (!client.Connected) {
-                GagSpeak.Log.Debug("[Toybox Service] Attempting to connect to the Intiface server, client was not initially connected");
+                GSLogger.LogType.Debug("[Toybox Service] Attempting to connect to the Intiface server, client was not initially connected");
                 await client.ConnectAsync(connector);
                 // after we wait for the connector to process, check if the connection is there
                 if(client.Connected) {
@@ -180,7 +180,7 @@ public class PlugService : IDisposable
                         deviceIndex = 0;
                         // activate the vibe
                         if(_characterHandler.playerChar._isToyActive) {
-                            GagSpeak.Log.Debug($"[Toybox Service] Active Device: {activeDevice.Name}, is enabled! Vibrating with intensity: {(byte)((_characterHandler.playerChar._intensityLevel/(double)stepCount)*100)}");
+                            GSLogger.LogType.Debug($"[Toybox Service] Active Device: {activeDevice.Name}, is enabled! Vibrating with intensity: {(byte)((_characterHandler.playerChar._intensityLevel/(double)stepCount)*100)}");
                             await ToyboxVibrateAsync((byte)((_characterHandler.playerChar._intensityLevel/(double)stepCount)*100), 100);
                         }
                     }
@@ -196,7 +196,7 @@ public class PlugService : IDisposable
             }
         } 
         catch (Exception ex) {
-            GagSpeak.Log.Error($"[Toybox Service] Error in ConnectToServerAsync: {ex.Message.ToString()}");
+            GSLogger.LogType.Error($"[Toybox Service] Error in ConnectToServerAsync: {ex.Message.ToString()}");
             UIHelpers.LogAndPrintGagSpeakMessage("Error while connectiong to Intiface Server! Make sure you have disabled any other plugins "+
             $"that connect with Intiface before connecting, or make sure you have Intiface running.", _chatGui, "[GagSpeak Toybox]");
         }
@@ -221,7 +221,7 @@ public class PlugService : IDisposable
         // if at any point we fail here, throw an exception
         catch (Exception ex) {
             // log the exception
-            GagSpeak.Log.Error($"[Toybox Service] Error while disconnecting from Async: {ex.ToString()}");
+            GSLogger.LogType.Error($"[Toybox Service] Error while disconnecting from Async: {ex.ToString()}");
         }
     }
 
@@ -234,7 +234,7 @@ public class PlugService : IDisposable
                 await client.StartScanningAsync();
             }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"[Toybox Service] Error in ScanForDevicesAsync: {ex.ToString()}");
+            GSLogger.LogType.Error($"[Toybox Service] Error in ScanForDevicesAsync: {ex.ToString()}");
         }
     }
 
@@ -249,7 +249,7 @@ public class PlugService : IDisposable
                 }
             }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"[Toybox Service] Error in StopScanForDevicesAsync: {ex.ToString()}");
+            GSLogger.LogType.Error($"[Toybox Service] Error in StopScanForDevicesAsync: {ex.ToString()}");
         }
     }
 
@@ -269,7 +269,7 @@ public class PlugService : IDisposable
                 }
             }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"[Toybox Service] Error in setting step size: {ex.ToString()}");
+            GSLogger.LogType.Error($"[Toybox Service] Error in setting step size: {ex.ToString()}");
         }
     }
 
@@ -282,12 +282,12 @@ public class PlugService : IDisposable
                         batteryLevel = await activeDevice.BatteryAsync();
                     }
                     catch (Exception ex) {
-                        GagSpeak.Log.Error($"[Toybox Service] Error in getting battery level: {ex.ToString()}");
+                        GSLogger.LogType.Error($"[Toybox Service] Error in getting battery level: {ex.ToString()}");
                     }
                 }
             }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"[Toybox Service] Error in getting battery level: {ex.ToString()}");
+            GSLogger.LogType.Error($"[Toybox Service] Error in getting battery level: {ex.ToString()}");
         }
     }
 
@@ -302,7 +302,7 @@ public class PlugService : IDisposable
             // round the strength to the nearest step
             strength = Math.Round(strength / stepInterval) * stepInterval;
             // log it
-            // GagSpeak.Log.Debug($"[Toybox Service] Rounded Step: {strength}");
+            // GSLogger.LogType.Debug($"[Toybox Service] Rounded Step: {strength}");
             // send it
             if (anyDeviceConnected && deviceIndex >= 0 && msUntilTaskComplete > 0) {
                 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -311,14 +311,14 @@ public class PlugService : IDisposable
                 await Task.Delay(msUntilTaskComplete);
                 #pragma warning restore CS8602 // Dereference of a possibly null reference.
             } else {
-                GagSpeak.Log.Error("[Toybox Service] No device connected or device index is out of bounds, cannot vibrate.");
+                GSLogger.LogType.Error("[Toybox Service] No device connected or device index is out of bounds, cannot vibrate.");
             
             }
         }
         // if at any point we fail here, throw an exception
         catch (Exception ex) {
             // log the exception
-            GagSpeak.Log.Error($"[Toybox Service] Error while vibrating: {ex.ToString()}");
+            GSLogger.LogType.Error($"[Toybox Service] Error while vibrating: {ex.ToString()}");
         }
     }
 #endregion Toy Functions

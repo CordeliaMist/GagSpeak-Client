@@ -116,7 +116,7 @@ public class ActionDataSnagger
                 try{
                 icon = _iconManager.GetIconTexture(slot->Icon % 1000000, slot->Icon >= 1000000);
                 } catch (System.Exception e) {
-                    GagSpeak.Log.Error($"{e}");
+                    GSLogger.LogType.Error($"{e}");
                 }
                 if (icon != null) {
                     ImGui.Image(icon.ImGuiHandle, new Vector2(32));
@@ -214,7 +214,7 @@ public class ActionDataSnagger
                     try{
                     ImGui.Text($"{Marshal.ReadByte((System.IntPtr)slot, 204)}");
                     } catch (System.Exception e) {
-                        GagSpeak.Log.Error(e.ToString());
+                        GSLogger.LogType.Error(e.ToString());
                     }
                     // get the current byte address of where it is fetching this from
                     //ImGui.Text($"Address: {(ulong)slot->GetSlotUsableAddress(slot->IconTypeB, slot->IconB):X}");
@@ -223,7 +223,7 @@ public class ActionDataSnagger
             }
             }
         } catch (System.Exception e) {
-            GagSpeak.Log.Error(e.ToString());
+            GSLogger.LogType.Error(e.ToString());
         } finally {
             ImGui.EndTable();
         }
@@ -356,7 +356,7 @@ public class ActionDataSnagger
                 ImGui.EndGroup();
             }
         } catch (System.Exception e) {
-            GagSpeak.Log.Error(e.ToString());
+            GSLogger.LogType.Error(e.ToString());
         }
         ImGui.EndTabItem();
         }

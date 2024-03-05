@@ -159,7 +159,7 @@ public class WorkshopTab : ITab, IDisposable
                 if (isDragging && ImGui.IsMouseReleased(ImGuiMouseButton.Left)) {
                     isDragging = false;
                     loopIndex = 0; // reset the index
-                    GagSpeak.Log.Debug("Dragging Period Ended!");
+                    GSLogger.LogType.Debug("Dragging Period Ended!");
                 }
                 // if our mouse is down...
                 if (ImGui.IsMouseDown(ImGuiMouseButton.Left)) {
@@ -169,7 +169,7 @@ public class WorkshopTab : ITab, IDisposable
                         isDragging = true;
                         tempStoredLoopPositions = new List<double>(); // start a new list
                         loopIndex = 0; // reset the index
-                        GagSpeak.Log.Debug("Dragging Period Started!");
+                        GSLogger.LogType.Debug("Dragging Period Started!");
                     }
                 }
                 // account for floating and boundry crossing
@@ -213,7 +213,7 @@ public class WorkshopTab : ITab, IDisposable
             }
         }
         } catch (Exception e) {
-            GagSpeak.Log.Error($"{e} Error drawing the toybox workshop subtab");
+            GSLogger.LogType.Error($"{e} Error drawing the toybox workshop subtab");
         } finally {
             if(!_mediator.isRecording && _mediator.finishedRecording) { ImGui.EndDisabled(); }
             color.Dispose();
@@ -265,7 +265,7 @@ public class WorkshopTab : ITab, IDisposable
                 ImGui.Image(_spinningArrowTextureWrap.ImGuiHandle, new Vector2(80*ImGuiHelpers.GlobalScale, 80*ImGuiHelpers.GlobalScale),
                 Vector2.Zero, Vector2.One, buttonColor);
             } catch (Exception e) {
-                GagSpeak.Log.Error($"{e} Error drawing the image button");
+                GSLogger.LogType.Error($"{e} Error drawing the image button");
             }
             ImGui.NewLine();
             ImGui.NewLine();
@@ -284,7 +284,7 @@ public class WorkshopTab : ITab, IDisposable
                 ImGui.Image(_floatingDotTextureWrap.ImGuiHandle, new Vector2(80*ImGuiHelpers.GlobalScale, 80*ImGuiHelpers.GlobalScale),
                 Vector2.Zero, Vector2.One, buttonColor);
             } catch (Exception e) {
-                GagSpeak.Log.Error($"{e} Error drawing the image button");
+                GSLogger.LogType.Error($"{e} Error drawing the image button");
             }
         }
         // pop the styles
@@ -334,7 +334,7 @@ public class WorkshopTab : ITab, IDisposable
         // send a command to switch the vibe back down to 0
         _ = _plugService.ToyboxVibrateAsync((byte)((_characterHandler.playerChar._intensityLevel/(double)_plugService.stepCount)*100), 10);
         // stop the sound audio
-        GagSpeak.Log.Debug($"Stopping the sound audio {(float)(_characterHandler.playerChar._intensityLevel/(double)_plugService.stepCount)*100}");
+        GSLogger.LogType.Debug($"Stopping the sound audio {(float)(_characterHandler.playerChar._intensityLevel/(double)_plugService.stepCount)*100}");
         if(_characterHandler.playerChar._usingSimulatedVibe) {
             var size = _plugService.stepCount == 0 ? 20 : _plugService.stepCount;
             _soundPlayer.SetVolume((float)(_characterHandler.playerChar._intensityLevel/(double)size));
@@ -352,7 +352,7 @@ public class WorkshopTab : ITab, IDisposable
         }
         // if we are not looping
         if(!isLooping) {
-            // GagSpeak.Log.Debug("Not Looping!");
+            // GSLogger.LogType.Debug("Not Looping!");
             // just add to the default
             recordedPositions.Add(circlePos[1]);
             return;
@@ -360,13 +360,13 @@ public class WorkshopTab : ITab, IDisposable
         // if we are looping, and we are not yet dragging, (and we dont have any stored data yet)
         if(isLooping && !isDragging && tempStoredLoopPositions.Count == 0) {
             // this means we are storing looped data, but not yet dragging, so still log the original permissions
-            // GagSpeak.Log.Debug("Looping, but not dragging!");
+            // GSLogger.LogType.Debug("Looping, but not dragging!");
             recordedPositions.Add(circlePos[1]);
             return;
         }
         // if we are looping and dragging, then we need to store the data to both the tempRealTime and and the tempRecorded
         if(isLooping && isDragging) {
-            // GagSpeak.Log.Debug("Looping and dragging!");
+            // GSLogger.LogType.Debug("Looping and dragging!");
             // if we are dragging, and we are not yet looping, then we need to store the data to the tempRealTime
             recordedPositions.Add(circlePos[1]);
             tempStoredLoopPositions.Add(circlePos[1]);
@@ -374,7 +374,7 @@ public class WorkshopTab : ITab, IDisposable
         }
         // if we are marked as looping, but we are no longer dragging, and our tempstorage has data, then add that instead and increase the index
         if(isLooping && !isDragging && tempStoredLoopPositions.Count > 0) {
-            // GagSpeak.Log.Debug("Looping, but not dragging, and we have data!");
+            // GSLogger.LogType.Debug("Looping, but not dragging, and we have data!");
             // if we are not dragging, and we have data, then we need to add the data from the temp storage
             recordedPositions.Add(tempStoredLoopPositions[loopIndex]);
             loopIndex++;
@@ -387,25 +387,25 @@ public class WorkshopTab : ITab, IDisposable
     }
     private void RecordData(object? sender, ElapsedEventArgs e) {
         if(isLooping && !isDragging && tempStoredLoopPositions.Count > 0) {
-            // GagSpeak.Log.Debug("Looping, but not dragging, and we have data!");
+            // GSLogger.LogType.Debug("Looping, but not dragging, and we have data!");
             // if we are not dragging, and we have data, then we need to add the data from the temp storage
             _mediator.storedRecordedPositions.Add((byte)Math.Round(tempStoredLoopPositions[loopIndex]));
         } else {
-            // GagSpeak.Log.Debug("Not Looping!");
+            // GSLogger.LogType.Debug("Not Looping!");
             // just add to the default
             _mediator.storedRecordedPositions.Add((byte)Math.Round(circlePos[1]));
         }
         // if we reached passed our "capped limit", start removing the data at the beginning
         if (_mediator.storedRecordedPositions.Count > 270000) {  // Limit the number of recorded positions to 1000
-            GagSpeak.Log.Debug("Capped the stored data, stopping recording!");
+            GSLogger.LogType.Debug("Capped the stored data, stopping recording!");
             StopRecording();
         }
         if(_plugService.HasConnectedDevice() && _plugService.IsClientConnected() && _plugService.anyDeviceConnected) {
             if(isLooping && !isDragging && tempStoredLoopPositions.Count > 0) {
-                //GagSpeak.Log.Debug($"{(byte)Math.Round(tempStoredLoopPositions[loopIndex])}");
+                //GSLogger.LogType.Debug($"{(byte)Math.Round(tempStoredLoopPositions[loopIndex])}");
                 _ = _plugService.ToyboxVibrateAsync((byte)Math.Round(tempStoredLoopPositions[loopIndex]), 10);
             } else {
-                //GagSpeak.Log.Debug($"{(byte)Math.Round(circlePos[1])}");
+                //GSLogger.LogType.Debug($"{(byte)Math.Round(circlePos[1])}");
                 _ = _plugService.ToyboxVibrateAsync((byte)Math.Round(circlePos[1]), 10);
             }
         }

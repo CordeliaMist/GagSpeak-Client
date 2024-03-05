@@ -228,7 +228,7 @@ public partial class WhitelistPanel {
                 }
             }
         } catch (Exception e) {
-            GagSpeak.Log.Debug($"Error drawing Toybox Permissions {e.Message}");
+            GSLogger.LogType.Debug($"Error drawing Toybox Permissions {e.Message}");
         } finally {
             if(_activePanelTab==WhitelistPanelTab.YourSettings && _characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); }
         }

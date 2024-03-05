@@ -12,14 +12,12 @@ namespace GagSpeak.Services;
 
 public class OnFrameworkService : IDisposable
 {
-    //============== Basic Class Assignment ===================//
     private readonly    IChatGui                        _chat;
     private readonly    IClientState                    _clientState;
     private readonly    ICondition                      _condition;
     private readonly    IFramework                      _framework;
     private readonly    IObjectTable                    _objectTable;
     private readonly    CharacterHandler                _characterHandler;
-    //============= Personal Client Character Variables =================//
     public              IntPtr                          _address;                   // player address
     public              uint                            _classJobId;                // player class job id
     private             bool                            _sentBetweenAreas = false;  // if we sent a between areas message
@@ -48,7 +46,7 @@ public class OnFrameworkService : IDisposable
     private void ClientStateOnLogin() {
         _address = GetPlayerPointerAsync().GetAwaiter().GetResult();
         _classJobId = _clientState.LocalPlayer?.ClassJob.Id ?? 0;
-        GagSpeak.Log.Debug($"[ClientStateOnLogin]  Player class job id: {_classJobId}");
+        GSLogger.LogType.Debug($"[ClientStateOnLogin]  Player class job id: {_classJobId}");
     }
 
 
@@ -59,7 +57,7 @@ public class OnFrameworkService : IDisposable
     private unsafe void FrameworkOnUpdateInternal() {
         // if we are not logged in, or are dead, return
         if (_clientState.LocalPlayer?.IsDead ?? false) {
-            GagSpeak.Log.Debug($"[FrameworkUpdate]  Player is dead, returning");
+            GSLogger.LogType.Verbose($"[FrameworkUpdate]  Player is dead, returning");
             return;
         }
         // If we are zoning, then we need to halt processing
@@ -72,7 +70,7 @@ public class OnFrameworkService : IDisposable
                 _lastZone = zone;
                 // if we are not already sent between area's then make sure we set it
                 if (!_sentBetweenAreas) {
-                    GagSpeak.Log.Debug($"[ZoneSwitch]  Zone switch/Gpose start");
+                    GSLogger.LogType.Information($"[ZoneSwitch]  Zone switch/Gpose start");
                     _sentBetweenAreas = true;
                 }
             }
@@ -80,7 +78,7 @@ public class OnFrameworkService : IDisposable
         }
         // if we are between areas, but made it to this point, then it means we are back in the game
         if (_sentBetweenAreas) {
-            GagSpeak.Log.Debug($"[ZoneSwitch]  Zone switch/Gpose end");
+            GSLogger.LogType.Information($"[ZoneSwitch]  Zone switch/Gpose end");
             // let user know on launch of their direct chat garbler is still enabled
             if (_characterHandler.playerChar._directChatGarblerActive && _characterHandler.playerChar._liveGarblerWarnOnZoneChange)
                 _chat.PrintError("[Notice] Direct Chat Garbler is still enabled. A Friendly reminder incase you forgot <3");

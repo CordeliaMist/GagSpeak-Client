@@ -18,44 +18,44 @@ public partial class MessageDictionary {
         // scan through the gagspeak messages
         if(LookupGagSpeakMsg(textVal, decodedMessageMediator)) {
             // if it was one of them, we can early escape
-            GagSpeak.Log.Debug($"[Message Dictionary]: Was a GagSpeak message");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Was a GagSpeak message");
             return true;
         }
         // otherwise, scan through the relation messages
         if(LookupRelationshipMsg(textVal, decodedMessageMediator)) {
             // if it was one of them, we can early escape
-            GagSpeak.Log.Debug($"[Message Dictionary]: Was a Relationship message");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Was a Relationship message");
             return true;
         }
 
         if(LookupWardrobeMsg(textVal, decodedMessageMediator)) {
             // if it was one of them, we can early escape
-            GagSpeak.Log.Debug($"[Message Dictionary]: Was a Wardrobe message");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Was a Wardrobe message");
             return true;
         }
     
         // otherwise, scan through the puppeteer messages
         if(LookupPuppeteerMsg(textVal, decodedMessageMediator)) {
             // if it was one of them, we can early escape
-            GagSpeak.Log.Debug($"[Message Dictionary]: Was a Puppeteer message");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Was a Puppeteer message");
             return true;
         }
         // otherwise look through the toybox
         if(LookupToyboxMsg(textVal, decodedMessageMediator)) {
             // if it was one of them, we can early escape
-            GagSpeak.Log.Debug($"[Message Dictionary]: Was a Toybox message");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Was a Toybox message");
             return true;
         }
         // finally, if it was none of those, check if it was an info exchange message
         if(LookupInfoExchangeMsg(textVal, decodedMessageMediator)) {
             // if it was one of them, we can early escape
-            GagSpeak.Log.Debug($"[Message Dictionary]: Was an Info Exchange message");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Was an Info Exchange message");
             return true;
         }
 
         if(LookupHardcoreMsg(textVal, decodedMessageMediator)) {
             // if it was one of them, we can early escape
-            GagSpeak.Log.Debug($"[Message Dictionary]: Was a Hardcore message");
+            GSLogger.LogType.Debug($"[Message Dictionary]: Was a Hardcore message");
             return true;
         }
         

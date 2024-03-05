@@ -115,7 +115,7 @@ public class GagAndLockManager : IDisposable
         if(playerPayload != null) {
             Unlock(layerIndex, playerPayload.PlayerName, "", playerPayload.PlayerName);
         } else {
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: Player payload is null, so we are using the default name.");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: Player payload is null, so we are using the default name.");
             Unlock(layerIndex, "");
         }
     }
@@ -128,7 +128,7 @@ public class GagAndLockManager : IDisposable
     /// <item><c>targetName</c><param name="targetName"> - The target name.</param></item>
     /// </list> </summary>
     public void Unlock(int layerIndex, string assignerName, string password = "", string targetName = "", string YourPlayerName = "") { // for the buttons
-        GagSpeak.Log.Debug($"=======================[ Padlock Manager : UNLOCK ]======================");
+        GSLogger.LogType.Information(" Padlock Manager : UNLOCK ");
         // if what we use to try and unlock the padlock is valid, we can unlock it
         if(_config.padlockIdentifier[layerIndex].CheckPassword(_characterHandler, assignerName, targetName, password, YourPlayerName))
         {
@@ -140,7 +140,7 @@ public class GagAndLockManager : IDisposable
             _config.Save();
         } else {
             // otherwise, we cannot unlock it
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: Unlock was unsucessful.");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: Unlock was unsucessful.");
         }
     }
 
@@ -157,7 +157,7 @@ public class GagAndLockManager : IDisposable
             Lock(layerIndex, playerPayload.PlayerName, "", "", playerPayload.PlayerName);
         } else {
             // otherwise, we use the default name
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: Player payload is null, so we are using the default name.");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: Player payload is null, so we are using the default name.");
             Lock(layerIndex, "");
         }
     }
@@ -171,13 +171,13 @@ public class GagAndLockManager : IDisposable
     /// <item><c>targetName</c><param name="targetName"> - The target name.</param></item>
     /// </list> </summary>
     public void Lock(int layerIndex, string assignerName, string password1 = "", string password2 = "", string targetName = "") {
-        GagSpeak.Log.Debug($"=======================[ Padlock Manager : LOCK ]======================");
+        GSLogger.LogType.Information(" Padlock Manager : LOCK ");
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        GagSpeak.Log.Debug($"[Padlock Manager Service]: targetName: {targetName}");
+        GSLogger.LogType.Debug($"[Padlock Manager Service]: targetName: {targetName}");
         // firstly, see if both our passwords are null, if it is true, it means this came from a button
         if(password1 == "" && password2 == "") {
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: This Lock Request came from a button!");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: This Lock Request came from a button!");
             // if the padlock is valid, and has a valid password if it needs one, then we can lock
             if(_config.padlockIdentifier[layerIndex].ValidatePadlockPasswords(_config.isLocked[layerIndex], _characterHandler,  assignerName, targetName, playerPayload.PlayerName)) {
                 // if we reached this point it means our password was valid, so we can lock
@@ -187,13 +187,13 @@ public class GagAndLockManager : IDisposable
                 _config.Save();
             } else {
                 // otherwise, we cannot lock
-                GagSpeak.Log.Debug($"[Padlock Manager Service]: LOCK -> Lock was unsucessful.");
+                GSLogger.LogType.Debug($"[Padlock Manager Service]: LOCK -> Lock was unsucessful.");
             }
         }
         // otherwise, it means we came from a command
         else {
             // we will need to setandvalidate, over just validate
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: This Lock Request came from a command!");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: This Lock Request came from a command!");
             if(_config.padlockIdentifier[layerIndex].SetAndValidate(_characterHandler, _config.padlockIdentifier[layerIndex]._padlockType.ToString(),
             password1, password2, assignerName, targetName)) {
                 // if we reached this point it means our password was valid, so we can lock
@@ -203,7 +203,7 @@ public class GagAndLockManager : IDisposable
                 _config.Save();
             } else {
                 // otherwise, we cannot lock
-                GagSpeak.Log.Debug($"[Padlock Manager Service]: LOCK -> Lock was unsucessful.");
+                GSLogger.LogType.Debug($"[Padlock Manager Service]: LOCK -> Lock was unsucessful.");
                 _config.padlockIdentifier[layerIndex].ClearPasswords();
             }
         }
@@ -215,14 +215,14 @@ public class GagAndLockManager : IDisposable
     /// <item><c>padlockType</c><param name="padlockType"> - The padlock type.</param></item>
     /// </list> </summary>
     private void StartTimerIfNecessary(int layerIndex, GagSpeakConfig _config, TimerService _timerService) {
-        GagSpeak.Log.Debug($"[Padlock Manager Service]: Checking if a starttimer is nessisary.");
+        GSLogger.LogType.Debug($"[Padlock Manager Service]: Checking if a starttimer is nessisary.");
         // just to double check this is actually a padlock with a timer
         if(_config.padlockIdentifier[layerIndex]._padlockType == Padlocks.FiveMinutesPadlock ||
         _config.padlockIdentifier[layerIndex]._padlockType == Padlocks.TimerPasswordPadlock ||
         _config.padlockIdentifier[layerIndex]._padlockType == Padlocks.MistressTimerPadlock)
         {   
             // assuming it is, start the timer
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: starttimer is nessisary, so setting it.");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: starttimer is nessisary, so setting it.");
             _timerService.StartTimer($"{_config.padlockIdentifier[layerIndex]._padlockType}_Identifier{layerIndex}", _config.padlockIdentifier[layerIndex]._storedTimer, 
             1000, () => { ActionOnTimeElapsed(layerIndex); }, _characterHandler.playerChar._selectedGagPadlockTimer, layerIndex);
             _config.Save();
@@ -246,7 +246,7 @@ public class GagAndLockManager : IDisposable
     /// <item><c>layerIndex</c><param name="layerIndex"> - The layer index.</param></item>
     /// </list> </summary>
     private void ActionOnTimeElapsed(int layerIndex) { // the function to be used timer start actions
-        GagSpeak.Log.Debug($"[Padlock Manager Service]: Timer elapsed! Unlocking from config, timerservice, and padlock identifers");
+        GSLogger.LogType.Debug($"[Padlock Manager Service]: Timer elapsed! Unlocking from config, timerservice, and padlock identifers");
         // let the user know the timer elapsed, and unlock it
         _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Your " +
         $"{_characterHandler.playerChar._selectedGagPadlocks[layerIndex]}'s expired and was removed!").AddItalicsOff().BuiltString);
@@ -262,7 +262,7 @@ public class GagAndLockManager : IDisposable
     /// </list> </summary>
     private void CleanupVariables(object sender, SafewordCommandEventArgs e) {
         // clear EVERYTHING
-        GagSpeak.Log.Debug("Safeword command invoked, and subscribed function called.");
+        GSLogger.LogType.Debug("Safeword command invoked, and subscribed function called.");
         _config.isLocked = new List<bool> { false, false, false }; // reset is locked
         _characterHandler.SetDirectChatGarblerLock(false); // reset the garbler lock to be off
         _config.timerData.Clear(); // reset the timer data
@@ -291,20 +291,20 @@ public class GagAndLockManager : IDisposable
         int setIndex = _restraintSetManager._restraintSets.FindIndex(set => set._name == restraintSetName);
         // if the restraint set is null, we cannot lock it
         if(setIndex < 0) {
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set does not exist, so we cannot lock it.");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set does not exist, so we cannot lock it.");
             return false;
         }
         if(_restraintSetManager._restraintSets[setIndex]._enabled == false) {
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set is not enabled, so we cannot lock it.");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set is not enabled, so we cannot lock it.");
             return false;
         }
         // if the restraint set is locked, we cannot lock it
         if(_restraintSetManager._restraintSets[setIndex]._locked == true) {
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set is already locked, so we cannot lock it.");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set is already locked, so we cannot lock it.");
             return false;
         }
         // otherwise, we can lock it
-        GagSpeak.Log.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set is not locked, so we can lock it.");
+        GSLogger.LogType.Debug($"[Padlock Manager Service]: LockRestraintSet -> Restraint set is not locked, so we can lock it.");
         // if the timer duration is valid, we can lock it
         DateTimeOffset endTime = UIHelpers.GetEndTime(timerDuration);
         _restraintSetManager.ChangeRestraintSetNewLockEndTime(setIndex, endTime);
@@ -329,20 +329,20 @@ public class GagAndLockManager : IDisposable
         int setIndex = _restraintSetManager._restraintSets.FindIndex(set => set._name == restraintSetName);
         // if the restraint set is null, we cannot unlock it
         if(setIndex < 0) {
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: UnlockRestraintSet -> Restraint set does not exist, so we cannot unlock it.");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: UnlockRestraintSet -> Restraint set does not exist, so we cannot unlock it.");
             return false;
         }
         // if the restraint set is not locked, we cannot unlock it
         if(_restraintSetManager._restraintSets[setIndex]._locked == false) {
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: index {setIndex} | {_restraintSetManager._restraintSets[setIndex]._name} is not locked, so we cannot unlock it.");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: index {setIndex} | {_restraintSetManager._restraintSets[setIndex]._name} is not locked, so we cannot unlock it.");
             return false;
         }
         if(_restraintSetManager._restraintSets[setIndex]._wasLockedBy != assignerName && _restraintSetManager._restraintSets[setIndex]._wasLockedBy != "self") {
-            GagSpeak.Log.Debug($"[Padlock Manager Service]: {restraintSetName} was locked by someone else!");
+            GSLogger.LogType.Debug($"[Padlock Manager Service]: {restraintSetName} was locked by someone else!");
             return false;
         }
         // otherwise, we can unlock it
-        GagSpeak.Log.Debug($"[Padlock Manager Service]: UnlockRestraintSet -> Restraint set is locked, so we can attempt to unlock it.");
+        GSLogger.LogType.Debug($"[Padlock Manager Service]: UnlockRestraintSet -> Restraint set is locked, so we can attempt to unlock it.");
         // unlock the restraint set
         if(_restraintSetManager.TryUnlockRestraintSet(setIndex, assignerName)) {
             _timerService.ClearRestraintSetTimer();

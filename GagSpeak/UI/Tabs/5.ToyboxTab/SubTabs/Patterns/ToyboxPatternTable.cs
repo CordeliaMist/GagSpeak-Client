@@ -70,7 +70,7 @@ public partial class ToyboxPatternTable {
                 itemsToRemove.Clear();
             }
         } catch (System.Exception e) {
-            GagSpeak.Log.Debug($"{e} Error drawing the pattern table");
+            GSLogger.LogType.Debug($"{e} Error drawing the pattern table");
         } finally {
             if(_patternHandler.GetActiveIdx() != -1 && _patternHandler._patterns[_patternHandler._activePatternIndex]._isActive) { ImGui.EndDisabled(); }
             if(_characterHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); } // end before drawing pattern so that we can make paste button visable
@@ -144,7 +144,7 @@ public partial class ToyboxPatternTable {
             _patternHandler.Save();
         }
         } catch (System.Exception e) {
-            GagSpeak.Log.Debug($"{e} Error drawing the pattern table");
+            GSLogger.LogType.Debug($"{e} Error drawing the pattern table");
         } finally {
             if(_patternHandler.GetActiveIdx() != -1 && _patternHandler._patterns[_patternHandler._activePatternIndex]._isActive) { ImGui.BeginDisabled(); }
         }
@@ -167,11 +167,11 @@ public partial class ToyboxPatternTable {
             string base64 = Convert.ToBase64String(compressed);
             // Copy the base64 string to the clipboard
             ImGui.SetClipboardText(base64);
-            GagSpeak.Log.Debug($"Copied pattern data to clipboard");
+            GSLogger.LogType.Debug($"Copied pattern data to clipboard");
         }
         catch (Exception ex)
         {
-            GagSpeak.Log.Warning($"{ex.Message} Could not copy pattern data to clipboard.");
+            GSLogger.LogType.Warning($"{ex.Message} Could not copy pattern data to clipboard.");
         }
     }
 }

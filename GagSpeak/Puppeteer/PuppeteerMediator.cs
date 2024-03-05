@@ -70,7 +70,7 @@ public class PuppeteerMediator
                 {
                     remainingMessage = ConvertSquareToAngleBrackets(remainingMessage);
                     puppeteerMessageToSend = remainingMessage;
-                    GagSpeak.Log.Debug($"[PuppeteerMediator]: Index of Whitelisted Char in found Match: {indexOfWhitelistedChar}");
+                    GSLogger.LogType.Debug($"[PuppeteerMediator]: Index of Whitelisted Char in found Match: {indexOfWhitelistedChar}");
                     return true;
                 }
             }
@@ -89,10 +89,10 @@ public class PuppeteerMediator
         if(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._allowSitRequests) {
             if(messageRecieved.TextValue == "sit" || messageRecieved.TextValue == "groundsit")
             {
-                GagSpeak.Log.Debug($"[PuppeteerMediator]: valid sit command");
+                GSLogger.LogType.Debug($"[PuppeteerMediator]: valid sit command");
                 return true;
             } else {
-                GagSpeak.Log.Debug($"[PuppeteerMediator]: not a sit command");
+                GSLogger.LogType.Debug($"[PuppeteerMediator]: not a sit command");
             }
         }
         if(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._allowMotionRequests) {
@@ -102,20 +102,20 @@ public class PuppeteerMediator
                 // check if the message matches any emotes from that sheet
                 foreach (var emote in emotes) {
                     if (messageRecieved.TextValue == emote.Name.RawString.Replace(" ", "").ToLower()) {
-                        GagSpeak.Log.Debug($"[PuppeteerMediator]: valid emote command");
+                        GSLogger.LogType.Debug($"[PuppeteerMediator]: valid emote command");
                         // then it is an emote, and we have enabled that option, so return true
                         return true;
                     }
                 }
-                GagSpeak.Log.Debug($"[PuppeteerMediator]: not a valid emote!");
+                GSLogger.LogType.Debug($"[PuppeteerMediator]: not a valid emote!");
             }
         }
         if(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._allowAllCommands) {
-            GagSpeak.Log.Debug($"[PuppeteerMediator]: valid all type command order");
+            GSLogger.LogType.Debug($"[PuppeteerMediator]: valid all type command order");
             return true;
         }
         // if we reach here, it means we dont meet the criteria
-        GagSpeak.Log.Debug($"[PuppeteerMediator]: not a valid command, or all commands is not active");
+        GSLogger.LogType.Debug($"[PuppeteerMediator]: not a valid command, or all commands is not active");
         return false;   
     }
 
@@ -124,10 +124,10 @@ public class PuppeteerMediator
         // for the player. If the player has the setting enabled, then we can proceed.
         if(_characterHandler.playerChar._globalAllowSitRequests) {
             if(messageRecieved.TextValue == "sit" || messageRecieved.TextValue == "groundsit") {
-                GagSpeak.Log.Debug($"[PuppeteerMediator]: valid sit command");
+                GSLogger.LogType.Debug($"[PuppeteerMediator]: valid sit command");
                 return true;
             } else {
-                GagSpeak.Log.Debug($"[PuppeteerMediator]: not a sit command");
+                GSLogger.LogType.Debug($"[PuppeteerMediator]: not a sit command");
             }
         }
         if(_characterHandler.playerChar._globalAllowMotionRequests) {
@@ -137,20 +137,20 @@ public class PuppeteerMediator
                 // check if the message matches any emotes from that sheet
                 foreach (var emote in emotes) {
                     if (messageRecieved.TextValue == emote.Name.RawString.Replace(" ", "").ToLower()) {
-                        GagSpeak.Log.Debug($"[PuppeteerMediator]: valid emote command");
+                        GSLogger.LogType.Debug($"[PuppeteerMediator]: valid emote command");
                         // then it is an emote, and we have enabled that option, so return true
                         return true;
                     }
                 }
-                GagSpeak.Log.Debug($"[PuppeteerMediator]: not a valid emote!");
+                GSLogger.LogType.Debug($"[PuppeteerMediator]: not a valid emote!");
             }
         }
         if(_characterHandler.playerChar._globalAllowAllCommands) {
-            GagSpeak.Log.Debug($"[PuppeteerMediator]: valid all type command order");
+            GSLogger.LogType.Debug($"[PuppeteerMediator]: valid all type command order");
             return true;
         }
         // if we reach here, it means we dont meet the criteria
-        GagSpeak.Log.Debug($"[PuppeteerMediator]: not a valid command, or all commands is not active");
+        GSLogger.LogType.Debug($"[PuppeteerMediator]: not a valid command, or all commands is not active");
         return false;   
     }
 
@@ -175,7 +175,7 @@ public class PuppeteerMediator
                 puppeteerMessageToSend = puppeteerMessageToSend.Replace(alias._inputCommand, alias._outputCommand);
             }
         }
-        GagSpeak.Log.Debug($"[PuppeteerMediator]: New Message: {puppeteerMessageToSend}");
+        GSLogger.LogType.Debug($"[PuppeteerMediator]: New Message: {puppeteerMessageToSend}");
         return puppeteerMessageToSend;
     }
 

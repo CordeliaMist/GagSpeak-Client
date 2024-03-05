@@ -65,7 +65,7 @@ public class EquipDrawData
     /// <item><c>gameItem</c><param name="gameItem"> The item to equip.</param></item>
     /// </list> </summary>
     public void SetDrawDataGameItem(EquipItem gameItem) {
-        GagSpeak.Log.Debug($"[EquipDrawData] Changing equipment from {_gameItem} to {gameItem}");
+        GSLogger.LogType.Debug($"[EquipDrawData] Changing equipment from {_gameItem} to {gameItem}");
         _gameItem = gameItem;
     }
 

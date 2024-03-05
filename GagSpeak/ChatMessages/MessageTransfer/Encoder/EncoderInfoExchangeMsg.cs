@@ -168,13 +168,13 @@ public partial class MessageEncoder {
         // first we need to get which whitelisted player in out config this is going to
         int Idx = -1;
         if(_characterHandler.IsPlayerInWhitelist(targetPlayer)) {
-            GagSpeak.Log.Debug($"[MsgEncoder]: Target Player: {targetPlayer}");
+            GSLogger.LogType.Debug($"[MsgEncoder]: Target Player: {targetPlayer}");
             Idx = _characterHandler.GetWhitelistIndex(targetPlayer);
         }
         if(Idx == -1) {
             throw new Exception("The target player is not in the whitelist, and thus cannot be sent a request for information.");
         }
-        GagSpeak.Log.Debug($"[MsgEncoder]: Index of Whitelisted Char: {Idx}");
+        GSLogger.LogType.Debug($"[MsgEncoder]: Index of Whitelisted Char: {Idx}");
 
         // if we reach here, it is successful, and we can begin to encode the message.
         string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[Idx]._homeworld;
@@ -237,13 +237,13 @@ public partial class MessageEncoder {
         // first we need to get which whitelisted player in out config this is going to
         int Idx = -1;
         if(_characterHandler.IsPlayerInWhitelist(targetPlayer)) {
-            GagSpeak.Log.Debug($"[MsgEncoder]: Target Player: {targetPlayer}");
+            GSLogger.LogType.Debug($"[MsgEncoder]: Target Player: {targetPlayer}");
             Idx = _characterHandler.GetWhitelistIndex(targetPlayer);
         }
         if(Idx == -1) {
             throw new Exception("The target player is not in the whitelist, and thus cannot be sent a request for information.");
         }
-        GagSpeak.Log.Debug($"[MsgEncoder]: Index of Whitelisted Char: {Idx}");
+        GSLogger.LogType.Debug($"[MsgEncoder]: Index of Whitelisted Char: {Idx}");
 
         // if we reach here, it is successful, and we can begin to encode the message.
         string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[Idx]._homeworld;

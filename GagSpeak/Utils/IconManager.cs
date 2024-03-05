@@ -153,13 +153,13 @@ public class IconManager : IDisposable
     public void Dispose() {
         disposed = true;
         var c = 0;
-        GagSpeak.Log.Debug("Disposing icon textures");
+        GSLogger.LogType.Debug("Disposing icon textures");
         foreach (var texture in iconTextures.Values.Where(texture => texture != null)) {
             c++;
             texture.Dispose();
         }
 
-        GagSpeak.Log.Debug($"Disposed {c} icon textures.");
+        GSLogger.LogType.Debug($"Disposed {c} icon textures.");
         iconTextures.Clear();
         
         FontIcons?.Dispose();
@@ -179,7 +179,7 @@ public class IconManager : IDisposable
                     tex.Dispose();
                 }
             } catch (Exception ex) {
-                GagSpeak.Log.Error($"Failed loading texture for icon {iconId} - {ex.Message}");
+                GSLogger.LogType.Error($"Failed loading texture for icon {iconId} - {ex.Message}");
             }
         });
     }
@@ -243,7 +243,7 @@ public class IconManager : IDisposable
         try{
         LoadIconTexture(iconId, hq);
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"Failed loading texture for icon {iconId} - {ex.Message}");
+            GSLogger.LogType.Error($"Failed loading texture for icon {iconId} - {ex.Message}");
         }
         return this.iconTextures[(iconId, hq)];
     }

@@ -58,7 +58,7 @@ public class PadlockIdentifier
         // determine our padlock type
         if (!Enum.TryParse(locktype, true, out Padlocks padlockType)) {
             return false;}// or throw an exception
-        GagSpeak.Log.Debug($"[PadlockIdentifer]: Setting padlock type to {padlockType}");
+        GSLogger.LogType.Debug($"[PadlockIdentifer]: Setting padlock type to {padlockType}");
         // see if it is valid based on the type it is.
         switch (_padlockType) {
             case Padlocks.None:
@@ -152,7 +152,7 @@ public class PadlockIdentifier
     public bool ValidatePadlockPasswords(bool isUnlocking, CharacterHandler characterHandler, string assignerPlayerName = "", string targetPlayerName = "", string YourPlayerName = "") {
         // setup a return bool variable called ret
         bool ret = false;
-        GagSpeak.Log.Debug($"[PadlockIdentifer]: Validating password");
+        GSLogger.LogType.Debug($"[PadlockIdentifer]: Validating password");
         // determine if we need the password for the padlock type is valid, if the padlock contains one.
         switch (_padlockType) {
             case Padlocks.None:
@@ -166,7 +166,7 @@ public class PadlockIdentifier
             case Padlocks.PasswordPadlock:
                 ret = ValidatePassword();
                 if(ret && !isUnlocking && _inputPassword != "") {
-                    GagSpeak.Log.Debug($"[PadlockIdentifer]: Password Validated and set to stored data");
+                    GSLogger.LogType.Debug($"[PadlockIdentifer]: Password Validated and set to stored data");
                     _storedPassword = _inputPassword;
                     _inputPassword = "";
                 }
@@ -210,10 +210,10 @@ public class PadlockIdentifier
     private bool ValidatePassword() {
         // see if it meets the password requirements
         if(_inputPassword == "") {
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingPassword from set&Validate [{_storedPassword}]");
+            GSLogger.LogType.Debug($"[PadlockIdentifer]: ValidatingPassword from set&Validate [{_storedPassword}]");
             return !string.IsNullOrWhiteSpace(_storedPassword) && _storedPassword.Length <= 20 && !_storedPassword.Contains(" ");
         } else {   
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingPassword from DisplayPasswordField [{_inputPassword}]");
+            GSLogger.LogType.Debug($"[PadlockIdentifer]: ValidatingPassword from DisplayPasswordField [{_inputPassword}]");
             return !string.IsNullOrWhiteSpace(_inputPassword) && _inputPassword.Length <= 20 && !_inputPassword.Contains(" ");
         }
     }
@@ -225,10 +225,10 @@ public class PadlockIdentifier
     private bool ValidateCombination() {
         // see if it meets the combination requirements
         if(_inputCombination == "") {
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingCombination from set&Validate [{_storedCombination}]");
+            GSLogger.LogType.Debug($"[PadlockIdentifer]: ValidatingCombination from set&Validate [{_storedCombination}]");
             return int.TryParse(_storedCombination, out _) && _storedCombination.Length == 4;
         } else {
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingCombination from DisplayPasswordField [{_inputCombination}]");
+            GSLogger.LogType.Debug($"[PadlockIdentifer]: ValidatingCombination from DisplayPasswordField [{_inputCombination}]");
             return int.TryParse(_inputCombination, out _) && _inputCombination.Length == 4;
         }
     }
@@ -240,11 +240,11 @@ public class PadlockIdentifier
     private bool ValidateTimer() {
         // see if it meets the timer requirements
         if (_inputTimer == "") {
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingTimer from set&Validate [{_storedTimer}]");
+            GSLogger.LogType.Debug($"[PadlockIdentifer]: ValidatingTimer from set&Validate [{_storedTimer}]");
             var match = Regex.Match(_storedTimer, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
             return match.Success;
         } else {
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: ValidatingTimer from DisplayPasswordField [{_inputTimer}]");
+            GSLogger.LogType.Debug($"[PadlockIdentifer]: ValidatingTimer from DisplayPasswordField [{_inputTimer}]");
             var match = Regex.Match(_inputTimer, @"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$");
             return match.Success;
         }
@@ -258,16 +258,16 @@ public class PadlockIdentifier
     /// <item><c>targetPlayerName</c><param name="targetPlayerName"> - The name of the player who is being targetted for the check.</param></item>
     /// </list> </summary>
     private bool ValidateMistress(CharacterHandler characterHandler, string assignerPlayerName, string targetPlayerName, string YourPlayerName) {
-        GagSpeak.Log.Debug($"[PadlockIdentifer]: Your Name: {YourPlayerName}");
-        GagSpeak.Log.Debug($"[PadlockIdentifer]: AssignedPlayerName: {assignerPlayerName}");
-        GagSpeak.Log.Debug($"[PadlockIdentifer]: TargetPlayerName {targetPlayerName}");
+        GSLogger.LogType.Debug($"[PadlockIdentifer]: Your Name: {YourPlayerName}");
+        GSLogger.LogType.Debug($"[PadlockIdentifer]: AssignedPlayerName: {assignerPlayerName}");
+        GSLogger.LogType.Debug($"[PadlockIdentifer]: TargetPlayerName {targetPlayerName}");
         // if we are the assigner, then we can just return true.
         if(assignerPlayerName == null) {
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: Assigner name is null!"); return false;}
+            GSLogger.LogType.Debug($"[PadlockIdentifer]: Assigner name is null!"); return false;}
         
         // first see if the assigner is us. If it is us, we must be the mistress
         if(assignerPlayerName == YourPlayerName) {
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the assigner");
+            GSLogger.LogType.Debug($"[PadlockIdentifer]: You are the assigner");
             // if we reach this point, it means we are the one assigning it and are in dom mode.
             // next make sure the target we are using this on views us as mistress
             if(characterHandler.whitelistChars.Any(w => targetPlayerName.Contains(w._name)
@@ -275,35 +275,35 @@ public class PadlockIdentifier
             && w.IsRoleLeanSubmissive(w._theirStatusToYou)))
             {
                 // if we reached this point our dynamic is OK for a mistress assigning a lock to a pet or slave
-                GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the Mistress locking the padlock to your submissive, {targetPlayerName}");
+                GSLogger.LogType.Debug($"[PadlockIdentifer]: You are the Mistress locking the padlock to your submissive, {targetPlayerName}");
                 return true;
             }
             else {
-                GagSpeak.Log.Debug($"[PadlockIdentifer]: But you cannot be the mistress because you cant be the mistress of yourself silly!");
+                GSLogger.LogType.Debug($"[PadlockIdentifer]: But you cannot be the mistress because you cant be the mistress of yourself silly!");
                 return false;
             }
         }
 
         // if the target player is us, and we are not in dominant mode, then we are the submissive receieving the mistress padlock from our mistress 
         if(targetPlayerName == YourPlayerName) { // need to fix this later
-            GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the target");
+            GSLogger.LogType.Debug($"[PadlockIdentifer]: You are the target");
             // at this point we know what relation we are, so now we must verify the relations
             if(characterHandler.whitelistChars.Any(w => assignerPlayerName.Contains(w._name)
             && w.IsRoleLeanSubmissive(w._yourStatusToThem) 
             &&(w._theirStatusToYou == RoleLean.Mistress || w._theirStatusToYou == RoleLean.Master || w._theirStatusToYou == RoleLean.Owner)))
             {
                 // if we reached this point we know our dynamic is sucessful and we can accept it.
-                GagSpeak.Log.Debug($"[PadlockIdentifer]: You are the submissive recieving the lock from your mistress, {assignerPlayerName}");
+                GSLogger.LogType.Debug($"[PadlockIdentifer]: You are the submissive recieving the lock from your mistress, {assignerPlayerName}");
                 return true;
             }
             else {
-                GagSpeak.Log.Debug($"[PadlockIdentifer]: But you cannot be the mistress because you cant be the mistress of yourself silly!");
+                GSLogger.LogType.Debug($"[PadlockIdentifer]: But you cannot be the mistress because you cant be the mistress of yourself silly!");
                 return false;
             }
         }
 
         // if we reach here, then we failed all conditions, so return false.
-        GagSpeak.Log.Debug($"[PadlockIdentifer]: {assignerPlayerName} is not your mistress!");
+        GSLogger.LogType.Debug($"[PadlockIdentifer]: {assignerPlayerName} is not your mistress!");
         return false;
     }
 
@@ -319,8 +319,8 @@ public class PadlockIdentifier
     public bool CheckPassword(CharacterHandler characterHandler, string assignerName = "", string targetName = "", string password = "", string YourPlayerName = "") {
         // create a bool to return
         bool isValid = false;
-        GagSpeak.Log.Debug($"[PadlockIdentifer]: Checking password {password}");
-        GagSpeak.Log.Debug($"[PadlockIdentifer]: Stored Password: {_storedPassword}");
+        GSLogger.LogType.Debug($"[PadlockIdentifer]: Checking password {password}");
+        GSLogger.LogType.Debug($"[PadlockIdentifer]: Stored Password: {_storedPassword}");
         // determine if we need the password for the padlock type is valid, if the padlock contains one.
         switch (_padlockType) {
             case Padlocks.None:
@@ -397,7 +397,7 @@ public class PadlockIdentifier
     /// </list> </summary>
     public void UpdatePadlockInfo(int layerIndex, bool isUnlocking, CharacterHandler characterHandler) {
         Padlocks padlockType = _padlockType;
-        if (isUnlocking) { _padlockType = Padlocks.None; GagSpeak.Log.Debug("[Padlock] Unlocking Padlock");}
+        if (isUnlocking) { _padlockType = Padlocks.None; GSLogger.LogType.Debug("[Padlock] Unlocking Padlock");}
         // timers are handled by the timer service so we dont need to worry about it.
         switch (padlockType) {
             case Padlocks.MetalPadlock:
@@ -443,7 +443,7 @@ public class PadlockIdentifier
     /// </list> </summary>
     public void UpdateWhitelistPadlockInfo(int playerIdx, int layer, bool isUnlocking, CharacterHandler characterHandler) {
         Padlocks padlockType = _padlockType;
-        if (isUnlocking) { _padlockType = Padlocks.None; GagSpeak.Log.Debug("[Whitelist Padlock] Unlocking Padlock");}
+        if (isUnlocking) { _padlockType = Padlocks.None; GSLogger.LogType.Debug("[Whitelist Padlock] Unlocking Padlock");}
         // timers are handled by the timer service so we dont need to worry about it.
         switch (padlockType) {
             case Padlocks.MetalPadlock:

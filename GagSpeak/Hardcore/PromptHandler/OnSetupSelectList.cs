@@ -29,14 +29,14 @@ public abstract class OnSetupSelectListFeature : BaseFeature, IDisposable
 
     protected virtual void Dispose(bool disposing) {
         if (disposing) {
-            GagSpeak.Log.Debug("OnSetupSelectListFeature: Dispose");
+            GSLogger.LogType.Debug("OnSetupSelectListFeature: Dispose");
             this.onItemSelectedHook?.Disable();
             this.onItemSelectedHook?.Dispose();
         }
     }
 
     protected unsafe void CompareNodesToEntryTexts(IntPtr addon, PopupMenu* popupMenu) {
-        GagSpeak.Log.Debug("CompareNodesToEntryTexts");
+        GSLogger.LogType.Debug("CompareNodesToEntryTexts");
         var target = _targetManager.Target;
         var targetName = target != null
             ? GS_GetSeString.GetSeStringText(target.Name)
@@ -73,10 +73,10 @@ public abstract class OnSetupSelectListFeature : BaseFeature, IDisposable
                     ? GS_GetSeString.GetSeStringText(target.Name)
                     : string.Empty;
 
-                GagSpeak.Log.Debug($"ItemSelected: target={targetName} text={entryText}");
+                GSLogger.LogType.Debug($"ItemSelected: target={targetName} text={entryText}");
             }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"Don't crash the game, please: {ex}");
+            GSLogger.LogType.Error($"Don't crash the game, please: {ex}");
         }
         return this.onItemSelectedHook!.Original(popupMenu, index, a3, a4);
     }
@@ -85,7 +85,7 @@ public abstract class OnSetupSelectListFeature : BaseFeature, IDisposable
         var count = popupMenu->EntryCount;
         var entryTexts = new string?[count];
 
-        GagSpeak.Log.Debug($"SelectString: Reading {count} strings");
+        GSLogger.LogType.Debug($"SelectString: Reading {count} strings");
         for (var i = 0; i < count; i++)
         {
             var textPtr = popupMenu->EntryNames[i];
@@ -96,7 +96,7 @@ public abstract class OnSetupSelectListFeature : BaseFeature, IDisposable
             // Print out the string it finds
             if (entryTexts[i] != null)
             {
-                GagSpeak.Log.Debug($"Found string: {entryTexts[i]}");
+                GSLogger.LogType.Debug($"Found string: {entryTexts[i]}");
             }
 
         }

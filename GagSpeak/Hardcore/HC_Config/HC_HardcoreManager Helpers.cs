@@ -144,7 +144,7 @@ public partial class HardcoreManager
 
 #region property setters
     public void SetAllowForcedFollow(int playerIdx, bool forcedFollow) {
-        GagSpeak.Log.Debug($"[HardcoreManager] Setting AllowForcedFollow to {forcedFollow}");
+        GSLogger.LogType.Debug($"[HardcoreManager] Setting AllowForcedFollow to {forcedFollow}");
         _perPlayerConfigs[playerIdx].SetAllowForcedFollow(forcedFollow);
         Save();
     }
@@ -153,7 +153,7 @@ public partial class HardcoreManager
         // set the last recorded time
         LastMovementTime = DateTimeOffset.Now;
         // log and set it
-        GagSpeak.Log.Debug($"[HardcoreManager] Setting ForcedFollow to {forcedFollow}");
+        GSLogger.LogType.Debug($"[HardcoreManager] Setting ForcedFollow to {forcedFollow}");
         _perPlayerConfigs[playerIdx].SetForcedFollow(forcedFollow);
         _saveService.QueueSave(this);
         // handle the forced follow logic
@@ -170,32 +170,32 @@ public partial class HardcoreManager
     }
 
     public void SetAllowForcedSit(int playerIdx, bool forcedSit) { 
-        GagSpeak.Log.Debug($"[HardcoreManager] Setting AllowForcedSit to {forcedSit}");
+        GSLogger.LogType.Debug($"[HardcoreManager] Setting AllowForcedSit to {forcedSit}");
         _perPlayerConfigs[playerIdx].SetAllowForcedSit(forcedSit);
         Save();
     }
 
     public void SetForcedSit(int playerIdx, bool forcedSit) { 
-        GagSpeak.Log.Debug($"[HardcoreManager] Setting ForcedSit to {forcedSit}");
+        GSLogger.LogType.Debug($"[HardcoreManager] Setting ForcedSit to {forcedSit}");
         _perPlayerConfigs[playerIdx].SetForcedSit(forcedSit);
         _saveService.QueueSave(this);
         // no need to toggle movement type, player will be immobile completely
     }
 
     public void SetAllowForcedToStay(int playerIdx, bool forcedToStay) {
-        GagSpeak.Log.Debug($"[HardcoreManager] Setting AllowForcedToStay to {forcedToStay}");
+        GSLogger.LogType.Debug($"[HardcoreManager] Setting AllowForcedToStay to {forcedToStay}");
         _perPlayerConfigs[playerIdx].SetAllowForcedToStay(forcedToStay);
         Save();
     }
 
     public void SetForcedToStay(int playerIdx, bool forcedToStay) {
-        GagSpeak.Log.Debug($"[HardcoreManager] Setting ForcedToStay to {forcedToStay}");
+        GSLogger.LogType.Debug($"[HardcoreManager] Setting ForcedToStay to {forcedToStay}");
         _perPlayerConfigs[playerIdx].SetForcedToStay(forcedToStay);
         _saveService.QueueSave(this);
     }
 
     public void SetAllowBlindfold(int playerIdx, bool allowBlindfold) { 
-        GagSpeak.Log.Debug($"[HardcoreManager] Setting AllowBlindfold to {allowBlindfold}");
+        GSLogger.LogType.Debug($"[HardcoreManager] Setting AllowBlindfold to {allowBlindfold}");
         _perPlayerConfigs[playerIdx].SetAllowBlindfold(allowBlindfold); 
         Save();
     }

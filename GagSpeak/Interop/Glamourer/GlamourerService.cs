@@ -90,7 +90,7 @@ public sealed class GlamourerService : IDisposable
             return apiAvailable;
         } finally {
             if (!apiAvailable) {
-                GagSpeak.Log.Error($"[GlamourerService]: Glamourer inactive. All Wardrobe functionality will not work.");
+                GSLogger.LogType.Error($"[GlamourerService]: Glamourer inactive. All Wardrobe functionality will not work.");
             }
         }
     }
@@ -107,12 +107,12 @@ public sealed class GlamourerService : IDisposable
                 var gameObj = _OnFrameworkService.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
-                    GagSpeak.Log.Verbose("[ApplyAllAsyncIntrop] Calling on IPC: GlamourerApplyAll");
+                    GSLogger.LogType.Verbose("[ApplyAllAsyncIntrop] Calling on IPC: GlamourerApplyAll");
                     _ApplyOnlyEquipmentToCharacter!.InvokeAction(customization, c); // can modify to be the lock later.
                 }
             }).ConfigureAwait(false);
         } catch (Exception) {
-            GagSpeak.Log.Debug("[ApplyAllAsyncIntrop] Failed to apply Glamourer data");
+            GSLogger.LogType.Debug("[ApplyAllAsyncIntrop] Failed to apply Glamourer data");
         } 
     }
 
@@ -127,7 +127,7 @@ public sealed class GlamourerService : IDisposable
                 var gameObj = _OnFrameworkService.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
-                    GagSpeak.Log.Verbose("[GetCharacterCustomizationAsync] Calling on IPC: GlamourerGetAllCustomizationFromCharacter");
+                    GSLogger.LogType.Verbose("[GetCharacterCustomizationAsync] Calling on IPC: GlamourerGetAllCustomizationFromCharacter");
                     return _GetAllCustomizationFromCharacter!.InvokeFunc(c);
                 }
                 // otherwise, just return an empty string.
@@ -154,7 +154,7 @@ public sealed class GlamourerService : IDisposable
             }).ConfigureAwait(true);
         } catch(Exception ex) {
             // if at any point this errors, return an empty string as well.
-            GagSpeak.Log.Warning($"[SetItemOnceToCharacterAsync] Failed to set item to character with slot {slot}, item {item}, dye {dye}, and key {variant}, {ex}");
+            GSLogger.LogType.Warning($"[SetItemOnceToCharacterAsync] Failed to set item to character with slot {slot}, item {item}, dye {dye}, and key {variant}, {ex}");
             return;
         }
     }
@@ -172,24 +172,24 @@ public sealed class GlamourerService : IDisposable
                     var gameObj = _OnFrameworkService.CreateGameObject(character);
                     // if the game object is the character, then get the customization for it.
                     if (gameObj is Character c) {
-                        GagSpeak.Log.Verbose("[GlamourRevertIPC] Calling on IPC: GlamourerRevertToAutomationCharacter");
+                        GSLogger.LogType.Verbose("[GlamourRevertIPC] Calling on IPC: GlamourerRevertToAutomationCharacter");
                         bool result = _RevertToAutomationCharacter.InvokeFunc(c, 1337);
-                        GagSpeak.Log.Verbose($"[GlamourRevertIPC] Revert to automation result: {result}");
+                        GSLogger.LogType.Verbose($"[GlamourRevertIPC] Revert to automation result: {result}");
                         if(!result) {
-                            GagSpeak.Log.Warning($"[GlamourRevertIPC] Revert to automation failed, reverting to game instead");
+                            GSLogger.LogType.Warning($"[GlamourRevertIPC] Revert to automation failed, reverting to game instead");
                             await GlamourerRevertCharacter(character);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    GagSpeak.Log.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
+                    GSLogger.LogType.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
                 }
             }).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            GagSpeak.Log.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
+            GSLogger.LogType.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
         }
     }
 
@@ -211,13 +211,13 @@ public sealed class GlamourerService : IDisposable
                 }
                 catch (Exception ex)
                 {
-                    GagSpeak.Log.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
+                    GSLogger.LogType.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
                 }
             }).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            GagSpeak.Log.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
+            GSLogger.LogType.Warning($"[GlamourRevertIPC] Error during GlamourerRevert: {ex}");
         }
     }
 

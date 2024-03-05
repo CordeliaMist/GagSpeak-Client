@@ -12,7 +12,7 @@ public class SafewordUsedEvent
 
     /// <summary> Manually triggered event invoker </summary>
     public void Invoke() {
-        GagSpeak.Log.Debug("[SafewordUsedEvent] Invoked");
+        GSLogger.LogType.Debug("[SafewordUsedEvent] Invoked");
         SafewordCommand?.Invoke(this, new SafewordCommandEventArgs());
     }
 }

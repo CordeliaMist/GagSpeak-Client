@@ -16,18 +16,18 @@ public partial class ResultLogic {
             if(tier == DynamicTier.Tier4) {
                 // set the boolean for the new state _allowChangingToyState will be for you with them (if they can turn on/off your toy)
                 _characterHandler.ToggleEnableToybox();
-                GagSpeak.Log.Debug($"[Message Decoder]: {playerName} has toggled the _enableToybox permission "+
+                GSLogger.LogType.Debug($"[Message Decoder]: {playerName} has toggled the _enableToybox permission "+
                 $"to {_characterHandler.playerChar._enableToybox.ToString()}");
                 return true;
             }
             else {
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong "+
+                GSLogger.LogType.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong "+
                 $"enough to grant access to toggling your _enableToybox permission");
                 return false;
             }
         }
         else {
-            GagSpeak.Log.Error($"[Message Decoder]: {playerName} is not in the whitelist");
+            GSLogger.LogType.Error($"[Message Decoder]: {playerName} is not in the whitelist");
             return false;
         }
     }
@@ -46,11 +46,11 @@ public partial class ResultLogic {
                 _characterHandler.ToggleChangeToyState(index);
                 return true;
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling your active toy");
+                GSLogger.LogType.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling your active toy");
                 return false;
             }
         } else {
-            GagSpeak.Log.Error($"[Message Decoder]: {playerName} is not in the whitelist");
+            GSLogger.LogType.Error($"[Message Decoder]: {playerName} is not in the whitelist");
             return false;
         }
     }
@@ -70,11 +70,11 @@ public partial class ResultLogic {
                 _characterHandler.ToggleAllowIntensityControl(index);
                 return true;
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling your active toy");
+                GSLogger.LogType.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling your active toy");
                 return false;
             }
         } else {
-            GagSpeak.Log.Error($"[Message Decoder]: {playerName} is not in the whitelist");
+            GSLogger.LogType.Error($"[Message Decoder]: {playerName} is not in the whitelist");
             return false;
         }
     }
@@ -104,22 +104,22 @@ public partial class ResultLogic {
                         _soundPlayer.SetVolume((float)(decodedMessageMediator.intensityLevel/(double)maxval));
                     }
                     
-                    GagSpeak.Log.Debug($"[Message Decoder]: {playerName} had its intensity updated to lv.{decodedMessageMediator.intensityLevel}");
+                    GSLogger.LogType.Debug($"[Message Decoder]: {playerName} had its intensity updated to lv.{decodedMessageMediator.intensityLevel}");
                     return true;
                 } else {
                     // we do not have the permission to change the state
-                    GagSpeak.Log.Error($"[Message Decoder]: {playerName} Tried to update your intensity, but you have not given them access");
+                    GSLogger.LogType.Error($"[Message Decoder]: {playerName} Tried to update your intensity, but you have not given them access");
                     return false;
                 }
             } else {
                 // we do not have the permission to change the state
-                GagSpeak.Log.Error($"[Message Decoder]: Your intensity was attempted to be updated, but there is no actively connected toy");
+                GSLogger.LogType.Error($"[Message Decoder]: Your intensity was attempted to be updated, but there is no actively connected toy");
                 return false;
             }
             
         } else {
             // return false
-            GagSpeak.Log.Error($"[Message Decoder]: {playerName} is not in the whitelist");
+            GSLogger.LogType.Error($"[Message Decoder]: {playerName} is not in the whitelist");
             return false;
         }
     }
@@ -137,20 +137,20 @@ public partial class ResultLogic {
             if(_characterHandler.playerChar._uniquePlayerPerms[index]._allowUsingPatterns) {
                 // execute the stored toy pattern
                 if(_patternHandler.ExecutePattern(decodedMessageMediator.patternNameToExecute)) {
-                    GagSpeak.Log.Debug($"[Message Decoder]: {playerName} has executed the stored toy pattern {decodedMessageMediator.patternNameToExecute}");
+                    GSLogger.LogType.Debug($"[Message Decoder]: {playerName} has executed the stored toy pattern {decodedMessageMediator.patternNameToExecute}");
                 } else {
-                    GagSpeak.Log.Error($"[Message Decoder]: {playerName} has failed to execute the stored toy pattern {decodedMessageMediator.patternNameToExecute}");
+                    GSLogger.LogType.Error($"[Message Decoder]: {playerName} has failed to execute the stored toy pattern {decodedMessageMediator.patternNameToExecute}");
                 }
                 return true;
             } else {
                 // return false
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to executing a stored toy pattern");
+                GSLogger.LogType.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to executing a stored toy pattern");
                 return false;
             }
         }
         else {
             // return false
-            GagSpeak.Log.Error($"[Message Decoder]: {playerName} is not in the whitelist");
+            GSLogger.LogType.Error($"[Message Decoder]: {playerName} is not in the whitelist");
             return false;
         }
     }
@@ -171,13 +171,13 @@ public partial class ResultLogic {
                 return true;
             } else {
                 // return false
-                GagSpeak.Log.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling the lock state of the toybox UI");
+                GSLogger.LogType.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling the lock state of the toybox UI");
                 return false;
             }
         }
         else {
             // return false
-            GagSpeak.Log.Error($"[Message Decoder]: {playerName} is not in the whitelist");
+            GSLogger.LogType.Error($"[Message Decoder]: {playerName} is not in the whitelist");
             return false;
         }
     }
@@ -197,13 +197,13 @@ public partial class ResultLogic {
                 return true;
             } else {
                 // otherwise, they dont have the permission to do so
-                GagSpeak.Log.Error($"[Message Decoder]: {playerName} could not enable/disable your device because ToyState permission is not enabled");
+                GSLogger.LogType.Error($"[Message Decoder]: {playerName} could not enable/disable your device because ToyState permission is not enabled");
                 return false;
             }
         }
         else {
             // return false
-            GagSpeak.Log.Error($"[Message Decoder]: {playerName} is not in the whitelist");
+            GSLogger.LogType.Error($"[Message Decoder]: {playerName} is not in the whitelist");
             return false;
         }
     }

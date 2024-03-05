@@ -19,10 +19,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: toggle blindfold option: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: toggle blindfold option: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: toggle blindfold option: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: toggle blindfold option: Failed to decode message: {recievedMessage}");
             }
         }
     }

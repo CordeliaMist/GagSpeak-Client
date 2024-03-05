@@ -26,7 +26,7 @@ public class GagStorageManager : ISavable
         Load();
         // if the load failed, set default values for first time installs
         if (_gagEquipData == null || !_gagEquipData.Any()) {
-            GagSpeak.Log.Debug($"[GagStorageManager]: gagEquipData is null, creating new list");
+            GSLogger.LogType.Debug($"[GagStorageManager]: gagEquipData is null, creating new list");
             _gagEquipData = Enum.GetValues(typeof(GagList.GagType))             // create the data for a new Dictionary                 
                 .Cast<GagList.GagType>()                                        // get the enum gaglist        
                 .ToDictionary(gagType => gagType, gagType => new EquipDrawData(ItemIdVars.NothingItem(EquipSlot.Head)));
@@ -88,7 +88,7 @@ public class GagStorageManager : ISavable
             drawDataForGag.SetDrawDataLocked(false);
             drawDataForGag.SetDrawDataIsEnabled(false);
         }
-        GagSpeak.Log.Debug($"[GagStorageManager] Reset all gagdata's auto equip values sets due to safeword!");
+        GSLogger.LogType.Debug($"[GagStorageManager] Reset all gagdata's auto equip values sets due to safeword!");
         _saveService.QueueSave(this);
     }
 
@@ -145,9 +145,9 @@ public class GagStorageManager : ISavable
                 }
             }
         } catch (Exception ex) {
-            GagSpeak.Log.Error($"[GagStorageManager] Error loading GagStorage.json: {ex}");
+            GSLogger.LogType.Error($"[GagStorageManager] Error loading GagStorage.json: {ex}");
         } finally {
-            GagSpeak.Log.Debug($"[GagStorageManager] GagStorage.json loaded!");
+            GSLogger.LogType.Debug($"[GagStorageManager] GagStorage.json loaded!");
         }
         #pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }

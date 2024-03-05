@@ -20,7 +20,8 @@ public class GagSpeakWindowManager : IDisposable
     /// <summary> Initializes a new instance of the <see cref="GagSpeakWindowManager"/> class.</summary>
     public GagSpeakWindowManager(UiBuilder uiBuilder, MainWindow ui, GagSpeakConfig config, IChatGui chatGui,
     DebugWindow uiDebug, GagSpeakChangelog changelog, UserProfileWindow userProfile, TutorialWindow tutorialWindow,
-    SavePatternWindow savePatternWindow, BlindfoldWindow blindfoldWindow, PenumbraChangedItemTooltip penumbraTooltip) {
+    SavePatternWindow savePatternWindow, BlindfoldWindow blindfoldWindow, PenumbraChangedItemTooltip penumbraTooltip,
+    InternalLoggerWindow internalLoggerWindow) {
         // set the main ui window
         _uiBuilder       = uiBuilder;
         _ui              = ui;
@@ -32,6 +33,7 @@ public class GagSpeakWindowManager : IDisposable
         _windowSystem.AddWindow(tutorialWindow);
         _windowSystem.AddWindow(blindfoldWindow);
         _windowSystem.AddWindow(savePatternWindow);
+        _windowSystem.AddWindow(internalLoggerWindow);
         _windowSystem.AddWindow(changelog.Changelog);
 
         _uiBuilder.Draw                  += _windowSystem.Draw;     // for drawing the UI stuff

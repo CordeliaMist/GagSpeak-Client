@@ -23,7 +23,7 @@ public partial class ResultLogic {
             _characterHandler.UpdatePendingRelationRequestFromPlayer(idx, lean);
             // notify the user that the request as been sent. 
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} has sent a request to have a {lean} relationship dynamic with you.").AddItalicsOff().BuiltString);
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for a relation relation request from {playerName}");
+            GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for a relation relation request from {playerName}");
         }
         return true;
     }
@@ -60,7 +60,7 @@ public partial class ResultLogic {
                 _characterHandler.SetCommitmentTimeEstablished(idx);
             }
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You are now {playerName}'s {lean}. Enjoy~.").AddItalicsOff().BuiltString);
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting {lean} relation");
+            GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for Accepting {lean} relation");
             return true;
         }
         return LogError($"ERROR, Player not in your whitelist!");
@@ -78,7 +78,7 @@ public partial class ResultLogic {
             // set the pending relationship to none and relationship with that player to none
             _characterHandler.UpdatePendingRelationRequestFromYou(idx, RoleLean.None);
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"You have declined {playerName}'s request.").AddItalicsOff().BuiltString);
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for declining a relation request");
+            GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for declining a relation request");
         }
         return true;
     }
@@ -97,7 +97,7 @@ public partial class ResultLogic {
             _characterHandler.UpdatePendingRelationRequestFromYou(idx, RoleLean.None);
             _characterHandler.UpdatePendingRelationRequestFromPlayer(idx, RoleLean.None);
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Relation Status with {playerName} sucessfully removed.").AddItalicsOff().BuiltString);
-            GagSpeak.Log.Debug($"[MsgResultLogic]: Sucessful Logic Parse for relation removal");
+            GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for relation removal");
         }
         return true;
     }

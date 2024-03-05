@@ -9,7 +9,7 @@ public class EquipItemConverter : Newtonsoft.Json.JsonConverter
     #pragma warning disable CS8765, CS8604
     public override bool CanConvert(Type objectType) {
         if(objectType == typeof(EquipItem)) {
-            //GagSpeak.Log.Information($"[EquipItemConverter] Can convert {objectType}");
+            //GSLogger.LogType.Information($"[EquipItemConverter] Can convert {objectType}");
             return true;
         } else {
             return false;
@@ -17,7 +17,7 @@ public class EquipItemConverter : Newtonsoft.Json.JsonConverter
     }
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
-        //GagSpeak.Log.Information($"[EquipItemConverter] Reading JSON for {objectType}");
+        //GSLogger.LogType.Information($"[EquipItemConverter] Reading JSON for {objectType}");
         if(objectType == typeof(EquipItem)) {
             var surrogate = serializer.Deserialize<EquipItemSurrogate>(reader);
             return (EquipItem)surrogate;
@@ -26,7 +26,7 @@ public class EquipItemConverter : Newtonsoft.Json.JsonConverter
     }
 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
-        //GagSpeak.Log.Information($"[EquipItemConverter] Writing JSON for {value}");
+        //GSLogger.LogType.Information($"[EquipItemConverter] Writing JSON for {value}");
         var surrogate = (EquipItemSurrogate)(EquipItem)value;
         serializer.Serialize(writer, surrogate);
     }

@@ -11,8 +11,8 @@ public partial class CharacterHandler
 {
     public void SetPlayerGagType(int index, string gagName, bool invokeGlamourEvent = true, string assignerName = "self") {
         // see if we reset it to none, and if so, we should remove our glamoured gag item
-        GagSpeak.Log.Debug($"[GagSpeak]: Setting gag type for index {index} to {gagName} | {playerChar._selectedGagTypes[index]}");
-        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
+        GSLogger.LogType.Debug($"[GagSpeak]: Setting gag type for index {index} to {gagName} | {playerChar._selectedGagTypes[index]}");
+        var NewGagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(gt => gt.GetGagAlias() == gagName);
         // clear the gag item from the selectedGagTypes list, resetting it to none
         if(gagName == "None") {
             ResetPlayerGagTypeToNone(index, invokeGlamourEvent);
@@ -23,12 +23,13 @@ public partial class CharacterHandler
             if(playerChar._selectedGagTypes[index] != gagName) {
                 // BEFORE WE UPDATE THE DATA, MAKE SURE WE UNEQUIP THE OLD ONE IF IT WAS ENABLED
                 var prevGagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
-                if(_gagStorageManager._gagEquipData[prevGagType]._isEnabled) {
+                GSLogger.LogType.Debug($"[GagSpeak]: Previous Gag Type: {prevGagType} | Current Gag Type: {NewGagType}");
+                if(prevGagType != GagList.GagType.None && _gagStorageManager._gagEquipData[prevGagType]._isEnabled) {
                     // unequip it
                     _gagSpeakGlamourEvent.Invoke(UpdateType.GagUnEquipped, playerChar._selectedGagTypes[index], "self");
                 }
                 // if we were meant to invoke glamour event and our item for that was enabled for glamour applying, we should change it.
-                if(invokeGlamourEvent && _gagStorageManager._gagEquipData[gagType]._isEnabled) {
+                if(invokeGlamourEvent && _gagStorageManager._gagEquipData[NewGagType]._isEnabled) {
                     _gagSpeakGlamourEvent.Invoke(UpdateType.GagEquipped, gagName, assignerName);
                 }
                 // then change the type
@@ -44,7 +45,7 @@ public partial class CharacterHandler
     private void ResetPlayerGagTypeToNone(int index, bool invokeGlamourEvent) {
         // store the gagtype in both enum and name
         var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
-        GagSpeak.Log.Debug($"[GagSpeak]: Resetting gag type to none for index {index} and gag type {gagType}");
+        GSLogger.LogType.Debug($"[GagSpeak]: Resetting gag type to none for index {index} and gag type {gagType}");
         var gagTypeName = playerChar._selectedGagTypes[index];
         // see if the gag was previously Not none,
         if(playerChar._selectedGagTypes[index] != "None") {

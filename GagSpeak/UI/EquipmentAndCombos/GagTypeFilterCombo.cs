@@ -70,7 +70,7 @@ public sealed class GagTypeFilterCombo
                         if( ImGui.Selectable( item._gagName, item._gagName == characterHandler.playerChar._selectedGagTypes[layerIndex]) ) {
                             // update the gag type and the visual display
                             characterHandler.SetPlayerGagType(layerIndex, item._gagName, true, "self");
-                            GagSpeak.Log.Debug($"Selected Gag Type: {item._gagName}");
+                            GSLogger.LogType.Debug($"Selected Gag Type: {item._gagName}");
                             // update the search text
                             _comboSearchText = string.Empty;
                             // update the gagtypes for the garbler core
@@ -84,7 +84,7 @@ public sealed class GagTypeFilterCombo
         }
         catch (Exception e)
         {
-            GagSpeak.Log.Debug(e.ToString());
+            GSLogger.LogType.Debug(e.ToString());
         }
     }
 
@@ -131,7 +131,7 @@ public sealed class GagTypeFilterCombo
         }
         catch (Exception e)
         {
-            GagSpeak.Log.Debug(e.ToString());
+            GSLogger.LogType.Debug(e.ToString());
         }
     }
 }

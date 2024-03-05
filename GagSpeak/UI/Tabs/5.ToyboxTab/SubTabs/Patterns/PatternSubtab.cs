@@ -92,9 +92,9 @@ public class PatternSubtab
             }
             // Set the active pattern
             _patternCollection.AddNewPattern(pattern);
-            GagSpeak.Log.Debug($"Set pattern data from clipboard");
+            GSLogger.LogType.Debug($"Set pattern data from clipboard");
         } catch (Exception ex) {
-            GagSpeak.Log.Warning($"{ex.Message} Could not set pattern data from clipboard.");
+            GSLogger.LogType.Warning($"{ex.Message} Could not set pattern data from clipboard.");
         }
     }
 }

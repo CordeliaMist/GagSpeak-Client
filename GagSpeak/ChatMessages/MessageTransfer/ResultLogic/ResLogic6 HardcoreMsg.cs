@@ -13,16 +13,16 @@ public partial class ResultLogic {
             if(_config.hardcoreMode) {
                 // toggle the blindfold state
                 _hardcoreManager.SetBlindfolded(index, !_hardcoreManager._perPlayerConfigs[index]._blindfolded, playerName);
-                GagSpeak.Log.Debug($"[Message ResLogic]: {playerName} has toggled your blindfold, enjoy the darkness~");
+                GSLogger.LogType.Debug($"[Message ResLogic]: {playerName} has toggled your blindfold, enjoy the darkness~");
                 return true;
             }
             else {
-                GagSpeak.Log.Error($"[Message ResLogic]: {playerName} tried to toggle your blindfold, but you don't have hardcore mode enabled!");
+                GSLogger.LogType.Error($"[Message ResLogic]: {playerName} tried to toggle your blindfold, but you don't have hardcore mode enabled!");
                 return false;
             }
         }
         else {
-            GagSpeak.Log.Error($"[Message Decoder]: {playerName} is not in the whitelist");
+            GSLogger.LogType.Error($"[Message Decoder]: {playerName} is not in the whitelist");
             return false;
         }
     }

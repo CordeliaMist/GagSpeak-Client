@@ -13,6 +13,7 @@ using GagSpeak.Wardrobe;
 using ImGuiNET;
 using OtterGui;
 using OtterGui.Classes;
+using OtterGui.Log;
 using OtterGui.Raii;
 
 namespace GagSpeak.Interop.Penumbra;

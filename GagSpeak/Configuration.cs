@@ -59,6 +59,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public  List<string>                        phoneticSymbolList;                                     // List of the phonetic symbols for the currently selected language
     // stuff for the toybox
     public  string                              intifacePortValue { get; set; } = "ws://localhost:12345"; // The port value for the intiface server
+    public  bool                                DebugMode { get; set; } = false;                        // Is the plugin in debug mode
     public  bool                                AdminMode { get; set; } = false;                        // Is the plugin in admin mode                  
     
     /// <summary> Gets or sets the colors used within our UI </summary>
@@ -91,27 +92,27 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
             ChannelsPuppeteer = new List<ChatChannel.ChatChannels>(){ChatChannel.ChatChannels.Say};}
         // set default values for isLocked
         if (this.isLocked == null || !this.isLocked.Any() || this.isLocked.Count > 3) {
-            GagSpeak.Log.Debug($"[Config]: isLocked is null, creating new list");
+            GSLogger.LogType.Debug($"[Config]: isLocked is null, creating new list");
             this.isLocked = new List<bool> { false, false, false };} //
         // set default values for displaytext
         if (this.displaytext == null || !this.displaytext.Any() || this.displaytext.Count > 3) {
-            GagSpeak.Log.Debug($"[Config]: displaytext is null, creating new list");
+            GSLogger.LogType.Debug($"[Config]: displaytext is null, creating new list");
             this.displaytext = new List<string> { "", "", "" };}
         // set default values for padlockIdentifier
         if (this.whitelistPadlockIdentifier == null) {
-            GagSpeak.Log.Debug($"[Config]: whitelistPadlockIdentifier is null, creating new list");
+            GSLogger.LogType.Debug($"[Config]: whitelistPadlockIdentifier is null, creating new list");
             this.whitelistPadlockIdentifier = new PadlockIdentifier();}
         // set default for the padlock identifier listings
         if (this.padlockIdentifier == null || !this.padlockIdentifier.Any() || this.padlockIdentifier.Count > 3) {
-            GagSpeak.Log.Debug($"[Config]: padlockIdentifier is null, creating new list");
+            GSLogger.LogType.Debug($"[Config]: padlockIdentifier is null, creating new list");
             this.padlockIdentifier = new List<PadlockIdentifier> { new PadlockIdentifier(), new PadlockIdentifier(), new PadlockIdentifier() };}
         // set default values for the timer data
         if (this.timerData == null || !this.timerData.Any()) {
-            GagSpeak.Log.Debug($"[Config]: timerData is null, creating new list");
+            GSLogger.LogType.Debug($"[Config]: timerData is null, creating new list");
             this.timerData = new Dictionary<string, DateTimeOffset>();}
         // set default values for the phonetic listings for the default language
         if (this.phoneticSymbolList == null || !this.phoneticSymbolList.Any()) {
-            GagSpeak.Log.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
+            GSLogger.LogType.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
             this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
         
         processingInfoRequest = false;
@@ -143,7 +144,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public void Load(ConfigMigrationService migrator) {
         // Handle deserialization errors
         static void HandleDeserializationError(object? sender, ErrorEventArgs errorArgs) {
-            GagSpeak.Log.Error( $"[Config]: Error parsing Configuration at {errorArgs.ErrorContext.Path}, using default or migrating:\n{errorArgs.ErrorContext.Error}");
+            GSLogger.LogType.Error( $"[Config]: Error parsing Configuration at {errorArgs.ErrorContext.Path}, using default or migrating:\n{errorArgs.ErrorContext.Error}");
             errorArgs.ErrorContext.Handled = true;
         }
         // If the config file does not exist, return

@@ -23,11 +23,11 @@ public partial class MessageDecoder {
                 // gag type (always applies to first layer gagtype for assignments (non info exchange))
                 decodedMessageMediator.layerGagName[0] = match.Groups["gagType"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: /gag apply: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: /gag apply: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(LayerIdx) {decodedMessageMediator.layerIdx} ||(GagType) {decodedMessageMediator.layerGagName[0]}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag apply: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag apply: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -49,11 +49,11 @@ public partial class MessageDecoder {
                 // lock type
                 decodedMessageMediator.layerPadlock[0] = match.Groups["lockType"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: /gag lock: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: /gag lock: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(LayerIdx) {decodedMessageMediator.layerIdx} ||(LockType) {decodedMessageMediator.layerPadlock[0]}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag lock: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag lock: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -77,12 +77,12 @@ public partial class MessageDecoder {
                 // password
                 decodedMessageMediator.layerPassword[0] = match.Groups["password"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: /gag lock password: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: /gag lock password: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(LayerIdx) {decodedMessageMediator.layerIdx} ||(LockType) {decodedMessageMediator.layerPadlock[0]} ||" +
                 $"(Password) {decodedMessageMediator.layerPassword[0]}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag lock password: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag lock password: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -108,12 +108,12 @@ public partial class MessageDecoder {
                 // timer
                 decodedMessageMediator.layerTimer[0] = match.Groups["timer"].Value.Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: /gag lock password timer: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: /gag lock password timer: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(LayerIdx) {decodedMessageMediator.layerIdx} ||(LockType) {decodedMessageMediator.layerPadlock[0]} ||" +
                 $"(Password) {decodedMessageMediator.layerPassword[0]} ||(Timer) {decodedMessageMediator.layerTimer[0]}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag lock password timer: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag lock password timer: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -133,11 +133,11 @@ public partial class MessageDecoder {
                 // assigned layer idx
                 decodedMessageMediator.AssignLayerIdx(match.Groups["layer"].Value.Trim());
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: /gag unlock: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: /gag unlock: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(LayerIdx) {decodedMessageMediator.layerIdx}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag unlock: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag unlock: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -160,7 +160,7 @@ public partial class MessageDecoder {
                 decodedMessageMediator.layerPassword[0] = match.Groups["password"].Value.Trim();
                 // 
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag unlock password: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag unlock password: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -180,11 +180,11 @@ public partial class MessageDecoder {
                 // assigned layer idx
                 decodedMessageMediator.AssignLayerIdx(match.Groups["layer"].Value.Trim());
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: /gag remove: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: /gag remove: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} ||" +
                 $"(LayerIdx) {decodedMessageMediator.layerIdx}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag remove: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag remove: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -202,10 +202,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: /gag removeall: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: /gag removeall: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag removeall: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag removeall: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -223,10 +223,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: /gag toggleLiveChatGarbler: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: /gag toggleLiveChatGarbler: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag toggleLiveChatGarbler: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag toggleLiveChatGarbler: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -244,10 +244,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: /gag toggleLiveChatGarblerLock: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: /gag toggleLiveChatGarblerLock: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag toggleLiveChatGarblerLock: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag toggleLiveChatGarblerLock: Failed to decode message: {recievedMessage}");
             }
         }
 
@@ -265,10 +265,10 @@ public partial class MessageDecoder {
                 string[] playerInfoParts = match.Groups["playerInfo"].Value.Trim().Split(" from ");
                 decodedMessageMediator.assignerName = playerInfoParts[0].Trim() + " " + playerInfoParts[1].Trim();
                 // debug result
-                GagSpeak.Log.Debug($"[Message Decoder]: /gag toggleExtendedLockTimes: (Type) "+
+                GSLogger.LogType.Debug($"[Message Decoder]: /gag toggleExtendedLockTimes: (Type) "+
                 $"{decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName}");
             } else {
-                GagSpeak.Log.Error($"[Message Decoder]: /gag toggleExtendedLockTimes: Failed to decode message: {recievedMessage}");
+                GSLogger.LogType.Error($"[Message Decoder]: /gag toggleExtendedLockTimes: Failed to decode message: {recievedMessage}");
             }
         }
     }

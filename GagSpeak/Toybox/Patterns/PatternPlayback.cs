@@ -107,13 +107,13 @@ public void Draw() {
         }
         ImPlot.PopStyleColor(2);
     } catch (Exception e) {
-        GagSpeak.Log.Error($"{e} Error drawing the toybox workshop subtab");
+        GSLogger.LogType.Error($"{e} Error drawing the toybox workshop subtab");
     }
 }
 #region Helper Fuctions
     // When active, the circle will not fall back to the 0 coordinate on the Y axis of the plot, and remain where it is
     public void StartPlayback(PatternData pattern, int IdxToPlay) {
-        GagSpeak.Log.Debug($"Starting playback of pattern {pattern._name}");
+        GSLogger.LogType.Debug($"Starting playback of pattern {pattern._name}");
         // set the playback index to the start
         _playbackIndex = 0;
         // set the stored pattern index we are using to playback here
@@ -147,7 +147,7 @@ public void Draw() {
     private List<float> volumeLevels = new List<float>();
 
     public void StopPlayback() {
-        GagSpeak.Log.Debug($"Stopping playback of pattern {_tempStoredPattern._name}");
+        GSLogger.LogType.Debug($"Stopping playback of pattern {_tempStoredPattern._name}");
         // clear the local variables
         _isPlaybackActive = false;
         _tempStoredPattern._isActive = false;
@@ -191,7 +191,7 @@ public void Draw() {
                     return;
                 }
             }
-            //GagSpeak.Log.Debug($"Playing back position {_playbackIndex} with data {storedRecordedPositions[_playbackIndex]}");
+            //GSLogger.LogType.Debug($"Playing back position {_playbackIndex} with data {storedRecordedPositions[_playbackIndex]}");
             // Convert the current stored position to a float and store it in currentPos
             currentPos[1] = storedRecordedPositions[_playbackIndex];
 

@@ -208,7 +208,7 @@ public class ConfigSettingsTab : ITab
                     bool isSelected = (_characterHandler.playerChar._revertStyle == style);
                     if (ImGui.Selectable(style.ToString(), isSelected)) {
                         _characterHandler.SetRevertStyle(style);
-                        GagSpeak.Log.Debug($"[ConfigSettingsTab] RevertStyle changed to: {_characterHandler.playerChar._revertStyle}");
+                        GSLogger.LogType.Debug($"[ConfigSettingsTab] RevertStyle changed to: {_characterHandler.playerChar._revertStyle}");
                     }
                     if (isSelected) {
                         ImGui.SetItemDefaultFocus();

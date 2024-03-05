@@ -94,7 +94,7 @@ public partial class WhitelistPanel {
             
             // draw a button spanning the 1st and 2nd columns of this row
             if (ImGui.Button("Send to Player##ReqDynamic", new Vector2(ImGui.GetContentRegionAvail().X * 0.7f, 0))) {
-                GagSpeak.Log.Debug("[Whitelist]: Sending Request to become their mistress");
+                GSLogger.LogType.Debug("[Whitelist]: Sending Request to become their mistress");
                 RoleLean selectedRole = (RoleLean)_selectedDynamicIdx;
                 RequestDynamicToPlayer(selectedRole);
                 _interactOrPermButtonEvent.Invoke(5);
@@ -117,7 +117,7 @@ public partial class WhitelistPanel {
                 AcceptRequestForDynamicButton();
                 // set the relation request to established
                 _characterHandler.UpdatePendingRelationRequestFromPlayer(_tempWhitelistIdx, RoleLean.None);
-                GagSpeak.Log.Debug($"[Whitelist]: Accepting incoming relation request from "+
+                GSLogger.LogType.Debug($"[Whitelist]: Accepting incoming relation request from "+
                 $"{_tempWhitelistChar._name}");
             }
             ImGui.SameLine();
@@ -129,7 +129,7 @@ public partial class WhitelistPanel {
                 DeclineRequestForDynamicButton();
                 // set the relation request to none
                 _characterHandler.UpdatePendingRelationRequestFromPlayer(_tempWhitelistIdx, RoleLean.None);
-                GagSpeak.Log.Debug($"[Whitelist]: Declining {_tempWhitelistChar._name}'s relation request");
+                GSLogger.LogType.Debug($"[Whitelist]: Declining {_tempWhitelistChar._name}'s relation request");
             }
         }
         // cast a seperator

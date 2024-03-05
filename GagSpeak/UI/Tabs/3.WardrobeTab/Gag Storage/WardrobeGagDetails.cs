@@ -107,7 +107,7 @@ public class GagStorageDetails
             if(ImGui.Button("Disable Item Auto-Equip", new Vector2(_comboLength, 50))) {
                 // do something when the button is clicked
                 _gagStorageManager.ChangeGagDrawDataIsEnabled(_gagStorageManager._selectedGag, false);
-                GagSpeak.Log.Debug($"[WardrobeTab] Disable Gag Drawer Button Clicked!");
+                GSLogger.LogType.Debug($"[WardrobeTab] Disable Gag Drawer Button Clicked!");
             }
             ImGui.PopStyleColor(3);
         }
@@ -117,7 +117,7 @@ public class GagStorageDetails
             ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0xFF / 255f, 0xAF / 255f, 0xEC / 255f, 0xEF / 255f)); // #FFAFECEF
             if(ImGui.Button("Enable Item Auto-Equip",  new Vector2(_comboLength, 50))) {
                 _gagStorageManager.ChangeGagDrawDataIsEnabled(_gagStorageManager._selectedGag, true);
-                GagSpeak.Log.Debug($"[WardrobeTab] Enable Gag Drawer Button Clicked!");
+                GSLogger.LogType.Debug($"[WardrobeTab] Enable Gag Drawer Button Clicked!");
             }
             ImGui.PopStyleColor(3);
             ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x0080FF40); // Slightly more Green
@@ -174,7 +174,7 @@ public class GagStorageDetails
         label = combo.Label;
         if (!_gagStorageManager._gagEquipData[gagType]._locked && open) {
             UIHelpers.OpenCombo($"##GagShelfItem{gagType}{combo.Label}");
-            GagSpeak.Log.Debug($"{combo.Label}");
+            GSLogger.LogType.Debug($"{combo.Label}");
         }
         // draw the combo
         using var disabled = ImRaii.Disabled(_gagStorageManager._gagEquipData[gagType]._locked);
@@ -186,7 +186,7 @@ public class GagStorageDetails
         if (clear || ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
             _gagStorageManager.ResetGagDrawDataGameItem(gagType);
 
-            GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, item reverted to none!");
+            GSLogger.LogType.Debug($"[WardrobeTab] Right Click processed, item reverted to none!");
         }
     }
 
@@ -202,17 +202,17 @@ public class GagStorageDetails
         if (_stainCombo.Draw($"##GagShelfStain{gagType}{_gagStorageManager._gagEquipData[gagType]._slot}", stain.RgbaColor, stain.Name, found, stain.Gloss, width)) {
             if (_stainData.TryGetValue(_stainCombo.CurrentSelection.Key, out stain)) {
                 _gagStorageManager.ChangeGagDrawDataGameStain(gagType, stain.RowIndex);
-                GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: {stain.RowIndex}");
+                GSLogger.LogType.Debug($"[WardrobeTab] Stain Changed: {stain.RowIndex}");
             }
             else if (_stainCombo.CurrentSelection.Key == Penumbra.GameData.Structs.Stain.None.RowIndex) {
                 //data.StainSetter(Stain.None.RowIndex);
-                GagSpeak.Log.Debug($"[WardrobeTab] Stain Changed: None");
+                GSLogger.LogType.Debug($"[WardrobeTab] Stain Changed: None");
             }
         }
         // conditionals to detect for changes in the combo's via reset
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
             _gagStorageManager.ResetGagDrawDataGameStain(gagType);
-            GagSpeak.Log.Debug($"[WardrobeTab] Right Click processed, stain reverted to none!");
+            GSLogger.LogType.Debug($"[WardrobeTab] Right Click processed, stain reverted to none!");
         }
     }
 }

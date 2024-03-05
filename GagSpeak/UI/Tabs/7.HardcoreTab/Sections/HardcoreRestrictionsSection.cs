@@ -56,7 +56,7 @@ public class HC_ControlRestrictions
         _client = client;
 
         _iconSize    = ImGuiHelpers.ScaledVector2(ImGui.GetFrameHeight()+ImGui.GetFrameHeightWithSpacing());
-        _gameItemCombo = EquipSlotExtensions.EqdpSlots.Select(e => new GameItemCombo(_gameData, e, _itemData, GagSpeak.Log)).ToArray();
+        _gameItemCombo = EquipSlotExtensions.EqdpSlots.Select(e => new GameItemCombo(_gameData, e, _itemData,  GagSpeak.Log)).ToArray();
         _stainCombo = new StainColorCombo(_comboWidth-20, _stainData);
     }
     public void Draw() {
@@ -151,7 +151,7 @@ public class HC_ControlRestrictions
             try {
                 DrawForcedStayConfigUI();
             } catch (System.Exception e) {
-                GagSpeak.Log.Error($"Error drawing forced stay config UI, {e.Message}");
+                GSLogger.LogType.Error($"Error drawing forced stay config UI, {e.Message}");
             }
             ImGui.Separator();
         } finally {
@@ -188,7 +188,7 @@ public class HC_ControlRestrictions
         if (clear || ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
             blindfoldItem.ResetDrawDataGameItem();
             _hcManager.Save();
-            GagSpeak.Log.Debug($"[Hardcore Blindfold] Right Click processed, item reverted to none!");
+            GSLogger.LogType.Debug($"[Hardcore Blindfold] Right Click processed, item reverted to none!");
         }
     }
     private void DrawStain(EquipDrawData blindfoldItem, float width, StainColorCombo _stainCombo, DictStain _stainData) {
@@ -200,7 +200,7 @@ public class HC_ControlRestrictions
             if (_stainData.TryGetValue(_stainCombo.CurrentSelection.Key, out stain)) {
                 blindfoldItem.SetDrawDataGameStain(stain.RowIndex);
                 _hcManager.Save();
-                GagSpeak.Log.Debug($"[Hardcore Blindfold] Stain Changed: {stain.RowIndex}");
+                GSLogger.LogType.Debug($"[Hardcore Blindfold] Stain Changed: {stain.RowIndex}");
             }
             else if (_stainCombo.CurrentSelection.Key == Penumbra.GameData.Structs.Stain.None.RowIndex) { }
         }
@@ -208,7 +208,7 @@ public class HC_ControlRestrictions
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
             blindfoldItem.ResetDrawDataGameStain();
             _hcManager.Save();
-            GagSpeak.Log.Debug($"[Hardcore Blindfold] Right Click processed, stain reverted to none!");
+            GSLogger.LogType.Debug($"[Hardcore Blindfold] Right Click processed, stain reverted to none!");
         }
     }
 
@@ -231,7 +231,7 @@ public class HC_ControlRestrictions
             if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.SearchPlus.ToIconString(), new Vector2(ImGuiHelpers.GlobalScale*25, ImGuiHelpers.GlobalScale*25),
             "Add last seen as new entry interface as last entry\n(Must have active to record latest dialog option.)\n(Auto-selecting yes is not an allowed option)", false, true))
             {
-                GagSpeak.Log.Debug($"{_hcManager.LastSeenListSelection} || {_hcManager.LastSeenDialogText.Item1} || {_hcManager.LastSeenListTarget}");
+                GSLogger.LogType.Debug($"{_hcManager.LastSeenListSelection} || {_hcManager.LastSeenDialogText.Item1} || {_hcManager.LastSeenListTarget}");
                 var newNode = new TextEntryNode() {
                     Enabled = true,
                     Text = _hcManager.LastSeenListSelection == "" ? _hcManager.LastSeenDialogText.Item1 : _hcManager.LastSeenListSelection,

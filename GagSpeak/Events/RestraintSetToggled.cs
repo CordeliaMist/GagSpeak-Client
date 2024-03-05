@@ -18,7 +18,7 @@ public class RS_ToggleEvent
     /// <summary> Manually triggered event invoker </summary>
     public void Invoke(RestraintSetToggleType updateType, int setIndex, string assignerName) { // setindex can be size for integrity checks
         // remake this for the list update type
-        GagSpeak.Log.Debug($"[RS_ToggleEventEvent] Restraint set index {setIndex} toggled to: {updateType} by {assignerName}");
+        GSLogger.LogType.Debug($"[RS_ToggleEventEvent] Restraint set index {setIndex} toggled to: {updateType} by {assignerName}");
         SetToggled?.Invoke(this, new RS_ToggleEventArgs(updateType, setIndex, assignerName));
     }
 }

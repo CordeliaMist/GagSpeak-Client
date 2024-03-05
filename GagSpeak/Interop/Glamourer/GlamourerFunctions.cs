@@ -58,11 +58,11 @@ public class GlamourerFunctions : IDisposable
         _gagSpeakGlamourEvent.GlamourEventFired += GlamourEventFired;    // to know when we update any setting that should trigger a particular glamour refresh.
         _framework.Update += FrameworkUpdate;                            // to know when we should process the last glamour data
         
-        GagSpeak.Log.Debug($"[GlamourerService]: GlamourerFunctions initialized!");
+        GSLogger.LogType.Information($"[GlamourerService]: GlamourerFunctions initialized!");
     }
 
     public void Dispose() {
-        GagSpeak.Log.Debug($"[GlamourerService]: Disposing of GlamourerService");
+        GSLogger.LogType.Information($"[GlamourerService]: Disposing of GlamourerService");
         _Interop._StateChangedSubscriber.Unsubscribe(_ChangedDelegate);
         _gagSpeakGlamourEvent.GlamourEventFired -= GlamourEventFired;
         _framework.Update -= FrameworkUpdate;
@@ -76,7 +76,7 @@ public class GlamourerFunctions : IDisposable
                 // make sure to turn that off and reset it
                 finishedDrawingGlamChange = false;
                 disableGlamChangeEvent = false;
-                GagSpeak.Log.Debug($"[FrameworkUpdate] Re-Allowing Glamour Change Event");
+                GSLogger.LogType.Information($"[FrameworkUpdate] Re-Allowing Glamour Change Event");
             }
         } 
     }
@@ -87,24 +87,24 @@ public class GlamourerFunctions : IDisposable
     private void GlamourerChanged(StateChangeType type, nint address) {
         // just know the type and address
         if (address != _onFrameworkService._address) {
-            GagSpeak.Log.Verbose($"[GlamourerChanged]: Change not from Character, IGNORING"); return;
+            GSLogger.LogType.Verbose($"[GlamourerChanged]: Change not from Character, IGNORING"); return;
         }
         
         // make sure we have wardrobe enabled
         if(!_characterHandler.playerChar._enableWardrobe) {
-            GagSpeak.Log.Verbose($"[GlamourerChanged]: Wardrobe is disabled, so we wont be updating/applying any gag items");
+            GSLogger.LogType.Verbose($"[GlamourerChanged]: Wardrobe is disabled, so we wont be updating/applying any gag items");
             return;
         }
         
         // make sure we are not already processing a glamour event
         if(_gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting || disableGlamChangeEvent) {
-            GagSpeak.Log.Verbose($"[GlamourerChanged]: Blocked due to request variables");
+            GSLogger.LogType.Verbose($"[GlamourerChanged]: Blocked due to request variables");
             return;
         }
         
         // if it is a design change, then we should reapply the gags and restraint sets
         if(type == StateChangeType.Design || type == StateChangeType.Reapply ||  type == StateChangeType.Reset) {
-            GagSpeak.Log.Verbose($"[GlamourerChanged]: StateChangeType is Design, Re-Applying any Gags or restraint sets configured if conditions are satisfied");
+            GSLogger.LogType.Verbose($"[GlamourerChanged]: StateChangeType is Design, Re-Applying any Gags or restraint sets configured if conditions are satisfied");
             // process the latest glamourerData and append our alterations
             _gagSpeakGlamourEvent.Invoke(UpdateType.RefreshAll);
             return;
@@ -113,11 +113,11 @@ public class GlamourerFunctions : IDisposable
         // CONDITION FIVE: The StateChangeType is an equip or Stain, meaning that the player changed classes in game, or gearsets, causing multiple events to trigger
         if(type == StateChangeType.Equip || type == StateChangeType.Stain || type == StateChangeType.Weapon) {
             var enumType = (StateChangeType)type;  
-            GagSpeak.Log.Verbose($"[GlamourerChanged]: StateChangeType is {enumType}");
+            GSLogger.LogType.Verbose($"[GlamourerChanged]: StateChangeType is {enumType}");
             _gagSpeakGlamourEvent.Invoke(UpdateType.RefreshAll);
         } else {
             var enumType = (StateChangeType)type;  
-            GagSpeak.Log.Verbose($"[GlamourerChanged]: GlamourerChangedEvent was not equipmenttype, stain, or weapon; but rather {enumType}");
+            GSLogger.LogType.Verbose($"[GlamourerChanged]: GlamourerChangedEvent was not equipmenttype, stain, or weapon; but rather {enumType}");
         }
     }
 
@@ -129,12 +129,12 @@ public class GlamourerFunctions : IDisposable
         disableGlamChangeEvent = true;
         // only execute if our wardrobe is enabled
         if(_characterHandler.playerChar._enableWardrobe) {
-            GagSpeak.Log.Debug($"================= [ "+ e.UpdateType.ToString().ToUpper()+" GLAMOUR EVENT FIRED ] ====================");
+            GSLogger.LogType.Information(" "+ e.UpdateType.ToString().ToUpper()+" GLAMOUR EVENT FIRED ");
             // conditionals:
             // condition 1 --> It was an update restraint set event. In this case, we should recall the restraint set applier
             try{
                 if(e.UpdateType == UpdateType.UpdateRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip) {
-                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Restraint Set Update");
+                    GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Restraint Set Update");
                     await ApplyRestrainSetToCachedCharacterData(); // correct
                     // if any of our gags are not none
                     if(_characterHandler.playerChar._allowItemAutoEquip && _characterHandler.playerChar._selectedGagTypes.Any(g => g != "None")) {
@@ -144,7 +144,7 @@ public class GlamourerFunctions : IDisposable
                 // condition 2 --> it was an disable restraint set event, we should revert back to automation, but then reapply the gags
                 if(e.UpdateType == UpdateType.DisableRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip) {
                     try{
-                        GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Restraint Set Disable, reverting to automation");
+                        GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Restraint Set Disable, reverting to automation");
                         // revert based on our setting
                         if(_characterHandler.playerChar._revertStyle == RevertStyle.ToAutomationOnly)
                         {
@@ -164,7 +164,7 @@ public class GlamourerFunctions : IDisposable
                         }
                         // dont know how to tell if it was successful, so we will just assume it was
                     } catch (Exception) {
-                        GagSpeak.Log.Error($"Error reverting glamourer to automation");
+                        GSLogger.LogType.Error($"Error reverting glamourer to automation");
                     }
                     // now reapply the gags
                     if(_characterHandler.playerChar._allowItemAutoEquip) {
@@ -173,13 +173,13 @@ public class GlamourerFunctions : IDisposable
                 }
                 // condition 3 --> it was an equip gag type event, we should take the gag type, and replace it with the item
                 if(e.UpdateType == UpdateType.GagEquipped && _characterHandler.playerChar._allowItemAutoEquip) {
-                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Gag Equipped");
+                    GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Gag Equipped");
                     if(e.GagType != "None") {
                         await EquipWithSetItem(e.GagType, e.AssignerName);
                     }
                     // otherwise, do the same as the unequip function
                     else {
-                        GagSpeak.Log.Debug($"[GlamourEventFired]: GagType is None, not setting item.");
+                        GSLogger.LogType.Debug($"[GlamourEventFired]: GagType is None, not setting item.");
                         // if it is none, then do the same as the unequip function.
                         var gagType = Enum.GetValues(typeof(GagList.GagType))
                                         .Cast<GagList.GagType>()
@@ -197,7 +197,7 @@ public class GlamourerFunctions : IDisposable
                 // condition 4 --> it was an disable gag type event, we should take the gag type, and replace it with a nothing item
                 if(e.UpdateType == UpdateType.GagUnEquipped && _characterHandler.playerChar._allowItemAutoEquip) {
                     // get the gagtype
-                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Gag UnEquipped");
+                    GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Gag UnEquipped");
                     var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(g => g.GetGagAlias() == e.GagType);
                     // this should replace it with nothing
                     await _Interop.SetItemToCharacterAsync(
@@ -212,53 +212,34 @@ public class GlamourerFunctions : IDisposable
                 }
                 // condition 5 --> it was a gag refresh event, we should reapply all the gags
                 if(e.UpdateType == UpdateType.UpdateGags) {
-                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Update Gags");
+                    GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Update Gags");
                     await ApplyGagItemsToCachedCharacterData();
                 }
 
                 // condition 6 --> it was a job change event, refresh all, but wait for the framework thread first
                 if(e.UpdateType == UpdateType.JobChange) {
-                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Job Change");
+                    GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Job Change");
                     await Task.Run(() => _onFrameworkService.RunOnFrameworkThread(UpdateCachedCharacterData));
                 }
 
                 // condition 7 --> it was a refresh all event, we should reapply all the gags and restraint sets
                 if(e.UpdateType == UpdateType.RefreshAll || e.UpdateType == UpdateType.ZoneChange || e.UpdateType == UpdateType.Login) {
-                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Refresh All // Zone Change // Login // Job Change");
-                    // revert based on our setting
-                    await Task.Run(async() => {
-                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToAutomationOnly)
-                        {
-                            // if we want to just revert to automation, then do just that.
-                            await _Interop.GlamourerRevertCharacterToAutomation(_onFrameworkService._address);
-                        }
-                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToGameOnly)
-                        {
-                            // if we want to always revert to game, then do just that
-                            await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
-                        }
-                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToGameThenAutomation)
-                        {
-                            // finally, if we want to revert to the game, then to any automation for this class after, then do just that
-                            await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
-                            await _Interop.GlamourerRevertCharacterToAutomation(_onFrameworkService._address);
-                        }
-                    });
-                    // then apply all the gags and restraint sets
+                    GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Refresh All // Zone Change // Login // Job Change");
+                    // apply all the gags and restraint sets
                     await Task.Run(() => _onFrameworkService.RunOnFrameworkThread(UpdateCachedCharacterData));
                 }
                 // condition 8 --> it was a safeword event, we should revert to the game, then to game and disable toys
                 if(e.UpdateType == UpdateType.Safeword) {
-                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Safeword");
+                    GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Safeword");
                     await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
                     // disable all toys
                 }
                 // condition 9 -- > it was a blindfold equipped event, we should apply the blindfold
                 if(e.UpdateType == UpdateType.BlindfoldEquipped) {
-                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Blindfold Equipped");
+                    GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Blindfold Equipped");
                     var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
                     if(idx != -1) {
-                        GagSpeak.Log.Debug($"[GlamourEventFired]: Found index {idx} for blindfold");
+                        GSLogger.LogType.Debug($"[GlamourEventFired]: Found index {idx} for blindfold");
                         await _Interop.SetItemToCharacterAsync(
                             _onFrameworkService._address,
                             Convert.ToByte(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot),
@@ -269,14 +250,14 @@ public class GlamourerFunctions : IDisposable
                     }
                 }
             } catch (Exception ex) {
-                GagSpeak.Log.Error($"[GlamourEventFired]: Error processing glamour event: {ex}");
+                GSLogger.LogType.Error($"[GlamourEventFired]: Error processing glamour event: {ex}");
             } finally {
                 _gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting = false;
                 finishedDrawingGlamChange = true;
                 semaphore.Release();
             }
         } else {
-            GagSpeak.Log.Debug($"[GlamourEventFired]: Wardrobe is disabled, so we wont be updating/applying any gag items");
+            GSLogger.LogType.Debug($"[GlamourEventFired]: Wardrobe is disabled, so we wont be updating/applying any gag items");
         }
     }
 
@@ -286,13 +267,13 @@ public class GlamourerFunctions : IDisposable
         if(_characterHandler.playerChar._allowRestraintSetAutoEquip) {
             await ApplyRestrainSetToCachedCharacterData();
         } else {
-            GagSpeak.Log.Debug($"[GlamourerChanged]: Restraint Set Auto-Equip disabled, IGNORING");
+            GSLogger.LogType.Debug($"[GlamourerChanged]: Restraint Set Auto-Equip disabled, IGNORING");
         }
 
         if(_characterHandler.playerChar._allowItemAutoEquip) {
             await ApplyGagItemsToCachedCharacterData();
         } else {
-            GagSpeak.Log.Debug($"[GlamourerChanged]: Item Auto-Equip disabled, IGNORING");
+            GSLogger.LogType.Debug($"[GlamourerChanged]: Item Auto-Equip disabled, IGNORING");
         }
     }
 
@@ -318,7 +299,7 @@ public class GlamourerFunctions : IDisposable
                         // Because it was disabled, we will treat it as an overlay, ignoring it if it is a nothing item
                         if (!pair.Value._gameItem.Equals(ItemIdVars.NothingItem(pair.Value._slot))) {
                             // Apply the EquipDrawData
-                            GagSpeak.Log.Debug($"[ApplyRestrainSetToData] Calling on Helmet Placement {pair.Key}!");
+                            GSLogger.LogType.Debug($"[ApplyRestrainSetToData] Calling on Helmet Placement {pair.Key}!");
                             tasks.Add(_Interop.SetItemToCharacterAsync(
                                 _onFrameworkService._address, 
                                 Convert.ToByte(pair.Key), // the key (EquipSlot)
@@ -326,22 +307,22 @@ public class GlamourerFunctions : IDisposable
                                 pair.Value._gameStain.Id, // The _drawData._gameStain.Id
                                 0));
                         } else {
-                            GagSpeak.Log.Debug($"[ApplyRestrainSetToData] Skipping over {pair.Key}!");
+                            GSLogger.LogType.Debug($"[ApplyRestrainSetToData] Skipping over {pair.Key}!");
                         }
                     }
                 }
                 // early exit, we only want to apply one restraint set
-                GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: Applying Restraint Set to Cached Character Data");
+                GSLogger.LogType.Debug($"[ApplyRestrainSetToData]: Applying Restraint Set to Cached Character Data");
                 await Task.WhenAll(tasks);
                 return;
             }
         }
-        GagSpeak.Log.Debug($"[ApplyRestrainSetToData]: No restraint sets are enabled, skipping!");
+        GSLogger.LogType.Debug($"[ApplyRestrainSetToData]: No restraint sets are enabled, skipping!");
     }
     
     /// <summary> Applies the gag items to the cached character data. </summary>
     public async Task ApplyGagItemsToCachedCharacterData() {
-        GagSpeak.Log.Debug($"[ApplyGagItems]: Applying Gag Items to Cached Character Data");
+        GSLogger.LogType.Debug($"[ApplyGagItems]: Applying Gag Items to Cached Character Data");
         // temporary code until glamourer update's its IPC changes
         await EquipWithSetItem(_characterHandler.playerChar._selectedGagTypes[0], "self");
         await EquipWithSetItem(_characterHandler.playerChar._selectedGagTypes[1], "self");
@@ -351,14 +332,14 @@ public class GlamourerFunctions : IDisposable
     public async Task EquipWithSetItem(string gagName, string assignerName = "") {
         // if the gagName is none, then just dont set it and return
         if(gagName == "None") {
-            GagSpeak.Log.Debug($"[OnGagEquippedEvent]: GagLayer Not Equipped.");
+            GSLogger.LogType.Debug($"[OnGagEquippedEvent]: GagLayer Not Equipped.");
             return;
         }
         // Get the gagtype (enum) where it's alias matches the gagName
         var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(g => g.GetGagAlias() == gagName);
         // See if the GagType is in our dictionary & that the gagName is not "None" (because .First() would make gagType==BallGag when gagName==None)
         if(_gagStorageManager._gagEquipData[gagType]._isEnabled == false) {
-            GagSpeak.Log.Debug($"[Interop - SetItem]: GagType {gagName} is not enabled, so not setting item.");
+            GSLogger.LogType.Debug($"[Interop - SetItem]: GagType {gagName} is not enabled, so not setting item.");
             return;
         }
         // otherwise let's do the rest of the stuff
@@ -374,13 +355,13 @@ public class GlamourerFunctions : IDisposable
                                                        _gagStorageManager._gagEquipData[gagType]._gameStain.Id,
                                                        0
                 );
-                GagSpeak.Log.Debug($"[Interop - SetItem]: Set item {_gagStorageManager._gagEquipData[gagType]._gameItem} to slot {_gagStorageManager._gagEquipData[gagType]._slot} for gag {gagName}");
+                GSLogger.LogType.Debug($"[Interop - SetItem]: Set item {_gagStorageManager._gagEquipData[gagType]._gameItem} to slot {_gagStorageManager._gagEquipData[gagType]._slot} for gag {gagName}");
             }
             catch (TargetInvocationException ex) {
-                GagSpeak.Log.Error($"[Interop - SetItem]: Error setting item: {ex.InnerException}");
+                GSLogger.LogType.Error($"[Interop - SetItem]: Error setting item: {ex.InnerException}");
             } 
         } else {
-            GagSpeak.Log.Debug($"[Interop - SetItem]: Assigner {assignerName} is not valid, so not setting item.");
+            GSLogger.LogType.Debug($"[Interop - SetItem]: Assigner {assignerName} is not valid, so not setting item.");
         }
     }
 
@@ -389,7 +370,7 @@ public class GlamourerFunctions : IDisposable
         // next, we need to see if the gag is being equipped.
         if(equipDrawData._wasEquippedBy == "self")
         {
-            GagSpeak.Log.Debug($"[ValidGagAssignerUser]: GagType {gagName} is being equipped by yourself, abiding by your config settings for Item Auto-Equip.");
+            GSLogger.LogType.Debug($"[ValidGagAssignerUser]: GagType {gagName} is being equipped by yourself, abiding by your config settings for Item Auto-Equip.");
             return true;
         }
         // if we hit here, it was an assignerName
@@ -403,18 +384,18 @@ public class GlamourerFunctions : IDisposable
             if(_characterHandler.whitelistChars[playerIdx].IsRoleLeanSubmissive(_characterHandler.whitelistChars[playerIdx]._yourStatusToThem) 
             && _characterHandler.whitelistChars[playerIdx].IsRoleLeanDominant(_characterHandler.whitelistChars[playerIdx]._theirStatusToYou))
             {
-                GagSpeak.Log.Debug($"[ValidGagAssignerUser]: You are a pet/slave to the gag assigner, and {tempAssignerName} is your Mistress. Because this two way relationship is established, allowing Item Auto-Eqiup.");
+                GSLogger.LogType.Debug($"[ValidGagAssignerUser]: You are a pet/slave to the gag assigner, and {tempAssignerName} is your Mistress. Because this two way relationship is established, allowing Item Auto-Eqiup.");
                 return true;
             } 
             else
             {
-                GagSpeak.Log.Debug($"[ValidGagAssignerUser]: {tempAssignerName} is not someone you are a pet or slave to, nor are they defined as your Mistress. Thus, Item Auto-Equip being disabled for this gag.");
+                GSLogger.LogType.Debug($"[ValidGagAssignerUser]: {tempAssignerName} is not someone you are a pet or slave to, nor are they defined as your Mistress. Thus, Item Auto-Equip being disabled for this gag.");
                 return false;
             }
         }
         else
         {
-            GagSpeak.Log.Debug($"[ValidGagAssignerUser]: GagType {gagName} is being equipped by {tempAssignerName}, but they are not on your whitelist, so we are not doing Item-AutoEquip.");
+            GSLogger.LogType.Debug($"[ValidGagAssignerUser]: GagType {gagName} is being equipped by {tempAssignerName}, but they are not on your whitelist, so we are not doing Item-AutoEquip.");
             return false;
         }
     }

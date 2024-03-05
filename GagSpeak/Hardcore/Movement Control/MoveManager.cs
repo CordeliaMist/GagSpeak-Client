@@ -61,7 +61,7 @@ public class MovementManager : IDisposable
         _manager = manager;
         
         // attempt to set the value safely
-        HcHelpers.Safe(delegate {
+        GenericHelpers.Safe(delegate {
             getRefValue = (GetRefValue)Delegate.CreateDelegate(typeof(GetRefValue), _keyState, 
                             _keyState.GetType().GetMethod("GetRefValue", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(int) }, null));
         });
@@ -69,7 +69,7 @@ public class MovementManager : IDisposable
         // run an async task that will await to apply affects until we are logged in, after which it will fire the restraint effect logic
         Task.Run(async () => {
             if(!IsPlayerLoggedIn()) {
-                GagSpeak.Log.Debug($"[RestraintSetManager] Waiting for login to complete before activating restraint set");
+                GSLogger.LogType.Debug($"[RestraintSetManager] Waiting for login to complete before activating restraint set");
                 while (!_clientState.IsLoggedIn || _clientState.LocalPlayer == null || _clientState.LocalPlayer.Address == IntPtr.Zero) {
                     await Task.Delay(3000); // Wait for 1 second before checking the login status again
                 }
@@ -106,8 +106,7 @@ public class MovementManager : IDisposable
     // this will be invoked when the hardcore manager is iniitalized. Only then will we finish enabling the rest of our information for the movement manager.
     private void OnHardcoreManagerInitialized() {
         // if the hardcore manager is initialized, we should set the movement controller
-        GagSpeak.Log.Debug("======================== [ Completing Movement Manager Initialization ] ========================");
-
+        GSLogger.LogType.Information(" Completing Movement Manager Initialization ");
         // start the framework update cycle
         _framework.Update += framework_Update;
         // start the action manager update cycle
@@ -116,7 +115,7 @@ public class MovementManager : IDisposable
     private unsafe void OnRestraintSetPropertyChanged(object sender, RS_PropertyChangedEventArgs e) {
         // let us go back into non-rp mode once weighted is disabled
         if (e.PropertyType == HardcoreChangeType.Weighty && e.ChangeType == RestraintSetChangeType.Disabled) {
-            GagSpeak.Log.Debug($"[Action Manager]: Letting you run again");
+            GSLogger.LogType.Debug($"[Action Manager]: Letting you run again");
             System.Threading.Tasks.Task.Delay(200);
             Marshal.WriteByte((IntPtr)gameControl, 23163, 0x0);
         }
@@ -141,7 +140,7 @@ public class MovementManager : IDisposable
     private unsafe void OnFrameworkInternal() {
         // make sure we only do checks when we are properly logged in and have a character loaded
         if (_clientState.LocalPlayer?.IsDead ?? false) {
-            GagSpeak.Log.Debug($"[FrameworkUpdate]  Player is dead, returning");
+            GSLogger.LogType.Debug($"[FrameworkUpdate]  Player is dead, returning");
             return;
         }
 
@@ -170,7 +169,7 @@ public class MovementManager : IDisposable
             if(_hcManager._perPlayerConfigs.Any(x => x._forcedFollow) && agentMap != null) {
                 // if the player is not moving...
                 uint IsPlayerMoving = Marshal.ReadByte((IntPtr)agentMap, 23080);
-                //GagSpeak.Log.Debug($"[MovementManager]: IsPlayerMoving: {IsPlayerMoving}");
+                //GSLogger.LogType.Debug($"[MovementManager]: IsPlayerMoving: {IsPlayerMoving}");
                 if(IsPlayerMoving == 1) {
                     // then we need to reset the timer
                     _hcManager.LastMovementTime = DateTimeOffset.Now;
@@ -182,11 +181,10 @@ public class MovementManager : IDisposable
                         var index = _hcManager._perPlayerConfigs.FindIndex(x => x._forcedFollow);
                         // set the forced follow to false
                         _hcManager.SetForcedFollow(index, false);
-                        GagSpeak.Log.Debug($"[MovementManager]: Player has been standing still for too long, forcing them to move again");
+                        GSLogger.LogType.Debug($"[MovementManager]: Player has been standing still for too long, forcing them to move again");
                     }
                 }
             }
-
             // handle blinfolded camera action
             if(_hcManager._perPlayerConfigs.Any(x => x._blindfolded)) {
                 // var localChar = (Character*)(_clientState.LocalPlayer?.Address ?? IntPtr.Zero);
@@ -291,7 +289,7 @@ public class MovementManager : IDisposable
                 _keyState.SetRawValue(x, 0);
                 // set was canceled to true
                 WasCancelled = true;
-                GagSpeak.Log.Verbose($"Cancelling key {x}");
+                GSLogger.LogType.Verbose($"Cancelling key {x}");
             }
         });
     }
@@ -304,7 +302,7 @@ public class MovementManager : IDisposable
             // and restore the state of the virtual keys
             _config.MoveKeys.Each(x => {
                 // the action to execute for each key
-                if (HcHelpers.IsKeyPressed((Keys)x)) {
+                if (GenericHelpers.IsKeyPressed((Keys)x)) {
                     SetKeyState(x, 3);
                 }
             });
