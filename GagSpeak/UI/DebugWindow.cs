@@ -4,16 +4,11 @@ using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
-using OtterGui;
 using GagSpeak.ChatMessages;
 using GagSpeak.Services;
 using GagSpeak.Utility;
 using GagSpeak.Garbler.Translator;
 using GagSpeak.Events;
-using Penumbra.GameData.Enums;
-using System.Linq;
-using Penumbra.GameData.Structs;
-using Penumbra.GameData.Data;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.CharacterData;
@@ -89,6 +84,16 @@ public class DebugWindow : Window //, IDisposable
         DrawRestraintSetOverview();
         DrawAdvancedGarblerInspector();
         DrawPhoneticDebugInformation();
+        // add a button to reset faulty request info's
+        ImGui.Separator();
+        ImGui.Text($"Send Info Name: {_config.sendInfoName}");
+        ImGui.Text($"Accepting Info Requests: {_config.acceptingInfoRequests}");
+        ImGui.Text($"Processing Info Request: {_config.processingInfoRequest}");
+        if (ImGui.Button("Reset Faulty Request Info")) {
+            _config.SetSendInfoName("");
+            _config.SetAcceptInfoRequests(true);
+            _config.SetprocessingInfoRequest(false);
+        }
     }
 
     // basic string function to get the label of title for the window
