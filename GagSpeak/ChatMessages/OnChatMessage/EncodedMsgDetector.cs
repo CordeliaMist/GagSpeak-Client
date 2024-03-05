@@ -85,6 +85,8 @@ public class EncodedMsgDetector
                 return _msgResultLogic.ToyboxMsgResLogic(message, _decodedMessageMediator, isHandled);
             case DecodedMessageType.InfoExchange:
                 return _msgResultLogic.ResLogicInfoRequestMessage(message, _decodedMessageMediator, isHandled);
+            case DecodedMessageType.Hardcore:
+                return _msgResultLogic.HardcoreMsgResLogic(message, _decodedMessageMediator, isHandled);
             default:
                 return false;
         }

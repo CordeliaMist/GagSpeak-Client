@@ -187,6 +187,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
                 ["PendingRequestFromPlayer"] = _pendingRelationRequestFromPlayer.ToString(),
                 ["TimeOfCommitment"] = JsonConvert.SerializeObject(_timeOfCommitment),
                 ["ExtendedLockTimes"] = _grantExtendedLockTimes,
+                ["InHardcoreMode"] = _inHardcoreMode,
                 
                 ["EnableRestraintSets"] = _enableRestraintSets,
                 ["RestraintSetLocking"] = _restraintSetLocking,
@@ -237,6 +238,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         _pendingRelationRequestFromPlayer = Enum.TryParse(jsonObject["PendingRequestFromPlayer"]?.Value<string>(), out RoleLean requestFromPlayer) ? requestFromPlayer : RoleLean.None;
         _timeOfCommitment = JsonConvert.DeserializeObject<DateTimeOffset>(jsonObject["TimeOfCommitment"]?.Value<string>() ?? "");
         _grantExtendedLockTimes = jsonObject["ExtendedLockTimes"]?.Value<bool>() ?? false;
+        _inHardcoreMode = jsonObject["InHardcoreMode"]?.Value<bool>() ?? false;
         
         _enableRestraintSets = jsonObject["EnableRestraintSets"]?.Value<bool>() ?? false;
         _restraintSetLocking = jsonObject["RestraintSetLocking"]?.Value<bool>() ?? false;

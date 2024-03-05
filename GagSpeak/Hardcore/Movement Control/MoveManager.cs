@@ -251,7 +251,7 @@ public class MovementManager : IDisposable
     // handle the prevention of our movenent.
     private void HandleMovementPrevention(bool following, bool sitting, bool immobile) {
         if(sitting) {
-            _MoveController.CompletelyDisableMovement(false, true, true); // set pointer and turn off mouse and disable emotes
+            _MoveController.CompletelyDisableMovement(true, true, false); // set pointer and turn off mouse and disable emotes
         }
         else if(immobile) {
             _MoveController.CompletelyDisableMovement(true, false, true); // set pointer but dont turn off mouse

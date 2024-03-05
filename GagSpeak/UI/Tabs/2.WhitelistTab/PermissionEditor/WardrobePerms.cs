@@ -202,6 +202,7 @@ public partial class WhitelistPanel {
                     if (ImGui.Combo("##storedRestraintData", ref currentRestraintIndex, restraintData, restraintData.Length)) {
                         // If an item is selected from the dropdown, update the restraint set name field
                         _restraintSetToEnable = restraintData[currentRestraintIndex];
+                        _resrtaintSetToUnlock = restraintData[currentRestraintIndex];
                         // update the index to display
                         _activeStoredSetListIdx = currentRestraintIndex;
                     }

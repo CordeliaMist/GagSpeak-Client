@@ -186,6 +186,13 @@ public partial class CharacterHandler
         _saveService.QueueSave(this);
     }
 
+    public void SetWhitelistInHardcoreMode(int index, bool value) {
+        if(whitelistChars[index]._inHardcoreMode != value) {
+            whitelistChars[index]._inHardcoreMode = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
     // import list stuff
     public void StoreRestraintListForPlayer(int index, List<string> restraintList) {
         whitelistChars[index]._storedRestraintSets = restraintList;

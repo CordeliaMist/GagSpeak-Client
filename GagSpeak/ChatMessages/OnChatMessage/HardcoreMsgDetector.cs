@@ -57,30 +57,35 @@ public class HardcoreMsgDetector
                     int index = _characterHandler.GetWhitelistIndex(name);
                     // toggle that players forcedfollow to true
                     _characterHandler.whitelistChars[index]._forcedFollow = true;
+                    _characterHandler.Save();
                     return false; // return false to avoid processing anymore logic
                 }
                 // sit start
                 if(chatmessage.TextValue.ToLowerInvariant().Contains($"{name.Split(' ')[0].ToLowerInvariant()}, sit.")) {
                     int index = _characterHandler.GetWhitelistIndex(name);
                     _characterHandler.whitelistChars[index]._forcedSit = true;
+                    _characterHandler.Save();
                     return false;
                 }
                 // set end
-                if(chatmessage.TextValue.ToLowerInvariant().Contains($"{name.Split(' ')[0].ToLowerInvariant()}, stay here until i return.")) {
+                if(chatmessage.TextValue.ToLowerInvariant().Contains($"you may stand now {name.Split(' ')[0].ToLowerInvariant()}.")) {
                     int index = _characterHandler.GetWhitelistIndex(name);
-                    _characterHandler.whitelistChars[index]._forcedToStay = false;
+                    _characterHandler.whitelistChars[index]._forcedSit = false;
+                    _characterHandler.Save();
                     return false;
                 }
                 // stay here start
-                if(chatmessage.TextValue.ToLowerInvariant().Contains($"you may stand now {name.Split(' ')[0].ToLowerInvariant()}.")) {
+                if(chatmessage.TextValue.ToLowerInvariant().Contains($"{name.Split(' ')[0].ToLowerInvariant()}, stay here until i return.")) {
                     int index = _characterHandler.GetWhitelistIndex(name);
                     _characterHandler.whitelistChars[index]._forcedToStay = true;
+                    _characterHandler.Save();
                     return false;
                 }
                 // stay here end
                 if(chatmessage.TextValue.ToLowerInvariant().Contains($"thank you for waiting, {name.Split(' ')[0].ToLowerInvariant()}.")) {
                     int index = _characterHandler.GetWhitelistIndex(name);
                     _characterHandler.whitelistChars[index]._forcedToStay = false;
+                    _characterHandler.Save();
                     return false;
                 }
             }

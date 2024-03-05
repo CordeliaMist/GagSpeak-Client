@@ -77,7 +77,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.Center("HOVER ME");
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip(
                 $"To Enable lock away command, say \"{_tempWhitelistChar._name.Split(' ')[0]}, stay here until I return.\"\n"+
-                $"To Disable, say \"thank you for waiting, {_tempWhitelistChar._name.Split(' ')[0]}\"");
+                $"To Disable, say \"thank you for waiting, {_tempWhitelistChar._name.Split(' ')[0]}.\"");
             }
 
             // the blindfold order

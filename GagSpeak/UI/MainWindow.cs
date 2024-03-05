@@ -136,7 +136,7 @@ public class MainWindow : Window
     }
 
     // basic string function to get the label of title for the window
-    private static string GetLabel() => "GagSpeak###GagSpeakMainWindow";
+    private static string GetLabel() => $"GagSpeak v{GagSpeak.Version}###GagSpeakMainWindow";
 }
 
 /*

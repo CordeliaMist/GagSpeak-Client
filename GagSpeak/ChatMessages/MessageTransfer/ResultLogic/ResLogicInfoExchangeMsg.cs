@@ -150,6 +150,7 @@ public partial class ResultLogic {
             _characterHandler.SetWhitelistHardcoreSettings(Idx, decodedMessageMediator.AllowForcedFollow, decodedMessageMediator.ForcedFollow,
                 decodedMessageMediator.AllowForcedSit, decodedMessageMediator.ForcedSit, decodedMessageMediator.AllowForcedToStay,
                 decodedMessageMediator.ForcedToStay, decodedMessageMediator.AllowBlindfold, decodedMessageMediator.Blindfolded);
+            _characterHandler.SetWhitelistInHardcoreMode(Idx, decodedMessageMediator.inHardcoreMode);
             GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 4 message");
             _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Recieved [{senderName}]'s Information details(4/4)").AddItalicsOff().BuiltString);
             // we have finished revcieving info from this person, make sure to clear the sendInfoName

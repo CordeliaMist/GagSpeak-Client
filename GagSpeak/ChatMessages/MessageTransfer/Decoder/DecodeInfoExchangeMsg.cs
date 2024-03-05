@@ -232,7 +232,8 @@ public partial class MessageDecoder {
                 GagSpeak.Log.Debug($"[Message Decoder]: share info4: (Type) {decodedMessageMediator.encodedCmdType} || (ToggleToyState) {decodedMessageMediator.isChangingToyStateAllowed} || "+
                 $"(CanControlIntensity) {decodedMessageMediator.isIntensityControlAllowed} || (IntensityLevel) {decodedMessageMediator.intensityLevel} || "+
                 $"(ToyPatternState) {decodedMessageMediator.isUsingPatternsAllowed} || (ToyboxLockState) {decodedMessageMediator.isToyboxLockingAllowed}" 
-                + $" || (ToyActiveState) {decodedMessageMediator.toyState}");
+                + $" || (ToyActiveState) {decodedMessageMediator.toyState}" + $" || (ToyStepCount) {decodedMessageMediator.toyStepCount}" + $" || (HardcoreSettings) "+
+                $"{match.Groups["hardcoreSettings"].Value.Trim()}" + $" || (InHardcore) {decodedMessageMediator.inHardcoreMode}");
             } else {
                 GagSpeak.Log.Error($"[Message Decoder]: share info4: Failed to decode message: {recievedMessage}");
             }
