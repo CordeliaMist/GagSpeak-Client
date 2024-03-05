@@ -57,14 +57,17 @@ public partial class HardcoreManager : ISavable, IDisposable
     [JsonIgnore]
     private readonly RS_PropertyChangedEvent _rsPropertyChanged;
     [JsonIgnore]
+    private readonly GagSpeakGlamourEvent _glamourEvent;
+    [JsonIgnore]
     private readonly InitializationManager _manager;
 #endregion Ignores
 
     #pragma warning disable CS8618
-    public HardcoreManager(SaveService saveService, RS_ListChanged restraintSetListChanged,
+    public HardcoreManager(SaveService saveService, RS_ListChanged restraintSetListChanged, GagSpeakGlamourEvent glamourEvent,
     BlindfoldWindow blindfoldWindow, InitializationManager manager, RS_PropertyChangedEvent propertyChanged,
     CharacterHandler characterHandler, RestraintSetManager restraintSetManager, RS_ToggleEvent rsToggleEvent) {
         _saveService = saveService;
+        _glamourEvent = glamourEvent;
         _characterHandler = characterHandler;
         _blindfoldWindow = blindfoldWindow;
         _rsPropertyChanged = propertyChanged;

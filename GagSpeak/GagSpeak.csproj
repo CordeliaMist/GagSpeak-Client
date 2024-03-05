@@ -6,7 +6,7 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <Copyright>Copyright © 2023</Copyright>
     <LangVersion>latest</LangVersion>
-    <Version>2.8.2.3</Version>
+    <Version>2.8.3.0</Version>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
@@ -76,6 +76,10 @@
       </Reference>
       <Reference Include="PInvoke.User32">
         <HintPath>$(DalamudLibPath)PInvoke.User32.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+      <Reference Include="Serilog">
+        <HintPath>$(DalamudLibPath)Serilog.dll</HintPath>
         <Private>False</Private>
       </Reference>
   </ItemGroup>

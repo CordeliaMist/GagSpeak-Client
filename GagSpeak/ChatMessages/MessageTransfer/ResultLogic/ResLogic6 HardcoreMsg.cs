@@ -12,7 +12,7 @@ public partial class ResultLogic {
             // if you have hardcore mode enabled
             if(_config.hardcoreMode) {
                 // toggle the blindfold state
-                _hardcoreManager.SetBlindfolded(index, !_hardcoreManager._perPlayerConfigs[index]._blindfolded);
+                _hardcoreManager.SetBlindfolded(index, !_hardcoreManager._perPlayerConfigs[index]._blindfolded, playerName);
                 GagSpeak.Log.Debug($"[Message ResLogic]: {playerName} has toggled your blindfold, enjoy the darkness~");
                 return true;
             }

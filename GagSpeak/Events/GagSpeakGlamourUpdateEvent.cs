@@ -17,6 +17,9 @@ public enum UpdateType {
 
     /// <summary> used when a players gag selection was changed and should be udpated </summary>
     UpdateGags,
+
+    /// <summary> used when the blindfold is equipped </summary>
+    BlindfoldEquipped,
     
     /// <summary> used when updating all characters information in general </summary>
     RefreshAll,

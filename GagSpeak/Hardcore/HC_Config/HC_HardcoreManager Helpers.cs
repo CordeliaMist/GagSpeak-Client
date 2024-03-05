@@ -200,14 +200,14 @@ public partial class HardcoreManager
         Save();
     }
 
-    public void SetBlindfolded(int playerIdx, bool blindfolded) {
+    public void SetBlindfolded(int playerIdx, bool blindfolded, string assignerName = "") {
         _perPlayerConfigs[playerIdx].SetBlindfolded(blindfolded);
         _saveService.QueueSave(this);
         // apply the blindfold logic
-        HandleBlindfoldLogic(playerIdx, blindfolded);
+        HandleBlindfoldLogic(playerIdx, blindfolded, assignerName);
     }
 
-    public async void HandleBlindfoldLogic(int playerIdx, bool newState) {
+    public async void HandleBlindfoldLogic(int playerIdx, bool newState, string assignerName) {
         // if the idx is not -1, process logic
         if(playerIdx != -1) {
             // toggle our window based on conditions
@@ -220,10 +220,15 @@ public partial class HardcoreManager
             if(newState) {
                 // go in right away
                 DoCamerVoodoo(playerIdx, newState);
+                // apply the blindfold
+                _glamourEvent.Invoke(UpdateType.BlindfoldEquipped, "", assignerName);
+                
             } else {
                 // wait a bit before doing the camera voodoo
                 await Task.Delay(2000);
                 DoCamerVoodoo(playerIdx, newState);
+                // call a refresh all
+                _glamourEvent.Invoke(UpdateType.RefreshAll, "", assignerName);
             }
         }
     }

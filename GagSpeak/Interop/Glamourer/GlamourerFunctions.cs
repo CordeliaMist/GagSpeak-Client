@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using GagSpeak.Services;
+using GagSpeak.Hardcore;
 
 namespace GagSpeak.Interop;
 
@@ -27,6 +28,7 @@ public class GlamourerFunctions : IDisposable
     private readonly    GagSpeakConfig                  _config;                // the plugin interface
     private readonly    GagStorageManager               _gagStorageManager;     // the gag storage manager
     private readonly    RestraintSetManager             _restraintSetManager;   // the restraint set manager
+    private readonly    HardcoreManager                 _hardcoreManager;       // the hardcore manager
     private readonly    CharacterHandler                _characterHandler;      // the character handler for managing player and whitelist info
     private readonly    GlamourerService                _Interop;               // the glamourer interop class
     private readonly    IFramework                      _framework;             // the framework for running tasks on the main thread
@@ -37,11 +39,12 @@ public class GlamourerFunctions : IDisposable
 
     public GlamourerFunctions(GagSpeakConfig gagSpeakConfig, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager,
     CharacterHandler characterHandler, GlamourerService GlamourerService, IFramework framework, GagSpeakGlamourEvent gagSpeakGlamourEvent,
-    OnFrameworkService onFrameworkService) {
+    OnFrameworkService onFrameworkService, HardcoreManager hardcoreManager) {
         // initialize the glamourer interop class
         _config = gagSpeakConfig;
         _gagStorageManager = gagStorageManager;
         _restraintSetManager = restraintSetManager;
+        _hardcoreManager = hardcoreManager;
         _characterHandler = characterHandler;
         _Interop = GlamourerService;
         _framework = framework;
@@ -168,6 +171,7 @@ public class GlamourerFunctions : IDisposable
                         await ApplyGagItemsToCachedCharacterData();
                     }
                 }
+                // condition 3 --> it was an equip gag type event, we should take the gag type, and replace it with the item
                 if(e.UpdateType == UpdateType.GagEquipped && _characterHandler.playerChar._allowItemAutoEquip) {
                     GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Gag Equipped");
                     if(e.GagType != "None") {
@@ -221,6 +225,26 @@ public class GlamourerFunctions : IDisposable
                 // condition 7 --> it was a refresh all event, we should reapply all the gags and restraint sets
                 if(e.UpdateType == UpdateType.RefreshAll || e.UpdateType == UpdateType.ZoneChange || e.UpdateType == UpdateType.Login) {
                     GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Refresh All // Zone Change // Login // Job Change");
+                    // revert based on our setting
+                    await Task.Run(async() => {
+                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToAutomationOnly)
+                        {
+                            // if we want to just revert to automation, then do just that.
+                            await _Interop.GlamourerRevertCharacterToAutomation(_onFrameworkService._address);
+                        }
+                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToGameOnly)
+                        {
+                            // if we want to always revert to game, then do just that
+                            await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
+                        }
+                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToGameThenAutomation)
+                        {
+                            // finally, if we want to revert to the game, then to any automation for this class after, then do just that
+                            await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
+                            await _Interop.GlamourerRevertCharacterToAutomation(_onFrameworkService._address);
+                        }
+                    });
+                    // then apply all the gags and restraint sets
                     await Task.Run(() => _onFrameworkService.RunOnFrameworkThread(UpdateCachedCharacterData));
                 }
                 // condition 8 --> it was a safeword event, we should revert to the game, then to game and disable toys
@@ -229,8 +253,21 @@ public class GlamourerFunctions : IDisposable
                     await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
                     // disable all toys
                 }
+                // condition 9 -- > it was a blindfold equipped event, we should apply the blindfold
+                if(e.UpdateType == UpdateType.BlindfoldEquipped) {
+                    GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Blindfold Equipped");
+                    var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._allowBlindfold == true);
+                    GagSpeak.Log.Debug($"[GlamourEventFired]: Found index {idx} for blindfold");
+                    await _Interop.SetItemToCharacterAsync(
+                        _onFrameworkService._address,
+                        Convert.ToByte(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot),
+                        _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
+                        _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameStain.Id, // The _drawData._gameStain.Id
+                        0
+                    );
+                }
             } catch (Exception ex) {
-                GagSpeak.Log.Error($"[GlamourEventFired]: Error processing glamour event: {ex.Message}");
+                GagSpeak.Log.Error($"[GlamourEventFired]: Error processing glamour event: {ex}");
             } finally {
                 _gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting = false;
                 finishedDrawingGlamChange = true;

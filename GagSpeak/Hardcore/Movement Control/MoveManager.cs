@@ -15,8 +15,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using GagSpeak.Gagsandlocks;
+using GagSpeak.CharacterData;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
 namespace GagSpeak.Hardcore.Movement;
 public class MovementManager : IDisposable
@@ -27,6 +28,7 @@ public class MovementManager : IDisposable
     private readonly    IClientState            _clientState;
     private readonly    IFramework              _framework;
     private readonly    IKeyState               _keyState;
+    private readonly    CharacterHandler        _charaManager;
     private readonly    RS_PropertyChangedEvent _rsPropertyChangedEvent;
     private readonly    InitializationManager    _manager;
     // for having the movement memory -- was originally private static, revert back if it causes issues.
@@ -45,9 +47,11 @@ public class MovementManager : IDisposable
     public MovementManager(ICondition condition, IKeyState keyState,
     MoveController MoveController, HardcoreManager hardcoreManager,
     RS_PropertyChangedEvent RS_PropertyChangedEvent, IFramework framework, 
-    IClientState clientState, GagSpeakConfig config, InitializationManager manager) {
+    IClientState clientState, GagSpeakConfig config, InitializationManager manager,
+    CharacterHandler characterManager) {
         _config = config;
         _condition = condition;
+        _charaManager = characterManager;
         _clientState = clientState;
         _MoveController = MoveController;
         _framework = framework;
@@ -76,7 +80,7 @@ public class MovementManager : IDisposable
             }
             idx = _hcManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
             if(idx != -1) {
-                _hcManager.HandleBlindfoldLogic(idx, _hcManager._perPlayerConfigs[idx]._blindfolded);
+                _hcManager.HandleBlindfoldLogic(idx, _hcManager._perPlayerConfigs[idx]._blindfolded, _charaManager.whitelistChars[idx]._name);
             }
         });
 
