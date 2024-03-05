@@ -11,6 +11,7 @@ using GagSpeak.Events;
 using Dalamud.Plugin.Services;
 using System.Threading.Tasks;
 using GagSpeak.Interop.Penumbra;
+using GagSpeak.Hardcore;
 
 namespace GagSpeak.Wardrobe;
 
@@ -30,14 +31,17 @@ public class RestraintSetManager : ISavable, IDisposable
     [JsonIgnore]
     private readonly RS_ToggleEvent _RS_ToggleEvent;
     [JsonIgnore]
+    private readonly HotbarLocker _hotbarLocker;
+    [JsonIgnore]
     private readonly InitializationManager _manager;
     
     public RestraintSetManager(SaveService saveService, GagSpeakGlamourEvent gagSpeakGlamourEvent,
     InitializationManager initializationManager, RS_ListChanged restraintSetListChanged,
-    RS_ToggleEvent RS_ToggleEvent, IClientState clientState) {
+    RS_ToggleEvent RS_ToggleEvent, IClientState clientState, HotbarLocker hotbarLocker) {
         _manager = initializationManager;
         _saveService = saveService;
         _glamourEvent = gagSpeakGlamourEvent;
+        _hotbarLocker = hotbarLocker;
         _restraintSetListChanged = restraintSetListChanged;
         _RS_ToggleEvent = RS_ToggleEvent;
         _clientState = clientState;
@@ -84,6 +88,8 @@ public class RestraintSetManager : ISavable, IDisposable
                 }
                 // once we are logged in, delay for some time before load so we let glamourer load any automation, so that concurrency issues dont occur
                 await Task.Delay(4000);
+                // set the hotbar lock to its current state
+                _hotbarLocker.SetHotbarStateToCurrentState();
             }
             // do update checks for active sets
             if (_restraintSets.Any(set => set._enabled)) {

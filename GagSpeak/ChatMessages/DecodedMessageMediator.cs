@@ -11,7 +11,8 @@ public enum DecodedMessageType {
     Wardrobe = 3,
     Puppeteer = 4,
     Toybox = 5,
-    InfoExchange = 6
+    InfoExchange = 6,
+    Hardcore = 7
 }
 
 public class DecodedMessageMediator
@@ -26,6 +27,7 @@ public class DecodedMessageMediator
     public string theirDynamicLean { get; set; }        // used for transfering both leans in info exchange
     public bool safewordUsed { get; set; }              // if the safeword is used or not
     public bool extendedLockTimes { get; set; }         // if they allow extended lock times [ TIER 2 ]
+    public bool inHardcoreMode { get; set; }            // if they are in hardcore mode [ TIER 0 ]
     public bool directChatGarblerActive { get; set; }   // if the direct chat garbler is active [ TIER 4]
     public bool directChatGarblerLocked { get; set; }   // if the direct chat garbler is locked [ TIER 3]
     /////////////////////////// GAG AND LOCK INFO ///////////////////////////
@@ -58,6 +60,16 @@ public class DecodedMessageMediator
     public bool isUsingPatternsAllowed { get; set; }    // does messageSender allow you to execute storedToyPatterns? [ TIER 4 ]
     public string patternNameToExecute { get; set; }    // name of pattern to execute (not given in infoRequests) (STRING)
     public bool isToyboxLockingAllowed { get; set; }    // does messageSender allow you to lock the toybox UI? [ TIER 3 ]
+    /////////////////////////// HARDCORE INFO ///////////////////////////
+    public bool AllowForcedFollow { get; set; }         // does messageSender allow you to force follow them? 
+    public bool ForcedFollow { get; set; }              // is messageSender currently forced to follow you?
+    public bool AllowForcedSit { get; set; }            // does messageSender allow you to force sit them?
+    public bool ForcedSit { get; set; }                 // is messageSender currently forced to sit?
+    public bool AllowForcedToStay { get; set; }         // does messageSender allow you to force stay them?
+    public bool ForcedToStay { get; set; }              // is messageSender currently forced to stay?
+    public bool AllowBlindfold { get; set; }            // does messageSender allow you to blindfold them?
+    public bool Blindfolded { get; set; }               // is messageSender currently blindfolded?
+
 #endregion Attributes
     public DecodedMessageMediator() {
         // sets all to default values
@@ -87,6 +99,7 @@ public class DecodedMessageMediator
         dynamicLean = "";
         safewordUsed = false;
         extendedLockTimes = false;
+        inHardcoreMode = false;
         directChatGarblerActive = false;
         directChatGarblerLocked = false;
 
@@ -119,6 +132,15 @@ public class DecodedMessageMediator
         isUsingPatternsAllowed = false;
         patternNameToExecute = "";
         isToyboxLockingAllowed = false;
+
+        AllowForcedFollow = false;
+        ForcedFollow = false;
+        AllowForcedSit = false;
+        ForcedSit = false;
+        AllowForcedToStay = false;
+        ForcedToStay = false;
+        AllowBlindfold = false;
+        Blindfolded = false;
     }
 }
 #pragma warning restore CS8618

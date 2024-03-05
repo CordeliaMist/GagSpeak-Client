@@ -34,6 +34,7 @@ using GagSpeak.Hardcore.Actions;
 using GagSpeak.Utility;
 using GagSpeak.Hardcore.BaseListener;
 using GagSpeak.Interop.Penumbra;
+using GagSpeak.Utils;
 
 namespace GagSpeak.Services;
 
@@ -220,6 +221,7 @@ public static class ServiceHandler
             .AddSingleton<BlindfoldWindow>()
             
             .AddSingleton<PenumbraChangedItemTooltip>()
+            .AddSingleton<AtkHelpers>()
             .AddSingleton<IconManager>();
 
     /// <summary> Classes to add to the service collection from the [Wardrobe] folder </summary>

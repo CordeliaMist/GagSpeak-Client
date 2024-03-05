@@ -61,7 +61,7 @@ public class HardcoreSelector
             .Push(ImGuiStyleVar.FrameRounding, 0);
         var buttonWidth = new Vector2(width, ImGui.GetFrameHeight());
         var modeToSwitchTo = GameConfig.UiControl.GetBool("MoveMode") ? MovementMode.Standard : MovementMode.Legacy;
-        if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Copy.ToIconString(), buttonWidth,
+        if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Wrench.ToIconString(), buttonWidth,
         $"Toggle Movement Mode to {modeToSwitchTo}\n(for fixing any desync issues, report this if you have any)", false, true))
         {
             if(modeToSwitchTo == MovementMode.Standard) {

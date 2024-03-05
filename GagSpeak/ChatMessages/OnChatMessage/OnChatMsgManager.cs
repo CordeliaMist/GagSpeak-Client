@@ -165,7 +165,7 @@ public class OnChatMsgManager
         }
 
         // check for incoming verbal hardcore features (future)
-        if(senderName != null  && _config.AdminMode && isHandled == false && _characterHandler.IsPlayerInWhitelist(senderName))
+        if(senderName != null && isHandled == false && (_characterHandler.IsPlayerInWhitelist(senderName) || senderName == _clientState.LocalPlayer?.Name.TextValue))
         {
             if(_hardcoreMsgDetector.IsValidMsgTrigger(senderName, chatmessage, type, out SeString messageToSend)) {
                 // if we are in a valid chatchannel, then send it

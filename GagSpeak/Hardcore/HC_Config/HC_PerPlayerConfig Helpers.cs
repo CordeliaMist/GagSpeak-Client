@@ -1,10 +1,3 @@
-using System;
-using GagSpeak.Services;
-using Newtonsoft.Json.Linq;
-using System.IO;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Linq;
 using GagSpeak.Events;
 using GagSpeak.Wardrobe;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
@@ -34,19 +27,6 @@ public partial class HC_PerPlayerConfig
         }
     }
 #region Manager Methods
-    public void ResetEverythingDueToSafeword() {
-        _allowForcedSit = false;
-        _forcedSit = false;
-        _allowForcedFollow = false;
-        _forcedFollow = false;
-        _allowForcedToStay = false;
-        _forcedToStay = false;
-        _allowBlindfold = false;
-        _blindfolded = false;
-        // invoke safeword
-        _rsPropertyChanged.Invoke(HardcoreChangeType.Safeword, RestraintSetChangeType.Disabled);
-    }
-
     // run integrity check to make sure the size of _rsProperties is the same as the restraint set size
     public void IntegrityCheck(int setIndex) {
         if(_rsProperties.Count < setIndex) {

@@ -253,7 +253,7 @@ public unsafe class GsActionManager : IDisposable
 #endregion SlotManagment
 #region EventHandlers
     private void OnMovementManagerInitialized() {
-        GagSpeak.Log.Debug("======================== [ Completing Action Manager Initialization ] ========================");
+        GagSpeak.Log.Debug("======================== [ Completing Action Manager Initialization ] ========================");      
         // if we are ready to initialize the actions, we should update our job list
         UpdateJobList();
         // see if we should enable the sets incase we load this prior to the restraint set manager loading.
@@ -319,7 +319,7 @@ public unsafe class GsActionManager : IDisposable
         &&  _clientState.LocalPlayer != null
         && _clientState.LocalPlayer.Address != IntPtr.Zero
         && CurrentJobBannedActions != null
-        && _config.AdminMode)
+        && _config.hardcoreMode)
         {
             // if the class job is different than the one stored, then we have a class job change (CRITICAL TO UPDATING PROPERLY)
             if (_clientState.LocalPlayer.ClassJob.Id != _onFrameworkService._classJobId) {
@@ -344,7 +344,7 @@ public unsafe class GsActionManager : IDisposable
         try
         {
             if (_clientState.IsLoggedIn &&  _clientState.LocalPlayer != null && _clientState.LocalPlayer.Address != IntPtr.Zero
-            && CurrentJobBannedActions != null && _config.AdminMode)
+            && CurrentJobBannedActions != null && _config.hardcoreMode)
             {
                 // if we are in hardcore mode, and we have an active set enabled, and we have any property enabled
                 if(_hcManager.ActiveHCsetIdx != -1 &&

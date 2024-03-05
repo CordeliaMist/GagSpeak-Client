@@ -42,6 +42,21 @@ public partial class WhitelistPanel {
             if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("ViewOnly");
+
+            // for hardcore mode check
+            ImGuiUtil.DrawFrameColumn($"In Hardcore Mode:");
+            if(ImGui.IsItemHovered()) { var tt = tooltips["hardcoreModeTT"](); ImGui.SetTooltip($"{tt}"); }
+            ImGui.TableNextColumn();
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
+                ImGuiUtil.Center((_tempWhitelistChar._inHardcoreMode ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+            }
+            if(ImGui.IsItemHovered()) { var tt = tooltips["CurrentStateTT"](); ImGui.SetTooltip($"{tt}"); }
+            ImGui.TableNextColumn();
+            ImGuiUtil.Center("0");
+            if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
+            ImGui.TableNextColumn();
+            ImGuiUtil.Center("ViewOnly");
+
             // draw out the extended lock times
             ImGuiUtil.DrawFrameColumn($"Extended Lock Times:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["ExtendedLockTimesTT"](); ImGui.SetTooltip($"{tt}"); }

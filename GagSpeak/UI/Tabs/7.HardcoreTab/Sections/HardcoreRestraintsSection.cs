@@ -15,6 +15,7 @@ using Penumbra.GameData.Enums;
 namespace GagSpeak.UI.Tabs.HardcoreTab;
 public class HC_RestraintSetProperties
 {
+    private readonly    GagSpeakConfig          _config;
     private readonly    CharacterHandler        _charHandler;
     private readonly    HardcoreManager         _hcManager;
     private readonly    RestraintSetManager     _restraintSetManager;
@@ -27,7 +28,9 @@ public class HC_RestraintSetProperties
     private             string?                 _tempOffsetVal;
     private             int                     _curSetIdx;
     public HC_RestraintSetProperties(CharacterHandler characterHandler, RestraintSetManager restraintSetManager,
-    RestraintSetSelector restraintSetSelector, FontService fontService, HardcoreManager hardcoreManager, TextureService textures) {
+    RestraintSetSelector restraintSetSelector, FontService fontService, HardcoreManager hardcoreManager,
+    TextureService textures, GagSpeakConfig config) {
+        _config = config;
         _charHandler = characterHandler;
         _restraintSetManager = restraintSetManager;
         _restraintSetSelector = restraintSetSelector;
@@ -42,46 +45,51 @@ public class HC_RestraintSetProperties
 
     }
     public void Draw() {
-        // grab a temp var for the selectedIdx of the restraint set
-        if(_curSetIdx != _restraintSetManager._selectedIdx) {
-            _curSetIdx = _restraintSetManager._selectedIdx;        
-        };
-        // draw out the details
-        using var child = ImRaii.Child("##HC_RestraintSetPropertiesChild", new Vector2(ImGui.GetContentRegionAvail().X, -1), true, ImGuiWindowFlags.NoScrollbar);
-        if (!child)
-            return;
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
-        ImGui.PushFont(_fontService.UidFont);
-        var name = $"{_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]}";
-        ImGuiUtil.Center($"Restraint Set Properties for {name}");
-        ImGui.PopFont();
-        using (var table = ImRaii.Table("restraintSetPropertiesTable", 2, ImGuiTableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGuiHelpers.GlobalScale*235f))) {
-            if (!table) { return; }
+        if (!_config.hardcoreMode) { ImGui.BeginDisabled(); }
+        try {
+            // grab a temp var for the selectedIdx of the restraint set
+            if(_curSetIdx != _restraintSetManager._selectedIdx) {
+                _curSetIdx = _restraintSetManager._selectedIdx;        
+            };
+            // draw out the details
+            using var child = ImRaii.Child("##HC_RestraintSetPropertiesChild", new Vector2(ImGui.GetContentRegionAvail().X, -1), true, ImGuiWindowFlags.NoScrollbar);
+            if (!child)
+                return;
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
+            ImGui.PushFont(_fontService.UidFont);
+            var name = $"{_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]}";
+            ImGuiUtil.Center($"Restraint Set Properties for {name}");
+            ImGui.PopFont();
+            using (var table = ImRaii.Table("restraintSetPropertiesTable", 2, ImGuiTableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGuiHelpers.GlobalScale*235f))) {
+                if (!table) { return; }
 
-            ImGui.TableSetupColumn($" If Set is Enabled by {name}", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale*235f);
-            ImGui.TableSetupColumn("Set Preview", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn($" If Set is Enabled by {name}", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale*235f);
+                ImGui.TableSetupColumn("Set Preview", ImGuiTableColumnFlags.WidthStretch);
 
-            ImGui.TableNextRow();
-            ImGui.TableNextColumn();
+                ImGui.TableNextRow();
+                ImGui.TableNextColumn();
+                // draw the header label
+                DrawHeaderButton($"If this set is enabled by {name}", 
+                "The Properties that you apply below this list are dependant on the set selected from this list.\n"+
+                "They are ALSO dependant on the user selected from the whitelist.", 
+                ImGuiHelpers.GlobalScale*235f);
+                // set up the list
+                var _defaultItemSpacing = ImGui.GetStyle().ItemSpacing;
+                _restraintSetSelector.DrawRestraintSetSelector(ImGui.GetContentRegionAvail().X, ImGuiHelpers.GlobalScale*235f - ImGui.GetFrameHeightWithSpacing(), _defaultItemSpacing);
+                // draw the currently selected set preview
+                ImGui.TableNextColumn();
+                // draw the header label
+                DrawHeaderButton($"Visual Reference", "A visual display reference of the restraint set you have configured in the wardrobe");
+                // draw out the restraint set options
+                DrawRestraintSetPreview();
+            }
             // draw the header label
-            DrawHeaderButton($"If this set is enabled by {name}", 
-            "The Properties that you apply below this list are dependant on the set selected from this list.\n"+
-            "They are ALSO dependant on the user selected from the whitelist.", 
-            ImGuiHelpers.GlobalScale*235f);
-            // set up the list
-            var _defaultItemSpacing = ImGui.GetStyle().ItemSpacing;
-            _restraintSetSelector.DrawRestraintSetSelector(ImGui.GetContentRegionAvail().X, ImGuiHelpers.GlobalScale*235f - ImGui.GetFrameHeightWithSpacing(), _defaultItemSpacing);
-            // draw the currently selected set preview
-            ImGui.TableNextColumn();
-            // draw the header label
-            DrawHeaderButton($"Visual Reference", "A visual display reference of the restraint set you have configured in the wardrobe");
-            // draw out the restraint set options
-            DrawRestraintSetPreview();
+            DrawHeaderButton($"Apply the following properties to set [{_restraintSetManager._restraintSets[_curSetIdx]._name}]", 
+            $"If {name} enables this set onto you, any property you have selected here will be applied to you");
+            DrawRestraintSetProperties();
+        } finally {
+            if (!_config.hardcoreMode) { ImGui.EndDisabled(); }
         }
-        // draw the header label
-        DrawHeaderButton($"Apply the following properties to set [{_restraintSetManager._restraintSets[_curSetIdx]._name}]", 
-        $"If {name} enables this set onto you, any property you have selected here will be applied to you");
-        DrawRestraintSetProperties();
     }
 
     private void DrawHeaderButton(string HeaderText, string descirption = "", float width = -1f) {

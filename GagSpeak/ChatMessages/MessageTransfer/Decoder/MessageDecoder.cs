@@ -41,6 +41,12 @@ public partial class MessageDecoder {
             return;
         }
 
+        // if the type is hardcore then process it here
+        if(decodedMessageMediator.msgType == DecodedMessageType.Hardcore) {
+            DecodeHardcoreMsg(recievedMessage, decodedMessageMediator);
+            return;
+        }
+
         // we should never reach here, but if we do, then return the empty list
         return;
     }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
@@ -7,7 +9,6 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
 using GagSpeak.Hardcore;
-using GagSpeak.ToyboxandPuppeteer;
 
 namespace GagSpeak.ChatMessages;
 /// <summary>
@@ -16,6 +17,7 @@ namespace GagSpeak.ChatMessages;
 public class HardcoreMsgDetector
 {
     public FFXIVClientStructs.FFXIV.Client.Game.Control.EmoteController EmoteController;
+    private readonly GagSpeakConfig     _config;
     private readonly HardcoreManager    _hcManager; // hardcore manager
     private readonly CharacterHandler   _characterHandler; // character handler
     private readonly IClientState       _client; // client state
@@ -24,8 +26,9 @@ public class HardcoreMsgDetector
     //private readonly HardcoreMediator _hardcoreMediator; // hardcore mediator
     
     public HardcoreMsgDetector(HardcoreManager hardcoreManager, CharacterHandler characterHandler,
-    IClientState clientState, ITargetManager targetManager, IObjectTable objectTable) {
+    IClientState clientState, ITargetManager targetManager, IObjectTable objectTable, GagSpeakConfig config) {
         _hcManager = hardcoreManager;
+        _config = config;
         _characterHandler = characterHandler;
         _client = clientState;
         _targetManager = targetManager;
@@ -36,6 +39,59 @@ public class HardcoreMsgDetector
     public bool IsValidMsgTrigger(string senderName, SeString chatmessage, XivChatType type, out SeString messageToSend) {
         // create the string that will be sent out
         messageToSend = new SeString();
+        
+        // before we process anything, let's first see if the message was from us
+        if(senderName == _client.LocalPlayer!.Name.TextValue) {
+            // if it was, try to parse out the chatmessage to see if it contains any of the hardcore commands such as "{name}, follow me." or "{name}, sit."
+            // or "{name}, stay here until i return." or "you may stand now {name}." or "thank you for waiting, {name}."
+            // if any of these are found, then we should extract the name value and perform logic for it
+            List<string> names = _characterHandler.whitelistChars
+                .Where(x => x._inHardcoreMode)
+                .Select(x => x._name)
+                .ToList();
+            // detect if the message contains any of the hardcore commands
+            foreach (string name in names) {
+                // follow me
+                if(chatmessage.TextValue.ToLowerInvariant().Contains($"{name.Split(' ')[0].ToLowerInvariant()}, follow me.")) {
+                    // get the index of the name
+                    int index = _characterHandler.GetWhitelistIndex(name);
+                    // toggle that players forcedfollow to true
+                    _characterHandler.whitelistChars[index]._forcedFollow = true;
+                    return false; // return false to avoid processing anymore logic
+                }
+                // sit start
+                if(chatmessage.TextValue.ToLowerInvariant().Contains($"{name.Split(' ')[0].ToLowerInvariant()}, sit.")) {
+                    int index = _characterHandler.GetWhitelistIndex(name);
+                    _characterHandler.whitelistChars[index]._forcedSit = true;
+                    return false;
+                }
+                // set end
+                if(chatmessage.TextValue.ToLowerInvariant().Contains($"{name.Split(' ')[0].ToLowerInvariant()}, stay here until i return.")) {
+                    int index = _characterHandler.GetWhitelistIndex(name);
+                    _characterHandler.whitelistChars[index]._forcedToStay = false;
+                    return false;
+                }
+                // stay here start
+                if(chatmessage.TextValue.ToLowerInvariant().Contains($"you may stand now {name.Split(' ')[0].ToLowerInvariant()}.")) {
+                    int index = _characterHandler.GetWhitelistIndex(name);
+                    _characterHandler.whitelistChars[index]._forcedToStay = true;
+                    return false;
+                }
+                // stay here end
+                if(chatmessage.TextValue.ToLowerInvariant().Contains($"thank you for waiting, {name.Split(' ')[0].ToLowerInvariant()}.")) {
+                    int index = _characterHandler.GetWhitelistIndex(name);
+                    _characterHandler.whitelistChars[index]._forcedToStay = false;
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        // dont process anything else if not in hardcore mode.
+        if(!_config.hardcoreMode) {
+            return false;
+        }
+
         // first, let us get the index of the sender name since we already know they are in our whitelist 
         int senderIdx = _characterHandler.GetWhitelistIndex(senderName);
         // set our object to scan as the object in the same index of the list

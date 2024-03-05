@@ -12,6 +12,7 @@ public partial class WhitelistPanel {
             ["usedSafewordTT"] = () => _activePanelTab == WhitelistPanelTab.TheirSettings
                 ? $"If {_tempWhitelistChar._name.Split(' ')[0]} has recently used their safeword, and their grace period is still active."
                 : "If you have already used your safeword and are on cooldown until you can use GagSpeak features again.",
+            ["hardcoreModeTT"] = () => $"Indicates if {_tempWhitelistChar._name.Split(' ')[0]} is in hardcore mode or not",
             ["ExtendedLockTimesTT"] = () => _activePanelTab == WhitelistPanelTab.TheirSettings
                 ? $"if {_tempWhitelistChar._name.Split(' ')[0]} is allowing you to lock their padlocks for longer than 12 hours."
                 : $"If you are allowing {_tempWhitelistChar._name.Split(' ')[0]} to lock your padlocks for longer than 12 hours.",
@@ -111,6 +112,17 @@ public partial class WhitelistPanel {
                 "This scale is based on their stepsize.",
             ["PatternTT"] = () => $"The current pattern that you are going to make {_tempWhitelistChar._name.Split(' ')[0]}'s actively connected toy execute.",
             ["PatternListTT"] = () => $"The list of patterns that {_tempWhitelistChar._name.Split(' ')[0]}'s actively connected toy has available to execute.",
+            // hardcore tooltips
+            ["FollowOrderTT"] = () => $"If the [can toggle] permission is granted, saying \"{_tempWhitelistChar._name.Split(' ')[0]}, follow me.\"\n"+
+            $"anywhere in your message in any channel will force {_tempWhitelistChar._name.Split(' ')[0]} to follow you. There movement will be blocked \n"+
+            $"while following, only allowing them to move again if they remain still for 6 full seconds",
+            ["SitOrderTT"] = () => $"If the [can toggle] permission is granted, saying \"{_tempWhitelistChar._name.Split(' ')[0]}, sit.\"\n"+
+            $"anywhere in your message in any channel will force {_tempWhitelistChar._name.Split(' ')[0]} to sit. There movement will be blocked \n"+
+            $"until you say \"you may stand now {_tempWhitelistChar._name.Split(' ')[0]}\" anywhere in your message in any channel.",
+            ["LockAwayTT"] = () => $"If the [can toggle] permission is granted, saying \"{_tempWhitelistChar._name.Split(' ')[0]}, stay here until i return.\"\n"+
+            $"will prevent them from teleporting away, using return, or leaving estates or private chambers, along with anything else they have added.\n"+
+            $"They will be able to move again if you say \"thank you for waiting, {_tempWhitelistChar._name.Split(' ')[0]}\"",
+            ["BlindfoldTT"] = () => $"If the [can toggle] permission is granted, you will be able to toggle on and off {_tempWhitelistChar._name.Split(' ')[0]}'s blindfold.",
             // general tooltips
             ["CurrentStateTT"] = () => $"If the Permission is allowed / not allowed",
             ["ReqTierTT"] = () => _activePanelTab == WhitelistPanelTab.TheirSettings

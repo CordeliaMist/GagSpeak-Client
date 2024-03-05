@@ -18,6 +18,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
     public DateTimeOffset   _timeOfCommitment { get; set; }                  // how long has your commitment lasted?
     //////////////////// FIELDS THAT ARE TWO WAY MODIFIABLE ////////////////////
     public bool             _grantExtendedLockTimes { get; set; } = false;   // [TIER 2] if whitelisted user allows you to use extended lock times
+    public bool             _inHardcoreMode { get; set; } = false;           // [TIER 0] if they are in hardcore mode
     public bool             _enableRestraintSets { get; set; } = false;      // [TIER 2] allows dom to enable spesific restraint sets
     public bool             _restraintSetLocking { get; set; } = false;      // [TIER 1] enables / disables all restraint set locking 
     public string           _theirTriggerPhrase { get; set; } = "";          // [TIER 0] this whitelisted user's trigger phrase
@@ -26,14 +27,24 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
     public bool             _allowsSitRequests { get; set; } = false;        // [TIER 1] if they allow you to use sit requests
     public bool             _allowsMotionRequests { get; set; } = false;     // [TIER 2] if they allow you to use motion requests
     public bool             _allowsAllCommands { get; set; } = false;        // [TIER 4] If they allow you to use all commands on them
-    public bool             _allowChangingToyState { get; set; } = false;   // [TIER 1] Basically, "They can turn on my vibe, at my selected slider position"
+    public bool             _allowChangingToyState { get; set; } = false;    // [TIER 1] Basically, "They can turn on my vibe, at my selected slider position"
     public bool             _allowsIntensityControl { get; set; } = false;   // [TIER 3] Basically says "This person can adjust the intensity slider"
     public bool             _allowsUsingPatterns { get; set; } = false;      // [TIER 0] Do they allow you to execute stored patterns
-    public  int             _activeToystepSize { get; set; } = 0;            // [TIER 0] the step count of the vibe
+    public int              _activeToystepSize { get; set; } = 0;            // [TIER 0] the step count of the vibe
+    /////////////// STORED INFORMATION ABOUT A PLAYERS HARDCORE SETTINGS ///////////////////////
+    public bool             _allowForcedFollow { get; set; } = false;        // ONLYGIVENBYPLAYER if they allow you to use follow orders
+    public bool             _forcedFollow { get; set; } = false;             // [TIER 0] Any tier can, but player must consent by enabling above perm
+    public bool             _allowForcedSit { get; set; } = false;           // ONLYGIVENBYPLAYER if they allow you to use sit orders
+    public bool             _forcedSit { get; set; } = false;                // [TIER 0] Any tier can, but player must consent by enabling above perm
+    public bool             _allowForcedToStay { get; set; } = false;       // ONLYGIVENBYPLAYER if they allow you to use stay orders
+    public bool             _forcedToStay { get; set; } = false;            // [TIER 0] Any tier can, but player must consent by enabling above perm
+    public bool             _allowBlindfold { get; set; } = false;          // ONLYGIVENBYPLAYER if they allow you to use blindfold
+    public bool             _blindfolded { get; set; } = false;             // [TIER 0] Any tier can, but player must consent by enabling above perm
+
     //////////////////// FIELDS TO BE USED TO STORE THIS PERSONS LIST NAMES ////////////////////
     public List<string>                 _storedRestraintSets { get; set; }   // contains the list of restraint set names (if imported)
     public Dictionary<string, string>   _storedAliases { get; set; }         // contains the list of gag types (if imported)
-    public List<string>                 _storedPatternNames { get; set; }    // contains the list of pattern names (if imported) 
+    public List<string>                 _storedPatternNames { get; set; }    // contains the list of pattern names (if imported)
 
     ////////////////////////////////////////////////// PROTECTED FIELDS ////////////////////////////////////////////////////
     
@@ -176,18 +187,30 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
                 ["PendingRequestFromPlayer"] = _pendingRelationRequestFromPlayer.ToString(),
                 ["TimeOfCommitment"] = JsonConvert.SerializeObject(_timeOfCommitment),
                 ["ExtendedLockTimes"] = _grantExtendedLockTimes,
+                
                 ["EnableRestraintSets"] = _enableRestraintSets,
                 ["RestraintSetLocking"] = _restraintSetLocking,
+                
                 ["TriggerPhrase"] = _theirTriggerPhrase,
                 ["StartCharForPuppeteerTrigger"] = _theirTriggerStartChar,
                 ["EndCharForPuppeteerTrigger"] = _theirTriggerEndChar,
                 ["AllowsSitRequests"] = _allowsSitRequests,
                 ["AllowsMotionRequests"] = _allowsMotionRequests,
                 ["AllowsAllCommands"] = _allowsAllCommands,
+                
                 ["AllowsChangingToyState"] = _allowChangingToyState,
                 ["AllowIntensityControl"] = _allowsIntensityControl,
                 ["AllowsUsingPatterns"] = _allowsUsingPatterns,
                 ["ActiveToystepSize"] = _activeToystepSize,
+
+                ["AllowForcedFollow"] = _allowForcedFollow,
+                ["ForcedFollow"] = _forcedFollow,
+                ["AllowForcedSit"] = _allowForcedSit,
+                ["ForcedSit"] = _forcedSit,
+                ["AllowForcedToStay"] = _allowForcedToStay,
+                ["ForcedToStay"] = _forcedToStay,
+                ["AllowBlindfold"] = _allowBlindfold,
+                ["Blindfolded"] = _blindfolded,
                 // our list storage stuff
                 ["StoredRestraintSets"] = JToken.FromObject(_storedRestraintSets),
                 ["StoredAliases"] = JToken.FromObject(_storedAliases),
@@ -214,18 +237,31 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         _pendingRelationRequestFromPlayer = Enum.TryParse(jsonObject["PendingRequestFromPlayer"]?.Value<string>(), out RoleLean requestFromPlayer) ? requestFromPlayer : RoleLean.None;
         _timeOfCommitment = JsonConvert.DeserializeObject<DateTimeOffset>(jsonObject["TimeOfCommitment"]?.Value<string>() ?? "");
         _grantExtendedLockTimes = jsonObject["ExtendedLockTimes"]?.Value<bool>() ?? false;
+        
         _enableRestraintSets = jsonObject["EnableRestraintSets"]?.Value<bool>() ?? false;
         _restraintSetLocking = jsonObject["RestraintSetLocking"]?.Value<bool>() ?? false;
+        
         _theirTriggerPhrase = jsonObject["TheirTriggerPhrase"]?.Value<string>() ?? "";
         _theirTriggerStartChar = jsonObject["StartCharForPuppeteerTrigger"]?.Value<string>() ?? "(";
         _theirTriggerEndChar = jsonObject["EndCharForPuppeteerTrigger"]?.Value<string>() ?? ")";
         _allowsSitRequests = jsonObject["AllowsSitRequests"]?.Value<bool>() ?? false;
         _allowsMotionRequests = jsonObject["AllowsMotionRequests"]?.Value<bool>() ?? false;
         _allowsAllCommands = jsonObject["AllowsAllCommands"]?.Value<bool>() ?? false;
+        
         _allowChangingToyState = jsonObject["AllowsChangingToyState"]?.Value<bool>() ?? false;
         _allowsIntensityControl = jsonObject["AllowIntensityControl"]?.Value<bool>() ?? false;
         _allowsUsingPatterns = jsonObject["AllowsUsingPatterns"]?.Value<bool>() ?? false;
         _activeToystepSize = jsonObject["ActiveToystepSize"]?.Value<int>() ?? 0;
+        
+        _allowForcedFollow = jsonObject["AllowForcedFollow"]?.Value<bool>() ?? false;
+        _forcedFollow = jsonObject["ForcedFollow"]?.Value<bool>() ?? false;
+        _allowForcedSit = jsonObject["AllowForcedSit"]?.Value<bool>() ?? false;
+        _forcedSit = jsonObject["ForcedSit"]?.Value<bool>() ?? false;
+        _allowForcedToStay = jsonObject["AllowForcedToStay"]?.Value<bool>() ?? false;
+        _forcedToStay = jsonObject["ForcedToStay"]?.Value<bool>() ?? false;
+        _allowBlindfold = jsonObject["AllowBlindfold"]?.Value<bool>() ?? false;
+        _blindfolded = jsonObject["Blindfolded"]?.Value<bool>() ?? false;
+        
         // our list storage stuff
         _storedRestraintSets = jsonObject["StoredRestraintSets"]?.ToObject<List<string>>() ?? new List<string>();
         _storedAliases = jsonObject["StoredAliases"]?.ToObject<Dictionary<string, string>>() ?? new Dictionary<string, string>();

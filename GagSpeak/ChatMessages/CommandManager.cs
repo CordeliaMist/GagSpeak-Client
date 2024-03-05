@@ -170,6 +170,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 _config.SetHardcoreMode(false);
                 _gagStorageManager.ResetEverythingDueToSafeword();
                 _restriantSetManager.ResetEverythingDueToSafeword();
+                _hardcoreManager.ResetEverythingDueToSafeword();
                 
                 _timerService.ClearRestraintSetTimer();
                 _glamourEvent.Invoke(UpdateType.Safeword); // revert to game state
@@ -188,7 +189,8 @@ public class CommandManager : IDisposable // Our main command list manager
                 _safewordCommandEvent.Invoke();
                 // fire the safewordUsed bool to true so that we set the cooldown
                 _characterHandler.SetSafewordUsed(true);
-                _timerService.StartTimer("SafewordUsed", "1m", 1000, () => _characterHandler.SetSafewordUsed(false));
+                var cooldownTime = _config.AdminMode ? "2s" : "10m";
+                _timerService.StartTimer("SafewordUsed", cooldownTime, 1000, () => _characterHandler.SetSafewordUsed(false));
             }
             // otherwise inform the user that the cooldown for safeword being used is still present
             else {

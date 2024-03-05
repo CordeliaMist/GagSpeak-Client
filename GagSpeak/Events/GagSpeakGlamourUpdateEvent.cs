@@ -3,24 +3,34 @@ using System;
 namespace GagSpeak.Events;
 /// <summary> This class is used to handle the gag item equipped event, and triggers every time it is fired. </summary>
 public enum UpdateType {
-    // Used for enabling a restraint set, or updating it
+    /// <summary> used when enabling a restraint set or updating it </summary>
     UpdateRestraintSet,
-    // used when disabling a restraint set
+
+    /// <summary> used when disabling a restraint set </summary>
     DisableRestraintSet,
-    // gag equipped
+
+    /// <summary> used when equipping a gag </summary>
     GagEquipped,    
-    // used when removing a gag or having it reset to none
+
+    /// <summary> used when removing a gag or having it reset to none </summary>
     GagUnEquipped,
+
+    /// <summary> used when a players gag selection was changed and should be udpated </summary>
     UpdateGags,
-    // used for updating a characters information in general
+    
+    /// <summary> used when updating all characters information in general </summary>
     RefreshAll,
-    // used for when we detect a job change
+    
+    /// <summary> used when a player changes their job </summary>
     JobChange,
-    // used for when we detect a login
+    
+    /// <summary> used when a player logs in </summary>
     Login,
-    // used for when we detect a zone change
+    
+    /// <summary> triggered on a zone change to refresh state </summary>
     ZoneChange,
-    // for safeword
+
+    /// <summary> for when a safeword is used </summary>
     Safeword,
 }
 

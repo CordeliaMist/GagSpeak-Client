@@ -52,6 +52,13 @@ public partial class MessageDictionary {
             GagSpeak.Log.Debug($"[Message Dictionary]: Was an Info Exchange message");
             return true;
         }
+
+        if(LookupHardcoreMsg(textVal, decodedMessageMediator)) {
+            // if it was one of them, we can early escape
+            GagSpeak.Log.Debug($"[Message Dictionary]: Was a Hardcore message");
+            return true;
+        }
+        
         // if it was none of them, return false
         return false;
     }

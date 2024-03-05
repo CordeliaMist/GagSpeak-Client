@@ -7,6 +7,7 @@ using GagSpeak.Events;
 using GagSpeak.CharacterData;
 using GagSpeak.ToyboxandPuppeteer;
 using GagSpeak.Gagsandlocks;
+using GagSpeak.Hardcore;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary>
@@ -20,6 +21,7 @@ public partial class ResultLogic {
     private readonly    PatternHandler         _patternHandler;        // used to get the pattern handler
     private readonly    GagStorageManager      _gagStorageManager;     // used to get the gag storage
     private readonly    RestraintSetManager    _restraintSetManager;   // used to get the restraint set manager
+    private readonly    HardcoreManager        _hardcoreManager;       // used to get the hardcore manager
     private readonly    GagAndLockManager      _lockManager;           // used to get the lock manager
     private readonly    GagService             _gagService;            // used to get the gag service
     private readonly    TimerService           _timerService;          // used to get the timer service
@@ -30,7 +32,7 @@ public partial class ResultLogic {
     public ResultLogic(IChatGui clientChat, IClientState clientState, GagSpeakConfig config, CharacterHandler characterHandler,
     PatternHandler patternHandler, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager, 
     PlugService plugService, GagAndLockManager lockManager, GagService gagService, TimerService timerService,
-    GagSpeakGlamourEvent gagSpeakGlamourEvent, SoundPlayer soundPlayer) {
+    GagSpeakGlamourEvent gagSpeakGlamourEvent, SoundPlayer soundPlayer, HardcoreManager hardcoreManager) {
         _clientChat = clientChat;
         _clientState = clientState;
         _config = config;
@@ -38,6 +40,7 @@ public partial class ResultLogic {
         _patternHandler = patternHandler;
         _gagStorageManager = gagStorageManager;
         _restraintSetManager = restraintSetManager;
+        _hardcoreManager = hardcoreManager;
         _lockManager = lockManager;
         _gagService = gagService;
         _timerService = timerService;
@@ -155,6 +158,17 @@ public partial class ResultLogic {
             "shareInfoPartThree"=> ResLogicProvideInfoPartThree(decodedMessageMediator, ref isHandled),
             "shareInfoPartFour" => ResLogicProvideInfoPartFour(decodedMessageMediator, ref isHandled),
             _ => LogError("Invalid Provide Info message parse, If you see this report it to cordy ASAP.")
+        };
+        return true;
+    }
+
+    public bool HardcoreMsgResLogic(string recieved, DecodedMessageMediator decodedMessageMediator, bool isHandled)
+    {
+        var commandType = decodedMessageMediator.encodedCmdType;
+        var _ = commandType switch
+        {
+            "toggleBlindfold" => ReslogicToggleBlindfold(decodedMessageMediator, ref isHandled),
+            _ => LogError("Invalid Hardcore message parse, If you see this report it to cordy ASAP.")
         };
         return true;
     }

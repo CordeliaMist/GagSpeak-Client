@@ -19,6 +19,13 @@ public partial class CharacterHandler
         }
     }
 
+    public void SetBlindfoldCondition(int index, bool value) {
+        if(whitelistChars[index]._blindfolded != value) {
+            whitelistChars[index]._blindfolded = value;
+            _saveService.QueueSave(this);
+        }
+    }
+
     public void SetWhitelistDirectChatGarblerActive(int index, bool value) {
         if(whitelistChars[index]._directChatGarblerActive != value) {
             whitelistChars[index]._directChatGarblerActive = value;

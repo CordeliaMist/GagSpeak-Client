@@ -230,7 +230,7 @@ public partial class WhitelistPanel {
             DrawDetailsWardrobe(ref _interactions, text, suffix);
             DrawDetailsPuppeteer(ref _interactions, text, suffix);
             DrawDetailsToybox(ref _interactions, text, suffix);
-            // DrawDetailsHardcore(ref _interactions);
+            DrawDetailsHardcore(ref _interactions, text, suffix);
         } finally {
             ImGui.PopStyleVar();
         }
@@ -266,7 +266,6 @@ public partial class WhitelistPanel {
             DrawDetailsWardrobe(ref _interactions, text, suffix);
             DrawDetailsPuppeteer(ref _interactions, text, suffix);
             DrawDetailsToybox(ref _interactions, text, suffix);
-            // DrawDetailsHardcore(ref _interactions);
         } finally {
             ImGui.PopStyleVar();
         }
@@ -369,5 +368,16 @@ public partial class WhitelistPanel {
             if(_characterHandler.IsLeanLesserThanPartner(_tempWhitelistIdx) && _config.hardcoreMode) { ImGui.EndDisabled(); }
         
         }
+    }
+
+    private void DrawDetailsHardcore(ref bool _interactions, string text, string suffix) {
+        var tooltipText = $"View what hardcore permissions {text} has set for you.";
+        var headerText = $"{text}{suffix} Hardcore Permissions & Interactions";
+        if(!ImGui.CollapsingHeader($"{headerText}")) { 
+            if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); }
+            return;
+        }
+        if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); }
+        DrawHardcorePerms(ref _interactions);
     }
 }

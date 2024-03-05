@@ -14,84 +14,193 @@ using GagSpeak.Services;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using System.Linq;
+using Penumbra.GameData.Enums;
+using GagSpeak.UI.Equipment;
+using Penumbra.GameData.DataContainers;
+using Penumbra.GameData.Data;
 namespace GagSpeak.UI.Tabs.HardcoreTab;
 public class HC_ControlRestrictions
 {
-    private readonly HardcoreManager _hcManager;
-    private readonly GsActionManager _actionManager;
-    private readonly CharacterHandler _charHandler;
-    private readonly FontService _fontService;
-    private readonly IClientState _client;
+    private readonly GagSpeakConfig     _config;
+    private readonly HardcoreManager    _hcManager;
+    private readonly GsActionManager    _actionManager;
+    private readonly CharacterHandler   _charHandler;
+    private readonly FontService        _fontService;
+    private readonly IClientState       _client;
+    private const float _comboWidth = 200;
+    private readonly FontService        _fonts;                 // for getting the fonts
+    private readonly IDataManager       _gameData;              // for getting the game data
+    private readonly TextureService     _textures;              // for getting the textures
+    private          Vector2            _iconSize;              // for setting the icon size
+    private          float              _comboLength;           // for setting the combo length
+    private readonly GameItemCombo[]    _gameItemCombo;         // for getting the item combo
+    private readonly StainColorCombo    _stainCombo;            // for getting the stain combo
+    private readonly DictStain          _stainData;             // for getting the stain data
+    private readonly ItemData           _itemData;              // for getting the item data
     public HC_ControlRestrictions(HardcoreManager hardcoreManager, GsActionManager actionManager,
-    CharacterHandler charHandler, FontService fontService, IClientState client) {
+    CharacterHandler charHandler, FontService fontService, IClientState client, DictStain stainData,
+    GagSpeakConfig config, IDataManager gameData, TextureService textures, ItemData itemData, FontService fonts) {
+        _gameData = gameData;
+        _fonts = fonts;
+        _textures = textures;
+        _itemData = itemData;
+        _stainData = stainData;
         _hcManager = hardcoreManager;
+        _config = config;
         _actionManager = actionManager;
         _charHandler = charHandler;
         _fontService = fontService;
         _client = client;
+
+        _iconSize    = ImGuiHelpers.ScaledVector2(ImGui.GetFrameHeight()+ImGui.GetFrameHeightWithSpacing());
+        _gameItemCombo = EquipSlotExtensions.EqdpSlots.Select(e => new GameItemCombo(_gameData, e, _itemData, GagSpeak.Log)).ToArray();
+        _stainCombo = new StainColorCombo(_comboWidth-20, _stainData);
     }
     public void Draw() {
-        using var child = ImRaii.Child("##HC_RestrictionsChild", new Vector2(ImGui.GetContentRegionAvail().X, -1), true, ImGuiWindowFlags.NoScrollbar);
-        if (!child)
-            return;
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
-        var name = $"{_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]}";
-        var yourName = "";
-        if(_client.LocalPlayer == null) { yourName = "You"; }
-        else { yourName = $"{_client.LocalPlayer.Name.ToString().Split(' ')[0]}"; }
-        // show header
-        ImGui.PushFont(_fontService.UidFont);
-        try{
-            ImGuiUtil.Center($"Restriction Permissions for {name}");
-            if(ImGui.IsItemHovered()) { ImGui.SetTooltip(
-            $"This determines what you are allowing {name} to be able to control you to do.\n"+
-            "You are NOT controlling what you can do to them");
+        _comboLength = _comboWidth * ImGuiHelpers.GlobalScale;
+        // if we are not in hardcore mode, then disable interaction with anything in this tab
+        if (!_config.hardcoreMode) { ImGui.BeginDisabled(); }
+        try {
+            using var child = ImRaii.Child("##HC_RestrictionsChild", new Vector2(ImGui.GetContentRegionAvail().X, -1), true, ImGuiWindowFlags.NoScrollbar);
+            if (!child)
+                return;
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
+            var name = $"{_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]}";
+            var yourName = "";
+            if(_client.LocalPlayer == null) { yourName = "You"; }
+            else { yourName = $"{_client.LocalPlayer.Name.ToString().Split(' ')[0]}"; }
+            // show header
+            ImGui.PushFont(_fontService.UidFont);
+            try{
+                ImGuiUtil.Center($"Restriction Permissions for {name}");
+                if(ImGui.IsItemHovered()) { ImGui.SetTooltip(
+                $"This determines what you are allowing {name} to be able to control you to do.\n"+
+                "You are NOT controlling what you can do to them");
+                }
+            } finally { ImGui.PopFont(); }
+
+            ImGui.Separator();
+            // draw out the options
+            UIHelpers.CheckboxNoConfig($"{name} can blindfold you.",
+            $"Whenever {name} wants, they can blindfold you. (Triggers are NOT case sensative)",
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowBlindfold,
+            v => _hcManager.SetAllowBlindfold(_charHandler.activeListIdx, v)
+            );
+            ImGui.SameLine();
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
+                ImGuiUtil.RightAlign((_hcManager._perPlayerConfigs[_charHandler.activeListIdx]._blindfolded ? FontAwesomeIcon.UserCheck : FontAwesomeIcon.UserTimes).ToIconString());
             }
-        } finally { ImGui.PopFont(); }
+            if(ImGui.IsItemHovered()) { ImGui.SetTooltip(
+                $"Shows if the current option is currently active for your player, or inactive");
+            }
+            ImGui.Spacing();
+            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1.0f));
+            try { ImGui.TextWrapped($"Whenever {name} wants, they can blindfold you."); } finally { ImGui.PopStyleColor(); }
+            // get the blindfold item (temp)
+            EquipDrawData blindfoldItem = _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._blindfoldItem;
+            // draw out title and slot selection
+            using (var group = ImRaii.Group()) {
+                ImGui.PushFont(_fonts.UidFont);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
+                try{ ImGui.Text($"Blindfold Item:"); } finally { ImGui.PopFont(); }
+                // draw out the blindfold selection
+                ImGui.SetNextItemWidth(125);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
+                if(ImGui.Combo("##BlindfoldEquipSlotDD", ref blindfoldItem._activeSlotListIdx,
+                EquipSlotExtensions.EqdpSlots.Select(slot => slot.ToName()).ToArray(), EquipSlotExtensions.EqdpSlots.Count)) {
+                    // Update the selected slot when the combo box selection changes
+                    blindfoldItem.SetDrawDataSlot(EquipSlotExtensions.EqdpSlots[blindfoldItem._activeSlotListIdx]);
+                    blindfoldItem.ResetDrawDataGameItem();
+                }
+            }
+            // draw the combo
+            ImGui.SameLine();
+            DrawEquip(blindfoldItem, _gameItemCombo, _stainCombo, _stainData, _comboLength);
+            ImGui.SameLine();
+            blindfoldItem._gameItem.DrawIcon(_textures, _iconSize, blindfoldItem._slot);
 
-        ImGui.Separator();
-        // draw out the options
-        UIHelpers.CheckboxNoConfig($"{name} can blindfold you.",
-        $"Whenever {name} wants, they can blindfold you. Either can toggle off. (Triggers are NOT case sensative)",
-        _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowBlindfold,
-        v => _hcManager.SetAllowBlindfold(_charHandler.activeListIdx, v)
-        );
-        ImGui.SameLine();
-        UIHelpers.CheckboxNoConfig($"", $"{name} can force you to follow.", 
-        _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._blindfolded,
-        v => _hcManager.SetBlindfolded(_charHandler.activeListIdx, v)
-        );
-        ImGui.Spacing();
-        ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1.0f));
-        try {
-            ImGui.TextWrapped($"Whenever {name} wants, they can blindfold you. Either can toggle off");
-        } finally { ImGui.PopStyleColor(); }
 
-        ImGui.Separator();    
-        UIHelpers.CheckboxNoConfig($"Allow {name} to lock you away.",
-        $"Allow {name} to lock you away in a private chamber, estate, or other location. (Triggers are NOT case sensative)",
-        _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowForcedToStay,
-        v => _hcManager.SetAllowForcedToStay(_charHandler.activeListIdx, v));
-        ImGui.SameLine();
-        UIHelpers.CheckboxNoConfig("", $"{name} Can lock you away. (Triggers are NOT case sensative)",
-        _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._forcedToStay,
-        v => _hcManager.SetForcedToStay(_charHandler.activeListIdx, v));
-        ImGui.Spacing();
-        ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1.0f));
-        try {
-        ImGui.TextWrapped($"Activation: If {name} says, \"{yourName}, stay here until I return.\"\n"+
-        $"Deactivation: When {name} says \"thank you for waiting, {yourName}.\"\n"+
-        $"Restrictions applied: Leaving Estates & Private Chambers, teleporting, and return become blocked.");
-        } finally { ImGui.PopStyleColor(); }
-        // we will want to display additional features here
-        ImGui.TableNextColumn();
-        try {
-            DrawForcedStayConfigUI();
-        } catch (System.Exception e) {
-            GagSpeak.Log.Error($"Error drawing forced stay config UI, {e.Message}");
+            ImGui.Separator();    
+            UIHelpers.CheckboxNoConfig($"Allow {name} to lock you away.",
+            $"Allow {name} to lock you away in a private chamber, estate, or other location. (Triggers are NOT case sensative)",
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowForcedToStay,
+            v => _hcManager.SetAllowForcedToStay(_charHandler.activeListIdx, v));
+            ImGui.SameLine();
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
+                ImGuiUtil.RightAlign((_hcManager._perPlayerConfigs[_charHandler.activeListIdx]._forcedToStay ? FontAwesomeIcon.UserCheck : FontAwesomeIcon.UserTimes).ToIconString());
+            }
+            if(ImGui.IsItemHovered()) { ImGui.SetTooltip(
+                $"Shows if the current option is currently active for your player, or inactive");
+            }
+            ImGui.Spacing();
+            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1.0f));
+            try {
+            ImGui.TextWrapped($"Activation: If {name} says, \"{yourName}, stay here until I return.\"\n"+
+            $"Deactivation: When {name} says \"thank you for waiting, {yourName}.\"\n"+
+            $"Restrictions applied: Leaving Estates & Private Chambers, teleporting, and return become blocked.");
+            } finally { ImGui.PopStyleColor(); }
+            // we will want to display additional features here
+            try {
+                DrawForcedStayConfigUI();
+            } catch (System.Exception e) {
+                GagSpeak.Log.Error($"Error drawing forced stay config UI, {e.Message}");
+            }
+            ImGui.Separator();
+        } finally {
+            if (!_config.hardcoreMode) { ImGui.EndDisabled(); }
         }
-        ImGui.Separator();
     }
+
+
+    public void DrawEquip(EquipDrawData blindfoldItem, GameItemCombo[] _gameItemCombo, StainColorCombo _stainCombo, DictStain _stainData, float _comboLength) {
+        using var id      = ImRaii.PushId((int)blindfoldItem._slot + "BlindfoldItem");
+        var       spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemSpacing.Y };
+        using var style   = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
+
+        var right = ImGui.IsItemClicked(ImGuiMouseButton.Right);
+        var left  = ImGui.IsItemClicked(ImGuiMouseButton.Left);
+
+        using var group = ImRaii.Group();
+        DrawItem(blindfoldItem, out var label, right, left, _comboLength, _gameItemCombo);
+        DrawStain(blindfoldItem, _comboLength, _stainCombo, _stainData);
+    }
+    private void DrawItem(EquipDrawData blindfoldItem, out string label,bool clear, bool open, float width, GameItemCombo[] _gameItemCombo) {
+        // draw the item combo.
+        var combo = _gameItemCombo[blindfoldItem._slot.ToIndex()];
+        label = combo.Label;
+        if (!blindfoldItem._locked && open) { UIHelpers.OpenCombo($"##BlindfoldItem{combo.Label}"); }
+        // draw the combo
+        using var disabled = ImRaii.Disabled(blindfoldItem._locked);
+        var change = combo.Draw(blindfoldItem._gameItem.Name, blindfoldItem._gameItem.ItemId, width, width);
+        // conditionals to detect for changes in the combo's
+        if (change && !blindfoldItem._gameItem.Equals(combo.CurrentSelection)) {
+            blindfoldItem.SetDrawDataGameItem(combo.CurrentSelection);
+        }
+        if (clear || ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
+            blindfoldItem.ResetDrawDataGameItem();
+            GagSpeak.Log.Debug($"[Hardcore Blindfold] Right Click processed, item reverted to none!");
+        }
+    }
+    private void DrawStain(EquipDrawData blindfoldItem, float width, StainColorCombo _stainCombo, DictStain _stainData) {
+        // fetch the correct stain from the stain data
+        var       found    = _stainData.TryGetValue(blindfoldItem._gameStain, out var stain);
+        using var disabled = ImRaii.Disabled(blindfoldItem._locked);
+        // draw the stain combo
+        if (_stainCombo.Draw($"##BlindfoldItemStain-{blindfoldItem._slot}", stain.RgbaColor, stain.Name, found, stain.Gloss, width)) {
+            if (_stainData.TryGetValue(_stainCombo.CurrentSelection.Key, out stain)) {
+                blindfoldItem.SetDrawDataGameStain(stain.RowIndex);
+                GagSpeak.Log.Debug($"[Hardcore Blindfold] Stain Changed: {stain.RowIndex}");
+            }
+            else if (_stainCombo.CurrentSelection.Key == Penumbra.GameData.Structs.Stain.None.RowIndex) { }
+        }
+        // conditionals to detect for changes in the combo's via reset
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
+            blindfoldItem.ResetDrawDataGameStain();
+            GagSpeak.Log.Debug($"[Hardcore Blindfold] Right Click processed, stain reverted to none!");
+        }
+    }
+
+
     // Draw out the forced to stay options
     public void DrawForcedStayConfigUI() {
         using var child = ImRaii.Child("##HC_OrdersChild", new Vector2(ImGui.GetContentRegionAvail().X, (_hcManager.StoredEntriesFolder.Children.Count + 1)* ImGui.GetFrameHeight()), false, ImGuiWindowFlags.NoScrollbar);

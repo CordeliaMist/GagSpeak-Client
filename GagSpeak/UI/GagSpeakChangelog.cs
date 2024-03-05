@@ -10,11 +10,6 @@ public class GagSpeakChangelog
     private readonly GagSpeakConfig _config;
     public readonly Changelog Changelog;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GagSpeakChangelog"/> class.
-    /// <list type="bullet">
-    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
-    /// </list> </summary>
     public GagSpeakChangelog(GagSpeakConfig config) {
         _config   = config; // initialize the config in our constructor
         Changelog = new Changelog("GagSpeak Changelog", ConfigData, Save); // initialize the changelog
@@ -31,6 +26,7 @@ public class GagSpeakChangelog
         Add2_6_0_0(Changelog);
         Add2_7_0_0(Changelog);
         Add2_8_0_0(Changelog);
+        Add2_8_1_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -58,8 +54,17 @@ public class GagSpeakChangelog
         }
     }
 
+    private static void Add2_8_1_0(Changelog log)
+        => log.NextVersion("Version 2.8.2.0 Release")
+            .RegisterEntry("Did some polishing up to the actions manager")
+            .RegisterEntry("Added interaction commands for the hardcore tab")
+            .RegisterEntry("Added some new interactions to the whitelist manager")
+            .RegisterEntry("Added in some outlines for API within the code but nothing official yet as I feel uneasy with privacy concerns")
+            .RegisterEntry("Added the phonetics to some of the gags without any")
+            .RegisterEntry("Polished up the toybox tab");
+
     private static void Add2_8_0_0(Changelog log)
-        => log.NextVersion("Version 2.8.1.0 Release")
+        => log.NextVersion("Version 2.8.2.0 Release")
             .RegisterImportant("The Hardcore Tab is now in a fully functional state.")
             .RegisterEntry("Major reported issues patched, hotbar issue is known and working on logic for it")
             .RegisterHighlight("You can now bind certain penumbra mods to restraint sets, so they activate when you enable the set!")

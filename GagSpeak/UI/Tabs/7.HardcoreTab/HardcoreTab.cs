@@ -7,9 +7,9 @@ namespace GagSpeak.UI.Tabs.HardcoreTab;
 /// <summary> This class is used to handle the Hardcore Tab. </summary>
 public class HardcoreTab : ITab
 {
-    private readonly GagSpeakConfig _config;
-    private readonly    HardcoreSelector  _selector;
-    private readonly    HardcoreMainPanel     _panel;
+    private readonly    GagSpeakConfig      _config;
+    private readonly    HardcoreSelector    _selector;
+    private readonly    HardcoreMainPanel   _panel;
 
     public HardcoreTab(HardcoreSelector selector, HardcoreMainPanel panel,
     GagSpeakConfig config) {
@@ -18,8 +18,7 @@ public class HardcoreTab : ITab
         _panel = panel;
     }
 
-    public void DrawContent()
-    {
+    public void DrawContent() {
         if(!_config.AdminMode) { ImGui.BeginDisabled(); }
         try{
             _selector.Draw(GetSetSelectorSize());

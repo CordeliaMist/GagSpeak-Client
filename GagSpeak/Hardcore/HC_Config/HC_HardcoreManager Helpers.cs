@@ -100,9 +100,19 @@ public partial class HardcoreManager
 #region Manager Methods
     public void ResetEverythingDueToSafeword() {
         // call the reset everything for each playerSettings in the list
-        foreach(var playerSettings in _perPlayerConfigs) {
-            playerSettings.ResetEverythingDueToSafeword();
+        for(int i = 0; i < _perPlayerConfigs.Count; i++) {
+            // set all states to false, handling their logic accordingly
+            _perPlayerConfigs[i].SetAllowForcedFollow(false);
+            SetForcedFollow(i, false);
+            _perPlayerConfigs[i].SetAllowForcedSit(false);
+            SetForcedSit(i, false);
+            _perPlayerConfigs[i].SetAllowForcedToStay(false);
+            SetForcedToStay(i, false);
+            _perPlayerConfigs[i].SetAllowBlindfold(false);
+            SetBlindfolded(i, false);
         }
+        // invoke safeword
+        _rsPropertyChanged.Invoke(HardcoreChangeType.Safeword, RestraintSetChangeType.Disabled);
     }
 
     public void ListIntegrityCheck(int whitelistSize) {

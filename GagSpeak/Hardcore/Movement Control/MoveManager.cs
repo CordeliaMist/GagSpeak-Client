@@ -191,8 +191,8 @@ public class MovementManager : IDisposable
            _clientState.IsLoggedIn                          // we must be logged in
         && _clientState.LocalPlayer != null                 // our character must not be null
         && _clientState.LocalPlayer.Address != IntPtr.Zero  // our address must be valid
-        && _config.AdminMode                                // we are in hardcore mode
-        );                              // we must have an active set enabled.
+        && _config.hardcoreMode                             // we are in hardcore mode
+        );                                                  // we must have an active set enabled.
     }
 
     // handles the walking state

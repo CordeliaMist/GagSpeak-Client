@@ -19,8 +19,8 @@ public enum HardcoreChangeType {
 /// The type of change that was made to the restraint
 /// </summary>
 public enum RestraintSetChangeType {
-    Enabled,
     Disabled,
+    Enabled,
 }
 
 public class RS_PropertyChangedEvent
