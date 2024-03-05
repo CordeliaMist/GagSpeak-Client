@@ -188,15 +188,20 @@ public class MovementManager : IDisposable
             }
 
             // handle blinfolded camera action
-            if(_hcManager._perPlayerConfigs.Any(x => x._forcedSit)) {
-                var localChar = (Character*)(_clientState.LocalPlayer?.Address ?? IntPtr.Zero);
-                EmoteController* controller = &(localChar->EmoteController);
-                uint val = Marshal.ReadByte((IntPtr)controller, 20);
-                uint val2 = Marshal.ReadByte((IntPtr)controller, 33);
-                if((val == 50 && val2 == 0) || (val == 98 && val2 == 2) || (val == 117 && val2 == 3)) {
-                    Marshal.WriteByte((IntPtr)controller, 20, 97);
-                    Marshal.WriteByte((IntPtr)controller, 33, 1);
-                }
+            if(_hcManager._perPlayerConfigs.Any(x => x._blindfolded)) {
+                // var localChar = (Character*)(_clientState.LocalPlayer?.Address ?? IntPtr.Zero);
+                // EmoteController* controller = &(localChar->EmoteController);
+                // uint val = Marshal.ReadByte((IntPtr)controller, 20);
+                // uint val2 = Marshal.ReadByte((IntPtr)controller, 33);
+                // if((val == 52 && val2 == 0) || (val == 97 && val2 == 1) || (val == 98 && val2 == 2) || (val == 117 && val2 == 3)) {
+                //     // if it is one of these values, and the 
+                //     // ground sit [emote | cpose] list:
+                //     // groundsit1 = 52 | 0 
+                //     // groundsit2 = 97 | 1 (on knees)
+                //     // groundsit3 = 98 | 2
+                //     // groundsit4 = 117| 3
+                // }
+                // IDK how to force a cpose right now so just removing its functionality
             }
         }
     }
