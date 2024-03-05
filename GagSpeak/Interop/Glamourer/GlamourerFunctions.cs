@@ -256,15 +256,17 @@ public class GlamourerFunctions : IDisposable
                 // condition 9 -- > it was a blindfold equipped event, we should apply the blindfold
                 if(e.UpdateType == UpdateType.BlindfoldEquipped) {
                     GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Blindfold Equipped");
-                    var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._allowBlindfold == true);
-                    GagSpeak.Log.Debug($"[GlamourEventFired]: Found index {idx} for blindfold");
-                    await _Interop.SetItemToCharacterAsync(
-                        _onFrameworkService._address,
-                        Convert.ToByte(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot),
-                        _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
-                        _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameStain.Id, // The _drawData._gameStain.Id
-                        0
-                    );
+                    var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
+                    if(idx != -1) {
+                        GagSpeak.Log.Debug($"[GlamourEventFired]: Found index {idx} for blindfold");
+                        await _Interop.SetItemToCharacterAsync(
+                            _onFrameworkService._address,
+                            Convert.ToByte(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot),
+                            _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
+                            _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameStain.Id, // The _drawData._gameStain.Id
+                            0
+                        );
+                    }
                 }
             } catch (Exception ex) {
                 GagSpeak.Log.Error($"[GlamourEventFired]: Error processing glamour event: {ex}");
