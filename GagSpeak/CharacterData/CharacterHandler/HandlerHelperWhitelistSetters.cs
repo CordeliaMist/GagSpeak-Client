@@ -172,6 +172,19 @@ public partial class CharacterHandler
             _saveService.QueueSave(this);
         }
     }
+    public void SetWhitelistHardcoreSettings(int index, bool allowForcedFollow, bool forcedFollow,
+    bool allowForcedSit, bool forcedSit, bool allowForcedToStay, bool forcedToStay,
+    bool allowBlindfold, bool blindfolded) {
+        whitelistChars[index]._allowForcedFollow = allowForcedFollow;
+        whitelistChars[index]._forcedFollow = forcedFollow;
+        whitelistChars[index]._allowForcedSit = allowForcedSit;
+        whitelistChars[index]._forcedSit = forcedSit;
+        whitelistChars[index]._allowForcedToStay = allowForcedToStay;
+        whitelistChars[index]._forcedToStay = forcedToStay;
+        whitelistChars[index]._allowBlindfold = allowBlindfold;
+        whitelistChars[index]._blindfolded = blindfolded;
+        _saveService.QueueSave(this);
+    }
 
     // import list stuff
     public void StoreRestraintListForPlayer(int index, List<string> restraintList) {

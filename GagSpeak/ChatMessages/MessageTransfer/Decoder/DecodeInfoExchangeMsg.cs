@@ -198,10 +198,10 @@ public partial class MessageDecoder {
         }
 
         
-                // decoder for our sharing info about player (part 4)
+        // decoder for our sharing info about player (part 4)
         else if (decodedMessageMediator.encodedMsgIndex == 41) {
             // get the pattern
-            string pattern = @"^\|\|\s*(?<toyboxEnabled>.+?)\.\s*Within the drawer there\s*(?<toggleToyState>.+?),\s*(?<canControlIntensity>.+?)\s*currently set to\s*(?<intensityLevel>\d+)\.\s*(?<toyPatternState>.+?)\,\s*(?<toyboxLockState>.+?)\.\s*(?<toyActiveState>.+?)\s*with\s*(?<toyStepCount>.+?)\s*notches on the slider\.$";
+            string pattern = @"^\|\|\s*(?<toyboxEnabled>.+?)\.\s*Within the drawer there\s*(?<toggleToyState>.+?),\s*(?<canControlIntensity>.+?)\s*currently set to\s*(?<intensityLevel>\d+)\.\s*(?<toyPatternState>.+?)\,\s*(?<toyboxLockState>.+?)\.\s*(?<toyActiveState>.+?)\s*with\s*(?<toyStepCount>.+?)\s*notches on the slider\.\s*At\s*(?<hardcoreSettings>.+?)\%\s*(?<InHardcore>.+?)$";
             // use regex to match the pattern
             Match match = Regex.Match(recievedMessage, pattern);
             // check if the match is sucessful
@@ -224,6 +224,10 @@ public partial class MessageDecoder {
                 decodedMessageMediator.toyState = match.Groups["toyActiveState"].Value.Trim() == "Left on to buzz away" ? true : false;
                 // toy step count
                 decodedMessageMediator.toyStepCount = int.Parse(match.Groups["toyStepCount"].Value.Trim());
+                // get hardcore settings
+                decodedMessageMediator.SetHardcoreSettings(match.Groups["hardcoreSettings"].Value.Trim());
+                // get hardcore mode state
+                decodedMessageMediator.inHardcoreMode = match.Groups["InHardcore"].Value.Trim() == "Left" ? true : false;
                 // debug result
                 GagSpeak.Log.Debug($"[Message Decoder]: share info4: (Type) {decodedMessageMediator.encodedCmdType} || (ToggleToyState) {decodedMessageMediator.isChangingToyStateAllowed} || "+
                 $"(CanControlIntensity) {decodedMessageMediator.isIntensityControlAllowed} || (IntensityLevel) {decodedMessageMediator.intensityLevel} || "+

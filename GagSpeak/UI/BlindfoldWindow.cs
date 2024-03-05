@@ -12,9 +12,14 @@ using GagSpeak.ToyboxandPuppeteer;
 using ImGuiNET;
 
 namespace GagSpeak.UI;
+
 public enum AnimType { ActivateWindow, DeactivateWindow, None }
+
+public enum BlindfoldType { Light, Sensual }
+
 public class BlindfoldWindow : Window, IDisposable
 {
+    private DalamudPluginInterface  _pi;
     private IDalamudTextureWrap     textureWrap;
     private UiBuilder               _uiBuilder;
     private TimerRecorder           _timerRecorder;
@@ -33,10 +38,11 @@ public class BlindfoldWindow : Window, IDisposable
     ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoMouseInputs | ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove |
     ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoDocking) {
         _uiBuilder = uiBuilder;
+        _pi = pluginInterface;
         // determine if the pop out window is shown
         IsOpen = false;
         _uiBuilder.DisableUserUiHide = true;
-        var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "BlindfoldLace_Sensual.png");
+        var imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "BlindfoldLace_Sensual.png");
         textureWrap = _uiBuilder.LoadImage(imagePath);
         // set the stopwatch to send an elapsed time event after 2 seconds then stop
         _timerRecorder = new TimerRecorder(2000, ToggleWindow);
@@ -51,6 +57,19 @@ public class BlindfoldWindow : Window, IDisposable
         ImGui.SetNextWindowSize(ImGuiHelpers.MainViewport.Size); // draw across the whole screen
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero); // set the padding to 0
         ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f); // set the border size to 0
+    }
+
+    public void ChangeBlindfoldType(BlindfoldType type) {
+        var imagePath = "";
+        if(type == BlindfoldType.Light) {
+            imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "Blindfold_Light.png");
+            textureWrap?.Dispose(); // Dispose the old image to free resources
+            textureWrap = _uiBuilder.LoadImage(imagePath); // Load the new image
+        } else {
+            imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "BlindfoldLace_Sensual.png");
+            textureWrap?.Dispose(); // Dispose the old image to free resources
+            textureWrap = _uiBuilder.LoadImage(imagePath); // Load the new image
+        }
     }
 
     public void ToggleWindow(object? sender, ElapsedEventArgs e) {

@@ -1,4 +1,5 @@
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace GagSpeak.ChatMessages;
 
@@ -141,6 +142,17 @@ public class DecodedMessageMediator
         ForcedToStay = false;
         AllowBlindfold = false;
         Blindfolded = false;
+    }
+
+    public void SetHardcoreSettings(string settings) {
+        AllowForcedFollow = settings[0] == '1' ? true : false;
+        ForcedFollow = settings[1] == '1' ? true : false;
+        AllowForcedSit = settings[2] == '1' ? true : false;
+        ForcedSit = settings[3] == '1' ? true : false;
+        AllowForcedToStay = settings[4] == '1' ? true : false;
+        ForcedToStay = settings[5] == '1' ? true : false;
+        AllowBlindfold = settings[6] == '1' ? true : false;
+        Blindfolded = settings[7] == '1' ? true : false;
     }
 }
 #pragma warning restore CS8618

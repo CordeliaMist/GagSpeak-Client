@@ -80,10 +80,6 @@ public class DebugWindow : Window //, IDisposable
         ImGui.Text($"_hcManager.ActiveHCsetIdx: {_hcManager.ActiveHCsetIdx}");
         ImGui.Text($"restraint set active index: {_restraintSetManager._selectedIdx}");
         ImGui.Text($"whitelist active index: {_characterHandler.activeListIdx}");
-        DrawWhitelistCharactersAndLocks();
-        DrawRestraintSetOverview();
-        DrawAdvancedGarblerInspector();
-        DrawPhoneticDebugInformation();
         // add a button to reset faulty request info's
         ImGui.Separator();
         ImGui.Text($"Send Info Name: {_config.sendInfoName}");
@@ -94,6 +90,11 @@ public class DebugWindow : Window //, IDisposable
             _config.SetAcceptInfoRequests(true);
             _config.SetprocessingInfoRequest(false);
         }
+        DrawPlayerCharInfo();
+        DrawWhitelistCharactersAndLocks();
+        DrawRestraintSetOverview();
+        DrawAdvancedGarblerInspector();
+        DrawPhoneticDebugInformation();
     }
 
     // basic string function to get the label of title for the window

@@ -65,7 +65,7 @@ public class GagAndLockManager : IDisposable
     /// </list> </summary>
     public void RemoveGag(int layerIndex) {
         // get gagtype before clear
-        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _characterHandler.playerChar._selectedGagTypes[layerIndex]);
+        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(gt => gt.GetGagAlias() == _characterHandler.playerChar._selectedGagTypes[layerIndex]);
         // remove the gag information from anywhere where it should be removed from within our code
         _gagStorageManager.ChangeGagDrawDataWasEquippedBy(gagType, "");
         _characterHandler.SetPlayerGagType(layerIndex, "None", true, "self");

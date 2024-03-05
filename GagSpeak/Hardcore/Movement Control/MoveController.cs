@@ -16,11 +16,13 @@ public class MoveController : IDisposable
     private readonly IObjectTable _objectTable;
     public bool DisablingALLMovement { get; private set; } = false;
     public bool DisablingMouseMovement { get; private set; } = false;
+    public bool DisablingEmoteExecution { get; private set; } = false;
 
     // controls the complete blockage of movement from the player (Blocks /follow movement)
     [Signature("F3 0F 10 05 ?? ?? ?? ?? 0F 2E C6 0F 8A", ScanType = ScanType.StaticAddress, Fallibility = Fallibility.Infallible)]
     private nint forceDisableMovementPtr;
     private unsafe ref int ForceDisableMovement => ref *(int*)(forceDisableMovementPtr + 4);
+
 
     // prevents LMB+RMB moving by processing it prior to the games update movement check.
     public unsafe delegate byte MoveOnMousePreventorDelegate(MoveControllerSubMemberForMine* thisx);
@@ -53,18 +55,20 @@ public class MoveController : IDisposable
     public unsafe void TestUpdate(UnkTargetFollowStruct* unk1, IntPtr unk2)
     {
         UnkTargetFollowStruct* temp = unk1;
-        //targetFollowVar = unk1;
-        // GagSpeak.Log.Debug($"PRE:       UnkTargetFollowStruct: {((IntPtr)unk1).ToString("X")}");
-        // GagSpeak.Log.Debug($"---------------------------------");
-        // GagSpeak.Log.Debug($"PRE: Unk_0x450.Unk_GameObjectID0: {unk1->Unk_0x450.Unk_GameObjectID0.ToString("X")};");
-        // try {
-        //     GagSpeak.Log.Debug($"PRE      Struct target4 Unk_0x10: {unk1->Unk_0x450.Unk_0x10};");
-        //     GagSpeak.Log.Debug($"PRE      Struct target4 Unk_0x54: {unk1->Unk_0x450.Unk_0x54};");
-        // } catch (Exception ex) {
-        //     GagSpeak.Log.Error($"Error converting Unk_0x10 to string: {ex}");
-        // }
-        // GagSpeak.Log.Debug($"PRE:             FollowingTarget: {unk1->FollowingTarget.ToString("X")}");
-        // GagSpeak.Log.Debug($"PRE:                 Follow Type: {unk1->FollowType.ToString("X")}");
+        /*
+        targetFollowVar = unk1;
+        GagSpeak.Log.Debug($"PRE:       UnkTargetFollowStruct: {((IntPtr)unk1).ToString("X")}");
+        GagSpeak.Log.Debug($"---------------------------------");
+        GagSpeak.Log.Debug($"PRE: Unk_0x450.Unk_GameObjectID0: {unk1->Unk_0x450.Unk_GameObjectID0.ToString("X")};");
+        try {
+            GagSpeak.Log.Debug($"PRE      Struct target4 Unk_0x10: {unk1->Unk_0x450.Unk_0x10};");
+            GagSpeak.Log.Debug($"PRE      Struct target4 Unk_0x54: {unk1->Unk_0x450.Unk_0x54};");
+        } catch (Exception ex) {
+            GagSpeak.Log.Error($"Error converting Unk_0x10 to string: {ex}");
+        }
+        GagSpeak.Log.Debug($"PRE:             FollowingTarget: {unk1->FollowingTarget.ToString("X")}");
+        GagSpeak.Log.Debug($"PRE:                 Follow Type: {unk1->FollowType.ToString("X")}");
+        */
         foreach (Dalamud.Game.ClientState.Objects.Types.GameObject obj in _objectTable)
         {
             if (obj.ObjectId == unk1->GameObjectIDToFollow)
@@ -81,16 +85,18 @@ public class MoveController : IDisposable
             // output the original
             UnfollowHook.Original(unk1, unk2);
         }
-        // try {
-        //     GagSpeak.Log.Debug($"POST       UnkTargetFollowStruct: {((IntPtr)unk1).ToString("X")}");
-        //     GagSpeak.Log.Debug($"---------------------------------");
-        //     GagSpeak.Log.Debug($"POST Unk_0x450.Unk_GameObjectID0: {unk1->Unk_0x450.Unk_GameObjectID0.ToString("X")};");
-        //     GagSpeak.Log.Debug($"POST     Struct target4 Unk_0x54: {unk1->Unk_0x450.Unk_0x54};");
-        //     GagSpeak.Log.Debug($"POST             FollowingTarget: {unk1->FollowingTarget.ToString("X")}");
-        //     GagSpeak.Log.Debug($"POST                 Follow Type: {unk1->FollowType.ToString("X")}");
-        // } catch (Exception ex) {
-        //     GagSpeak.Log.Error($"Error {ex}");
-        // }
+        /*
+        try {
+            GagSpeak.Log.Debug($"POST       UnkTargetFollowStruct: {((IntPtr)unk1).ToString("X")}");
+            GagSpeak.Log.Debug($"---------------------------------");
+            GagSpeak.Log.Debug($"POST Unk_0x450.Unk_GameObjectID0: {unk1->Unk_0x450.Unk_GameObjectID0.ToString("X")};");
+            GagSpeak.Log.Debug($"POST     Struct target4 Unk_0x54: {unk1->Unk_0x450.Unk_0x54};");
+            GagSpeak.Log.Debug($"POST             FollowingTarget: {unk1->FollowingTarget.ToString("X")}");
+            GagSpeak.Log.Debug($"POST                 Follow Type: {unk1->FollowType.ToString("X")}");
+        } catch (Exception ex) {
+            GagSpeak.Log.Error($"Error {ex}");
+        }
+        */
         foreach (Dalamud.Game.ClientState.Objects.Types.GameObject obj in _objectTable)
         {
             if (obj.ObjectId == unk1->GameObjectIDToFollow)
@@ -110,13 +116,13 @@ public class MoveController : IDisposable
     }
 
     // Hook enablers
-    public void EnableHooks() {
+    public void EnableMovementHooks() {
         MovementUpdateHook?.Enable(); // for enabling the prevention of LMB+RMB movement
         UnfollowHook?.Enable(); // makes it so you cant unfollow the target
     }
 
     // Hook disablers
-    public void DisableHooks() {
+    public void DisableMovementHooks() {
         MovementUpdateHook?.Disable(); // for disabling the prevention of LMB+RMB movement
         UnfollowHook?.Disable(); // makes it so you can unfollow the target
     }
@@ -124,7 +130,7 @@ public class MoveController : IDisposable
     // the disposer
     public void Dispose() {
         GagSpeak.Log.Debug($"Disposing of MoveController: {DisablingALLMovement}, {DisablingMouseMovement}");
-        DisableHooks(); // disable the hooks
+        DisableMovementHooks(); // disable the hooks
 
         // dispose of the hooks
         MovementUpdateHook?.Dispose();
@@ -149,12 +155,12 @@ public class MoveController : IDisposable
         if(DisablingMouseMovement) {
             GagSpeak.Log.Debug($"Enabling mouse");
             // let our code know we are no longer preventing mouse movement
-            DisableHooks();
+            DisableMovementHooks();
             DisablingMouseMovement = false;
         }
     }
 
-    public unsafe void CompletelyDisableMovement(bool togglePointer, bool toggleMouse) {
+    public unsafe void CompletelyDisableMovement(bool togglePointer, bool toggleMouse, bool toggleEmotes) {
         // if we are currenelty not preventing mouse movement, and we want to disable movement, we should set it to true
         if (!DisablingALLMovement && togglePointer) {
             GagSpeak.Log.Debug($"Disabling moving, {ForceDisableMovement}");
@@ -166,12 +172,11 @@ public class MoveController : IDisposable
         }
         // if we are currenelty not preventing mouse movement, and we want to disable mouse movement, we should set it to true
         if (!DisablingMouseMovement && toggleMouse) {
-            EnableHooks();
+            EnableMovementHooks();
             GagSpeak.Log.Debug($"Disabling mouse");
             DisablingMouseMovement = true;
         }
     }
-
 
     [StructLayout(LayoutKind.Explicit)]
     public unsafe struct UnkGameObjectStruct {

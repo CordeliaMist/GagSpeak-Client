@@ -26,6 +26,7 @@ public class HC_ControlRestrictions
     private readonly GsActionManager    _actionManager;
     private readonly CharacterHandler   _charHandler;
     private readonly FontService        _fontService;
+    private readonly BlindfoldWindow    _blindfoldWindow;
     private readonly IClientState       _client;
     private const float _comboWidth = 200;
     private readonly FontService        _fonts;                 // for getting the fonts
@@ -39,7 +40,8 @@ public class HC_ControlRestrictions
     private readonly ItemData           _itemData;              // for getting the item data
     public HC_ControlRestrictions(HardcoreManager hardcoreManager, GsActionManager actionManager,
     CharacterHandler charHandler, FontService fontService, IClientState client, DictStain stainData,
-    GagSpeakConfig config, IDataManager gameData, TextureService textures, ItemData itemData, FontService fonts) {
+    GagSpeakConfig config, IDataManager gameData, TextureService textures, ItemData itemData,
+    FontService fonts, BlindfoldWindow blindfoldWindow) {
         _gameData = gameData;
         _fonts = fonts;
         _textures = textures;
@@ -49,6 +51,7 @@ public class HC_ControlRestrictions
         _config = config;
         _actionManager = actionManager;
         _charHandler = charHandler;
+        _blindfoldWindow = blindfoldWindow;
         _fontService = fontService;
         _client = client;
 
@@ -100,17 +103,22 @@ public class HC_ControlRestrictions
             EquipDrawData blindfoldItem = _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._blindfoldItem;
             // draw out title and slot selection
             using (var group = ImRaii.Group()) {
-                ImGui.PushFont(_fonts.UidFont);
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
-                try{ ImGui.Text($"Blindfold Item:"); } finally { ImGui.PopFont(); }
+                var blindfoldType = (int)_config.blindfoldType;
+                ImGui.SetNextItemWidth(125);
+                if(ImGui.Combo("##BlindfoldType", ref blindfoldType, new string[] { "Light", "Sensual" }, 2)) {
+                    // Update the selected slot when the combo box selection changes
+                    _config.blindfoldType = (BlindfoldType)blindfoldType;
+                    _config.Save();
+                    _blindfoldWindow.ChangeBlindfoldType(_config.blindfoldType);
+                }
                 // draw out the blindfold selection
                 ImGui.SetNextItemWidth(125);
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 2*ImGuiHelpers.GlobalScale);
                 if(ImGui.Combo("##BlindfoldEquipSlotDD", ref blindfoldItem._activeSlotListIdx,
                 EquipSlotExtensions.EqdpSlots.Select(slot => slot.ToName()).ToArray(), EquipSlotExtensions.EqdpSlots.Count)) {
                     // Update the selected slot when the combo box selection changes
                     blindfoldItem.SetDrawDataSlot(EquipSlotExtensions.EqdpSlots[blindfoldItem._activeSlotListIdx]);
                     blindfoldItem.ResetDrawDataGameItem();
+                    _hcManager.Save();
                 }
             }
             // draw the combo
@@ -175,9 +183,11 @@ public class HC_ControlRestrictions
         // conditionals to detect for changes in the combo's
         if (change && !blindfoldItem._gameItem.Equals(combo.CurrentSelection)) {
             blindfoldItem.SetDrawDataGameItem(combo.CurrentSelection);
+            _hcManager.Save();
         }
         if (clear || ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
             blindfoldItem.ResetDrawDataGameItem();
+            _hcManager.Save();
             GagSpeak.Log.Debug($"[Hardcore Blindfold] Right Click processed, item reverted to none!");
         }
     }
@@ -189,6 +199,7 @@ public class HC_ControlRestrictions
         if (_stainCombo.Draw($"##BlindfoldItemStain-{blindfoldItem._slot}", stain.RgbaColor, stain.Name, found, stain.Gloss, width)) {
             if (_stainData.TryGetValue(_stainCombo.CurrentSelection.Key, out stain)) {
                 blindfoldItem.SetDrawDataGameStain(stain.RowIndex);
+                _hcManager.Save();
                 GagSpeak.Log.Debug($"[Hardcore Blindfold] Stain Changed: {stain.RowIndex}");
             }
             else if (_stainCombo.CurrentSelection.Key == Penumbra.GameData.Structs.Stain.None.RowIndex) { }
@@ -196,6 +207,7 @@ public class HC_ControlRestrictions
         // conditionals to detect for changes in the combo's via reset
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
             blindfoldItem.ResetDrawDataGameStain();
+            _hcManager.Save();
             GagSpeak.Log.Debug($"[Hardcore Blindfold] Right Click processed, stain reverted to none!");
         }
     }

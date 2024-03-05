@@ -33,6 +33,7 @@ public unsafe class GsActionManager : IDisposable
     private readonly GagSpeakGlamourEvent _glamourEvent;
     private readonly InitializationManager _manager;
     // for direct access inspection
+
     public Control* gameControl = Control.Instance(); // instance to have control over our walking
     // attempt to get the rapture hotbar module so we can modify the display of hotbar items
     public RaptureHotbarModule* raptureHotarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();

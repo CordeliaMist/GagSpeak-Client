@@ -217,7 +217,8 @@ public class GagListingsDrawer : IDisposable
         if (!locked) { // if we right click on it, clear the selection
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right)) {
                 // get gagtype before clear
-                var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == _characterHandler.playerChar._selectedGagTypes[layerIndex]);
+                GagSpeak.Log.Debug($"[GagListingsDrawer]: Clearing gag type for layer {layerIndex} | {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
+                var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(gt => gt.GetGagAlias() == _characterHandler.playerChar._selectedGagTypes[layerIndex]);
                 // clear the gag item from the selectedGagTypes list, resetting it to none
                 if(_gagStorageManager._gagEquipData[gagType]._isEnabled) {
                     // we should also apply the unequip data if the auto equip was on

@@ -14,6 +14,9 @@ using System.Windows.Forms;
 using System.Linq;
 using System.Threading.Tasks;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using GagSpeak.Gagsandlocks;
 
 namespace GagSpeak.Hardcore.Movement;
 public class MovementManager : IDisposable
@@ -52,9 +55,11 @@ public class MovementManager : IDisposable
         _hcManager = hardcoreManager;
         _rsPropertyChangedEvent = RS_PropertyChangedEvent;
         _manager = manager;
+        
         // attempt to set the value safely
         HcHelpers.Safe(delegate {
-            getRefValue = (GetRefValue)Delegate.CreateDelegate(typeof(GetRefValue), _keyState, _keyState.GetType().GetMethod("GetRefValue", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(int) }, null));
+            getRefValue = (GetRefValue)Delegate.CreateDelegate(typeof(GetRefValue), _keyState, 
+                            _keyState.GetType().GetMethod("GetRefValue", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(int) }, null));
         });
 
         // run an async task that will await to apply affects until we are logged in, after which it will fire the restraint effect logic
@@ -112,13 +117,17 @@ public class MovementManager : IDisposable
             Marshal.WriteByte((IntPtr)gameControl, 23163, 0x0);
         }
 
-        if((e.PropertyType == HardcoreChangeType.ForcedFollow && e.ChangeType == RestraintSetChangeType.Disabled)
-        || (e.PropertyType == HardcoreChangeType.ForcedSit && e.ChangeType == RestraintSetChangeType.Disabled)) {
+        if(e.PropertyType == HardcoreChangeType.ForcedFollow && e.ChangeType == RestraintSetChangeType.Disabled) {
             if(!_hcManager._perPlayerConfigs.Any(x => x._forcedSit) && !_hcManager._perPlayerConfigs.Any(x => x._forcedFollow)) {
                 _MoveController.CompletelyEnableMovement();
                 ResetCancelledMoveKeys();
             }
-
+        }
+        if(e.PropertyType == HardcoreChangeType.ForcedSit && e.ChangeType == RestraintSetChangeType.Disabled) {
+            if(!_hcManager._perPlayerConfigs.Any(x => x._forcedSit) && !_hcManager._perPlayerConfigs.Any(x => x._forcedFollow)) {
+                _MoveController.CompletelyEnableMovement();
+                ResetCancelledMoveKeys();
+            }
         }
     }
 
@@ -138,17 +147,12 @@ public class MovementManager : IDisposable
             //if(InConditionToApplyEffects()) {}
 
             // If the player is being forced to sit, we want to completely immobilize them
-            if(_hcManager._perPlayerConfigs.Any(x => x._forcedSit)
-            || _hcManager._perPlayerConfigs.Any(x => x._forcedFollow)) {
-                HandleMovementPrevention(); // true == full immobile
+            var sitting = isForcedSitting();
+            var following = isForcedFollowing();
+            var immobile = isImmobile();
+            if(sitting || following || immobile) {
+                HandleMovementPrevention(following, sitting, immobile);
             }
-            // if we have a set active by a player and a active set, we should handle movement prevention for immobile
-            else if(_hcManager.ActivePlayerCfgListIdx != -1 && _hcManager.ActiveHCsetIdx != -1) {
-                if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._immobileProperty) {
-                    HandleMovementPrevention(); // true == full immobile
-                }
-            }
-            // otherwise, we should enable movement and any blocked virtual keys
             else {
                 _MoveController.CompletelyEnableMovement();
                 ResetCancelledMoveKeys();
@@ -180,10 +184,46 @@ public class MovementManager : IDisposable
             }
 
             // handle blinfolded camera action
-            if(_hcManager._perPlayerConfigs.Any(x => x._blindfolded)) {
+            if(_hcManager._perPlayerConfigs.Any(x => x._forcedSit)) {
+                var localChar = (Character*)(_clientState.LocalPlayer?.Address ?? IntPtr.Zero);
+                EmoteController* controller = &(localChar->EmoteController);
+                uint val = Marshal.ReadByte((IntPtr)controller, 20);
+                uint val2 = Marshal.ReadByte((IntPtr)controller, 33);
+                if((val == 50 && val2 == 0) || (val == 98 && val2 == 2) || (val == 117 && val2 == 3)) {
+                    Marshal.WriteByte((IntPtr)controller, 20, 97);
+                    Marshal.WriteByte((IntPtr)controller, 33, 1);
+                }
             }
-
         }
+    }
+
+    public unsafe EmoteController* GetEmoteController() {
+        XivControl.Control* controlInstance = XivControl.Control.Instance();
+        if (controlInstance == null)
+        {
+            throw new InvalidOperationException("Control instance is null.");
+        }
+
+        BattleChara* localPlayer = controlInstance->LocalPlayer;
+        if (localPlayer == null)
+        {
+            throw new InvalidOperationException("Local player is null.");
+        }
+
+        Character character = localPlayer->Character;
+
+        EmoteController emoteController = character.EmoteController;
+
+        return &emoteController;
+    }
+
+    private bool isForcedSitting() => _hcManager._perPlayerConfigs.Any(x => x._forcedSit);
+    private bool isForcedFollowing() => _hcManager._perPlayerConfigs.Any(x => x._forcedFollow);
+    private bool isImmobile() => ImmobileActiveAndValid();
+    private bool ImmobileActiveAndValid() {
+        return _hcManager.ActiveHCsetIdx != -1
+            && _hcManager.ActivePlayerCfgListIdx != -1
+            && _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._immobileProperty;
     }
 
     private bool AllowFrameworkHardcoreUpdates() {
@@ -209,21 +249,21 @@ public class MovementManager : IDisposable
     }
 
     // handle the prevention of our movenent.
-    private void HandleMovementPrevention() {
-        // if we are either forced to sit or forced to walk
-        if(_hcManager._perPlayerConfigs.Any(x => x._forcedSit)) {
-            // completely disable movement
-            _MoveController.CompletelyDisableMovement(true, false); // set pointer but dont turn off mouse
+    private void HandleMovementPrevention(bool following, bool sitting, bool immobile) {
+        if(sitting) {
+            _MoveController.CompletelyDisableMovement(false, true, true); // set pointer and turn off mouse and disable emotes
+        }
+        else if(immobile) {
+            _MoveController.CompletelyDisableMovement(true, false, true); // set pointer but dont turn off mouse
         }
         // otherwise if we are forced to follow
-        else if(_hcManager._perPlayerConfigs.Any(x => x._forcedFollow)) {
+        else if(following) {
             // in this case, we want to maske sure to block players keys and force them to legacy mode.
             if(GameConfig.UiControl.GetBool("MoveMode") == false) {
-                // we need to set it to true
                 GameConfig.UiControl.Set("MoveMode", (int)MovementMode.Legacy);
             }
             // dont set pointer, but disable mouse
-            _MoveController.CompletelyDisableMovement(false, true);
+            _MoveController.CompletelyDisableMovement(false, true, true); // disable mouse and emotes
         }
         // otherwise, we should re-enable the mouse blocking and immobilization traits
         else {

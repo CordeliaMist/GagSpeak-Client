@@ -11,7 +11,8 @@ public partial class CharacterHandler
 {
     public void SetPlayerGagType(int index, string gagName, bool invokeGlamourEvent = true, string assignerName = "self") {
         // see if we reset it to none, and if so, we should remove our glamoured gag item
-        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
+        GagSpeak.Log.Debug($"[GagSpeak]: Setting gag type for index {index} to {gagName} | {playerChar._selectedGagTypes[index]}");
+        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
         // clear the gag item from the selectedGagTypes list, resetting it to none
         if(gagName == "None") {
             ResetPlayerGagTypeToNone(index, invokeGlamourEvent);
@@ -21,7 +22,7 @@ public partial class CharacterHandler
             // if the current gag type is different, than the gag name, then change it!
             if(playerChar._selectedGagTypes[index] != gagName) {
                 // BEFORE WE UPDATE THE DATA, MAKE SURE WE UNEQUIP THE OLD ONE IF IT WAS ENABLED
-                var prevGagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
+                var prevGagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
                 if(_gagStorageManager._gagEquipData[prevGagType]._isEnabled) {
                     // unequip it
                     _gagSpeakGlamourEvent.Invoke(UpdateType.GagUnEquipped, playerChar._selectedGagTypes[index], "self");
@@ -42,7 +43,8 @@ public partial class CharacterHandler
 
     private void ResetPlayerGagTypeToNone(int index, bool invokeGlamourEvent) {
         // store the gagtype in both enum and name
-        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
+        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(gt => gt.GetGagAlias() == playerChar._selectedGagTypes[index]);
+        GagSpeak.Log.Debug($"[GagSpeak]: Resetting gag type to none for index {index} and gag type {gagType}");
         var gagTypeName = playerChar._selectedGagTypes[index];
         // see if the gag was previously Not none,
         if(playerChar._selectedGagTypes[index] != "None") {

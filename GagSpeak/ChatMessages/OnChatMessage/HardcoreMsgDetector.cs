@@ -133,6 +133,17 @@ public class HardcoreMsgDetector
                     return true;
                 }
             }
+            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, on your knees.")) {
+                // and we are not already forced to sit
+                if(playerConfig._forcedSit == false) {
+                    // then we should set forced to sit to true, locking our movement
+                    _hcManager.SetForcedSit(senderIdx, true);
+                    // then we should execute /sit
+                    messageToSend = "groundsit";
+                    // it is a valid trigger, so return true
+                    return true;
+                }
+            }
             // otherwise, see if we the command is to end our forced sit
             else if(chatmessage.TextValue.ToLowerInvariant().Contains($"you may stand now {_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}.")) {
                 // and we are already forced to sit

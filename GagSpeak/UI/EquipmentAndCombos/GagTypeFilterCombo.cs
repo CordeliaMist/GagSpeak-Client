@@ -56,7 +56,7 @@ public sealed class GagTypeFilterCombo
                         _gagTypes = string.IsNullOrEmpty(_comboSearchText) ? (
                             _gagService._gagTypes
                         ) : (
-                            _gagService._gagTypes.Where(gag => gag._gagName.ToLower().Contains(_comboSearchText.ToLower())).ToList()
+                            _gagService._gagTypes.Where(gag => gag._gagName.Contains(_comboSearchText, StringComparison.OrdinalIgnoreCase)).ToList()
                         );
                     }
                     // Now that we have our results, so draw the childs
@@ -104,7 +104,7 @@ public sealed class GagTypeFilterCombo
                         _gagTypes = string.IsNullOrEmpty(_comboSearchText) ? (
                             _gagService._gagTypes
                         ) : (
-                            _gagService._gagTypes.Where(gag => gag._gagName.ToLower().Contains(_comboSearchText.ToLower())).ToList()
+                            _gagService._gagTypes.Where(gag => gag._gagName.Contains(_comboSearchText, StringComparison.OrdinalIgnoreCase)).ToList()
                         );
                     }
                     // Now that we have our results, so draw the childs

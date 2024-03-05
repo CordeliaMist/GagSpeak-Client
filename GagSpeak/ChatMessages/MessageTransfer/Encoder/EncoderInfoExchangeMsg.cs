@@ -3,13 +3,18 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using System;
 using GagSpeak.CharacterData;
 using GagSpeak.Services;
+using GagSpeak.Hardcore;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
 public partial class MessageEncoder {
     private readonly PlugService _plugService;
-    public MessageEncoder(PlugService plugService) {
+    private readonly HardcoreManager _manager;
+    private readonly GagSpeakConfig _config;
+    public MessageEncoder(PlugService plugService, HardcoreManager manager, GagSpeakConfig config) {
         _plugService = plugService;
+        _manager = manager;
+        _config = config;
     }
     // for making sure we can interface with the character Handler
     
@@ -242,47 +247,52 @@ public partial class MessageEncoder {
 
         // if we reach here, it is successful, and we can begin to encode the message.
         string targetPlayerFormatted = targetPlayer + "@" + _characterHandler.whitelistChars[Idx]._homeworld;
-
+        // 
         string baseString = $"/tell {targetPlayerFormatted} || ";
-
         // is messageSenders toybox enabled? (BOOL)
         baseString += _characterHandler.playerChar._enableToybox
         ? "Their toybox compartment accessible to use" : "Their toybox inaccessible for use";
         baseString += ". Within the drawer there ";
-
         // does messageSender allow you to toggle toy? (BOOL)
         baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._allowChangingToyState
         ? "was powered Vibrator" : "was an unpowered Vibrator";
         baseString += ", ";
-
         // does messageSender allow adjusting intensity of toy? (BOOL)
         baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._allowIntensityControl
         ? "with an adjustable intensity level" : "with a static intensity level";
-
         // current intensity level of active toy ((or new intensity level being sent)) (INT)
         baseString += $" currently set to ";
         baseString += $"{_characterHandler.playerChar._intensityLevel}";
         baseString += ". ";
-
         // does messageSender allow you to execute storedToyPatterns? (BOOL)
         baseString += _characterHandler.playerChar._uniquePlayerPerms[Idx]._allowUsingPatterns
         ? "The vibrator was able to execute set patterns" : "Unfortuintely the vibrator couldnt execute any patterns";
         baseString += ", ";
-
         // does messageSender allow you to lock the toybox UI? (BOOL)
         baseString += _characterHandler.playerChar._lockToyboxUI
         ? "with the viberator strapped tight to their skin" : "with the vibrator loosely tied to their skin";
         baseString += ". ";
-
         // for toy state
         baseString +=  _characterHandler.playerChar._isToyActive
         ? "Left on to buzz away" : "Left powered off";
-
         // for toy steps
         baseString += " with ";
         baseString += _plugService.stepCount;
         baseString += " notches on the slider.";
-
+        // for hardcore settings
+        baseString += " At ";
+        // provide all of your hardcore details. if allowForcedFollow = true,
+        baseString += _manager._perPlayerConfigs[Idx]._allowForcedFollow ? "1" : "0";
+        baseString += _manager._perPlayerConfigs[Idx]._forcedFollow ? "1" : "0";
+        baseString += ".";
+        baseString += _manager._perPlayerConfigs[Idx]._allowForcedSit ? "1" : "0";
+        baseString += _manager._perPlayerConfigs[Idx]._forcedSit ? "1" : "0";
+        baseString += _manager._perPlayerConfigs[Idx]._allowForcedToStay ? "1" : "0";
+        baseString += _manager._perPlayerConfigs[Idx]._forcedToStay ? "1" : "0";
+        baseString += _manager._perPlayerConfigs[Idx]._allowBlindfold ? "1" : "0";
+        baseString += _manager._perPlayerConfigs[Idx]._blindfolded ? "1" : "0";
+        baseString += "% ";
+        baseString += _config.hardcoreMode ? "Left" : "Remaining";
         return baseString;
     }
 }

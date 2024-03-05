@@ -179,7 +179,7 @@ public class GlamourerFunctions : IDisposable
                         // if it is none, then do the same as the unequip function.
                         var gagType = Enum.GetValues(typeof(GagList.GagType))
                                         .Cast<GagList.GagType>()
-                                        .FirstOrDefault(g => g.GetGagAlias() == e.GagType);
+                                        .First(g => g.GetGagAlias() == e.GagType);
                         // unequip it
                         await _Interop.SetItemToCharacterAsync(
                                 _onFrameworkService._address,
@@ -194,7 +194,7 @@ public class GlamourerFunctions : IDisposable
                 if(e.UpdateType == UpdateType.GagUnEquipped && _characterHandler.playerChar._allowItemAutoEquip) {
                     // get the gagtype
                     GagSpeak.Log.Debug($"[GlamourEventFired]: Processing Gag UnEquipped");
-                    var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(g => g.GetGagAlias() == e.GagType);
+                    var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(g => g.GetGagAlias() == e.GagType);
                     // this should replace it with nothing
                     await _Interop.SetItemToCharacterAsync(
                             _onFrameworkService._address,
@@ -316,8 +316,8 @@ public class GlamourerFunctions : IDisposable
             return;
         }
         // Get the gagtype (enum) where it's alias matches the gagName
-        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().FirstOrDefault(g => g.GetGagAlias() == gagName);
-        // See if the GagType is in our dictionary & that the gagName is not "None" (because .FirstOrDefault() would make gagType==BallGag when gagName==None)
+        var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(g => g.GetGagAlias() == gagName);
+        // See if the GagType is in our dictionary & that the gagName is not "None" (because .First() would make gagType==BallGag when gagName==None)
         if(_gagStorageManager._gagEquipData[gagType]._isEnabled == false) {
             GagSpeak.Log.Debug($"[Interop - SetItem]: GagType {gagName} is not enabled, so not setting item.");
             return;

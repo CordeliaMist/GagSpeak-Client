@@ -36,7 +36,7 @@ public partial class ResultLogic {
     /// <summary> Handles the information provide part 1 of 4 messages below. </summary>
     public bool ResLogicProvideInfoPartOne(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
         // because we stored the name of who we need to send it to in our config before p.
-        _config.SetprocessingInfoRequest(true);
+        _config.SetprocessingInfoRequest(true); // this might cause some bugs, but the button in the debug tab can fix it
         string senderName = _config.sendInfoName.Substring(0, _config.sendInfoName.IndexOf('@'));
         int Idx = -1;
         if(_characterHandler.IsPlayerInWhitelist(senderName)) {
@@ -68,6 +68,7 @@ public partial class ResultLogic {
                 decodedMessageMediator.layerAssigner
             );
             GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 1 message");
+            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Recieved [{senderName}]'s Information details(1/4)").AddItalicsOff().BuiltString);
             return true;
         }
         else {
@@ -94,6 +95,7 @@ public partial class ResultLogic {
                 decodedMessageMediator.layerAssigner
             );
             GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 2 message");
+            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Recieved [{senderName}]'s Information details(2/4)").AddItalicsOff().BuiltString);
             return true;
         } else {
             return LogError($"ERROR, Invalid information provide part 2 message parse.");
@@ -121,6 +123,7 @@ public partial class ResultLogic {
             _characterHandler.SetWhitelistAllowMotionRequests(Idx, decodedMessageMediator.allowMotionRequests);
             _characterHandler.SetWhitelistAllowAllCommands(Idx, decodedMessageMediator.allowAllCommands);
             GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 3 message");
+            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Recieved [{senderName}]'s Information details(3/4)").AddItalicsOff().BuiltString);
             return true;
         } else {
             return LogError($"ERROR, Invalid information provide part 3 message parse.");
@@ -144,7 +147,11 @@ public partial class ResultLogic {
             _characterHandler.SetWhitelistAllowToyboxLocking(Idx, decodedMessageMediator.isToyboxLockingAllowed);
             _characterHandler.SetWhitelistToyIsActive(Idx, decodedMessageMediator.toyState);
             _characterHandler.SetWhitelistToyStepSize(Idx, decodedMessageMediator.toyStepCount);
+            _characterHandler.SetWhitelistHardcoreSettings(Idx, decodedMessageMediator.AllowForcedFollow, decodedMessageMediator.ForcedFollow,
+                decodedMessageMediator.AllowForcedSit, decodedMessageMediator.ForcedSit, decodedMessageMediator.AllowForcedToStay,
+                decodedMessageMediator.ForcedToStay, decodedMessageMediator.AllowBlindfold, decodedMessageMediator.Blindfolded);
             GagSpeak.Log.Debug($"[MsgResultLogic]: Recieved Sucessful parse for information provide part 4 message");
+            _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Recieved [{senderName}]'s Information details(4/4)").AddItalicsOff().BuiltString);
             // we have finished revcieving info from this person, make sure to clear the sendInfoName
             _config.SetSendInfoName("");
             _config.SetAcceptInfoRequests(true);

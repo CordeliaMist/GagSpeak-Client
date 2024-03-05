@@ -36,7 +36,6 @@ namespace GagSpeak.Gagsandlocks {
         MistressTimerPadlock,   // Mistress Timer Padlock, must ask mistress to unlock, but only after a certain amount of time
     };
 
-
     /// <summary> Gag listing </summary>
     public static class GagList {
         #region GagListEnum
@@ -99,6 +98,7 @@ namespace GagSpeak.Gagsandlocks {
             TenticleGag,
             WebGag,
             WiffleGag,
+            None, // No gag
         }
         #endregion GagListEnum
         #region GagListAlias
@@ -162,7 +162,8 @@ namespace GagSpeak.Gagsandlocks {
             GagType.TenticleGag => "Tentacle Gag",
             GagType.WebGag => "Web Gag",
             GagType.WiffleGag => "Wiffle Gag",
-            _ => "Unknown Gag"
+            GagType.None => "None",
+            _ => "None"
         };
         #endregion GagListAlias
     }
