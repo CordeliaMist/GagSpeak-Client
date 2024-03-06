@@ -181,6 +181,22 @@ public class RestraintSetManager : ISavable, IDisposable
         return false;
     }
 
+    /// <summary> Looks to see if any restraint set is enabled. </summary>
+    /// <returns> true if a set is enabled, false if not. The index of the enabled set is passed out </returns>
+    public bool IsAnySetEnabled(out int enabledIdx, out string assignerOfSet) {
+        // fetch the idx, we do this every time so that if someone changes their whitelist while a set is active, this will update to still match them.
+        enabledIdx = _restraintSets.FindIndex(set => set._enabled);
+        // get the person who enabled it
+        if(enabledIdx == -1) {
+            assignerOfSet = "INVALID";
+            return false;
+        } else {
+            assignerOfSet = _restraintSets[enabledIdx]._wasEnabledBy;
+            GSLogger.LogType.Debug($"[RestraintSetManager] Found an enabled RestraintSet: {enabledIdx}, enabled by {assignerOfSet}");
+            return true;
+        }
+    }
+
     /// <summary> Sets the IsEnabled for a restraint set spesified by index if it exists. </summary>
     public void ChangeRestraintSetState(int restraintSetIdx, bool isEnabled, string assignerName = "self") {
         // if we are wanting to enable this set, be sure to disable all other sets first

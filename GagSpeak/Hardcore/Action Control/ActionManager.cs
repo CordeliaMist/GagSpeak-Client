@@ -92,10 +92,9 @@ public unsafe class GsActionManager : IDisposable
     }
 
     private void EnableProperties(int index) {
-        _hcManager.ActiveHCsetIdx = index;
-        // set properties to true
-        if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx].AnyPropertyTrue() && _hcManager.ActiveHCsetIdx != -1) {
-            // apply stimulation modifier
+        // if the index isnt out of range, then apply the settings
+        if(index != -1) {
+            // apply stimulation modifier, if any
             _hcManager.ApplyMultipler();
             // activate hotbar lock
             _hotbarLocker.SetHotbarLockState(true);
@@ -103,8 +102,6 @@ public unsafe class GsActionManager : IDisposable
     }
 
     private void DisableProperties() {
-        // set the active set to -1
-        _hcManager.ActiveHCsetIdx = -1;
         // reset multiplier
         _hcManager.StimulationMultipler = 1.0;
         // we should also restore hotbar slots
@@ -133,7 +130,7 @@ public unsafe class GsActionManager : IDisposable
     }
 
     // fired on framework tick while a set is active
-    private void UpdateSlots() {
+    private void UpdateSlots(int idxOfAssignerOfSet, int idxOfSet) {
         // before we get the hotbar rapture, let's 
         var baseSpan = raptureHotarModule->StandardHotBars; // the length of our hotbar count
         for(var i=0; i < baseSpan.Length; i++) {
@@ -150,38 +147,32 @@ public unsafe class GsActionManager : IDisposable
                     // if it is a valid action, scan to see if the commandID is equyal to any of our banned actions
                     if (isAction && CurrentJobBannedActions.TryGetValue(slot->CommandId, out var props)) {
                         // see if any of the indexes in the array contain a AcReqPros
-                        if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._gaggedProperty
-                        && props.Contains(AcReqProps.Speech)) {
+                        if(_hcManager._perPlayerConfigs[idxOfAssignerOfSet]._rsProperties[idxOfSet]._gaggedProperty && props.Contains(AcReqProps.Speech)) {
                             // speech should be restrained, so remove any actions requireing speech
                             slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 2886);
                             continue;
                         }
-                        if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._blindfoldedProperty
-                        && props.Contains(AcReqProps.Sight)) {
+                        if(_hcManager._perPlayerConfigs[idxOfAssignerOfSet]._rsProperties[idxOfSet]._blindfoldedProperty && props.Contains(AcReqProps.Sight)) {
                             // sight should be restrained, so remove any actions requireing sight
                             slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 99);
                             continue;
                         }
-                        if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._weightyProperty
-                        && props.Contains(AcReqProps.Weighted)) {
+                        if(_hcManager._perPlayerConfigs[idxOfAssignerOfSet]._rsProperties[idxOfSet]._weightyProperty && props.Contains(AcReqProps.Weighted)) {
                             // weighted should be restrained, so remove any actions requireing weight
                             slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 151);
                             continue;
                         }
-                        if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._immobileProperty
-                        && props.Contains(AcReqProps.Movement)) {
+                        if(_hcManager._perPlayerConfigs[idxOfAssignerOfSet]._rsProperties[idxOfSet]._immobileProperty && props.Contains(AcReqProps.Movement)) {
                             // immobile should be restrained, so remove any actions requireing movement
                             slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 2883);
                             continue;
                         }
-                        if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._legsRestraintedProperty
-                        && props.Contains(AcReqProps.LegMovement)) {
+                        if(_hcManager._perPlayerConfigs[idxOfAssignerOfSet]._rsProperties[idxOfSet]._legsRestraintedProperty && props.Contains(AcReqProps.LegMovement)) {
                             // legs should be restrained, so remove any actions requireing leg movement
                             slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 55);
                             continue;
                         }
-                        if(_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._armsRestraintedProperty
-                        && props.Contains(AcReqProps.ArmMovement)) {
+                        if(_hcManager._perPlayerConfigs[idxOfAssignerOfSet]._rsProperties[idxOfSet]._armsRestraintedProperty && props.Contains(AcReqProps.ArmMovement)) {
                             // arms should be restrained, so remove any actions requireing arm movement
                             slot->Set(raptureHotarModule->UiModule, HotbarSlotType.Action, 68);
                             continue;
@@ -258,10 +249,9 @@ public unsafe class GsActionManager : IDisposable
         // if we are ready to initialize the actions, we should update our job list
         UpdateJobList();
         // see if we should enable the sets incase we load this prior to the restraint set manager loading.
-        if(_restraintSetManager._restraintSets.Any(x => x._enabled)){
-            var index = _restraintSetManager._restraintSets.FindIndex(x => x._enabled);
-            GSLogger.LogType.Debug($"[Action Manager]: Restraint set index {index} is now active");            
-            EnableProperties(index);
+        if(_restraintSetManager.IsAnySetEnabled(out int enabledIdx, out string assignerOfSet)) {
+            GSLogger.LogType.Debug($"[Action Manager]: Restraint set index {enabledIdx}, activated by {assignerOfSet}, is now active");            
+            EnableProperties(enabledIdx);
         } else {
             GSLogger.LogType.Debug($"[Action Manager]: No restraint sets are active");
         }
@@ -316,14 +306,9 @@ public unsafe class GsActionManager : IDisposable
         if (_clientState.LocalPlayer?.IsDead ?? false) {
             return;
         }
-        if (_clientState.IsLoggedIn 
-        &&  _clientState.LocalPlayer != null
-        && _clientState.LocalPlayer.Address != IntPtr.Zero
-        && CurrentJobBannedActions != null
-        && _config.hardcoreMode)
-        {
+        if (AllowFrameworkHardcoreUpdates()) {
             // if the class job is different than the one stored, then we have a class job change (CRITICAL TO UPDATING PROPERLY)
-            if (_clientState.LocalPlayer.ClassJob.Id != _onFrameworkService._classJobId) {
+            if (_clientState.LocalPlayer!.ClassJob.Id != _onFrameworkService._classJobId) {
                 // update the stored class job
                 _onFrameworkService._classJobId = _clientState.LocalPlayer.ClassJob.Id;
                 // invoke jobChangedEvent to call the job changed glamour event
@@ -334,44 +319,63 @@ public unsafe class GsActionManager : IDisposable
                 return;
             }
 
-            // obtain our current restraint set active index and 
-            if(_hcManager.ActiveHCsetIdx != -1 && _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx].AnyPropertyTrue()) {
-                UpdateSlots();
+            // see if any set is enabled
+            if(_hcManager.IsAnySetEnabled(out int enabledIdx, out string assignerOfSet, out int idxOfAssigner)) {
+                // otherwise, check to see if any property of that enabled set is true for the person who assigned it
+                if(_hcManager._perPlayerConfigs[idxOfAssigner]._rsProperties[enabledIdx].AnyPropertyTrue())
+                    UpdateSlots(idxOfAssigner, enabledIdx);
             }
         }
     }
 #endregion Framework Updates
     private bool UseActionDetour(ActionManager* am, ActionType type, uint acId, long target, uint a5, uint a6, uint a7, void* a8) {
-        try
-        {
-            if (_clientState.IsLoggedIn &&  _clientState.LocalPlayer != null && _clientState.LocalPlayer.Address != IntPtr.Zero
-            && CurrentJobBannedActions != null && _config.hardcoreMode)
+        try {
+            GSLogger.LogType.Verbose($"[Action Manager]: UseActionDetour called {acId} {type}");
+
+            // if we are allowing hardcore updates / in hardcore mode
+            if (AllowFrameworkHardcoreUpdates())
             {
-                // if we are in hardcore mode, and we have an active set enabled, and we have any property enabled
-                if(_hcManager.ActiveHCsetIdx != -1 &&
-                (_hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._lightStimulationProperty
-                || _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._mildStimulationProperty
-                || _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._heavyStimulationProperty))
-                {
-                    if (ActionType.Action == type && acId > 7) {
-                        // Debug current metrics of action
-                        var recastTime = ActionManager.GetAdjustedRecastTime(type, acId);
-                        var adjustedId = am->GetAdjustedActionId(acId);
-                        var recastGroup = am->GetRecastGroup((int)type, adjustedId);
-                        if (CooldownList.ContainsKey(recastGroup)) {
-                            GSLogger.LogType.Debug($"[Action Manager]: GROUP FOUND - Recast Time: {recastTime} | Cast Group: {recastGroup}");
-                            var cooldownData = CooldownList[recastGroup];
-                            // if we are beyond our recast time from the last time used, allow the execution
-                            if (DateTime.Now >= cooldownData.Item2.AddMilliseconds(cooldownData.Item1)) {
-                                // Update the last execution time before execution
-                                GSLogger.LogType.Debug($"[Action Manager]: ACTION COOLDOWN FINISHED");
-                                CooldownList[recastGroup] = new Tuple<float, DateTime>(cooldownData.Item1, DateTime.Now);
+                // check to see if the action is a teleport / return action, and if so to cancel it if the player is
+                if(_hcManager.IsForcedToStayForAny(out int forcedFollowAssignerIdx, out string forcedFollowAssigner)) {
+                    // check if we are trying to hit teleport or return from hotbars /  menus
+                    if(type == ActionType.GeneralAction && (acId == 7 || acId == 8)) {
+                        GSLogger.LogType.Verbose($"[Action Manager]: You are currently locked away, canceling teleport/return execution");
+                        return false;
+                    }
+                    // if we somehow managed to start executing it, then stop that too
+                    if(type == ActionType.Action && (acId == 5 || acId == 6)) {
+                        GSLogger.LogType.Verbose($"[Action Manager]: You are currently locked away, canceling teleport/return execution");
+                        return false;
+                    }
+                }
+
+                // check to see if any our of sets is currently active 
+                if(_hcManager.IsAnySetEnabled(out int enabledIdx, out string assignerOfSet, out int idxOfAssigner)) {
+                    // because they are, lets see if the light, mild, or heavy stimulation is active
+                    if(_hcManager._perPlayerConfigs[idxOfAssigner]._rsProperties[enabledIdx]._lightStimulationProperty
+                    || _hcManager._perPlayerConfigs[idxOfAssigner]._rsProperties[enabledIdx]._mildStimulationProperty
+                    || _hcManager._perPlayerConfigs[idxOfAssigner]._rsProperties[enabledIdx]._heavyStimulationProperty) {
+                        // then let's check our action ID's to apply the modified cooldown timers
+                        if (ActionType.Action == type && acId > 7) {
+                            // Debug current metrics of action
+                            var recastTime = ActionManager.GetAdjustedRecastTime(type, acId);
+                            var adjustedId = am->GetAdjustedActionId(acId);
+                            var recastGroup = am->GetRecastGroup((int)type, adjustedId);
+                            if (CooldownList.ContainsKey(recastGroup)) {
+                                // GSLogger.LogType.Debug($"[Action Manager]: GROUP FOUND - Recast Time: {recastTime} | Cast Group: {recastGroup}");
+                                var cooldownData = CooldownList[recastGroup];
+                                // if we are beyond our recast time from the last time used, allow the execution
+                                if (DateTime.Now >= cooldownData.Item2.AddMilliseconds(cooldownData.Item1)) {
+                                    // Update the last execution time before execution
+                                    GSLogger.LogType.Verbose($"[Action Manager]: ACTION COOLDOWN FINISHED");
+                                    CooldownList[recastGroup] = new Tuple<float, DateTime>(cooldownData.Item1, DateTime.Now);
+                                } else {
+                                    GSLogger.LogType.Verbose($"[Action Manager]: ACTION COOLDOWN NOT FINISHED");
+                                    return false; // Do not execute the action
+                                }
                             } else {
-                                GSLogger.LogType.Debug($"[Action Manager]: ACTION COOLDOWN NOT FINISHED");
-                                return false; // Do not execute the action
+                                GSLogger.LogType.Debug($"[Action Manager]: GROUP NOT FOUND");
                             }
-                        } else {
-                            GSLogger.LogType.Debug($"[Action Manager]: GROUP NOT FOUND");
                         }
                     }
                 }
@@ -383,5 +387,14 @@ public unsafe class GsActionManager : IDisposable
         var ret = UseActionHook.Original(am, type, acId, target, a5, a6, a7, a8);
         // invoke the action used event
         return ret;
+    }
+
+    private bool AllowFrameworkHardcoreUpdates() {
+        return (
+           _clientState.IsLoggedIn                          // we must be logged in
+        && _clientState.LocalPlayer != null                 // our character must not be null
+        && _clientState.LocalPlayer.Address != IntPtr.Zero  // our address must be valid
+        && _config.hardcoreMode                             // we are in hardcore mode
+        );                                                  // we must have an active set enabled.
     }
 }

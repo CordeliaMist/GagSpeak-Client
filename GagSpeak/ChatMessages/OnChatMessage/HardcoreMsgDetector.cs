@@ -42,9 +42,6 @@ public class HardcoreMsgDetector
         
         // before we process anything, let's first see if the message was from us
         if(senderName == _client.LocalPlayer!.Name.TextValue) {
-            // if it was, try to parse out the chatmessage to see if it contains any of the hardcore commands such as "{name}, follow me." or "{name}, sit."
-            // or "{name}, stay here until i return." or "you may stand now {name}." or "thank you for waiting, {name}."
-            // if any of these are found, then we should extract the name value and perform logic for it
             List<string> names = _characterHandler.whitelistChars
                 .Where(x => x._inHardcoreMode)
                 .Select(x => x._name)
@@ -102,10 +99,16 @@ public class HardcoreMsgDetector
         // set our object to scan as the object in the same index of the list
         HC_PerPlayerConfig playerConfig = _hcManager._perPlayerConfigs[senderIdx];
         // check to see if the message even matched before performing logic
-        if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, follow me.")) {
-            // if allowed forced follow, then scan to see if the incoming message contains the phrase required for our forced follow
-            if(playerConfig._allowForcedFollow) {
-                // we should first make sure that the player is somewhere in our current object table
+        if(playerConfig._allowForcedFollow) {
+            // if the chat message contains the follow command
+            if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, follow me.")) {
+                // and nobody else currently is forcing you to follow
+                if(_hcManager.IsForcedFollowingForAny(out int enabledIdx, out string playerWhoForceFollowedYou)) {
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] Forced to follow is already enabled by {playerWhoForceFollowedYou}, declining.");
+                    return false;
+                }
+
+                // if nobody is, then we are ok to begin.
                 if (TryGetPlayerFromObjectTable(senderName, out GameObject SenderObj)) {
                     // the player is valid, and they are targetable, and we have forced to follow set to false
                     if(playerConfig._forcedFollow == false && SenderObj != null && SenderObj.IsTargetable) {
@@ -126,35 +129,54 @@ public class HardcoreMsgDetector
         // if allowed forced sit, then scan to see if the incoming message contains the phrase required for our forced sit
         if(playerConfig._allowForcedSit) {
             // if the message is the type to enable sitting
-            if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, sit.")) {
-                // and we are not already forced to sit
-                if(playerConfig._forcedSit == false) {
-                    // then we should set forced to sit to true, locking our movement
-                    _hcManager.SetForcedSit(senderIdx, true);
-                    // then we should execute /sit
-                    messageToSend = "sit";
-                    // it is a valid trigger, so return true
-                    return true;
+            if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, sit."))
+            {
+                // here, we want to make sure we are not already being forced to sit
+                if(_hcManager.IsForcedSittingForAny(out int enabledIdx, out string playerWhoForceSatYou) == false) {
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] Forced to sit is not enabled by anyone, but we are trying to enable it. Declining.");
+                    return false;
                 }
+                // we need to make sure that the player who forced us to sit is the same as the sender
+                GSLogger.LogType.Debug($"[HardcoreMsgDetector] {senderName} is now forcing you to sit, behave well ♥");
+                _hcManager.SetForcedSit(senderIdx, true);
+                // then we should execute /sit
+                messageToSend = "sit";
+                // it is a valid trigger, so return true
+                return true;
             }
-            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, on your knees.")) {
-                // and we are not already forced to sit
-                if(playerConfig._forcedSit == false) {
-                    // then we should set forced to sit to true, locking our movement
-                    _hcManager.SetForcedSit(senderIdx, true);
-                    // then we should execute /sit
-                    messageToSend = "groundsit";
-                    // it is a valid trigger, so return true
-                    return true;
+            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, on your knees."))
+            {
+                // here, we want to make sure we are not already being forced to sit
+                if(_hcManager.IsForcedSittingForAny(out int enabledIdx, out string playerWhoForceSatYou) == false) {
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] Forced to sit is not enabled by anyone, but we are trying to enable it. Declining.");
+                    return false;
                 }
+
+                // we need to make sure that the player who forced us to sit is the same as the sender
+                GSLogger.LogType.Debug($"[HardcoreMsgDetector] {senderName} is now forcing you to sit, behave well ♥");
+                _hcManager.SetForcedSit(senderIdx, true);
+                // then we should execute /sit
+                messageToSend = "groundsit";
+                // it is a valid trigger, so return true
+                return true;
             }
             // otherwise, see if we the command is to end our forced sit
-            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"you may stand now {_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}.")) {
-                // and we are already forced to sit
-                if(playerConfig._forcedSit) {
+            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"you may stand now {_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}."))
+            {
+                // if we are not forced to sit by anyone currently, exit early
+                if(_hcManager.IsForcedSittingForAny(out int enabledIdx, out string playerWhoForceSatYou) == false) {
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] Forced to sit is not enabled by anyone, but we are trying to release it. Declining.");
+                    return false;
+                }
+
+                // we need to make sure that the player who forced us to sit is the same as the sender
+                if(playerWhoForceSatYou == senderName) {
                     // then we should set forced to sit to false, unlocking our movement
                     _hcManager.SetForcedSit(senderIdx, false);
                     // while we performed the logic, we dont want to execute any chat commands, so return false
+                    return false;
+                } else {
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] {senderName} tried to release you, but that were not the person who forced you to sit! Declining.");
                     return false;
                 }
             }
@@ -163,22 +185,37 @@ public class HardcoreMsgDetector
         // if allowed forced to stay, then scan to see if the incoming message contains the phrase required for our forced to stay
         if(playerConfig._allowForcedToStay) {
             // if the message contains the phrase to enable forced to stay
-            if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, stay here until i return.")) {
-                // and we are not already forced to stay
-                if(playerConfig._forcedToStay == false) {
-                    // then we should set forced to stay to true, locking our movement
-                    _hcManager.SetForcedToStay(senderIdx, true);
-                    // it is a valid trigger, but we only want the logic, so return false
+            if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, stay here until i return."))
+            {
+                // here, we want to make sure we are not already forced to stay
+                if(_hcManager.IsForcedToStayForAny(out int enabledIdx, out string playerWhoForceStayedYou)) {
+                    // this is true, meaning that we are already forced to stay, so we should decline the request
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] Forced to stay is already enabled by {playerWhoForceStayedYou}, declining.");
                     return false;
                 }
+
+                // if we reach here, it means we are not forced to stay by anyone, so let's enable it
+                GSLogger.LogType.Debug($"[HardcoreMsgDetector] {senderName} is now forcing you to stay put in this area until they allow you to leave!");
+                _hcManager.SetForcedToStay(senderIdx, true);
+                return false;
             }
             // if the message contains the phrase to end forced to stay
-            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"thank you for waiting, {_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}.")) {
-                // and we are already forced to stay
-                if(playerConfig._forcedToStay) {
+            else if(chatmessage.TextValue.ToLowerInvariant().Contains($"thank you for waiting, {_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}."))
+            {
+                // if we are not forced to stay by anyone currently, exit early
+                if(_hcManager.IsForcedToStayForAny(out int enabledIdx, out string playerWhoForceStayedYou) == false) {
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] Forced to stay is not enabled by anyone, but we are trying to release it. Declining.");
+                    return false;
+                }
+
+                // we need to make sure that the player who forced us to stay is the same as the sender
+                if(playerWhoForceStayedYou == senderName) {
                     // then we should set forced to stay to false, unlocking our movement
                     _hcManager.SetForcedToStay(senderIdx, false);
-                    // it is a valid trigger, but we only want the logic, so return false
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] {playerWhoForceStayedYou} has decided to release you from staying in the area.");
+                    return false;
+                } else {
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] {senderName} tried to release you, but that were not the person who forced you to stay! Declining.");
                     return false;
                 }
             }

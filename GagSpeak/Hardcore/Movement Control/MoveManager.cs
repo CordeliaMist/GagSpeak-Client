@@ -18,6 +18,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using System.Numerics;
 
 namespace GagSpeak.Hardcore.Movement;
 public class MovementManager : IDisposable
@@ -29,14 +30,13 @@ public class MovementManager : IDisposable
     private readonly    IFramework              _framework;
     private readonly    IKeyState               _keyState;
     private readonly    CharacterHandler        _charaManager;
+    private readonly    OptionPromptListeners   _autoDialogSelect;
     private readonly    RS_PropertyChangedEvent _rsPropertyChangedEvent;
     private readonly    InitializationManager    _manager;
     // for having the movement memory -- was originally private static, revert back if it causes issues.
     private             MoveController          _MoveController;
     // for controlling walking speed, follow movement manager, and sitting/standing.
     public unsafe       XivControl.Control*     gameControl = XivControl.Control.Instance(); // instance to have control over our walking
-    public unsafe       AgentMap*               agentMap = AgentMap.Instance(); // instance to have control over our walking
-
     // get the keystate ref values
     delegate ref        int                     GetRefValue(int vkCode);
     private static      GetRefValue             getRefValue;
@@ -48,7 +48,7 @@ public class MovementManager : IDisposable
     MoveController MoveController, HardcoreManager hardcoreManager,
     RS_PropertyChangedEvent RS_PropertyChangedEvent, IFramework framework, 
     IClientState clientState, GagSpeakConfig config, InitializationManager manager,
-    CharacterHandler characterManager) {
+    CharacterHandler characterManager, OptionPromptListeners autoDialogSelect) {
         _config = config;
         _condition = condition;
         _charaManager = characterManager;
@@ -57,6 +57,7 @@ public class MovementManager : IDisposable
         _framework = framework;
         _keyState = keyState;
         _hcManager = hardcoreManager;
+        _autoDialogSelect = autoDialogSelect;
         _rsPropertyChangedEvent = RS_PropertyChangedEvent;
         _manager = manager;
         
@@ -70,17 +71,17 @@ public class MovementManager : IDisposable
         Task.Run(async () => {
             if(!IsPlayerLoggedIn()) {
                 GSLogger.LogType.Debug($"[RestraintSetManager] Waiting for login to complete before activating restraint set");
-                while (!_clientState.IsLoggedIn || _clientState.LocalPlayer == null || _clientState.LocalPlayer.Address == IntPtr.Zero) {
-                    await Task.Delay(3000); // Wait for 1 second before checking the login status again
+                while (!_clientState.IsLoggedIn || _clientState.LocalPlayer == null || _clientState.LocalPlayer.Address == IntPtr.Zero && _clientState.LocalContentId == 0) {
+                    await Task.Delay(2000); // Wait for 1 second before checking the login status again
                 }
             }
-            int idx = _hcManager._perPlayerConfigs.FindIndex(x => x._forcedFollow == true);
-            if(idx != -1) { 
-                _hcManager.HandleForcedFollow(idx, _hcManager._perPlayerConfigs[idx]._forcedFollow);
+            // if we are being forced to follow by anyone
+            if(_hcManager.IsForcedFollowingForAny(out int enabledFollowIdx, out string playerWhoForceFollowedYou)) {
+                _hcManager.HandleForcedFollow(enabledFollowIdx, _hcManager._perPlayerConfigs[enabledFollowIdx]._forcedFollow);
             }
-            idx = _hcManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
-            if(idx != -1) {
-                _hcManager.HandleBlindfoldLogic(idx, _hcManager._perPlayerConfigs[idx]._blindfolded, _charaManager.whitelistChars[idx]._name);
+            // if we are blindfolded by anyone, we should apply that as well
+            if(_hcManager.IsBlindfoldedForAny(out int enabledBlindfoldIdx, out string playerWhoBlindfoldedYou)) {
+                await _hcManager.HandleBlindfoldLogic(enabledBlindfoldIdx, _hcManager._perPlayerConfigs[enabledBlindfoldIdx]._blindfolded, _charaManager.whitelistChars[enabledBlindfoldIdx]._name);
             }
         });
 
@@ -162,22 +163,20 @@ public class MovementManager : IDisposable
             }
             
             // if any conditions that would affect your walking state are active, then force walking to occur
-            HandleWalkingState(); // if it is ever disabled, we will re-enable walking via event handling, but shouldnt do it in framework update or we will force people to perminantly run
+            HandleWalkingState(); 
 
-            // if the player if forced to follow, we need to start a timer whenever they stop moving..
-            // if the timer remains false for a certain amount of time, then we need to force them to move again
-            if(_hcManager._perPlayerConfigs.Any(x => x._forcedFollow) && agentMap != null) {
+            // if player is in forced follow state, we need to track their position so we can auto turn it off if they are standing still for 6 seconds
+            if(_hcManager.IsForcedFollowingForAny(out int enabledFollowIdx, out string playerWhoForceFollowedYou)) {
                 // if the player is not moving...
-                uint IsPlayerMoving = Marshal.ReadByte((IntPtr)agentMap, 23080);
-                //GSLogger.LogType.Debug($"[MovementManager]: IsPlayerMoving: {IsPlayerMoving}");
-                if(IsPlayerMoving == 1) {
-                    // then we need to reset the timer
-                    _hcManager.LastMovementTime = DateTimeOffset.Now;
-                } else {
-                    // otherwise, we should check if the player has been standing still for 5000ms.
-                    if((DateTimeOffset.Now - _hcManager.LastMovementTime).TotalMilliseconds > 15000) {
+                if(_clientState.LocalPlayer!.Position != _hcManager.LastPosition) {
+                    _hcManager.LastMovementTime = DateTimeOffset.Now;           // reset timer
+                    _hcManager.LastPosition = _clientState.LocalPlayer.Position;// update last position
+                    GSLogger.LogType.Debug($"[MovementManager]: PlayerPosition: {_hcManager.LastPosition}");
+                } 
+                // otherwise, they are not moving, so check if the timer has gone past 6000ms
+                else {
+                    if((DateTimeOffset.Now - _hcManager.LastMovementTime).TotalMilliseconds > 6000) {
                         // if they have, then we need to force them to move again
-                        // find the index in the hardcore manager that has their forced follow set to true
                         var index = _hcManager._perPlayerConfigs.FindIndex(x => x._forcedFollow);
                         // set the forced follow to false
                         _hcManager.SetForcedFollow(index, false);
@@ -185,53 +184,27 @@ public class MovementManager : IDisposable
                     }
                 }
             }
-            // handle blinfolded camera action
-            if(_hcManager._perPlayerConfigs.Any(x => x._blindfolded)) {
-                // var localChar = (Character*)(_clientState.LocalPlayer?.Address ?? IntPtr.Zero);
-                // EmoteController* controller = &(localChar->EmoteController);
-                // uint val = Marshal.ReadByte((IntPtr)controller, 20);
-                // uint val2 = Marshal.ReadByte((IntPtr)controller, 33);
-                // if((val == 52 && val2 == 0) || (val == 97 && val2 == 1) || (val == 98 && val2 == 2) || (val == 117 && val2 == 3)) {
-                //     // if it is one of these values, and the 
-                //     // ground sit [emote | cpose] list:
-                //     // groundsit1 = 52 | 0 
-                //     // groundsit2 = 97 | 1 (on knees)
-                //     // groundsit3 = 98 | 2
-                //     // groundsit4 = 117| 3
-                // }
-                // IDK how to force a cpose right now so just removing its functionality
+            
+            // if we are allowing forced to stay from anyone (you dont need to have the option locked on, just the allowance one) then enable the hooks
+            if(EnableOptionPromptHooks()) {
+                _autoDialogSelect.Enable(); // enable the hooks for prompt selection
+            }
+            // otherwise, disable the hooks if it is inactive
+            else {
+                _autoDialogSelect.Disable(); // disable the hooks for prompt selection
             }
         }
     }
 
-    public unsafe EmoteController* GetEmoteController() {
-        XivControl.Control* controlInstance = XivControl.Control.Instance();
-        if (controlInstance == null)
-        {
-            throw new InvalidOperationException("Control instance is null.");
-        }
-
-        BattleChara* localPlayer = controlInstance->LocalPlayer;
-        if (localPlayer == null)
-        {
-            throw new InvalidOperationException("Local player is null.");
-        }
-
-        Character character = localPlayer->Character;
-
-        EmoteController emoteController = character.EmoteController;
-
-        return &emoteController;
-    }
-
     private bool isForcedSitting() => _hcManager._perPlayerConfigs.Any(x => x._forcedSit);
     private bool isForcedFollowing() => _hcManager._perPlayerConfigs.Any(x => x._forcedFollow);
-    private bool isImmobile() => ImmobileActiveAndValid();
-    private bool ImmobileActiveAndValid() {
-        return _hcManager.ActiveHCsetIdx != -1
-            && _hcManager.ActivePlayerCfgListIdx != -1
-            && _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._immobileProperty;
+    private bool isImmobile() {
+        if(_hcManager.IsAnySetEnabled(out int enabledIdx, out string assignerOfSet, out int idxOfAssigner)) {
+            return _hcManager._perPlayerConfigs[idxOfAssigner]._rsProperties[enabledIdx]._immobileProperty;
+        }
+        return false;
     }
+    private bool EnableOptionPromptHooks() => _hcManager._perPlayerConfigs.Any(x => x._allowForcedToStay);
 
     private bool AllowFrameworkHardcoreUpdates() {
         return (
@@ -244,11 +217,14 @@ public class MovementManager : IDisposable
 
     // handles the walking state
     private unsafe void HandleWalkingState() {
-        if(_hcManager._perPlayerConfigs.Any(x => x._forcedFollow)
-        || (_hcManager.ActiveHCsetIdx != -1  && _hcManager._perPlayerConfigs[_hcManager.ActivePlayerCfgListIdx]._rsProperties[_hcManager.ActiveHCsetIdx]._weightyProperty))
+        if(_hcManager.IsForcedFollowingForAny(out int enabledFollowIdx, out string playerWhoForceFollowedYou) // if anyone is making us forcefollow
+        || (_hcManager.IsAnySetEnabled(out int enabledIdx, out string assignerOfSet, out int idxOfAssigner)   // OR we have any set enabled
+                && enabledIdx != -1                                                                           // with a valid set idx
+                && _hcManager._perPlayerConfigs[idxOfAssigner]._rsProperties[enabledIdx]._weightyProperty))   // that has their weighty property enabled
         {
+            // get the byte that sees if the player is walking
             uint isWalking = Marshal.ReadByte((IntPtr)gameControl, 23163);
-            // force walking
+            // and if they are not, force it.
             if (isWalking == 0) {
                 Marshal.WriteByte((IntPtr)gameControl, 23163, 0x1);
             }
@@ -258,10 +234,10 @@ public class MovementManager : IDisposable
     // handle the prevention of our movenent.
     private void HandleMovementPrevention(bool following, bool sitting, bool immobile) {
         if(sitting) {
-            _MoveController.CompletelyDisableMovement(true, true, false); // set pointer and turn off mouse and disable emotes
+            _MoveController.CompletelyDisableMovement(true, true); // set pointer and turn off mouse and disable emotes
         }
         else if(immobile) {
-            _MoveController.CompletelyDisableMovement(true, false, true); // set pointer but dont turn off mouse
+            _MoveController.CompletelyDisableMovement(true, true); // set pointer but dont turn off mouse
         }
         // otherwise if we are forced to follow
         else if(following) {
@@ -270,7 +246,7 @@ public class MovementManager : IDisposable
                 GameConfig.UiControl.Set("MoveMode", (int)MovementMode.Legacy);
             }
             // dont set pointer, but disable mouse
-            _MoveController.CompletelyDisableMovement(false, true, true); // disable mouse and emotes
+            _MoveController.CompletelyDisableMovement(false, true); // disable mouse
         }
         // otherwise, we should re-enable the mouse blocking and immobilization traits
         else {

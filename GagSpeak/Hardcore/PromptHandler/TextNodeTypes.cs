@@ -17,9 +17,10 @@ public class TextEntryNode : ITextNode
     public bool Enabled { get; set; } = true;
     [JsonIgnore]
     public string Name { get { return Text; } }
+    public string Label { get; set; } = string.Empty;
     public string Text { get; set; } = string.Empty;
-    public string[] Options { get; set; } = new string[]{"Yes", "No"};
-    public int SelectThisIndex { get; set; } = 1;
+    public string[] Options { get; set; } = new string[]{"No", "Yes"};
+    public int SelectThisIndex { get; set; } = 0;
 }
 
 public class TextFolderNode : ITextNode
@@ -27,7 +28,7 @@ public class TextFolderNode : ITextNode
     public string Name { get; set; } = string.Empty;
 
     [JsonProperty(ItemConverterType = typeof(ConcreteNodeConverter))]
-    public List<ITextNode> Children { get; } = new();
+    public List<TextEntryNode> Children { get; } = new();
 
     // helper function to prune any empty entires
     public void PruneEmpty() {
@@ -41,34 +42,122 @@ public class TextFolderNode : ITextNode
         if(Children.Count == 0) {
             Children.Add(new TextEntryNode { 
                 Enabled = true,
-                Text = "Leave the estate hall?",
-                Options = new string[]{"Yes", "No"},
-                SelectThisIndex = 1
+                Label = "Exit Apartment Room (Other)",
+                Text = "Exit",
+                Options = new string[] {
+                    "Go outside the building",
+                    "Go to specified apartment",
+                    "Go to your apartment",
+                    "Go to the lobby",
+                    "Cancel"},
+                SelectThisIndex = 4
             });
-            Children.Add(new TextEntryNode {
+            Children.Add(new TextEntryNode { 
                 Enabled = true,
-                Text = "Leave private chambers.",
-                Options = new string[]{"Leave private chambers.", "Move to specified private chambers.", "Nothing."},
+                Label = "Exit Apartment Room (Yours)",
+                Text = "Exit",
+                Options = new string[] {
+                    "Go outside the building",
+                    "Go to specified apartment",
+                    "Go to the lobby",
+                    "Cancel"},
+                SelectThisIndex = 3
+            });
+            Children.Add(new TextEntryNode { 
+                Enabled = true,
+                Label = "(FC House / Any Personal House)",
+                Text = "Leave the estate hall?",
+                Options = new string[] {"No", "Yes"},
+                SelectThisIndex = 0
+            });
+            Children.Add(new TextEntryNode { 
+                Enabled = true,
+                Label = "Leave Private Chambers (Other)",
+                Text = "Exit",
+                Options = new string[] {
+                    "Leave private chambers.",
+                    "Move to specified private chambers.",
+                    "Nothing."},
                 SelectThisIndex = 2
             });
+            Children.Add(new TextEntryNode { 
+                Enabled = true,
+                Label = "Leave Private Chambers (With Your Chamber Option)",
+                Text = "Exit",
+                Options = new string[] {
+                    "Leave private chambers.",
+                    "Move to specified private chambers.",
+                    "Move to your private chambers.",
+                    "Nothing."},
+                SelectThisIndex = 3
+            });
         }
-        // otherwise, scan to make sure we have them
-        if (Children.All(x => x.Name != "Leave the estate hall?")) {
-            // then insert the leave estate marker at the start of the list
+
+        // Check for "Exit Apartment Room (Other)"
+        if (Children.All(x => x.Label != "Exit Apartment Room (Other)")) {
             Children.Insert(0, new TextEntryNode { 
                 Enabled = true,
-                Text = "Leave the estate hall?",
-                Options = new string[]{"Yes", "No"},
-                SelectThisIndex = 1
+                Label = "Exit Apartment Room (Other)",
+                Text = "Exit",
+                Options = new string[] {
+                    "Go outside the building",
+                    "Go to specified apartment",
+                    "Go to your apartment",
+                    "Go to the lobby",
+                    "Cancel"},
+                SelectThisIndex = 4
             });
         }
-        // now check for the leave private chambers
-        if (Children.All(x => x.Name != "Leave private chambers.")) {
-            Children.Insert(0, new TextEntryNode {
+        // Check for "Exit Apartment Room (Yours)"
+        if (Children.All(x => x.Label != "Exit Apartment Room (Yours)")) {
+            Children.Insert(1, new TextEntryNode { 
                 Enabled = true,
-                Text = "Leave private chambers.",
-                Options = new string[]{"Leave private chambers.", "Move to specified private chambers.", "Nothing."},
+                Label = "Exit Apartment Room (Yours)",
+                Text = "Exit",
+                Options = new string[] {
+                    "Go outside the building",
+                    "Go to specified apartment",
+                    "Go to the lobby",
+                    "Cancel"},
+                SelectThisIndex = 3
+            });
+        }
+        // Check for "(FC House / Any Personal House)"
+        if (Children.All(x => x.Label != "(FC House / Any Personal House)")) {
+            Children.Insert(2, new TextEntryNode { 
+                Enabled = true,
+                Label = "(FC House / Any Personal House)",
+                Text = "Leave the estate hall?",
+                Options = new string[] {"No", "Yes"},
+                SelectThisIndex = 0
+            });
+        }
+        // Check for "Leave Private Chambers (Other)"
+        if (Children.All(x => x.Label != "Leave Private Chambers (Other)")) {
+            Children.Insert(3, new TextEntryNode { 
+                Enabled = true,
+                Label = "Leave Private Chambers (Other)",
+                Text = "Exit",
+                Options = new string[] {
+                    "Leave private chambers.",
+                    "Move to specified private chambers.",
+                    "Nothing."},
                 SelectThisIndex = 2
+            });
+        }
+
+        // Check for "Leave Private Chambers (With Your Chamber Option)"
+        if (Children.All(x => x.Label != "Leave Private Chambers (With Your Chamber Option)")) {
+            Children.Insert(4, new TextEntryNode { 
+                Enabled = true,
+                Label = "Leave Private Chambers (With Your Chamber Option)",
+                Text = "Exit",
+                Options = new string[] {
+                    "Leave private chambers.",
+                    "Move to specified private chambers.",
+                    "Move to your private chambers.",
+                    "Nothing."},
+                SelectThisIndex = 3
             });
         }
     }
@@ -86,19 +175,14 @@ public class ConcreteNodeConverter : JsonConverter
     public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
         var jObject = JObject.Load(reader);
-        var jType = jObject["$type"]!.Value<string>();
 
-        if (jType == SimpleName(typeof(TextEntryNode)))
-        {
-            return CreateObject<TextEntryNode>(jObject, serializer);
-        }
-        else if (jType == SimpleName(typeof(TextFolderNode)))
+        if (jObject["Children"] != null)
         {
             return CreateObject<TextFolderNode>(jObject, serializer);
         }
         else
         {
-            throw new NotSupportedException($"Node type \"{jType}\" is not supported.");
+            return CreateObject<TextEntryNode>(jObject, serializer);
         }
     }
 

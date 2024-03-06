@@ -126,7 +126,7 @@ public unsafe class PenumbraService : IDisposable
                     case PenumbraApiEc.CollectionMissing: return $"The collection {collection} could not be found.";
                 }
                 // after this, raise the priority to 99
-                errorCode = _setModPriority.Invoke(collection, mod.DirectoryName, mod.Name, 99);
+                errorCode = _setModPriority.Invoke(collection, mod.DirectoryName, mod.Name, settings.Priority+50);
                 Debug.Assert(errorCode is PenumbraApiEc.Success or PenumbraApiEc.NothingChanged, "Setting Priority should not be able to fail.");
             }
             // otherwise, we are attempting to disable the mod

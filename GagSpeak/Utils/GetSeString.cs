@@ -11,7 +11,20 @@ public static class GS_GetSeString
         => GetSeString((IntPtr)textPtr);
 
     internal static SeString GetSeString(IntPtr textPtr)
-        => MemoryHelper.ReadSeStringNullTerminated(textPtr);
+    {
+        if (textPtr == IntPtr.Zero) {
+            GSLogger.LogType.Error("GetSeString: textPtr is null");
+            return null;
+        }
+
+        try {
+            return MemoryHelper.ReadSeStringNullTerminated(textPtr);
+        }
+        catch (Exception ex) {
+            GSLogger.LogType.Error($"Error in GetSeString: {ex.Message}");
+            return null;
+        }
+    }
 
     internal static unsafe string GetSeStringText(byte* textPtr)
         => GetSeStringText(GetSeString(textPtr));

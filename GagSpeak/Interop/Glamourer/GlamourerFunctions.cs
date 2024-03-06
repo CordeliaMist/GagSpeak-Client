@@ -249,6 +249,21 @@ public class GlamourerFunctions : IDisposable
                         );
                     }
                 }
+                // condition 10 -- > it was a blindfold unequipped event, we should remove the blindfold
+                if(e.UpdateType == UpdateType.BlindfoldUnEquipped) {
+                    GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Blindfold UnEquipped");
+                    var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
+                    if(idx != -1) {
+                        GSLogger.LogType.Debug($"[GlamourEventFired]: Found index {idx} for blindfold");
+                        await _Interop.SetItemToCharacterAsync(
+                            _onFrameworkService._address,
+                            Convert.ToByte(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot),
+                            ItemIdVars.NothingItem(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot).Id.Id, // The _drawData._gameItem.Id.Id
+                            0,
+                            0
+                        );
+                    }
+                }
             } catch (Exception ex) {
                 GSLogger.LogType.Error($"[GlamourEventFired]: Error processing glamour event: {ex}");
             } finally {

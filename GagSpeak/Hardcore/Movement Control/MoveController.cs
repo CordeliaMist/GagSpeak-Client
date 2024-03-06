@@ -16,7 +16,6 @@ public class MoveController : IDisposable
     private readonly IObjectTable _objectTable;
     public bool DisablingALLMovement { get; private set; } = false;
     public bool DisablingMouseMovement { get; private set; } = false;
-    public bool DisablingEmoteExecution { get; private set; } = false;
 
     // controls the complete blockage of movement from the player (Blocks /follow movement)
     [Signature("F3 0F 10 05 ?? ?? ?? ?? 0F 2E C6 0F 8A", ScanType = ScanType.StaticAddress, Fallibility = Fallibility.Infallible)]
@@ -159,7 +158,7 @@ public class MoveController : IDisposable
         }
     }
 
-    public unsafe void CompletelyDisableMovement(bool togglePointer, bool toggleMouse, bool toggleEmotes) {
+    public unsafe void CompletelyDisableMovement(bool togglePointer, bool toggleMouse) {
         // if we are currenelty not preventing mouse movement, and we want to disable movement, we should set it to true
         if (!DisablingALLMovement && togglePointer) {
             GSLogger.LogType.Debug($"Disabling moving, {ForceDisableMovement}");

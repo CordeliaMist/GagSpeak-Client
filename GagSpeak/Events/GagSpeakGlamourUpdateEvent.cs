@@ -20,6 +20,9 @@ public enum UpdateType {
 
     /// <summary> used when the blindfold is equipped </summary>
     BlindfoldEquipped,
+
+    /// <summary> used when the blindfold is unequipped </summary>
+    BlindfoldUnEquipped,
     
     /// <summary> used when updating all characters information in general </summary>
     RefreshAll,

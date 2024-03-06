@@ -62,26 +62,20 @@ public partial class HardcoreManager
     public void OnRestraintSetListModified(object? sender, RestraintSetListChangedArgs e) {
         // update the player chars things to match the restraint set list change
         switch(e.UpdateType) {
-            case ListUpdateType.AddedRestraintSet : {
-                // add a new set of properties for each playersettings object
-                foreach(var playerSettings in _perPlayerConfigs) {
+            case ListUpdateType.AddedRestraintSet : 
+                foreach(var playerSettings in _perPlayerConfigs)
                     playerSettings._rsProperties.Add(new HC_RestraintProperties());
-                }
-                }
+                
                 break;
-            case ListUpdateType.ReplacedRestraintSet: {
-                // replace the set of properties for each playersettings object
-                foreach(var playerSettings in _perPlayerConfigs) {
+            case ListUpdateType.ReplacedRestraintSet:
+                foreach(var playerSettings in _perPlayerConfigs)
                     playerSettings._rsProperties[e.SetIndex] = new HC_RestraintProperties();
-                }
-                }
+                
                 break;
-            case ListUpdateType.RemovedRestraintSet: {
-                // remove the set of properties for each playersettings object
-                foreach(var playerSettings in _perPlayerConfigs) {
+            case ListUpdateType.RemovedRestraintSet:
+                foreach(var playerSettings in _perPlayerConfigs)
                     playerSettings._rsProperties.RemoveAt(e.SetIndex);
-                }
-                }
+                
                 break;
             case ListUpdateType.SizeIntegrityCheck: {
                 IntegrityCheck(e.SetIndex);
@@ -89,15 +83,89 @@ public partial class HardcoreManager
             }
         }
     }
-
-    public void OnRestraintSetToggled(object? sender, RS_ToggleEventArgs e) {
-        // if the restraint set is being toggled, we need to update the activeHCsetIdx
-        
-        // do stuff to update the active config and apply the correct multiplier when active
-    }
-
 #endregion events
 #region Manager Methods
+    /// <summary> Sees if any set is enabled, like the restraint set manager func, but also returns idx of the found assigner </summary>
+    /// <returns> true if it is found, false if not, passes out the enabled set IDX, assigner name, and IDX of assigner name in whitelist </returns>
+    public bool IsAnySetEnabled(out int enabledIdx, out string assignerName, out int assignerIdx) {
+        // if we get the sucess on the restraintsetmanager func it means it exists
+        if(_restraintSetManager.IsAnySetEnabled(out enabledIdx, out assignerName)) {
+            // if this is true it means enabledIdx is valid, lets double check the assigner is valid
+            assignerIdx = _characterHandler.GetWhitelistIndex(assignerName);
+            if(assignerIdx != -1) {
+                return true;
+            } else {
+                assignerIdx = -1;
+                return false;
+            }
+        } else {
+            assignerIdx = -1;
+            return false;
+        }
+    }
+
+
+    /// <summary> If forced follow is active for you by any person in your whitelist </summary>
+    /// <returns> true if yes, false is no, passed out the index of enabled option and name of player who did it </returns>
+    public bool IsForcedFollowingForAny(out int enabledIdx, out string playerWhoForceFollowedYou) {
+        // check if any of the players have forced follow active
+        enabledIdx = _perPlayerConfigs.FindIndex(x => x._forcedFollow);
+        // if the index is not -1, then find the name of the index you are on
+        if(enabledIdx != -1) {
+            playerWhoForceFollowedYou = _characterHandler.whitelistChars[enabledIdx]._name;
+            return true;
+        } else {
+            playerWhoForceFollowedYou = "INVALID";
+            return false;
+        }
+    }
+
+    /// <summary> If forced sit is active for you by any person in your whitelist </summary>
+    /// <returns> true if yes, false is no, passed out the index of enabled option and name of player who did it </returns>
+    public bool IsForcedSittingForAny(out int enabledIdx, out string playerWhoForceSittedYou) {
+        // check if any of the players have forced sit active
+        enabledIdx = _perPlayerConfigs.FindIndex(x => x._forcedSit);
+        // if the index is not -1, then find the name of the index you are on
+        if(enabledIdx != -1) {
+            playerWhoForceSittedYou = _characterHandler.whitelistChars[enabledIdx]._name;
+            return true;
+        } else {
+            playerWhoForceSittedYou = "INVALID";
+            return false;
+        }
+    }
+
+    /// <summary> If forced to stay is active for you by any person in your whitelist </summary>
+    /// <returns> true if yes, false is no, passed out the index of enabled option and name of player who did it </returns>
+    public bool IsForcedToStayForAny(out int enabledIdx, out string playerWhoForceStayedYou) {
+        // check if any of the players have forced to stay active
+        enabledIdx = _perPlayerConfigs.FindIndex(x => x._forcedToStay);
+        // if the index is not -1, then find the name of the index you are on
+        if(enabledIdx != -1) {
+            playerWhoForceStayedYou = _characterHandler.whitelistChars[enabledIdx]._name;
+            return true;
+        } else {
+            playerWhoForceStayedYou = "INVALID";
+            return false;
+        }
+    }
+
+    /// <summary> If blindfolded is active for you by any person in your whitelist </summary>
+    /// <returns> true if yes, false is no, passed out the index of enabled option and name of player who did it </returns>
+    public bool IsBlindfoldedForAny(out int enabledIdx, out string playerWhoBlindfoldedYou) {
+        // check if any of the players have blindfolded active
+        enabledIdx = _perPlayerConfigs.FindIndex(x => x._blindfolded);
+        // if the index is not -1, then find the name of the index you are on
+        if(enabledIdx != -1) {
+            playerWhoBlindfoldedYou = _characterHandler.whitelistChars[enabledIdx]._name;
+            return true;
+        } else {
+            playerWhoBlindfoldedYou = "INVALID"; // should never EVER reach here.
+            return false;
+        }
+    }
+    
+
     public void ResetEverythingDueToSafeword() {
         // call the reset everything for each playerSettings in the list
         for(int i = 0; i < _perPlayerConfigs.Count; i++) {
@@ -109,7 +177,7 @@ public partial class HardcoreManager
             _perPlayerConfigs[i].SetAllowForcedToStay(false);
             SetForcedToStay(i, false);
             _perPlayerConfigs[i].SetAllowBlindfold(false);
-            SetBlindfolded(i, false);
+            Task.Run(() => SetBlindfolded(i, false));
         }
         // invoke safeword
         _rsPropertyChanged.Invoke(HardcoreChangeType.Safeword, RestraintSetChangeType.Disabled);
@@ -135,10 +203,27 @@ public partial class HardcoreManager
     }
 
     public void ApplyMultipler() {
-        if(_perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[ActiveHCsetIdx]._lightStimulationProperty) { StimulationMultipler = 1.125; }
-        else if(_perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[ActiveHCsetIdx]._mildStimulationProperty) { StimulationMultipler = 1.25; }
-        else if(_perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[ActiveHCsetIdx]._heavyStimulationProperty) { StimulationMultipler = 1.5; }
-        else { StimulationMultipler = 1.0; }
+        // let's see if any set is enabled first
+        if(IsAnySetEnabled(out int enabledIdx, out string assignerOfSet, out int assignerIdx)) {
+            // it is valid, so let's set the multiplier based on the attribute
+            if(_perPlayerConfigs[assignerIdx]._rsProperties[enabledIdx]._lightStimulationProperty) {
+                GSLogger.LogType.Verbose($"[HardcoreManager] Light Stimulation Multiplier applied from set with factor of 1.125x!");
+                StimulationMultipler = 1.125;
+            }
+            // apply mild stim
+            else if(_perPlayerConfigs[assignerIdx]._rsProperties[enabledIdx]._mildStimulationProperty) {
+                GSLogger.LogType.Verbose($"[HardcoreManager] Mild Stimulation Multiplier applied from set with factor of 1.25x!");
+                StimulationMultipler = 1.25;
+            }
+            // apply heavy stim
+            else if(_perPlayerConfigs[assignerIdx]._rsProperties[enabledIdx]._heavyStimulationProperty) {
+                GSLogger.LogType.Verbose($"[HardcoreManager] Heavy Stimulation Multiplier applied from set with factor of 1.5x!");
+                StimulationMultipler = 1.5;
+            }
+        } else {
+            GSLogger.LogType.Verbose($"[HardcoreManager] No Stimulation Multiplier applied from set, defaulting to 1.0x!");
+            StimulationMultipler = 1.0;
+        }
     }
 #endregion Manager Methods
 
@@ -200,14 +285,15 @@ public partial class HardcoreManager
         Save();
     }
 
-    public void SetBlindfolded(int playerIdx, bool blindfolded, string assignerName = "") {
+    public async Task SetBlindfolded(int playerIdx, bool blindfolded, string assignerName = "") {
+        // apply the blindfold logic
+        await HandleBlindfoldLogic(playerIdx, blindfolded, assignerName);
+        // apply the changes
         _perPlayerConfigs[playerIdx].SetBlindfolded(blindfolded);
         _saveService.QueueSave(this);
-        // apply the blindfold logic
-        HandleBlindfoldLogic(playerIdx, blindfolded, assignerName);
     }
 
-    public async void HandleBlindfoldLogic(int playerIdx, bool newState, string assignerName) {
+    public async Task HandleBlindfoldLogic(int playerIdx, bool newState, string assignerName) {
         // if the idx is not -1, process logic
         if(playerIdx != -1) {
             // toggle our window based on conditions
@@ -228,7 +314,7 @@ public partial class HardcoreManager
                 await Task.Delay(2000);
                 DoCamerVoodoo(playerIdx, newState);
                 // call a refresh all
-                _glamourEvent.Invoke(UpdateType.RefreshAll, "", assignerName);
+                _glamourEvent.Invoke(UpdateType.BlindfoldUnEquipped, "", assignerName);
             }
         }
     }
@@ -334,7 +420,7 @@ public partial class HardcoreManager
         }
         // otherwise, we are disabling it, so just disable it and reset the multiplier
         else {
-            _perPlayerConfigs[ActivePlayerCfgListIdx]._rsProperties[setIndex]._heavyStimulationProperty = false;
+            _perPlayerConfigs[playerIdx]._rsProperties[setIndex]._heavyStimulationProperty = false;
             // and change the multiplier
             StimulationMultipler = 1.0;
         }

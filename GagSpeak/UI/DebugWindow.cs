@@ -76,8 +76,6 @@ public class DebugWindow : Window //, IDisposable
 
     public override void Draw() {
         ImGui.Text($"IsGagSpeakGlamourEventExecuting: {_gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting}");
-        ImGui.Text($"_hcManager.ActivePlayerCfgListIdx: {_hcManager.ActivePlayerCfgListIdx}");
-        ImGui.Text($"_hcManager.ActiveHCsetIdx: {_hcManager.ActiveHCsetIdx}");
         ImGui.Text($"restraint set active index: {_restraintSetManager._selectedIdx}");
         ImGui.Text($"whitelist active index: {_characterHandler.activeListIdx}");
         // add a button to reset faulty request info's

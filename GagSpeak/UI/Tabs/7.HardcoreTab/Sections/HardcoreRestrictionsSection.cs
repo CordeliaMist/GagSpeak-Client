@@ -231,14 +231,14 @@ public class HC_ControlRestrictions
             if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.SearchPlus.ToIconString(), new Vector2(ImGuiHelpers.GlobalScale*25, ImGuiHelpers.GlobalScale*25),
             "Add last seen as new entry interface as last entry\n(Must have active to record latest dialog option.)\n(Auto-selecting yes is not an allowed option)", false, true))
             {
-                GSLogger.LogType.Debug($"{_hcManager.LastSeenListSelection} || {_hcManager.LastSeenDialogText.Item1} || {_hcManager.LastSeenListTarget}");
                 var newNode = new TextEntryNode() {
                     Enabled = true,
-                    Text = _hcManager.LastSeenListSelection == "" ? _hcManager.LastSeenDialogText.Item1 : _hcManager.LastSeenListSelection,
+                    Label = _hcManager.LastSeenDialogText.Item1 + "-Label",
+                    Text = _hcManager.LastSeenDialogText.Item1,
                     Options = _hcManager.LastSeenDialogText.Item2.ToArray(),
                 };
                 // if the list only has two elements
-                if (_hcManager.StoredEntriesFolder.Children.Count <= 2) {
+                if (_hcManager.StoredEntriesFolder.Children.Count <= 5) {
                     // add it to the end
                     _hcManager.StoredEntriesFolder.Children.Add(newNode);
                 } else {
@@ -252,20 +252,26 @@ public class HC_ControlRestrictions
         } finally { style.Pop(); }
     }
 
+
+
+
+
     private void DisplayTextNodes() {
         if (_hcManager.StoredEntriesFolder.Children.Count == 0) {
             _hcManager.StoredEntriesFolder.Children.Add(new TextEntryNode() {
                 Enabled = false,
-                Text = "Add some text here!"
+                Text = "NodeName",
+                Label = "Placeholder Node, Add Last Selected Entry for proper node."
             });
             _hcManager.Save();
         }
         // if the list only has two elements (the required ones)
-        if (_hcManager.StoredEntriesFolder.Children.Count <= 2) {
+        if (_hcManager.StoredEntriesFolder.Children.Count <= 5) {
             // add it to the end
             _hcManager.StoredEntriesFolder.Children.Add(new TextEntryNode() {
                 Enabled = false,
-                Text = "Add some text here!"
+                Text = "NodeName",
+                Label = "Placeholder Node, Add Last Selected Entry for proper node."
             });
             _hcManager.Save();
         }
@@ -285,7 +291,7 @@ public class HC_ControlRestrictions
         if (!node.Enabled)
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(.5f, .5f, .5f, 1));
 
-        ImGui.TreeNodeEx($"{node.Name}##{node.Name}-tree", ImGuiTreeNodeFlags.Leaf);
+        ImGui.TreeNodeEx($"[{node.Text}] {node.Label}##{node.Name}-tree", ImGuiTreeNodeFlags.Leaf);
         ImGui.TreePop();
 
         ImGui.PopStyleColor();
@@ -302,15 +308,19 @@ public class HC_ControlRestrictions
         }
 
         var disableElements = false;
-        if(_hcManager.StoredEntriesFolder.Children.Count >= 2
-        && _hcManager.StoredEntriesFolder.Children[0] == node || _hcManager.StoredEntriesFolder.Children[1] == node)
+        if(_hcManager.StoredEntriesFolder.Children.Count >= 5
+        && (_hcManager.StoredEntriesFolder.Children[0] == node
+         || _hcManager.StoredEntriesFolder.Children[1] == node
+         || _hcManager.StoredEntriesFolder.Children[2] == node
+         || _hcManager.StoredEntriesFolder.Children[3] == node
+         || _hcManager.StoredEntriesFolder.Children[4] == node))
         {
             disableElements = true;
         }
         TextNodePopup(node, disableElements);
     }
 
-    private void TextNodePopup(ITextNode node, bool disableElements = false) {
+    private void TextNodePopup(TextEntryNode node, bool disableElements = false) {
         var style = ImGui.GetStyle();
         var newItemSpacing = new Vector2(style.ItemSpacing.X / 2, style.ItemSpacing.Y);
         if (ImGui.BeginPopup($"{node.GetHashCode()}-popup")) {
@@ -326,11 +336,12 @@ public class HC_ControlRestrictions
                             if (_hcManager.TryFindParent(node, out var parentNode)) {
                                 parentNode!.Children.Remove(node);
                                 // if the new size is now just 2 contents
-                                if (parentNode.Children.Count == 2) {
+                                if (parentNode.Children.Count == 0) {
                                     // create a new blank one
                                     parentNode.Children.Add(new TextEntryNode() {
                                         Enabled = false,
-                                        Text = "Add some text here!"
+                                        Text = "NodeName (Placeholder Node)",
+                                        Label = "Add Last Selected Entry for proper node."
                                     });
                                 }
                                 _hcManager.Save();
@@ -343,7 +354,7 @@ public class HC_ControlRestrictions
                     int currentOption = entryNode.SelectThisIndex; // Set the current option based on the SelectThisIndex property
 
                     ImGui.SameLine();
-                    ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*125);
+                    ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*200);
                     // Create the dropdown menu
                     if(disableElements) { ImGui.BeginDisabled();}
                     try {
@@ -361,6 +372,7 @@ public class HC_ControlRestrictions
                             }
                             _hcManager.Save();
                         }
+                        if(ImGui.IsItemHovered()) { ImGui.SetTooltip( "The option to automatically select. Yes is always disabled"); }
                     } finally { if(disableElements) { ImGui.EndDisabled();} }
 
                     ImGui.SameLine();
@@ -375,13 +387,21 @@ public class HC_ControlRestrictions
                     if(disableElements) { ImGui.BeginDisabled();}
                     try {
                         var matchText = entryNode.Text;
+                        if(entryNode.Text != "") { ImGui.BeginDisabled();}
+                        try{
+                            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*225);
+                            if (ImGui.InputText($"Node Name##{node.Name}-matchTextLebel", ref matchText, 10_000, ImGuiInputTextFlags.AutoSelectAll | ImGuiInputTextFlags.EnterReturnsTrue)) {
+                                entryNode.Label = matchText;
+                                _hcManager.Save();
+                            }
+                        } finally { if(entryNode.Text != "") { ImGui.EndDisabled();} }
+                        var matchText2 = entryNode.Label;
                         ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*225);
-                        if (ImGui.InputText($"##{node.Name}-matchText", ref matchText, 10_000, ImGuiInputTextFlags.AutoSelectAll | ImGuiInputTextFlags.EnterReturnsTrue)) {
-                            entryNode.Text = matchText;
+                        if (ImGui.InputText($"Node Label##{node.Name}-matchText", ref matchText2, 10_000, ImGuiInputTextFlags.AutoSelectAll | ImGuiInputTextFlags.EnterReturnsTrue)) {
+                            entryNode.Label = matchText2;
                             _hcManager.Save();
                         }
                     } finally { if(disableElements) { ImGui.EndDisabled();} }
-                    ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*225);
                 } 
                 finally {
                     ImGui.PopStyleVar();

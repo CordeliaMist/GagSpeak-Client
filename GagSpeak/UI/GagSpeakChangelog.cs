@@ -26,7 +26,7 @@ public class GagSpeakChangelog
         Add2_6_0_0(Changelog);
         Add2_7_0_0(Changelog);
         Add2_8_0_0(Changelog);
-        Add2_8_1_0(Changelog);
+        Add2_8_4_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -54,8 +54,8 @@ public class GagSpeakChangelog
         }
     }
 
-    private static void Add2_8_1_0(Changelog log)
-        => log.NextVersion("Version 2.8.4.0 Release")
+    private static void Add2_8_4_0(Changelog log)
+        => log.NextVersion("Version 2.8.4.1 Release")
             .RegisterEntry("Did some polishing up to the actions manager")
             .RegisterEntry("Added interaction commands for the hardcore tab")
             .RegisterEntry("Added some new interactions to the whitelist manager")
@@ -64,7 +64,7 @@ public class GagSpeakChangelog
             .RegisterEntry("Polished up the toybox tab");
 
     private static void Add2_8_0_0(Changelog log)
-        => log.NextVersion("Version 2.8.4.0 Release")
+        => log.NextVersion("Version 2.8.0.0 Release")
             .RegisterImportant("The Hardcore Tab is now in a fully functional state.")
             .RegisterEntry("Major reported issues patched, hotbar issue is known and working on logic for it")
             .RegisterHighlight("You can now bind certain penumbra mods to restraint sets, so they activate when you enable the set!")
