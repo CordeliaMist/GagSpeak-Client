@@ -23,7 +23,7 @@ public class OnFrameworkService : IDisposable
     private readonly    GagSpeakGlamourEvent        _glamourChange;
     public              IntPtr                      _address;                           // player address
     public              uint                        _classJobId;                        // player class job id
-    private             bool                        _sentBetweenAreas = false;          // if we sent a between areas message
+    public              bool                        _sentBetweenAreas = false;          // if we sent a between areas message
     private             RedrawState                 _redrawStatus = RedrawState.None;   // if we are redrawing
     private             ushort                      _lastZone = 0;                      // last zone we were in
     private enum RedrawState { None, Redrawing, Redrawn }
@@ -63,7 +63,6 @@ public class OnFrameworkService : IDisposable
     private unsafe void FrameworkOnUpdateInternal() {
         // if we are not logged in, or are dead, return
         if (_clientState.LocalPlayer?.IsDead ?? false || !_clientState.IsLoggedIn || _clientState.LocalPlayer == null || _clientState.LocalContentId == 0) {
-            GSLogger.LogType.Verbose($"[FrameworkUpdate]  Player is dead, returning");
             return;
         }
         // If we are zoning, then we need to halt processing

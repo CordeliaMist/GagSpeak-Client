@@ -61,6 +61,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.Center("HOVER ME");
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip(
                 $"To Enable the sit command, say \"{_tempWhitelistChar._name.Split(' ')[0]}, sit.\"\n"+
+                $"To Enable the groundsit command, say \"{_tempWhitelistChar._name.Split(' ')[0]}, on your knees.\"\n"+
                 $"To Disable the sit command, say \"you may stand now {_tempWhitelistChar._name.Split(' ')[0]}\"");
             }
 

@@ -19,6 +19,14 @@ using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using System.Numerics;
+using Dalamud.Game.ClientState.Objects;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.ClientState.Objects.Enums;
+using System.Collections.Generic;
+using Dalamud.Game.Gui.PartyFinder.Types;
+using GagSpeak.Services;
 
 namespace GagSpeak.Hardcore.Movement;
 public class MovementManager : IDisposable
@@ -30,7 +38,10 @@ public class MovementManager : IDisposable
     private readonly    IFramework              _framework;
     private readonly    IKeyState               _keyState;
     private readonly    CharacterHandler        _charaManager;
+    private readonly    ITargetManager          _targetManager; // target manager
+    private readonly    IObjectTable            _objectTable;   // object table
     private readonly    OptionPromptListeners   _autoDialogSelect;
+    private readonly    OnFrameworkService      _onFrameworkService;
     private readonly    RS_PropertyChangedEvent _rsPropertyChangedEvent;
     private readonly    InitializationManager    _manager;
     // for having the movement memory -- was originally private static, revert back if it causes issues.
@@ -44,9 +55,9 @@ public class MovementManager : IDisposable
     private static      MovementMode            CameraMode = MovementMode.Standard; // camera mode fetched from movement mode
 
     // the list of keys that are blocked while movement is disabled. Req. to be static, must be set here.
-    public MovementManager(ICondition condition, IKeyState keyState,
-    MoveController MoveController, HardcoreManager hardcoreManager,
-    RS_PropertyChangedEvent RS_PropertyChangedEvent, IFramework framework, 
+    public MovementManager(ICondition condition, IKeyState keyState, ITargetManager targetManager,
+    MoveController MoveController, HardcoreManager hardcoreManager, IObjectTable objectTable,
+    RS_PropertyChangedEvent RS_PropertyChangedEvent, IFramework framework, OnFrameworkService onFrameworkService,
     IClientState clientState, GagSpeakConfig config, InitializationManager manager,
     CharacterHandler characterManager, OptionPromptListeners autoDialogSelect) {
         _config = config;
@@ -55,7 +66,10 @@ public class MovementManager : IDisposable
         _clientState = clientState;
         _MoveController = MoveController;
         _framework = framework;
+        _targetManager = targetManager;
+        _objectTable = objectTable;
         _keyState = keyState;
+        _onFrameworkService = onFrameworkService;
         _hcManager = hardcoreManager;
         _autoDialogSelect = autoDialogSelect;
         _rsPropertyChangedEvent = RS_PropertyChangedEvent;
@@ -140,8 +154,7 @@ public class MovementManager : IDisposable
     private void framework_Update(IFramework framework) => OnFrameworkInternal();
     private unsafe void OnFrameworkInternal() {
         // make sure we only do checks when we are properly logged in and have a character loaded
-        if (_clientState.LocalPlayer?.IsDead ?? false) {
-            GSLogger.LogType.Debug($"[FrameworkUpdate]  Player is dead, returning");
+        if (_clientState.LocalPlayer?.IsDead ?? false || _onFrameworkService._sentBetweenAreas) {
             return;
         }
 
@@ -187,13 +200,40 @@ public class MovementManager : IDisposable
             
             // if we are allowing forced to stay from anyone (you dont need to have the option locked on, just the allowance one) then enable the hooks
             if(EnableOptionPromptHooks()) {
-                _autoDialogSelect.Enable(); // enable the hooks for prompt selection
+                // enable the hooks for the option prompts
+                _autoDialogSelect.Enable(); 
+                // while they are active, if we are not in a dialog prompt option, scan to see if we are by an estate enterance
+                if (_hcManager.IsForcedToStayForAny(out int enabledIdx, out string playerWhoForceStayedYou) 
+                && _condition[Condition.OccupiedInQuestEvent] == false
+                && _onFrameworkService._sentBetweenAreas == false)
+                {
+                    // grab all the event object nodes (door interactions)
+                    List<Dalamud.Game.ClientState.Objects.Types.GameObject>? nodes = _objectTable.Where(x => x.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.EventObj && GetTargetDistance(x) < 3.5f).ToList();
+                    foreach (var obj in nodes) {
+                        // only follow through with the node named "Entrance"
+                        if(obj.Name.TextValue == "Entrance") {
+                            TargetSystem.Instance()->InteractWithObject((GameObject*)(nint)obj.Address, false);
+                        }
+                    }
+                }
+
             }
             // otherwise, disable the hooks if it is inactive
             else {
                 _autoDialogSelect.Disable(); // disable the hooks for prompt selection
             }
         }
+    }
+
+    public float GetTargetDistance(Dalamud.Game.ClientState.Objects.Types.GameObject target) {
+        Vector2 position = new(target.Position.X, target.Position.Z);
+        Vector2 selfPosition = new(_clientState.LocalPlayer.Position.X, _clientState.LocalPlayer.Position.Z);
+        return Math.Max(0, Vector2.Distance(position, selfPosition) - target.HitboxRadius - _clientState.LocalPlayer.HitboxRadius);
+    }
+
+    public unsafe void TryInteract(GameObject* baseObj) {
+        if (baseObj->GetIsTargetable())
+            TargetSystem.Instance()->InteractWithObject(baseObj, true);
     }
 
     private bool isForcedSitting() => _hcManager._perPlayerConfigs.Any(x => x._forcedSit);

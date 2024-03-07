@@ -73,7 +73,7 @@ public class HC_Orders
             ImGui.Separator();
             // draw out sit option
             UIHelpers.CheckboxNoConfig($"{name} can order you to sit.",
-            $"You will be forcibily sat down on your nees when {name} says to you \"{yourName}, sit.\" in any channel.\n"+
+            $"You will be forcibily execute /sit when {name} says to you \"{yourName}, sit.\", or /groundsit when {name} says to you \"{yourName}, on your knees.\" in any channel\n"+
             $"Your movement is restricted until they say \"you may stand now {yourName}.\"",
             _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowForcedSit,
             v => _hcManager.SetAllowForcedSit(_charHandler.activeListIdx, v));

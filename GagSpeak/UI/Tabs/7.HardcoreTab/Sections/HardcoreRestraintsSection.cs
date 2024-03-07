@@ -147,7 +147,6 @@ public class HC_RestraintSetProperties
             ImGui.TableSetupColumn("AccessorySlots", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableNextRow(); ImGui.TableNextColumn();
             ImGui.Spacing();
-            // these are intentionally global for now
             UIHelpers.CheckboxNoConfig("Legs Are Restrained",
             "Actions for your current class that involve primary Leg movement are restricted.\n"+
             "(( Only modifies live hotbar display, no hotbar data can be lost ))",

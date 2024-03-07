@@ -91,6 +91,13 @@ public class TextFolderNode : ITextNode
                     "Nothing."},
                 SelectThisIndex = 3
             });
+            Children.Add(new TextEntryNode { 
+                Enabled = true,
+                Label = "(Prevents logout escape)",
+                Text = "Enter the estate hall?",
+                Options = new string[] {"No", "Yes"},
+                SelectThisIndex = 1
+            });
         }
 
         // Check for "Exit Apartment Room (Other)"
@@ -158,6 +165,17 @@ public class TextFolderNode : ITextNode
                     "Move to your private chambers.",
                     "Nothing."},
                 SelectThisIndex = 3
+            });
+        }
+
+        // Check for "(Prevents logout escape)"
+        if (Children.All(x => x.Label != "(Prevents logout escape)")) {
+            Children.Insert(5, new TextEntryNode { 
+                Enabled = true,
+                Label = "(Prevents logout escape)",
+                Text = "Enter the estate hall?",
+                Options = new string[] {"No", "Yes"},
+                SelectThisIndex = 1
             });
         }
     }

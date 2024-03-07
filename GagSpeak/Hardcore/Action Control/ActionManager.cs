@@ -306,6 +306,7 @@ public unsafe class GsActionManager : IDisposable
         if (_clientState.LocalPlayer?.IsDead ?? false) {
             return;
         }
+
         if (AllowFrameworkHardcoreUpdates()) {
             // if the class job is different than the one stored, then we have a class job change (CRITICAL TO UPDATING PROPERLY)
             if (_clientState.LocalPlayer!.ClassJob.Id != _onFrameworkService._classJobId) {
@@ -343,10 +344,12 @@ public unsafe class GsActionManager : IDisposable
                         return false;
                     }
                     // if we somehow managed to start executing it, then stop that too
-                    if(type == ActionType.Action && (acId == 5 || acId == 6)) {
+                    if(type == ActionType.Action && (acId == 5 || acId == 6 || acId == 11408)) {
                         GSLogger.LogType.Verbose($"[Action Manager]: You are currently locked away, canceling teleport/return execution");
                         return false;
                     }
+
+                    // if it is self destrcut, 
                 }
 
                 // check to see if any our of sets is currently active 

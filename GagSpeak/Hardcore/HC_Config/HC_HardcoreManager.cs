@@ -102,7 +102,7 @@ public partial class HardcoreManager : ISavable, IDisposable
     public void AddNewPlayerConfig() {
         _perPlayerConfigs.Add(new HC_PerPlayerConfig(_rsPropertyChanged));
         // Perform integrity check
-        _perPlayerConfigs[_perPlayerConfigs.Count - 1].IntegrityCheck(_perPlayerConfigs.Count);
+        _perPlayerConfigs[_perPlayerConfigs.Count - 1].IntegrityCheck(_restraintSetManager._restraintSets.Count);
         // Save
         _saveService.QueueSave(this);
     }

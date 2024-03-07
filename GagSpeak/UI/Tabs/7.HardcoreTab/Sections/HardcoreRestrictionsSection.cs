@@ -238,7 +238,7 @@ public class HC_ControlRestrictions
                     Options = _hcManager.LastSeenDialogText.Item2.ToArray(),
                 };
                 // if the list only has two elements
-                if (_hcManager.StoredEntriesFolder.Children.Count <= 5) {
+                if (_hcManager.StoredEntriesFolder.Children.Count <= 6) {
                     // add it to the end
                     _hcManager.StoredEntriesFolder.Children.Add(newNode);
                 } else {
@@ -266,7 +266,7 @@ public class HC_ControlRestrictions
             _hcManager.Save();
         }
         // if the list only has two elements (the required ones)
-        if (_hcManager.StoredEntriesFolder.Children.Count <= 5) {
+        if (_hcManager.StoredEntriesFolder.Children.Count <= 6) {
             // add it to the end
             _hcManager.StoredEntriesFolder.Children.Add(new TextEntryNode() {
                 Enabled = false,
@@ -308,12 +308,13 @@ public class HC_ControlRestrictions
         }
 
         var disableElements = false;
-        if(_hcManager.StoredEntriesFolder.Children.Count >= 5
+        if(_hcManager.StoredEntriesFolder.Children.Count >= 6
         && (_hcManager.StoredEntriesFolder.Children[0] == node
          || _hcManager.StoredEntriesFolder.Children[1] == node
          || _hcManager.StoredEntriesFolder.Children[2] == node
          || _hcManager.StoredEntriesFolder.Children[3] == node
-         || _hcManager.StoredEntriesFolder.Children[4] == node))
+         || _hcManager.StoredEntriesFolder.Children[4] == node
+         || _hcManager.StoredEntriesFolder.Children[5] == node))
         {
             disableElements = true;
         }

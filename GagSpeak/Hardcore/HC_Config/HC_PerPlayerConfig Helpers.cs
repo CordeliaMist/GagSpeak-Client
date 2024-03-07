@@ -28,13 +28,13 @@ public partial class HC_PerPlayerConfig
     }
 #region Manager Methods
     // run integrity check to make sure the size of _rsProperties is the same as the restraint set size
-    public void IntegrityCheck(int setIndex) {
-        if(_rsProperties.Count < setIndex) {
-            for(int i = _rsProperties.Count; i < setIndex; i++) {
+    public void IntegrityCheck(int RestraintSetListSize) {
+        if(_rsProperties.Count < RestraintSetListSize) {
+            for(int i = _rsProperties.Count; i < RestraintSetListSize; i++) {
                 _rsProperties.Add(new HC_RestraintProperties());
             }
-        } else if(_rsProperties.Count > setIndex) {
-            _rsProperties.RemoveRange(setIndex, _rsProperties.Count - setIndex);
+        } else if(_rsProperties.Count > RestraintSetListSize) {
+            _rsProperties.RemoveRange(RestraintSetListSize, _rsProperties.Count - RestraintSetListSize);
         }
     }
 
