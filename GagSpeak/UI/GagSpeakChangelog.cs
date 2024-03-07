@@ -56,7 +56,7 @@ public class GagSpeakChangelog
     }
 
     private static void Add2_8_5_0(Changelog log)
-        => log.NextVersion("Version 2.8.5.0 Release")
+        => log.NextVersion("Version 2.8.5.1 Release")
             .RegisterImportant("The Hardcore Tab is now in a fully functional state. (should be)")
             .RegisterHighlight("Hardcore tab can no longer be triggered by beta-testers, and must be triggered by the person selected on the whitelist.")
             .RegisterEntry("Be careful with who you give access to on hardcore options!")

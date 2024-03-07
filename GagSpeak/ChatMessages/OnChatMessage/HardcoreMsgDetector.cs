@@ -132,8 +132,8 @@ public class HardcoreMsgDetector
             if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, sit."))
             {
                 // here, we want to make sure we are not already being forced to sit
-                if(_hcManager.IsForcedSittingForAny(out int enabledIdx, out string playerWhoForceSatYou) == false) {
-                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] Forced to sit is not enabled by anyone, but we are trying to enable it. Declining.");
+                if(_hcManager.IsForcedSittingForAny(out int enabledIdx, out string playerWhoForceSatYou)) {
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] Forced to sit is already enabled by someone else so we cannot enable it. Declining.");
                     return false;
                 }
                 // we need to make sure that the player who forced us to sit is the same as the sender
@@ -147,8 +147,8 @@ public class HardcoreMsgDetector
             else if(chatmessage.TextValue.ToLowerInvariant().Contains($"{_client.LocalPlayer!.Name.ToString().Split(' ')[0].ToLowerInvariant()}, on your knees."))
             {
                 // here, we want to make sure we are not already being forced to sit
-                if(_hcManager.IsForcedSittingForAny(out int enabledIdx, out string playerWhoForceSatYou) == false) {
-                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] Forced to sit is not enabled by anyone, but we are trying to enable it. Declining.");
+                if(_hcManager.IsForcedSittingForAny(out int enabledIdx, out string playerWhoForceSatYou)) {
+                    GSLogger.LogType.Debug($"[HardcoreMsgDetector] Forced to sit is already enabled by someone else so we cannot enable it. Declining.");
                     return false;
                 }
 
