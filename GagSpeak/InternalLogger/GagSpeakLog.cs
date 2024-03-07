@@ -21,7 +21,7 @@ namespace GagSpeak.GSLogger;
 public class InternalLogTab : ITab
 {
     private readonly InternalLog _internalLog = GagSpeak._services.GetService<InternalLog>();
-    public ReadOnlySpan<byte> Label => "Logger###GagSpeakGSLogger"u8;
+    public ReadOnlySpan<byte> Label => "Log###GagSpeakGSLogger"u8;
     
     public void DrawContent() {
         _internalLog.PrintImgui();

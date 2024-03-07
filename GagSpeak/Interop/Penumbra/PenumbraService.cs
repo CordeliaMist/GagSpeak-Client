@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin;
+using GagSpeak.Events;
 using GagSpeak.Services;
 using Penumbra.Api;
 using Penumbra.Api.Enums;
@@ -106,7 +108,7 @@ public unsafe class PenumbraService : IDisposable
     /// Try to set all mod settings as desired. Only sets when the mod should be enabled.
     /// If it is disabled, ignore all other settings.
     /// </summary>
-    public string SetMod(Mod mod, ModSettings settings, bool newSetState, bool disableModes) {
+    public string SetMod(Mod mod, ModSettings settings, bool newSetState, bool disableMods, bool redrawSelf) {
         if (!Available)
             return "Penumbra is not available.";
 
@@ -132,7 +134,7 @@ public unsafe class PenumbraService : IDisposable
             // otherwise, we are attempting to disable the mod
             else {
                 // disable the mod, but ONLY if disabledMods is true
-                if(disableModes == true) {
+                if(disableMods == true) {
                     errorCode = _setMod.Invoke(collection, mod.DirectoryName, mod.Name, false);
                     // get the recieved message
                     switch (errorCode) {
@@ -144,6 +146,13 @@ public unsafe class PenumbraService : IDisposable
                 errorCode = _setModPriority.Invoke(collection, mod.DirectoryName, mod.Name, settings.Priority);
                 Debug.Assert(errorCode is PenumbraApiEc.Success or PenumbraApiEc.NothingChanged, "Setting Priority should not be able to fail.");
             }
+
+            // finally, if we asked to redraw after toggle, redraw
+            if(redrawSelf == true) {
+                // redraw the object
+                RedrawObject(_frameworkService._address, RedrawType.Redraw);
+            }
+
             // get the recieved message
             switch (errorCode) {
                 case PenumbraApiEc.ModMissing:        return $"The mod {mod.Name} [{mod.DirectoryName}] could not be found.";
@@ -160,12 +169,8 @@ public unsafe class PenumbraService : IDisposable
     /// <summary> Try to redraw the given actor. </summary>
     public void RedrawObject(IntPtr playerCharObjPtr, RedrawType settings) {
         GameObject playerCharObj = _frameworkService.CreateGameObject(playerCharObjPtr) ?? throw new InvalidOperationException("Player object not found.");
-        try {
-            _redrawSubscriber.Invoke(playerCharObj, settings);
-        }
-        catch (Exception e) {
-            GSLogger.LogType.Debug($"Failure redrawing object:\n{e}");
-        }
+        _redrawSubscriber.Invoke(playerCharObj, settings);
+
     }
 
     /// <summary> Reattach to the currently running Penumbra IPC provider. Unattaches before if necessary. </summary>

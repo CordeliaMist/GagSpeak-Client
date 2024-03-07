@@ -3,6 +3,8 @@ using Dalamud.Plugin.Services;
 using System;
 using System.Threading.Tasks;
 using GagSpeak.CharacterData;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using GagSpeak.Events;
 
 /// <summary> 
 /// Stores all information about the player and helper functions for it here.
@@ -12,25 +14,29 @@ namespace GagSpeak.Services;
 
 public class OnFrameworkService : IDisposable
 {
-    private readonly    IChatGui                        _chat;
-    private readonly    IClientState                    _clientState;
-    private readonly    ICondition                      _condition;
-    private readonly    IFramework                      _framework;
-    private readonly    IObjectTable                    _objectTable;
-    private readonly    CharacterHandler                _characterHandler;
-    public              IntPtr                          _address;                   // player address
-    public              uint                            _classJobId;                // player class job id
-    private             bool                            _sentBetweenAreas = false;  // if we sent a between areas message
-    private             ushort                          _lastZone = 0;              // last zone we were in
+    private readonly    IChatGui                    _chat;
+    private readonly    IClientState                _clientState;
+    private readonly    ICondition                  _condition;
+    private readonly    IFramework                  _framework;
+    private readonly    IObjectTable                _objectTable;
+    private readonly    CharacterHandler            _characterHandler;
+    private readonly    GagSpeakGlamourEvent        _glamourChange;
+    public              IntPtr                      _address;                           // player address
+    public              uint                        _classJobId;                        // player class job id
+    private             bool                        _sentBetweenAreas = false;          // if we sent a between areas message
+    private             RedrawState                 _redrawStatus = RedrawState.None;   // if we are redrawing
+    private             ushort                      _lastZone = 0;                      // last zone we were in
+    private enum RedrawState { None, Redrawing, Redrawn }
 
     public OnFrameworkService(IChatGui chat, IClientState clientState, ICondition condition, IFramework framework,
-    IObjectTable objectTable, CharacterHandler characterHandler) {
+    IObjectTable objectTable, CharacterHandler characterHandler, GagSpeakGlamourEvent glamourChange) {
         _chat = chat;
         _clientState = clientState;
         _condition = condition;
         _framework = framework;
         _objectTable = objectTable;
         _characterHandler = characterHandler;
+        _glamourChange = glamourChange;
         // set variables that are unassigned
         _address = GetPlayerPointerAsync().GetAwaiter().GetResult();
         // subscribe to the framework update event
@@ -56,7 +62,7 @@ public class OnFrameworkService : IDisposable
     /// <summary> The main framework update function. </summary>
     private unsafe void FrameworkOnUpdateInternal() {
         // if we are not logged in, or are dead, return
-        if (_clientState.LocalPlayer?.IsDead ?? false) {
+        if (_clientState.LocalPlayer?.IsDead ?? false || !_clientState.IsLoggedIn || _clientState.LocalPlayer == null || _clientState.LocalContentId == 0) {
             GSLogger.LogType.Verbose($"[FrameworkUpdate]  Player is dead, returning");
             return;
         }
@@ -86,6 +92,40 @@ public class OnFrameworkService : IDisposable
             _sentBetweenAreas = false;
         }
 
+        // gets the draw object of the local player.
+        // it tends to be invalid for a single framework tick when we redraw, so this accounts for that
+        var drawObj = ((GameObject*)_clientState.LocalPlayer.Address)->DrawObject; 
+        if(((GameObject*)_clientState.LocalPlayer.Address)->DrawObject == null) {
+            return;
+        }
+
+        // otherwise, if we are here, we can document the visibility of the player
+        
+        // if our redraw state is none, check to see if we are redrawing
+        if (_redrawStatus == RedrawState.None) {
+            // see if we are redrawing
+            if(drawObj->IsVisible == false) {
+                // if we are, set our status to redrawing
+                _redrawStatus = RedrawState.Redrawing;
+                GSLogger.LogType.Warning("Object has began redrawing.");
+            }
+        }
+
+        // if we are redrawing, check to see if we are yet visable again
+        if (_redrawStatus == RedrawState.Redrawing) {
+            // if we are visable, set our status to redrawing
+            if(drawObj->IsVisible == true) {
+                _redrawStatus = RedrawState.Redrawn;
+                GSLogger.LogType.Warning("Object has finished redrawing.");
+            }
+        }
+
+        // if we have been redrawn, invoke the refresh all status
+        if (_redrawStatus == RedrawState.Redrawn) {
+            _redrawStatus = RedrawState.None;
+            // set the completion task to true, allowing our customizations to restore
+            _glamourChange.Invoke(UpdateType.RefreshAll);
+        }
     }
 
     /// <summary> Fetch a GameObject at spesified pointer </summary>

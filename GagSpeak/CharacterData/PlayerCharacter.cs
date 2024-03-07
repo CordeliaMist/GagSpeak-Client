@@ -15,6 +15,7 @@ public enum RevertStyle {
     ToGameOnly,
     ToGameThenAutomation,
 }
+
 public class PlayerGlobalPerms : CharacterInfoBase
 {
     //////////////////////////////////////// PREFERENCES FOR NON-WHITELISTED PLAYERS  ///////////////////////////////////////

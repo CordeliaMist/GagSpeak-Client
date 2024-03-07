@@ -95,8 +95,6 @@ public partial class HC_PerPlayerConfig
             }
         } catch (Exception ex) {
             GSLogger.LogType.Error($"[HC_PerPlayerConfig] Error deserializing HC_PerPlayerConfig: {ex}");
-        } finally {
-            GSLogger.LogType.Debug($"[HC_PerPlayerConfig] HC_PerPlayerConfig deserialized!");
         }
     }
 }

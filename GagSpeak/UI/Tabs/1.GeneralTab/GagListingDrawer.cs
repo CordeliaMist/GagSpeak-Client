@@ -94,6 +94,8 @@ public class GagListingsDrawer : IDisposable
         _requiredComboWidth = _requiredComboWidthUnscaled * ImGuiHelpers.GlobalScale;
     }
 
+
+    private const float comboWidth = 225; // the width of the combo
     /// <summary> 
     /// Draw the actual gag listing, this is the main function that is called to draw the gag listing.
     /// <list type="bullet">
@@ -105,7 +107,7 @@ public class GagListingsDrawer : IDisposable
     /// <item><c>width</c><param name="width"> - The width.</param></item>
     /// </list> </summary>
     public void DrawGagAndLockListing(int ID, GagSpeakConfig config, GagTypeFilterCombo _gagTypeFilterCombo, GagLockFilterCombo _gagLockFilterCombo,
-    int layerIndex, string displayLabel, int width) {
+    int layerIndex, string displayLabel) {
         // if we are locked, set the locked to true
         if(_config.isLocked[layerIndex]) {
             ImGui.BeginDisabled();
@@ -116,69 +118,76 @@ public class GagListingsDrawer : IDisposable
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing); // push style
         // draw our icon thingy
         // Setup our table
-        ImGui.Columns(3,"Gag Listing", false);
-        ImGui.SetColumnWidth(0, 85);
-        try {
-            switch(layerIndex){
-                case 0:
-                    ImGui.Image(textureWrap1.ImGuiHandle, new Vector2(80, 80));
-                    break;
-                case 1:
-                    ImGui.Image(textureWrap2.ImGuiHandle, new Vector2(80, 80));
-                    break;
-                case 2:
-                    ImGui.Image(textureWrap3.ImGuiHandle, new Vector2(80, 80));
-                    break;
+        using (var table = ImRaii.Table($"InfoTable_{ID}_{layerIndex}", 3, ImGuiTableFlags.RowBg)) {
+            if (!table) { return; }
+            // setup columns
+            ImGui.TableSetupColumn("GagImage", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale*80);
+            ImGui.TableSetupColumn("ComboGroup", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale*225);
+            ImGui.TableSetupColumn("GagLockImage", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale*80);
+            // draw the columns
+            ImGui.TableNextRow(); ImGui.TableNextColumn();
+
+            // draw the image
+            try {
+                switch(layerIndex){
+                    case 0:
+                        ImGui.Image(textureWrap1.ImGuiHandle, new Vector2(80, 80));
+                        break;
+                    case 1:
+                        ImGui.Image(textureWrap2.ImGuiHandle, new Vector2(80, 80));
+                        break;
+                    case 2:
+                        ImGui.Image(textureWrap3.ImGuiHandle, new Vector2(80, 80));
+                        break;
+                }
+            }
+            catch (Exception e) {
+                GSLogger.LogType.Error($"Failed to draw icon for slot {layerIndex} with gag type {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
+                GSLogger.LogType.Error(e.ToString());
+            }
+            // draw the combo groups
+            ImGui.TableNextColumn();
+
+            // create a group for the 2 dropdowns and icon
+            using (var group = ImRaii.Group()) {
+                if(!_adjustDisp[layerIndex]){ // inch our way down half the distance of a newline
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + ImGui.GetFrameHeight() / 1.4f);
+                }
+                // Draw the combos
+                if (DrawGagTypeItemCombo(ID, layerIndex, _config.isLocked[layerIndex], ImGui.GetContentRegionAvail().X, _gagTypeFilterCombo)) {}
+                // Adjust the width of the padlock dropdown to most of the original width
+                if (DrawGagLockItemCombo(ID, layerIndex, _config.isLocked[layerIndex], ImGui.GetContentRegionAvail().X - 50*ImGuiHelpers.GlobalScale, _gagLockFilterCombo)) {}
+                // end our disabled fields, if any, here
+                if(_config.isLocked[layerIndex]) { ImGui.EndDisabled(); } // end the disabled part here, if it was disabled
+                
+                // get the type of button label that will display
+                _buttonLabel = _config.isLocked[layerIndex] ? "Unlock" : "Lock"; // we want to display unlock button if we are currently locked
+                ImGui.SameLine();
+                if (ImGui.Button(_buttonLabel, new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
+                    _lockManager.ToggleLock(layerIndex);
+                }
+                // Display the password fields based on the selected padlock type
+                if(_config.padlockIdentifier[layerIndex].DisplayPasswordField(_config.padlockIdentifier[layerIndex]._padlockType)) {
+                    _adjustDisp[layerIndex] = true;
+                } else {
+                    _adjustDisp[layerIndex] = false;
+                }
+                // display the remaining time if we have a timer for this and we are locked
+                if(_config.isLocked[layerIndex] && 
+                (_config.padlockIdentifier[layerIndex]._padlockType == Padlocks.FiveMinutesPadlock ||
+                _config.padlockIdentifier[layerIndex]._padlockType == Padlocks.MistressTimerPadlock ||
+                _config.padlockIdentifier[layerIndex]._padlockType == Padlocks.TimerPasswordPadlock)) {
+                    _config.displaytext[layerIndex] = _timerService.GetRemainingTimeForPadlock(layerIndex);
+                }
+            }
+            ImGui.TableNextColumn();
+            // draw the lock image
+            if(_characterHandler.playerChar._selectedGagPadlocks[layerIndex] != Padlocks.None) {
+                if(layerIndex==0) { ImGui.Image(textureWrap4.ImGuiHandle, new Vector2(80, 80)); }
+                if(layerIndex==1) { ImGui.Image(textureWrap5.ImGuiHandle, new Vector2(80, 80)); }
+                if(layerIndex==2) { ImGui.Image(textureWrap6.ImGuiHandle, new Vector2(80, 80)); }
             }
         }
-        catch (Exception e) {
-            GSLogger.LogType.Error($"Failed to draw icon for slot {layerIndex} with gag type {_characterHandler.playerChar._selectedGagTypes[layerIndex]}");
-            GSLogger.LogType.Error(e.ToString());
-        }
-          
-        ImGui.NextColumn(); ImGui.SetColumnWidth(1, width+10); // Set the desired widths);
-        // create a group for the 2 dropdowns and icon
-        using (var group = ImRaii.Group()) {
-            if(!_adjustDisp[layerIndex]){ // inch our way down half the distance of a newline
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + ImGui.GetFrameHeight() / 1.4f);
-            }
-            // Draw the combos
-            if (DrawGagTypeItemCombo(ID, layerIndex, _config.isLocked[layerIndex], width, _gagTypeFilterCombo)) {}
-            // Adjust the width of the padlock dropdown to 3/4 of the original width
-            int newWidth = (int)(width * 0.75f);
-            if (DrawGagLockItemCombo(ID, layerIndex, _config.isLocked[layerIndex], newWidth, _gagLockFilterCombo)) {}
-            // end our disabled fields, if any, here
-            if(_config.isLocked[layerIndex]) { ImGui.EndDisabled(); } // end the disabled part here, if it was disabled
-            
-            // get the type of button label that will display
-            _buttonLabel = _config.isLocked[layerIndex] ? "Unlock" : "Lock"; // we want to display unlock button if we are currently locked
-            ImGui.SameLine();
-            if (ImGui.Button(_buttonLabel, new Vector2(-1, 0))) {
-                _lockManager.ToggleLock(layerIndex);
-            }
-            // Display the password fields based on the selected padlock type
-            if(_config.padlockIdentifier[layerIndex].DisplayPasswordField(_config.padlockIdentifier[layerIndex]._padlockType)) {
-                _adjustDisp[layerIndex] = true;
-            } else {
-                _adjustDisp[layerIndex] = false;
-            }
-            // display the remaining time if we have a timer for this and we are locked
-            if(_config.isLocked[layerIndex] && 
-            (_config.padlockIdentifier[layerIndex]._padlockType == Padlocks.FiveMinutesPadlock ||
-            _config.padlockIdentifier[layerIndex]._padlockType == Padlocks.MistressTimerPadlock ||
-            _config.padlockIdentifier[layerIndex]._padlockType == Padlocks.TimerPasswordPadlock)) {
-                _config.displaytext[layerIndex] = _timerService.GetRemainingTimeForPadlock(layerIndex);
-            }
-        }
-        ImGui.NextColumn();
-        ImGui.SetColumnWidth(2, 80);
-        if(_characterHandler.playerChar._selectedGagPadlocks[layerIndex] != Padlocks.None) {
-            if(layerIndex==0) { ImGui.Image(textureWrap4.ImGuiHandle, new Vector2(80, 80)); }
-            if(layerIndex==1) { ImGui.Image(textureWrap5.ImGuiHandle, new Vector2(80, 80)); }
-            if(layerIndex==2) { ImGui.Image(textureWrap6.ImGuiHandle, new Vector2(80, 80)); }
-        }
-        // end our table
-        ImGui.Columns(1);
     }
 
     /// <summary>
@@ -204,7 +213,7 @@ public class GagListingsDrawer : IDisposable
     }   
 
     /// <summary> FOR THE PLAYER DRAWER </summary>
-    public bool DrawGagTypeItemCombo(int ID, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
+    public bool DrawGagTypeItemCombo(int ID, int layerIndex, bool locked, float width, GagTypeFilterCombo gagtypecombo) {
         var combo = gagtypecombo; // get the combo
         if (ImGui.IsItemClicked() && !locked)
             UIHelpers.OpenCombo($"{ID}_Type");
@@ -237,7 +246,7 @@ public class GagListingsDrawer : IDisposable
     }
 
     /// <summary> FOR THE PLAYER DRAWER </summary>
-    public bool DrawGagLockItemCombo(int ID, int layerIndex, bool locked, int width, GagLockFilterCombo gaglockcombo) {
+    public bool DrawGagLockItemCombo(int ID, int layerIndex, bool locked, float width, GagLockFilterCombo gaglockcombo) {
         var combo = gaglockcombo; // get the combo
         // if we left click and it is unlocked, open it
         if (ImGui.IsItemClicked() && !locked)
@@ -259,7 +268,7 @@ public class GagListingsDrawer : IDisposable
     }
 
     /// <summary> FOR THE WHITELIST DRAWER </summary>
-    public bool DrawGagTypeItemCombo(int ID, int whitelistIdx, ref string gagLabel, int layerIndex, bool locked, int width, GagTypeFilterCombo gagtypecombo) {
+    public bool DrawGagTypeItemCombo(int ID, int whitelistIdx, ref string gagLabel, int layerIndex, bool locked, float width, GagTypeFilterCombo gagtypecombo) {
         var combo = gagtypecombo; // get the combo
         if (ImGui.IsItemClicked() && !locked)
             UIHelpers.OpenCombo($"{ID}_Type");
@@ -275,7 +284,7 @@ public class GagListingsDrawer : IDisposable
     }
 
     /// <summary> FOR THE WHITELIST DRAWER </summary>
-    public bool DrawGagLockItemCombo(int ID, int whitelistIdx, ref string lockLabel, int layerIndex, int width, GagLockFilterCombo gaglockcombo) {
+    public bool DrawGagLockItemCombo(int ID, int whitelistIdx, ref string lockLabel, int layerIndex, float width, GagLockFilterCombo gaglockcombo) {
         // This code is a shadow copy of the function above, used for accepting WhitelistCharData as a type
         var combo = gaglockcombo;
         if (ImGui.IsItemClicked())

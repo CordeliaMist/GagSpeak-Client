@@ -171,13 +171,24 @@ public partial class HardcoreManager
         for(int i = 0; i < _perPlayerConfigs.Count; i++) {
             // set all states to false, handling their logic accordingly
             _perPlayerConfigs[i].SetAllowForcedFollow(false);
-            SetForcedFollow(i, false);
+            if(_perPlayerConfigs[i]._forcedFollow) {
+                SetForcedFollow(i, false);
+            }
+
             _perPlayerConfigs[i].SetAllowForcedSit(false);
-            SetForcedSit(i, false);
+            if(_perPlayerConfigs[i]._forcedSit) {
+                SetForcedSit(i, false);
+            }
+
             _perPlayerConfigs[i].SetAllowForcedToStay(false);
-            SetForcedToStay(i, false);
+            if(_perPlayerConfigs[i]._forcedToStay) {
+                SetForcedToStay(i, false);
+            }
+
             _perPlayerConfigs[i].SetAllowBlindfold(false);
-            Task.Run(() => SetBlindfolded(i, false));
+            if(_perPlayerConfigs[i]._blindfolded) {
+                Task.Run(() => SetBlindfolded(i, false));
+            }
         }
         // invoke safeword
         _rsPropertyChanged.Invoke(HardcoreChangeType.Safeword, RestraintSetChangeType.Disabled);

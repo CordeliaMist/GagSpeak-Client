@@ -51,6 +51,7 @@ public class GagGarbleManager : IDisposable
     /// </list> </summary>
     /// <returns> The GagSpeak translation of the message. </returns>
     public string ProcessMessage(string inputMessage) {
+
         string outputStr = "";
         try {
             outputStr = ConvertToGagSpeak(inputMessage);
@@ -58,6 +59,30 @@ public class GagGarbleManager : IDisposable
         }
         catch (Exception e) {
             GSLogger.LogType.Error($"[GagGarbleManager] Error processing message: {e.Message}");
+        }
+        // at the end, if it is only puncuation, then make it just mmm's
+        if (outputStr.All(char.IsPunctuation)) {
+            // Count the number of words in the original message
+            int wordCount = inputMessage.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Length;
+            // Initialize a StringBuilder for the final message
+            StringBuilder finalMessage = new StringBuilder();
+            // Initialize a Random instance
+            Random random = new Random();
+            // Add "m"s to the final message with a space every 3 to 6 "m"s
+            for (int i = 0; i < wordCount/2; i++) {
+                finalMessage.Append('m');
+                if ((i + 1) % random.Next(2, 6) == 0) {
+                    finalMessage.Append(' ');
+                }
+            }
+            // Randomly choose to append an "h" as the last letter
+            if (random.Next(2) == 0) {
+                finalMessage.Append('h');
+            }
+            // Add three dots at the end
+            finalMessage.Append("..");
+            // Set the output string to the final message
+            outputStr = finalMessage.ToString();
         }
         return outputStr;
     }

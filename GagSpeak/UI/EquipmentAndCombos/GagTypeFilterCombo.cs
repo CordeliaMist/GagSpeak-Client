@@ -41,7 +41,7 @@ public sealed class GagTypeFilterCombo
     /// <item><c>layerindex</c><param name="layerIndex"> - a list where the stored selection from the list is saved</param></item>
     /// </list>
     /// </summary>
-    public void Draw(int ID, CharacterHandler characterHandler, int layerIndex, int width) {
+    public void Draw(int ID, CharacterHandler characterHandler, int layerIndex, float width) {
         try
         {
             ImGui.SetNextItemWidth(width);
@@ -90,7 +90,7 @@ public sealed class GagTypeFilterCombo
 
 
 
-    public void Draw(int ID, ref string label, CharacterHandler characterHandler, int whitelistIdx, int layerIndex, int width) {
+    public void Draw(int ID, ref string label, CharacterHandler characterHandler, int whitelistIdx, int layerIndex, float width) {
         try
         {
             ImGui.SetNextItemWidth(width);

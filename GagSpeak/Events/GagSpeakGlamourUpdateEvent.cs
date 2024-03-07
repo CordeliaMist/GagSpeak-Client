@@ -47,10 +47,10 @@ public class GagSpeakGlamourEvent
     public bool IsGagSpeakGlamourEventExecuting { get; set; }                                    // indicate if the event is being executed
 
     /// <summary> Manually triggered event invoker </summary>
-    public void Invoke(UpdateType updateType, string gagType = "None", string assignerName = "") {
-        GSLogger.LogType.Debug($"[GagSpeakGlamourEvent] Invoked Type: {updateType} with gagtype: {gagType} from {assignerName}");
+    public void Invoke(UpdateType updateType, string gagType = "None", string assignerName = "", int setIndex = -1) {
+        GSLogger.LogType.Debug($"[GagSpeakGlamourEvent] Invoked Type: {updateType} with gagtype: {gagType} from {assignerName} (Optional extra var: {setIndex})");
         IsGagSpeakGlamourEventExecuting = true;
-        GlamourEventFired?.Invoke(this, new GagSpeakGlamourEventArgs(updateType, gagType, assignerName));
+        GlamourEventFired?.Invoke(this, new GagSpeakGlamourEventArgs(updateType, gagType, assignerName, setIndex));
     }
 }
 
@@ -65,9 +65,13 @@ public class GagSpeakGlamourEventArgs : EventArgs
     public string GagType { get; }
     // contains the name of the assigner
     public string AssignerName { get; }
-    public GagSpeakGlamourEventArgs(UpdateType updateType, string gagType = "None", string assignerName = "") {
+    // contains the index of the set
+    public int SetIndex { get; }
+
+    public GagSpeakGlamourEventArgs(UpdateType updateType, string gagType = "None", string assignerName = "", int setIndex = -1) {
         UpdateType = updateType;
         GagType = gagType;
         AssignerName = assignerName;
+        SetIndex = setIndex;
     }
 }

@@ -124,6 +124,14 @@ public class RestraintSetManager : ISavable, IDisposable
         }
         return -1; // Return -1 if the set name is not found
     }
+
+    /// <summary> Checks if any mods are associated with the restraint set requuires a toggle. </summary>
+    public bool AnyModRequiresRedraw(int restraintSetIdxToCheck) {
+        if(_restraintSets[restraintSetIdxToCheck]._associatedMods.Any(mod => mod.redrawAfterToggle)) {
+            return true;
+        }
+        return false;
+    }
     
     public void AddNewRestraintSet() {
         var newSet = new RestraintSet();
@@ -181,7 +189,9 @@ public class RestraintSetManager : ISavable, IDisposable
         return false;
     }
 
-    /// <summary> Looks to see if any restraint set is enabled. </summary>
+    /// <summary> Looks to see if any restraint set is enabled. 
+    /// <para> WARNING: THIS FUNCTION WILL STILL RETURN TRUE IF THE ASSIGNER IS SELF, UNLIKE HARDCORE MANAGER ONE </para>
+    /// </summary>
     /// <returns> true if a set is enabled, false if not. The index of the enabled set is passed out </returns>
     public bool IsAnySetEnabled(out int enabledIdx, out string assignerOfSet) {
         // fetch the idx, we do this every time so that if someone changes their whitelist while a set is active, this will update to still match them.
@@ -192,7 +202,7 @@ public class RestraintSetManager : ISavable, IDisposable
             return false;
         } else {
             assignerOfSet = _restraintSets[enabledIdx]._wasEnabledBy;
-            GSLogger.LogType.Debug($"[RestraintSetManager] Found an enabled RestraintSet: {enabledIdx}, enabled by {assignerOfSet}");
+            //GSLogger.LogType.Debug($"[RestraintSetManager] Found an enabled RestraintSet: {enabledIdx}, enabled by {assignerOfSet}");
             return true;
         }
     }
@@ -207,6 +217,7 @@ public class RestraintSetManager : ISavable, IDisposable
                     GSLogger.LogType.Debug($"[RestraintSetManager] Disabling set {i} before enabling set {restraintSetIdx}");
                     _restraintSets[i].SetIsEnabled(false, assignerName);
                     // invoke the toggledSet event so we know which set was disabled, to send off to the hardcore panel
+                    _glamourEvent.Invoke(UpdateType.DisableRestraintSet, "None", "", i); // center two values are placeholders because im tired of this shit
                     _RS_ToggleEvent.Invoke(RestraintSetToggleType.Disabled, i, assignerName);
                 }
             }
@@ -224,7 +235,7 @@ public class RestraintSetManager : ISavable, IDisposable
             GSLogger.LogType.Debug($"[RestraintSetManager] Disabling set {restraintSetIdx}");
             _restraintSets[restraintSetIdx].SetIsEnabled(isEnabled, assignerName);
             // then fire a disable restraint set event to revert to automation
-            _glamourEvent.Invoke(UpdateType.DisableRestraintSet);
+            _glamourEvent.Invoke(UpdateType.DisableRestraintSet, "None", "", restraintSetIdx);
             // invoke the toggledSet event so we know which set was disabled, to send off to the hardcore panel
             _RS_ToggleEvent.Invoke(RestraintSetToggleType.Disabled, restraintSetIdx, assignerName);
         }
@@ -285,7 +296,7 @@ public class RestraintSetManager : ISavable, IDisposable
 #region ModAssociations
     /// <summary> Add an associated mod to a design. </summary>
     public void AddMod(int setIndex, Mod mod, ModSettings settings) {
-        var modTuple = (mod, settings, false);
+        var modTuple = (mod, settings, false, false);
         if (_restraintSets[setIndex]._associatedMods.Any(x => x.Item1 == mod && x.Item2 == settings)) {
             return;
         }
@@ -307,12 +318,12 @@ public class RestraintSetManager : ISavable, IDisposable
         $"{_restraintSets[setIndex]._name}.");
     }
 
-    public void UpdateMod(int setIndex, Mod mod, ModSettings settings, bool disableWhenInactive) {
+    public void UpdateMod(int setIndex, Mod mod, ModSettings settings, bool disableWhenInactive, bool redrawAfterToggle) {
         var modIndex = _restraintSets[setIndex]._associatedMods.FindIndex(x => x.mod == mod);
         if (modIndex == -1) {
             return;
         }
-        _restraintSets[setIndex]._associatedMods[modIndex] = (mod, settings, disableWhenInactive);
+        _restraintSets[setIndex]._associatedMods[modIndex] = (mod, settings, disableWhenInactive, redrawAfterToggle);
         Save();
         GSLogger.LogType.Debug($"Updated associated mod {mod.DirectoryName} from Restraint Set: "+
         $"{_restraintSets[setIndex]._name}.");

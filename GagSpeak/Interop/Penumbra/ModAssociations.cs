@@ -11,6 +11,7 @@ using GagSpeak.Events;
 using GagSpeak.Interop.Penumbra;
 using GagSpeak.Wardrobe;
 using ImGuiNET;
+using Lumina.Excel.GeneratedSheets;
 using OtterGui;
 using OtterGui.Classes;
 using OtterGui.Log;
@@ -45,14 +46,14 @@ public class ModAssociations : IDisposable
         // if the set is being enabled, we should toggle on the mods
         if(_clientState.IsLoggedIn && _clientState.LocalContentId != 0) {
             if (e.ToggleType == RestraintSetToggleType.Enabled) {
-                foreach (var (mod, settings, disableWhenInactive) in _manager._restraintSets[e.SetIndex]._associatedMods) {
-                    _penumbra.SetMod(mod, settings, true, disableWhenInactive);
+                foreach (var (mod, settings, disableWhenInactive, redrawAfterToggle) in _manager._restraintSets[e.SetIndex]._associatedMods) {
+                    _penumbra.SetMod(mod, settings, true, disableWhenInactive, redrawAfterToggle);
                 }
             }
             // otherwise, we should toggle off the mods
             else {
-                foreach (var (mod, settings, disableWhenInactive) in _manager._restraintSets[e.SetIndex]._associatedMods) {
-                    _penumbra.SetMod(mod, settings, false, disableWhenInactive);
+                foreach (var (mod, settings, disableWhenInactive, redrawAfterToggle) in _manager._restraintSets[e.SetIndex]._associatedMods) {
+                    _penumbra.SetMod(mod, settings, false, disableWhenInactive, redrawAfterToggle);
                 }
             }
         }
@@ -65,21 +66,23 @@ public class ModAssociations : IDisposable
 
     // draw the table for constructing the associated mods.
     private void DrawTable() {
-        using var table = ImRaii.Table("Mods", 4, ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY);
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.CellPadding, new Vector2(ImGui.GetStyle().CellPadding.X * 0.3f, ImGui.GetStyle().CellPadding.Y));
+        using var table = ImRaii.Table("Mods", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY);
         if (!table) { return; }
 
-        ImGui.TableSetupColumn("##Delete",       ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
-        ImGui.TableSetupColumn("Mods to enable with this Restraint Set",       ImGuiTableColumnFlags.WidthStretch);        
-        ImGui.TableSetupColumn("Toggle",          ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Toggle").X);        
-        ImGui.TableSetupColumn("##Update",       ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());             // update to reflect what is in
+        ImGui.TableSetupColumn("##Delete",      ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
+        ImGui.TableSetupColumn("Mods to enable with this Set",       ImGuiTableColumnFlags.WidthStretch);        
+        ImGui.TableSetupColumn("Toggle",         ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Toggle").X);
+        ImGui.TableSetupColumn("##Redraw",        ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());
+        ImGui.TableSetupColumn("##Update",      ImGuiTableColumnFlags.WidthFixed, ImGui.GetFrameHeight());             // update to reflect what is in
         ImGui.TableHeadersRow();
 
         Mod? removedMod = null;
-        (Mod mod, ModSettings settings, bool disableWhenInactive)? updatedMod = null;
+        (Mod mod, ModSettings settings, bool disableWhenInactive, bool redrawAfterToggle)? updatedMod = null;
 
-        foreach (var ((mod, settings, disableWhenInactive), idx) in _manager._restraintSets[_manager._selectedIdx]._associatedMods.WithIndex()) {
+        foreach (var ((mod, settings, disableWhenInactive, redrawAfterToggle), idx) in _manager._restraintSets[_manager._selectedIdx]._associatedMods.WithIndex()) {
             using var id = ImRaii.PushId(idx);
-            DrawAssociatedModRow(mod, settings, disableWhenInactive, out var removedModTmp, out var updatedModTmp);
+            DrawAssociatedModRow(mod, settings, disableWhenInactive, redrawAfterToggle, out var removedModTmp, out var updatedModTmp);
             if (removedModTmp.HasValue) {
                 removedMod = removedModTmp;
             }
@@ -95,11 +98,11 @@ public class ModAssociations : IDisposable
         }
         
         if (updatedMod.HasValue) {
-            _manager.UpdateMod(_manager._selectedIdx, updatedMod.Value.mod, updatedMod.Value.settings, updatedMod.Value.disableWhenInactive);
+            _manager.UpdateMod(_manager._selectedIdx, updatedMod.Value.mod, updatedMod.Value.settings, updatedMod.Value.disableWhenInactive, updatedMod.Value.redrawAfterToggle);
         }
     }
 
-    private void DrawAssociatedModRow(Mod mod, ModSettings settings, bool disableWhenInactive, out Mod? removedMod, out (Mod, ModSettings, bool)? updatedMod) {
+    private void DrawAssociatedModRow(Mod mod, ModSettings settings, bool disableWhenInactive, bool redrawAfterToggle, out Mod? removedMod, out (Mod, ModSettings, bool, bool)? updatedMod) {
         removedMod = null;
         updatedMod = null;
         // get the index of this mod
@@ -114,11 +117,13 @@ public class ModAssociations : IDisposable
         "Delete this mod from associations", !ImGui.GetIO().KeyShift, true)) {
             removedMod = mod;
         }
+        
         // the name of the appended mod
         ImGui.TableNextColumn();
         ImGui.Selectable($"{mod.Name}##name");
-        if(ImGui.IsItemHovered()) { ImGui.SetTooltip("Mod to be enabled when restraint set it turned on."); }
+        if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"Mod to be enabled when restraint set it turned on.\n{mod.Name}"); }
         // if we should enable or disable this mod list (all buttons should sync)
+        
         ImGui.TableNextColumn();
         // get the current mod we are looking at
         var currentMod = _manager._restraintSets[_manager._selectedIdx]._associatedMods[currentModIndex];
@@ -127,16 +132,26 @@ public class ModAssociations : IDisposable
         var helpText = currentMod.disableWhenInactive ? "Mods are disabled when set is disabled" : "Mods will stay enabled after set is turned off";
         if (ImGuiUtil.DrawDisabledButton(iconText.ToIconString(), new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetFrameHeight()),
         helpText, false, true)) {
-            updatedMod = (mod, settings, !disableWhenInactive);
+            updatedMod = (mod, settings, !disableWhenInactive, redrawAfterToggle);
         }
+
+        ImGui.TableNextColumn();
+        // redraw button
+        var iconText2 = currentMod.redrawAfterToggle ? FontAwesomeIcon.Redo : FontAwesomeIcon.None;
+        var helpText2 = currentMod.redrawAfterToggle ? "Redraws self after set toggle (nessisary for VFX/Animation Mods)" : "Do not redraw when set is toggled (uses fast redraw)";
+        if (ImGuiUtil.DrawDisabledButton(iconText2.ToIconString(), new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetFrameHeight()),
+        helpText2, false, true)) {
+            updatedMod = (mod, settings, disableWhenInactive, !redrawAfterToggle);
+        }
+
         // button to update the status the mod from penumbra
         ImGui.TableNextColumn();
-        ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.RedoAlt.ToIconString(), new Vector2(ImGui.GetFrameHeight()),
-        "Update the settings of this mod association", false, true);
+        ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Search.ToIconString(), new Vector2(ImGui.GetFrameHeight()),
+        "Inspect current mod status", false, true);
         if (ImGui.IsItemHovered()) {
             var (_, newSettings) = _penumbra.GetMods().FirstOrDefault(m => m.Mod == mod);
             if (ImGui.IsItemClicked()) {
-                updatedMod = (mod, newSettings, disableWhenInactive);
+                updatedMod = (mod, newSettings, disableWhenInactive, redrawAfterToggle);
             }
             
             using var style = ImRaii.PushStyle(ImGuiStyleVar.PopupBorderSize, 2 * ImGuiHelpers.GlobalScale);

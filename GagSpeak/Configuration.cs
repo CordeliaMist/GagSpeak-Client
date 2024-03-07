@@ -30,7 +30,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     // Plugin information
     public  ChangeLogDisplayType                ChangeLogDisplayType { get; set; } = ChangeLogDisplayType.New;
     public  int                                 LastSeenVersion { get; set; } = GagSpeakChangelog.LastChangelogVersion; // look more into ottergui to figure out how to implement this later.
-    public  int                                 Version { get; set; } = 0;                              // Version of the plugin
+    public  int                                 Version { get; set; } = 3;                              // Version of the plugin
     public  bool                                FreshInstall { get; set; } = true;                      // Is user on a fresh install?
     public  bool                                Enabled { get; set; } = true;                           // Is plugin enabled?
     // additonal information below
@@ -181,6 +181,14 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
         var       serializer = new JsonSerializer { Formatting         = Formatting.Indented };
         serializer.Serialize(jWriter, this);
     }
+
+    public static string GetRevertStyleAlias(RevertStyle revertStyle) => revertStyle switch
+    {
+        RevertStyle.ToAutomationOnly => "Glamourer Automation",
+        RevertStyle.ToGameOnly => "Game State",
+        RevertStyle.ToGameThenAutomation => "Game then Automation",
+        _ => "Unknown"
+    };
 
     /// <summary> a very small class that gets the current version of the config save file. </summary>
     public static class Constants {

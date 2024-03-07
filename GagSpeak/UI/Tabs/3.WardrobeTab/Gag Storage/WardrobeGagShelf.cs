@@ -37,5 +37,5 @@ public class WardrobeGagCompartment
     }
 
     public float GetSetSelectorSize()
-        => 180f * ImGuiHelpers.GlobalScale;
+        => 210f * ImGuiHelpers.GlobalScale;
 }

@@ -83,7 +83,7 @@ public class ConfigSettingsTab : ITab
         using (var table = ImRaii.Table("ConfigColumns", 2, ImGuiTableFlags.SizingFixedFit)) {
             if (!table) { return; }
             // draw out the table
-            ImGui.TableSetupColumn("ConfigColumn1", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale*250);
+            ImGui.TableSetupColumn("ConfigColumn1", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale*275);
             ImGui.TableSetupColumn("ConfigColumn2", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
@@ -201,14 +201,14 @@ public class ConfigSettingsTab : ITab
                 v => _characterHandler.ToggleRestraintSetAutoEquip()
             );
 
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X*.8f);
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X*.75f);
             RevertStyle prevRevertStyle = _characterHandler.playerChar._revertStyle; // to only execute code to update data once it is changed
-            if (ImGui.BeginCombo("##RevertStyle", _characterHandler.playerChar._revertStyle.ToString())) {
+            if (ImGui.BeginCombo("##RevertStyle", GagSpeakConfig.GetRevertStyleAlias(_characterHandler.playerChar._revertStyle), ImGuiComboFlags.NoArrowButton)) {
                 foreach (RevertStyle style in Enum.GetValues(typeof(RevertStyle))) {
                     bool isSelected = (_characterHandler.playerChar._revertStyle == style);
-                    if (ImGui.Selectable(style.ToString(), isSelected)) {
+                    if (ImGui.Selectable(GagSpeakConfig.GetRevertStyleAlias(style), isSelected)) {
                         _characterHandler.SetRevertStyle(style);
-                        GSLogger.LogType.Debug($"[ConfigSettingsTab] RevertStyle changed to: {_characterHandler.playerChar._revertStyle}");
+                        GSLogger.LogType.Debug($"[ConfigSettingsTab] RevertStyle changed to: {GagSpeakConfig.GetRevertStyleAlias(_characterHandler.playerChar._revertStyle)}");
                     }
                     if (isSelected) {
                         ImGui.SetItemDefaultFocus();
@@ -286,9 +286,9 @@ public class ConfigSettingsTab : ITab
             }
             ImGui.SameLine();
             // Create the language dropdown
-            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*85);
+            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*65);
             string prevLang = _config.language; // to only execute code to update data once it is changed
-            if (ImGui.BeginCombo("##Language", _config.language)) {
+            if (ImGui.BeginCombo("##Language", _config.language, ImGuiComboFlags.NoArrowButton)) {
                 foreach (var language in _languages.Keys.ToArray()) {
                     bool isSelected = (_config.language == language);
                     if (ImGui.Selectable(language, isSelected)) {
@@ -312,10 +312,10 @@ public class ConfigSettingsTab : ITab
             }
             ImGui.SameLine();
             // Create the dialect dropdown
-            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*65);
+            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*55);
             string[] dialects = _languages[_config.language];
             string prevDialect = _activeDialect; // to only execute code to update data once it is changed
-            if (ImGui.BeginCombo("##Dialect", _activeDialect)) {
+            if (ImGui.BeginCombo("##Dialect", _activeDialect, ImGuiComboFlags.NoArrowButton)) {
                 foreach (var dialect in dialects) {
                     bool isSelected = (_activeDialect == dialect);
                     if (ImGui.Selectable(dialect, isSelected)) {

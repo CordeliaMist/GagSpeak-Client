@@ -14,11 +14,11 @@ using GagSpeak.Utility;
 namespace GagSpeak.Wardrobe;
 public class GagStorageManager : ISavable
 {
+    public const int GagStorageFileVersion = 1;
     public GagList.GagType _selectedGag = 0;
     public Dictionary<GagList.GagType, EquipDrawData> _gagEquipData = [];
     
-    [JsonIgnore]
-    private readonly SaveService _saveService;
+    [JsonIgnore] private readonly SaveService _saveService;
 
     public GagStorageManager(SaveService saveService) {
         _saveService = saveService;
@@ -30,7 +30,8 @@ public class GagStorageManager : ISavable
             _gagEquipData = Enum.GetValues(typeof(GagList.GagType))             // create the data for a new Dictionary                 
                 .Cast<GagList.GagType>()                                        // get the enum gaglist        
                 .ToDictionary(gagType => gagType, gagType => new EquipDrawData(ItemIdVars.NothingItem(EquipSlot.Head)));
-        } 
+        }
+        Save();
     }
 
 #region Manager Methods
@@ -113,6 +114,7 @@ public class GagStorageManager : ISavable
         foreach (var pair in _gagEquipData)
             obj[pair.Key.ToString()] = pair.Value.Serialize();
         return new JObject() {
+            ["Version"] = GagStorageFileVersion,
             ["SelectedGag"] = _selectedGag.ToString(),
             ["GagEquipData"] = obj,
         };
@@ -128,6 +130,17 @@ public class GagStorageManager : ISavable
         try {
             var text = File.ReadAllText(file);
             var jsonObject = JObject.Parse(text);
+            // Check if "Version" property exists
+            if (jsonObject["Version"] == null) {
+                GSLogger.LogType.Information($"[GagStorageManager] GagStorage.json does not contain a Version property, creating a new fresh list!");
+                return;
+            }
+
+            if (jsonObject["Version"].Value<int>() < GagStorageFileVersion) {
+                GSLogger.LogType.Error($"[GagStorageManager] GagStorage.json version mismatch, creating a new fresh list!");
+                return;
+            }
+
             if(jsonObject["SelectedGag"] != null){
                 _selectedGag = (GagList.GagType)Enum.Parse(typeof(GagList.GagType), jsonObject["SelectedGag"].Value<string>());
             }    

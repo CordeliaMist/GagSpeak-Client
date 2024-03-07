@@ -27,6 +27,7 @@ public class GagSpeakChangelog
         Add2_7_0_0(Changelog);
         Add2_8_0_0(Changelog);
         Add2_8_4_0(Changelog);
+        Add2_8_5_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -54,8 +55,22 @@ public class GagSpeakChangelog
         }
     }
 
+    private static void Add2_8_5_0(Changelog log)
+        => log.NextVersion("Version 2.8.5.0 Release")
+            .RegisterImportant("The Hardcore Tab is now in a fully functional state. (should be)")
+            .RegisterHighlight("Hardcore tab can no longer be triggered by beta-testers, and must be triggered by the person selected on the whitelist.")
+            .RegisterEntry("Be careful with who you give access to on hardcore options!")
+            .RegisterEntry("Hardcore tab ForcedStay feature now sucessfully blocks all teleports and returns")
+            .RegisterHighlight("The Panel Gag and Pump gag for all levels have been added to the chat garbler.")
+            .RegisterEntry("The Gag Storage has been fixed to allow gags to equip when they should be")
+            .RegisterHighlight("The bug which prevented automation from being applied on a refresh all event has been fixed")
+            .RegisterEntry("The bug which prevented blindfolds from being unequipped has been fixed with a temp solution.")
+            .RegisterImportant("To account for correcting a massive underlying issue in the gag storage, the GagStorage configuration has been reset, and you will need to set it up again.")
+            .RegisterEntry("Extra options for a groundsit start to the forcedsitcommand has been added.")
+            .RegisterEntry("You can now choose to redraw your character upon restraint set toggling, so animation mods and VFX changes update immediately.");
+
     private static void Add2_8_4_0(Changelog log)
-        => log.NextVersion("Version 2.8.4.1 Release")
+        => log.NextVersion("Version 2.8.4.0 Release")
             .RegisterEntry("Did some polishing up to the actions manager")
             .RegisterEntry("Added interaction commands for the hardcore tab")
             .RegisterEntry("Added some new interactions to the whitelist manager")

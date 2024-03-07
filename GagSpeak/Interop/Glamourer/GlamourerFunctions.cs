@@ -131,9 +131,10 @@ public class GlamourerFunctions : IDisposable
         if(_characterHandler.playerChar._enableWardrobe) {
             GSLogger.LogType.Information(" "+ e.UpdateType.ToString().ToUpper()+" GLAMOUR EVENT FIRED ");
             // conditionals:
-            // condition 1 --> It was an update restraint set event. In this case, we should recall the restraint set applier
             try{
-                if(e.UpdateType == UpdateType.UpdateRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip) {
+                // condition 1 --> It was an update restraint set event. In this case, we should recall the restraint set applier
+                if(e.UpdateType == UpdateType.UpdateRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip)
+                {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Restraint Set Update");
                     await ApplyRestrainSetToCachedCharacterData(); // correct
                     // if any of our gags are not none
@@ -141,38 +142,50 @@ public class GlamourerFunctions : IDisposable
                         await ApplyGagItemsToCachedCharacterData();
                     }
                 }
+
                 // condition 2 --> it was an disable restraint set event, we should revert back to automation, but then reapply the gags
-                if(e.UpdateType == UpdateType.DisableRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip) {
-                    try{
-                        GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Restraint Set Disable, reverting to automation");
-                        // revert based on our setting
-                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToAutomationOnly)
-                        {
-                            // if we want to just revert to automation, then do just that.
-                            await _Interop.GlamourerRevertCharacterToAutomation(_onFrameworkService._address);
-                        }
-                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToGameOnly)
-                        {
-                            // if we want to always revert to game, then do just that
-                            await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
-                        }
-                        if(_characterHandler.playerChar._revertStyle == RevertStyle.ToGameThenAutomation)
-                        {
-                            // finally, if we want to revert to the game, then to any automation for this class after, then do just that
-                            await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
-                            await _Interop.GlamourerRevertCharacterToAutomation(_onFrameworkService._address);
+                if(e.UpdateType == UpdateType.DisableRestraintSet && _characterHandler.playerChar._allowRestraintSetAutoEquip)
+                {
+                    try{ 
+                        // now perform a revert based on our customization option
+                        switch(_characterHandler.playerChar._revertStyle) {
+                            case RevertStyle.ToAutomationOnly:
+                                await _Interop.GlamourerRevertCharacterToAutomation(_onFrameworkService._address);
+                                break;
+                            case RevertStyle.ToGameOnly:
+                                await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
+                                break;
+                            case RevertStyle.ToGameThenAutomation:
+                                await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
+                                await _Interop.GlamourerRevertCharacterToAutomation(_onFrameworkService._address);
+                                break;
                         }
                         // dont know how to tell if it was successful, so we will just assume it was
-                    } catch (Exception) {
+                    }
+                    catch (Exception) {
                         GSLogger.LogType.Error($"Error reverting glamourer to automation");
                     }
                     // now reapply the gags
                     if(_characterHandler.playerChar._allowItemAutoEquip) {
+                        GSLogger.LogType.Debug($"[GlamourEventFired]: Reapplying gags");
                         await ApplyGagItemsToCachedCharacterData();
+                        GSLogger.LogType.Debug($"[GlamourEventFired]: Reapplying blindfold");
+                        var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
+                        if(idx != -1) {
+                            await _Interop.SetItemToCharacterAsync(
+                                _onFrameworkService._address,
+                                Convert.ToByte(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot),
+                                _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
+                                _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameStain.Id, // The _drawData._gameStain.Id
+                                0
+                            );
+                        }
                     }
                 }
+
                 // condition 3 --> it was an equip gag type event, we should take the gag type, and replace it with the item
-                if(e.UpdateType == UpdateType.GagEquipped && _characterHandler.playerChar._allowItemAutoEquip) {
+                if(e.UpdateType == UpdateType.GagEquipped && _characterHandler.playerChar._allowItemAutoEquip)
+                {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Gag Equipped");
                     if(e.GagType != "None") {
                         await EquipWithSetItem(e.GagType, e.AssignerName);
@@ -194,8 +207,10 @@ public class GlamourerFunctions : IDisposable
                         );
                     }
                 }
+                
                 // condition 4 --> it was an disable gag type event, we should take the gag type, and replace it with a nothing item
-                if(e.UpdateType == UpdateType.GagUnEquipped && _characterHandler.playerChar._allowItemAutoEquip) {
+                if(e.UpdateType == UpdateType.GagUnEquipped && _characterHandler.playerChar._allowItemAutoEquip)
+                {
                     // get the gagtype
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Gag UnEquipped");
                     var gagType = Enum.GetValues(typeof(GagList.GagType)).Cast<GagList.GagType>().First(g => g.GetGagAlias() == e.GagType);
@@ -210,32 +225,40 @@ public class GlamourerFunctions : IDisposable
                     // reapply any restraints hiding under them, if any
                     await ApplyRestrainSetToCachedCharacterData();
                 }
+
                 // condition 5 --> it was a gag refresh event, we should reapply all the gags
-                if(e.UpdateType == UpdateType.UpdateGags) {
+                if(e.UpdateType == UpdateType.UpdateGags)
+                {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Update Gags");
                     await ApplyGagItemsToCachedCharacterData();
                 }
 
                 // condition 6 --> it was a job change event, refresh all, but wait for the framework thread first
-                if(e.UpdateType == UpdateType.JobChange) {
+                if(e.UpdateType == UpdateType.JobChange)
+                {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Job Change");
                     await Task.Run(() => _onFrameworkService.RunOnFrameworkThread(UpdateCachedCharacterData));
                 }
 
                 // condition 7 --> it was a refresh all event, we should reapply all the gags and restraint sets
-                if(e.UpdateType == UpdateType.RefreshAll || e.UpdateType == UpdateType.ZoneChange || e.UpdateType == UpdateType.Login) {
+                if(e.UpdateType == UpdateType.RefreshAll || e.UpdateType == UpdateType.ZoneChange || e.UpdateType == UpdateType.Login)
+                {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Refresh All // Zone Change // Login // Job Change");
                     // apply all the gags and restraint sets
                     await Task.Run(() => _onFrameworkService.RunOnFrameworkThread(UpdateCachedCharacterData));
                 }
+
                 // condition 8 --> it was a safeword event, we should revert to the game, then to game and disable toys
-                if(e.UpdateType == UpdateType.Safeword) {
+                if(e.UpdateType == UpdateType.Safeword)
+                {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Safeword");
                     await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
-                    // disable all toys
+                    // this might be blocking disable restraint sets so look into.
                 }
+
                 // condition 9 -- > it was a blindfold equipped event, we should apply the blindfold
-                if(e.UpdateType == UpdateType.BlindfoldEquipped) {
+                if(e.UpdateType == UpdateType.BlindfoldEquipped)
+                {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Blindfold Equipped");
                     var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
                     if(idx != -1) {
@@ -249,8 +272,10 @@ public class GlamourerFunctions : IDisposable
                         );
                     }
                 }
+
                 // condition 10 -- > it was a blindfold unequipped event, we should remove the blindfold
-                if(e.UpdateType == UpdateType.BlindfoldUnEquipped) {
+                if(e.UpdateType == UpdateType.BlindfoldUnEquipped)
+                {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Blindfold UnEquipped");
                     var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
                     if(idx != -1) {
@@ -275,7 +300,7 @@ public class GlamourerFunctions : IDisposable
             GSLogger.LogType.Debug($"[GlamourEventFired]: Wardrobe is disabled, so we wont be updating/applying any gag items");
         }
     }
-
+#region Task Methods for Glamour Updates
     /// <summary> Updates the raw glamourer customization data with our gag items and restraint sets, if applicable </summary>
     public async Task UpdateCachedCharacterData() {
         // for privacy reasons, we must first make sure that our options for allowing such things are enabled.
@@ -414,4 +439,5 @@ public class GlamourerFunctions : IDisposable
             return false;
         }
     }
+#endregion Task Methods for Glamour Updates
 }

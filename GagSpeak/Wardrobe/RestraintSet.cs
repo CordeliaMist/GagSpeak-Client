@@ -20,7 +20,7 @@ public class RestraintSet //: IDisposable
     public string _wasLockedBy; // lets you define the name of the character that equipped the set
     public DateTimeOffset _lockedTimer { get; set; } // stores the timespan left until unlock of the player.
     public Dictionary<EquipSlot, EquipDrawData> _drawData; // stores the equipment draw data for the set
-    public List<(Mod mod, ModSettings modSettings, bool disableWhenInactive)> _associatedMods { get; private set; }  = []; // the associated mods to enable with this set
+    public List<(Mod mod, ModSettings modSettings, bool disableWhenInactive, bool redrawAfterToggle)> _associatedMods { get; private set; }  = []; // the associated mods to enable with this set
 
     public RestraintSet() {
         // define default data for the set
@@ -39,7 +39,7 @@ public class RestraintSet //: IDisposable
             _drawData[slot].SetDrawDataIsEnabled(false);
         }
         // create the new associated mods list
-        _associatedMods = new List<(Mod, ModSettings, bool)>();
+        _associatedMods = new List<(Mod, ModSettings, bool, bool)>();
     }
 
     public void ChangeSetName(string name) {
@@ -101,12 +101,13 @@ public class RestraintSet //: IDisposable
     private JArray SerializeMods() {
         // otherwise we will create a new array to store the mods
         var ret = new JArray();
-        foreach (var (mod, settings, disableWhenInactive) in _associatedMods) {
+        foreach (var (mod, settings, disableWhenInactive, redrawAfterToggle) in _associatedMods) {
             var obj = new JObject() {
                 ["Name"]      = mod.Name,
                 ["Directory"] = mod.DirectoryName,
                 ["Enabled"]   = settings.Enabled,
                 ["DisableWhenInactive"] = disableWhenInactive,
+                ["RedrawAfterToggle"] = redrawAfterToggle,
             };
             if (settings.Enabled) {
                 obj["Priority"] = settings.Priority;
@@ -154,6 +155,7 @@ public class RestraintSet //: IDisposable
             var directory = tok["Directory"]?.ToObject<string>();
             var enabled   = tok["Enabled"]?.ToObject<bool>();
             var disableWhenInactive = tok["DisableWhenInactive"]?.ToObject<bool>() ?? false;
+            var redrawAfterToggle = tok["RedrawAfterToggle"]?.ToObject<bool>() ?? false;
             if (name == null || directory == null || enabled == null) {
                 GagSpeak.Messager.NotificationMessage("The loaded design contains an invalid mod, skipped.", NotificationType.Warning);
                 continue;
@@ -165,7 +167,7 @@ public class RestraintSet //: IDisposable
             var mod = new Mod(name, directory);
             var modSettings = new ModSettings(settingsDict, priority, enabled.Value);
 
-            _associatedMods.Add((mod, modSettings, disableWhenInactive));
+            _associatedMods.Add((mod, modSettings, disableWhenInactive, redrawAfterToggle));
         }
     }
 }

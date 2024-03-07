@@ -98,7 +98,7 @@ public class GeneralTab : ITab, IDisposable
 
     private void DrawGeneral() {
         // let's start by drawing the outline for the container
-        using var child = ImRaii.Child("GeneralTabPanel", -Vector2.One, true);
+        using var child = ImRaii.Child("GeneralTabPanel", -Vector2.One, true, ImGuiWindowFlags.NoScrollbar);
         // Let's create a table in this panel
         var xPos = ImGui.GetCursorPosX();
         var yPos = ImGui.GetCursorPosY();
@@ -145,11 +145,10 @@ public class GeneralTab : ITab, IDisposable
         ImGui.NewLine();
         // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
-        int width2 = (int)(ImGui.GetContentRegionAvail().X / 2);
         // draw our 3 gag listings
         int i = 0;
         foreach(var slot in Enumerable.Range(0, 3)) {
-            _gagListingsDrawer.DrawGagAndLockListing(slot, _config, _gagTypeFilterCombo[slot], _gagLockFilterCombo[slot], slot, $"Gag Slot {slot + 1}", width2);
+            _gagListingsDrawer.DrawGagAndLockListing(slot, _config, _gagTypeFilterCombo[slot], _gagLockFilterCombo[slot], slot, $"Gag Slot {slot + 1}");
             // display timer here.
             if(_lockManager.IsLockedWithTimer(slot)) {
                 ImGui.TextColored(new Vector4(1,1,0,0.5f), _timerService.GetRemainingTimeForPadlock(slot));
@@ -163,9 +162,8 @@ public class GeneralTab : ITab, IDisposable
     
         // let people know which gags are not working
         ImGui.Text("These Gags dont work yet! If you have any IRL, contact me to help fill in the data!");
-        ImGui.TextColored(new Vector4(0,1,0,1), "Bit Gag Padded, Bone Gag, Bone Gag XL, Chopstick Gag, Dental Gag,\n"+
-                                                "Harness Panel Gag, Hook Gag, Inflatable Hood, Latex/Leather Hoods, Plug Gag\n"+
-                                                "Pump Gag, Sensory Deprivation Hood, Spider Gag, Tenticle Gag.");
+        ImGui.TextColored(new Vector4(0,1,0,1), "Bit Gag Padded, Bone Gag, Chopstick Gag, Dental Gag, Hook Gag,\n"+
+                                                "Inflatable Hood, Plug Gag,Sensory Deprivation Hood, Spider Gag.");
 
         // Draw the changelog
         // before we go down, lets draw the changelog button on the top right
