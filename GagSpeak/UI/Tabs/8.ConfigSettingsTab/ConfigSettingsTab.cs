@@ -91,57 +91,59 @@ public class ConfigSettingsTab : ITab
             ImGui.SetCursorPosY(yPos - 2*ImGuiHelpers.GlobalScale);
             ///////////////////////////// HARDCORE MODE /////////////////////////////\
             if(_config.hardcoreMode) {ImGui.BeginDisabled();}
-            var tmp = _config.hardcoreMode;
-            if (ImGui.Checkbox("##Hardcore Mode", ref tmp) && tmp != _config.hardcoreMode) {
-                // open the popup
-                ImGui.OpenPopup("Hardcore Warning");
-            }
-            ImGui.SameLine();
-            ImGuiUtil.LabeledHelpMarker("Hardcore Mode", "CAN ONLY BE TURNED OFF WITH A SAFEWORD, USE WITH CAUTION\n"+
-            "Enabling removes ability to toggle any options in whitelist tab once two-way commitment is made.");
-
-            ImGui.SetNextWindowSize(new Vector2(750, 375));
-            if (ImGui.BeginPopup("Hardcore Warning")) {
-                ImGui.PushFont(_fontService.UidFont);
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
-                try{
-                    ImGuiUtil.Center("READ THIS WARNING BEFORE HITTING CONFIRM");
-                    ImGui.Separator();
-                } finally {
-                    ImGui.PopStyleColor();
-                    ImGui.PopFont();
+            try{
+                var tmp = _config.hardcoreMode;
+                if (ImGui.Checkbox("##Hardcore Mode", ref tmp) && tmp != _config.hardcoreMode) {
+                    // open the popup
+                    ImGui.OpenPopup("Hardcore Warning");
                 }
-                ImGui.Spacing();
-                ImGui.PushFont(_fontService.UidFont);
-                try{
-                    ImGuiUtil.Center("Hardcore mode, once enabled, CAN ONLY BE DISABLED WITH A SAFEWORD.");
-                    ImGui.Spacing();
-                    ImGuiUtil.Center("Your settings for someone in whitelist become locked after a two-way commitment.");
-                    ImGui.Spacing();
-                    ImGuiUtil.Center("Ensure you're comfortable with your dynamic tiers before enabling.");
-                    ImGui.Spacing();
-                    ImGuiUtil.Center("In the hardcore tab, you can customize settings for each player.");
-                    ImGui.Spacing();
-                    ImGuiUtil.Center("No modifications can be made in the hardcore tab by anyone not in your whitelist.");
-                    ImGui.Spacing();
-                    ImGuiUtil.Center("You cannot trigger anything in the hardcore tab yourself.");
-                    ImGui.Spacing();
+                ImGui.SameLine();
+                ImGuiUtil.LabeledHelpMarker("Hardcore Mode", "CAN ONLY BE TURNED OFF WITH A SAFEWORD, USE WITH CAUTION\n"+
+                "Enabling removes ability to toggle any options in whitelist tab once two-way commitment is made.");
+
+                ImGui.SetNextWindowSize(new Vector2(750, 375));
+                if (ImGui.BeginPopup("Hardcore Warning")) {
+                    ImGui.PushFont(_fontService.UidFont);
                     ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
-                    ImGui.Separator();
-                    ImGuiUtil.Center("Surrender your Movement, Speech, Hotbar, Vision, Recast Speed, & Dialogue Options?...");
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (ImGuiHelpers.GlobalScale*700/2-ImGuiHelpers.GlobalScale*350/2));
-                    if (ImGui.Button("CONFIRM", new Vector2(ImGuiHelpers.GlobalScale*350, 0))) {
-                        _config.SetHardcoreMode(!_config.hardcoreMode);
-                        ImGui.CloseCurrentPopup();
+                    try{
+                        ImGuiUtil.Center("READ THIS WARNING BEFORE HITTING CONFIRM");
+                        ImGui.Separator();
+                    } finally {
+                        ImGui.PopStyleColor();
+                        ImGui.PopFont();
                     }
-                } finally {
-                    ImGui.PopStyleColor();
-                    ImGui.PopFont();
+                    ImGui.Spacing();
+                    ImGui.PushFont(_fontService.UidFont);
+                    try{
+                        ImGuiUtil.Center("Hardcore mode, once enabled, CAN ONLY BE DISABLED WITH A SAFEWORD.");
+                        ImGui.Spacing();
+                        ImGuiUtil.Center("Your settings for someone in whitelist become locked after a two-way commitment.");
+                        ImGui.Spacing();
+                        ImGuiUtil.Center("Ensure you're comfortable with your dynamic tiers before enabling.");
+                        ImGui.Spacing();
+                        ImGuiUtil.Center("In the hardcore tab, you can customize settings for each player.");
+                        ImGui.Spacing();
+                        ImGuiUtil.Center("No modifications can be made in the hardcore tab by anyone not in your whitelist.");
+                        ImGui.Spacing();
+                        ImGuiUtil.Center("You cannot trigger anything in the hardcore tab yourself.");
+                        ImGui.Spacing();
+                        ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
+                        ImGui.Separator();
+                        ImGuiUtil.Center("Surrender your Movement, Speech, Hotbar, Vision, Recast Speed, & Dialogue Options?...");
+                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (ImGuiHelpers.GlobalScale*700/2-ImGuiHelpers.GlobalScale*350/2));
+                        if (ImGui.Button("CONFIRM", new Vector2(ImGuiHelpers.GlobalScale*350, 0))) {
+                            _config.SetHardcoreMode(!_config.hardcoreMode);
+                            ImGui.CloseCurrentPopup();
+                        }
+                    } finally {
+                        ImGui.PopStyleColor();
+                        ImGui.PopFont();
+                    }
+                    ImGui.EndPopup();
                 }
-                ImGui.EndPopup();
+            } finally {
+                if(_config.hardcoreMode) {ImGui.EndDisabled();}
             }
-
-            if(_config.hardcoreMode) {ImGui.EndDisabled();}
             ///////////////////////////// COMMAND SETTINGS /////////////////////////////
             // should we allow commands from friends not in whitelist?
             UIHelpers.CheckboxNoConfig("Commands From Friends", 
@@ -157,14 +159,18 @@ public class ConfigSettingsTab : ITab
             );
             // Direct chat garbler, is it enabled?
             if(_characterHandler.playerChar._directChatGarblerLocked) {ImGui.BeginDisabled();}
-            UIHelpers.CheckboxNoConfig("Direct Chat Garbler",
-                "AUTOMATICALLY Translate any NON-COMMAND chat message to gagspeak.\n\n"+
-                ">> This will ONLY occur in any of the checked off channels under ENABLED CHANNELS below.\n\n"+
-                ">> This is Serverside, just like /gsm.",
-                _characterHandler.playerChar._directChatGarblerActive, 
-                v => _characterHandler.ToggleDirectChatGarbler()
-            );
-            if(_characterHandler.playerChar._directChatGarblerLocked) {ImGui.EndDisabled();}
+            try
+            {
+                UIHelpers.CheckboxNoConfig("Direct Chat Garbler",
+                    "AUTOMATICALLY Translate any NON-COMMAND chat message to gagspeak.\n\n"+
+                    ">> This will ONLY occur in any of the checked off channels under ENABLED CHANNELS below.\n\n"+
+                    ">> This is Serverside, just like /gsm.",
+                    _characterHandler.playerChar._directChatGarblerActive, 
+                    v => _characterHandler.ToggleDirectChatGarbler()
+                );
+            } finally {
+                if(_characterHandler.playerChar._directChatGarblerLocked) {ImGui.EndDisabled();}
+            }
             // should we enable the direct chat garbler every time we change zones?
             UIHelpers.CheckboxNoConfig("Garbler Zone Warnings",
                 "Sends a warning to your chat every time you switch zones when direct chat garbler is enabled.\n",
@@ -278,88 +284,94 @@ public class ConfigSettingsTab : ITab
             ImGui.TableNextColumn();
             // Show Debug Menu when Debug logging is enabled
             if(_characterHandler.playerChar._directChatGarblerLocked == true) {ImGui.BeginDisabled();}
-            yPos = ImGui.GetCursorPosY();
-            ImGui.AlignTextToFramePadding();
-            ImGui.Text("GagSpeak Channels:");
-            if(ImGui.IsItemHovered()) {
-                ImGui.SetTooltip("Every selected channel from here becomes a channel that your direct chat garbler works in.");
-            }
-            ImGui.SameLine();
-            // Create the language dropdown
-            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*65);
-            string prevLang = _config.language; // to only execute code to update data once it is changed
-            if (ImGui.BeginCombo("##Language", _config.language, ImGuiComboFlags.NoArrowButton)) {
-                foreach (var language in _languages.Keys.ToArray()) {
-                    bool isSelected = (_config.language == language);
-                    if (ImGui.Selectable(language, isSelected)) {
-                        _config.language = language;
-                    }
-                    if (isSelected) {
-                        ImGui.SetItemDefaultFocus();
-                    }
+            try
+            {
+                yPos = ImGui.GetCursorPosY();
+                ImGui.AlignTextToFramePadding();
+                ImGui.Text("GagSpeak Channels:");
+                if(ImGui.IsItemHovered()) {
+                    ImGui.SetTooltip("Every selected channel from here becomes a channel that your direct chat garbler works in.");
                 }
-                ImGui.EndCombo();
-            }
-            if(ImGui.IsItemHovered()) {
-                ImGui.SetTooltip("Select the language you want to use for GagSpeak.");
-            }
-            //update if changed 
-            if (prevLang != _config.language) { // set the language to the newly selected language once it is changed
-                _currentDialects = _languages[_config.language]; // update the dialects for the new language
-                _activeDialect = _currentDialects[0]; // set the active dialect to the first dialect of the new language
-                SetConfigDialectFromDialect(_activeDialect);
-                _config.Save();
-            }
-            ImGui.SameLine();
-            // Create the dialect dropdown
-            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*55);
-            string[] dialects = _languages[_config.language];
-            string prevDialect = _activeDialect; // to only execute code to update data once it is changed
-            if (ImGui.BeginCombo("##Dialect", _activeDialect, ImGuiComboFlags.NoArrowButton)) {
-                foreach (var dialect in dialects) {
-                    bool isSelected = (_activeDialect == dialect);
-                    if (ImGui.Selectable(dialect, isSelected)) {
-                        _activeDialect = dialect;
+                ImGui.SameLine();
+                // Create the language dropdown
+                ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*65);
+                string prevLang = _config.language; // to only execute code to update data once it is changed
+                if (ImGui.BeginCombo("##Language", _config.language, ImGuiComboFlags.NoArrowButton)) {
+                    foreach (var language in _languages.Keys.ToArray()) {
+                        bool isSelected = (_config.language == language);
+                        if (ImGui.Selectable(language, isSelected)) {
+                            _config.language = language;
+                        }
+                        if (isSelected) {
+                            ImGui.SetItemDefaultFocus();
+                        }
                     }
-                    if (isSelected) {
-                        ImGui.SetItemDefaultFocus();
+                    ImGui.EndCombo();
+                }
+                if(ImGui.IsItemHovered()) {
+                    ImGui.SetTooltip("Select the language you want to use for GagSpeak.");
+                }
+                //update if changed 
+                if (prevLang != _config.language) { // set the language to the newly selected language once it is changed
+                    _currentDialects = _languages[_config.language]; // update the dialects for the new language
+                    _activeDialect = _currentDialects[0]; // set the active dialect to the first dialect of the new language
+                    SetConfigDialectFromDialect(_activeDialect);
+                    _config.Save();
+                }
+                ImGui.SameLine();
+                // Create the dialect dropdown
+                ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*55);
+                string[] dialects = _languages[_config.language];
+                string prevDialect = _activeDialect; // to only execute code to update data once it is changed
+                if (ImGui.BeginCombo("##Dialect", _activeDialect, ImGuiComboFlags.NoArrowButton)) {
+                    foreach (var dialect in dialects) {
+                        bool isSelected = (_activeDialect == dialect);
+                        if (ImGui.Selectable(dialect, isSelected)) {
+                            _activeDialect = dialect;
+                        }
+                        if (isSelected) {
+                            ImGui.SetItemDefaultFocus();
+                        }
                     }
+                    ImGui.EndCombo();
                 }
-                ImGui.EndCombo();
-            }
-            if(ImGui.IsItemHovered()) {
-                ImGui.SetTooltip("Select the Dialect you want to use for GagSpeak.");
-            }
-            //update if changed
-            if (prevDialect != _activeDialect) { // set the dialect to the newly selected dialect once it is changed
-                SetConfigDialectFromDialect(_activeDialect);
-                _config.Save();
-            }
-
-            // display the channels
-            var i = 0;
-            foreach (var e in ChatChannel.GetOrderedChannels()) {
-                // See if it is already enabled by default
-                var enabled = _config.ChannelsGagSpeak.Contains(e);
-                // Create a new line after every 4 columns
-                if (i != 0 && (i==4 || i==7 || i==11 || i==15 || i == 19)) {
-                    ImGui.NewLine();
-                    //i = 0;
+                if(ImGui.IsItemHovered()) {
+                    ImGui.SetTooltip("Select the Dialect you want to use for GagSpeak.");
                 }
-                // Move to the next row if it is LS1 or CWLS1
-                if (e is ChatChannel.ChatChannels.LS1 or ChatChannel.ChatChannels.CWL1)
-                    ImGui.Separator();
-
-                if (ImGui.Checkbox($"{e}", ref enabled)) {
-                    // See If the UIHelpers.Checkbox is clicked, If not, add to the list of enabled channels, otherwise, remove it.
-                    if (enabled) _config.ChannelsGagSpeak.Add(e);
-                    else _config.ChannelsGagSpeak.Remove(e);
+                //update if changed
+                if (prevDialect != _activeDialect) { // set the dialect to the newly selected dialect once it is changed
+                    SetConfigDialectFromDialect(_activeDialect);
                     _config.Save();
                 }
 
-                ImGui.SameLine();
-                i++;
+                // display the channels
+                var i = 0;
+                foreach (var e in ChatChannel.GetOrderedChannels()) {
+                    // See if it is already enabled by default
+                    var enabled = _config.ChannelsGagSpeak.Contains(e);
+                    // Create a new line after every 4 columns
+                    if (i != 0 && (i==4 || i==7 || i==11 || i==15 || i == 19)) {
+                        ImGui.NewLine();
+                        //i = 0;
+                    }
+                    // Move to the next row if it is LS1 or CWLS1
+                    if (e is ChatChannel.ChatChannels.LS1 or ChatChannel.ChatChannels.CWL1)
+                        ImGui.Separator();
+
+                    if (ImGui.Checkbox($"{e}", ref enabled)) {
+                        // See If the UIHelpers.Checkbox is clicked, If not, add to the list of enabled channels, otherwise, remove it.
+                        if (enabled) _config.ChannelsGagSpeak.Add(e);
+                        else _config.ChannelsGagSpeak.Remove(e);
+                        _config.Save();
+                    }
+
+                    ImGui.SameLine();
+                    i++;
+                }
+            } finally {
+                if(_characterHandler.playerChar._directChatGarblerLocked == true) {ImGui.EndDisabled();}
             }
+
             ImGui.NewLine();
             ImGui.AlignTextToFramePadding();
             ImGui.Text("Puppeteer Channels:");
@@ -392,7 +404,6 @@ public class ConfigSettingsTab : ITab
                 j++;
             }
             ImGui.PopStyleVar();
-            if(_characterHandler.playerChar._directChatGarblerLocked == true) {ImGui.EndDisabled();}
             // admin key password field
             ImGui.NewLine();
             ImGui.Spacing();

@@ -82,7 +82,8 @@ public partial class WhitelistPanel {
                 }
             }
             if(_activePanelTab==WhitelistPanelTab.YourSettings && _characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
-            try{
+            try
+            {
                 // Lock Gag Storage on Gag Lock option
                 ImGuiUtil.DrawFrameColumn($"Allow Change Toy State:");
                 if(ImGui.IsItemHovered()) { var tt = tooltips["AllowChangeToyStateTT"](); ImGui.SetTooltip(tt); }
@@ -160,8 +161,8 @@ public partial class WhitelistPanel {
         }
         // disable just incase our UI is locked
         if(_activePanelTab==WhitelistPanelTab.YourSettings && _characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
-        // draw out the table for our permissions
-        try{
+        try
+        {
             if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
                 using (var toyboxDisplayList = ImRaii.Table("ToyboxManagerDisplayTable", 3, ImGuiTableFlags.RowBg)) {
                     if (!toyboxDisplayList) return;

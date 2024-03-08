@@ -28,7 +28,7 @@ public static class ActionDataCore
     // Collection for Gladiator
     public static Dictionary<uint, AcReqProps[]> Gladiator = new Dictionary<uint, AcReqProps[]>()
     {
-        { 4,    new AcReqProps[]{AcReqProps.Weighted}},                             // Sprint
+        { 4,    new AcReqProps[]{AcReqProps.Weighted}},                         // Sprint
         { 7,    new AcReqProps[]{AcReqProps.None}},                             // Teleport
         { 8,    new AcReqProps[]{AcReqProps.None}},                             // Return
         { 28,   new AcReqProps[]{AcReqProps.Movement} },                        // Toggle Iron Will
@@ -248,7 +248,7 @@ public static class ActionDataCore
         // Return
         { 8,    new AcReqProps[]{AcReqProps.None}},
         // Toggle Iron Will
-        { 28,   new AcReqProps[]{AcReqProps.Movement} },
+        { 28,   new AcReqProps[]{AcReqProps.Movement}},
         // Circle of Scorn
         { 23,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Reprisal
@@ -268,29 +268,29 @@ public static class ActionDataCore
         // Sentinel
         { 17,   new AcReqProps[]{AcReqProps.None}},
         // Fast Blade
-        { 9,    new AcReqProps[]{AcReqProps.None}},
+        { 9,    new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Riot Blade
         { 15,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
-        // Rage of Halone
-        { 21,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        // Rage of Halone (royal athority)
+        { 21,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Shield Lob
-        { 24,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
+        { 24,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Total Eclipse
-        { 7381, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7381, new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
         // Shield Bash
-        { 16,   new AcReqProps[]{AcReqProps.None}},
+        { 16,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
         // Fight or Flight
         { 20,   new AcReqProps[]{AcReqProps.None}},                             
         // Goring Blade
-        { 3538, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3538, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Intervene
         { 16461,new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
         // Atonement
         { 16460,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Holy Spirit
         { 7384, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Speech}},
-        // Spirits Within
-        { 29,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        // Spirits Within (Expiacition)
+        { 29,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Requiescat
         { 7383, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Speech}},
         // Holy Circle
@@ -314,7 +314,7 @@ public static class ActionDataCore
         // Passage of Arms
         { 7385,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Intervention
-        { 7382,new AcReqProps[]{AcReqProps.Movement, AcReqProps.Sight}},
+        { 7382,new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement, AcReqProps.Sight}},
     };
 
     // Collection for Monk
@@ -339,25 +339,25 @@ public static class ActionDataCore
         // Arms Length
         { 7548, new AcReqProps[]{AcReqProps.Movement}},
         // bootshine
-        { 53,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 53,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // legs fine
         // true strike
-        { 54,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 54,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // legs fine
         // snap punch
         { 56,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Four-point Fury
-        { 16473,new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement, AcReqProps.ArmMovement}},
+        { 16473,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // surprisingly legs fine
         // Dragon Kick
         { 74,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
-        // Arm of the Destroyer
+        // Arm of the Destroyer (shadow)
         { 62,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
         // Demoilish
-        { 66,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 66,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Rockbreaker
-        { 70,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
+        { 70,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Howling Fist
         { 25763,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Twin Snakes
-        { 61,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 61,   new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // legs fine
         // Six-sided Star
         { 16476,new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
         // Thunderclap
@@ -365,7 +365,7 @@ public static class ActionDataCore
         // Perfect Balance
         { 69,   new AcReqProps[]{AcReqProps.None}},
         // Form Shift
-        { 4262, new AcReqProps[]{AcReqProps.Movement}},
+        { 4262, new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
         // Masterful Blitz
         { 25764,new AcReqProps[]{AcReqProps.Movement}},
         // Riddle of earth
@@ -373,7 +373,9 @@ public static class ActionDataCore
         // Riddle of Fire
         { 7395, new AcReqProps[]{AcReqProps.Movement}},
         // Riddle of Wind
-        { 25766, new AcReqProps[]{AcReqProps.Movement}},
+        { 25766,new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
+        // meditation
+        { 3546, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Brotherhood
         { 7396, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Mantra
@@ -406,7 +408,7 @@ public static class ActionDataCore
         // Rampart
         { 7531, new AcReqProps[]{AcReqProps.None}},
         // primal rend
-        { 25753, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
+        { 25753, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // orogeny
         { 25752, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // nascent flash
@@ -416,7 +418,7 @@ public static class ActionDataCore
         // upheavel
         { 7387, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // onslaught
-        { 7386, new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement, AcReqProps.Sight}},
+        { 7386, new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // equilibrium
         { 3552, new AcReqProps[]{AcReqProps.None}},
         // raw intuition
@@ -424,7 +426,7 @@ public static class ActionDataCore
         // infuriate
         { 52, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // storms eye
-        { 45, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 45, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // steel cyclone
         { 51, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // holmgang
@@ -446,7 +448,7 @@ public static class ActionDataCore
         // overpower
         { 41, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // tomahawk
-        { 46, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
+        { 46, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // storms path
         { 42, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // thrill of battle
@@ -474,6 +476,7 @@ public static class ActionDataCore
         { 7546, new AcReqProps[]{AcReqProps.Movement}},
         // Arms Length
         { 7548, new AcReqProps[]{AcReqProps.Movement}},
+        
         // True Thrust
         { 75,  new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Vorpal Thrust
@@ -481,31 +484,31 @@ public static class ActionDataCore
         // Heavens' Thrust
         { 84,  new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Disembowel
-        { 87,  new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 87,  new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Chaos Thrust
         { 88,  new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},        
         // Fang and Claw
         { 3554,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Wheeling Thrust
-        { 3556,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3556,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Jump
         { 92, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Mirage Dive
-        { 7399,new AcReqProps[]{AcReqProps.Movement, AcReqProps.Speech}},
+        { 7399,new AcReqProps[]{AcReqProps.Movement, AcReqProps.Speech, AcReqProps.Sight}},
         // Spineshatter Dive
-        { 95, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 95, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Dragonfire Dive
-        { 96, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 96, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Geirskogul
-        { 3555,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3555,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Stardiver
-        { 16480,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
+        { 16480,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Wyrmwind Thrust
-        { 25773,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 25773,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Piercing Talon
         { 90, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Elusive Jump
-        { 94, new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement, AcReqProps.Sight}},
+        { 94, new AcReqProps[]{AcReqProps.Movement, AcReqProps.Sight}},
         // Battle Litany
         { 3557,new AcReqProps[]{AcReqProps.Speech}},
         // Dragon Sight
@@ -513,7 +516,7 @@ public static class ActionDataCore
         // Doom Spike
         { 86, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Sonic Thrust
-        { 7397, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7397, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Coerthan Torment
         { 16477,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Lance Charge
@@ -599,37 +602,37 @@ public static class ActionDataCore
         // Cure II
         { 135, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Tetrgrammaton
-        { 3570,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3570,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Afflatus Solace
-        { 16531,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16531,new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Regen
         { 137, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Divine Benison
-        {7432, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        {7432, new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Afflatus Misery
-        { 16535, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16535, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Stone / Glare
         { 119, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Aero / Dia
-        { 121, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 121, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Lucid Dreaming
         { 7562, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Medica II
         { 133, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Afflatus Rapture
-        { 16534, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16534, new AcReqProps[]{AcReqProps.None}},
         // Medica
         { 124, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Cure III
         { 131, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // AquaVeil
-        { 25861, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 25861, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Assize
         { 3571, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Benediction
-        { 140, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 140, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Esuna
-        { 7568, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7568, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // SwiftCast
         { 7561, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Raise
@@ -637,7 +640,7 @@ public static class ActionDataCore
         // surecast
         { 7559, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // rescue
-        { 7571, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7571, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Repose
         { 16560, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Presence of Mind
@@ -653,7 +656,7 @@ public static class ActionDataCore
         // Holy
         { 139, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Liturgy of the Bell
-        { 25862, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 25862, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Cure
         { 120, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
     };
@@ -677,40 +680,41 @@ public static class ActionDataCore
         { 7561, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Addle
         { 7560, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        
         // Fire IV
-        { 3577, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3577, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // leg movement fine
         // Fire
-        { 141, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 141, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // is used for paradox, which has ok leg movement
         // Fire III
-        { 152, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 152, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}}, // too much leg lean
         // Dispair
-        { 16505, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16505, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // leg movement fine
         // Xenoglossy
-        { 16507, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16507, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}}, // too much lean 
         // Between the Lines
-        { 7419, new AcReqProps[]{AcReqProps.Movement, AcReqProps.Sight}},
+        { 7419, new AcReqProps[]{AcReqProps.Movement, AcReqProps.Sight}}, // movement here is fine
         // Umbral soul
-        { 16506, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16506, new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
         // Blizzard III
-        { 154, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 154, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}}, // too much lean
         // Blizzard IV
-        { 3576, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3576, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // leg movement here is fine
         // Thunder
-        { 144, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 144, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}}, // too much leg movement
         // Manafont
-        { 158, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 158, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // leg movement fine
         // Blizzard II
-        { 25793, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 25793, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // leg movement fine
         // Freeze
-        { 159, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 159, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // leg movement fine
         // Fire II
-        { 147, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 147, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // leg movement fine
         // Flare
-        { 162, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 162, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // leg movement fine
         // Transpose
-        { 149, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 149, new AcReqProps[]{AcReqProps.None}}, // none needed
         // Sharpcast
-        { 3574, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3574, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, 
         // Leylines
         { 3573, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Thunder II
@@ -718,13 +722,13 @@ public static class ActionDataCore
         // Amplifier
         { 25796, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Foul
-        { 7422, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7422, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Scathe
-        { 156, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 156, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Aetherial Manipulation
         { 155, new AcReqProps[]{AcReqProps.Movement, AcReqProps.Sight}},
         // Triplecast
-        { 7421, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7421, new AcReqProps[]{AcReqProps.None}},
         // Manaward 
         { 157, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
     };
@@ -774,17 +778,17 @@ public static class ActionDataCore
         // Physick
         { 16230, new AcReqProps[]{AcReqProps.Speech, AcReqProps.Sight}},
         // Asrtal flow
-        { 25822, new AcReqProps[]{AcReqProps.Speech}},
+        { 25822, new AcReqProps[]{AcReqProps.Speech, AcReqProps.Sight}},
         // precious brilliance
         { 25884, new AcReqProps[]{AcReqProps.Sight}},
         // Gemshine
         { 25883, new AcReqProps[]{AcReqProps.Sight}},
         // Ruin IV
-        { 7426, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7426, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Energy Drain
-        { 16508, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16508, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Energy Siphon
-        { 16510, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16510, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Ruin III
         { 163, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Summon Emerald
@@ -794,9 +798,9 @@ public static class ActionDataCore
         // Summon Ruby
         { 25802, new AcReqProps[]{AcReqProps.Speech}},
         // Fester
-        { 181, new AcReqProps[]{AcReqProps.None}},
+        { 181, new AcReqProps[]{AcReqProps.Sight}},
         // Aethercharge
-        { 25800, new AcReqProps[]{AcReqProps.Speech}},
+        { 25800, new AcReqProps[]{AcReqProps.Speech, AcReqProps.Sight}},
         // Enkindle Bahamut
         { 7429, new AcReqProps[]{AcReqProps.Sight}},
     };
@@ -872,9 +876,6 @@ public static class ActionDataCore
         { 25867, new AcReqProps[]{AcReqProps.None}},
         // expedient
         { 25868, new AcReqProps[]{AcReqProps.None}},
-
-    
-    
     };
 
     // Collection for Rogue
@@ -909,18 +910,19 @@ public static class ActionDataCore
         { 7546, new AcReqProps[]{AcReqProps.Movement}},
         // Arms Length
         { 7548, new AcReqProps[]{AcReqProps.Movement}},
+
         // Spinning Edge
-        { 2240, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 2240, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Gust Slash
-        { 2242, new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement}},
+        { 2242, new AcReqProps[]{AcReqProps.Movement, AcReqProps.LegMovement, AcReqProps.LegMovement}},
         // Throwing Dagger
-        { 2247, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 2247, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Mug
         { 2248, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Trick Attack
         { 2258, new AcReqProps[]{AcReqProps.Movement}},
         // Aeolian Edge
-        { 2255, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 2255, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement,  AcReqProps.LegMovement}},
         // Ten
         { 2259, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Chi
@@ -938,7 +940,7 @@ public static class ActionDataCore
         // Kassatsu
         { 2264, new AcReqProps[]{AcReqProps.None}},
         // Armor Crush
-        { 3563, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
+        { 3563, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}}, // leg movemnt fine
         // Huraijin
         { 25876, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Hellfrog Medium
@@ -972,14 +974,16 @@ public static class ActionDataCore
         { 7557, new AcReqProps[]{AcReqProps.None}},
         // Second Wind
         { 7541, new AcReqProps[]{AcReqProps.None}},
+        
         // Dismantle
         { 2887, new AcReqProps[]{AcReqProps.Movement, AcReqProps.Speech}},
         // Tactitian
         { 16889, new AcReqProps[]{AcReqProps.None}},
+        
         // Rook Override
         { 7415, new AcReqProps[]{AcReqProps.Movement, AcReqProps.Speech}},
         // Spread Shot
-        { 2870, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 2870, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Bio Blaster
         { 16499, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Gauss Round
@@ -993,23 +997,24 @@ public static class ActionDataCore
         // Rook Auto-turret
         { 2864, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Speech}},
         // Hypercharge
-        { 17209, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 17209, new AcReqProps[]{AcReqProps.None}},
         // Wildfire
-        { 2878, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 2878, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Flamethrower
         { 7418, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        
         // Split Shot
-        { 2866, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
+        { 2866, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Slug Shot
-        { 2868, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
+        { 2868, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Clean Shot
         { 2873, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Drill
-        { 16498, new AcReqProps[]{AcReqProps.ArmMovement, AcReqProps.Sight}},
+        { 16498, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Air Anchor
-        { 2872, new AcReqProps[]{AcReqProps.ArmMovement, AcReqProps.Sight}},
+        { 2872, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Chainsaw
-        { 25788, new AcReqProps[]{AcReqProps.ArmMovement, AcReqProps.Sight}},
+        { 25788, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Heat Blast
         { 7410, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Auto Crossbow
@@ -1042,11 +1047,11 @@ public static class ActionDataCore
         // Hard Slash
         { 3617, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Syphon Strike
-        { 3623, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3623, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Souleater
         { 3632, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Flood of darkness
-        { 16466, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16466, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Bloodspiller
         { 7392, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Blood Weapon
@@ -1054,13 +1059,15 @@ public static class ActionDataCore
         // Shadowbringer
         { 25757, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Unmend
-        { 3624, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3624, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Delirium
-        { 7390, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7390, new AcReqProps[]{AcReqProps.None}},
+        // plunge
+        { 3640, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Abyssal Drain
-        { 3641, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3641, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Carve and Spit
-        { 3643, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3643, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Edge of darkness
         { 16467, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Quietus
@@ -1082,9 +1089,9 @@ public static class ActionDataCore
         // Oblation
         { 25754, new AcReqProps[]{AcReqProps.Sight}},
         // Unleash
-        { 3621, new AcReqProps[]{AcReqProps.ArmMovement}},
+        { 3621, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // stalwart soul
-        { 16468, new AcReqProps[]{AcReqProps.ArmMovement}},
+        { 16468, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // livin dead
         { 3638, new AcReqProps[]{AcReqProps.None}},
     };
@@ -1113,7 +1120,7 @@ public static class ActionDataCore
         // Celestial Intersection
         { 16556, new AcReqProps[]{AcReqProps.Sight, AcReqProps.ArmMovement, AcReqProps.Movement}},
         // Horoscope
-        { 16557, new AcReqProps[]{AcReqProps.ArmMovement, AcReqProps.Movement}},
+        { 16557, new AcReqProps[]{AcReqProps.Movement}},
         // neutral sect
         { 16559, new AcReqProps[]{AcReqProps.None}},
         // Exaltation
@@ -1129,7 +1136,7 @@ public static class ActionDataCore
         // Play
         { 17055, new AcReqProps[]{AcReqProps.Sight}},
         // Aspected Benific
-        { 3595, new AcReqProps[]{AcReqProps.None}},
+        { 3595, new AcReqProps[]{AcReqProps.Sight}},
         // redraw
         { 3593, new AcReqProps[]{AcReqProps.ArmMovement, AcReqProps.Movement}},
         // aspected Helios
@@ -1145,7 +1152,7 @@ public static class ActionDataCore
         // Collective Unconscious
         { 3613, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // celestial opposition
-        { 16553, new AcReqProps[]{AcReqProps.Speech}},
+        { 16553, new AcReqProps[]{AcReqProps.Speech, AcReqProps.LegMovement}},
         // Minor arcana
         { 7443, new AcReqProps[]{AcReqProps.Sight}},
         // Malefic
@@ -1153,15 +1160,15 @@ public static class ActionDataCore
         // benefic
         { 3594, new AcReqProps[]{AcReqProps.None}},
         // combust
-        { 3599, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 3599, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // lightspeed
-        { 3606, new AcReqProps[]{AcReqProps.None}},
+        { 3606, new AcReqProps[]{AcReqProps.Sight}},
         // helios
         { 3600, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // ascend
         { 3603, new AcReqProps[]{AcReqProps.None}},
         // essential dignity
-        { 3614, new AcReqProps[]{AcReqProps.ArmMovement, AcReqProps.Movement}},
+        { 3614, new AcReqProps[]{AcReqProps.ArmMovement, AcReqProps.Movement, AcReqProps.Sight}},
     };
 
     // Collection for Samurai
@@ -1188,21 +1195,21 @@ public static class ActionDataCore
         // hakaze
         { 7477, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // jinpu
-        { 7478, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7478, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // enpi
-        { 7486, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7486, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // shifu
         { 7479, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // fuga
         { 7483, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // gekko
-        { 7481, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7481, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // ianijutsu
-        { 7867, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7867, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // mangetsu
         { 7484, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // kasha
-        { 7482, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7482, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // oka
         { 7485, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // yukikaze
@@ -1245,7 +1252,7 @@ public static class ActionDataCore
         // Surecast
         { 7559, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Swiftcast
-        { 7561, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7561, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Addle
         { 7560, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // magick barrier
@@ -1279,9 +1286,9 @@ public static class ActionDataCore
         // vercure
         { 7514, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // moulinet
-        { 7513, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7513, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Riposte
-        { 7504, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 7504, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Zwerchhau
         { 7512, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // redoublement
@@ -1335,11 +1342,11 @@ public static class ActionDataCore
         // keen edge
         { 16137, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // brutal shell
-        { 16139, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16139, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // solid barrel
         { 16145, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         //gnashing fang
-        { 16146, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16146, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, }},
         // burst strike
         { 16162, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // no mercy
@@ -1347,7 +1354,7 @@ public static class ActionDataCore
         // rough divide
         { 16154, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // lightning shot
-        { 16143, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
+        { 16143, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // sonic break
         { 16153, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // danger zone
@@ -1375,7 +1382,7 @@ public static class ActionDataCore
         // heart of light
         { 16160, new AcReqProps[]{AcReqProps.None}},
         // demon slice
-        { 16141, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16141, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // demon slaughter
         { 16149, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // fated circle
@@ -1400,7 +1407,7 @@ public static class ActionDataCore
         // Second Wind
         { 7541, new AcReqProps[]{AcReqProps.None}},
         // Saber Dance
-        { 16005, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16005, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Flourish
         { 16013, new AcReqProps[]{AcReqProps.None}},
         // Curing Waltz
@@ -1414,31 +1421,31 @@ public static class ActionDataCore
         // standard step
         { 15997, new AcReqProps[]{AcReqProps.LegMovement}},
         // Fan Dance III
-        { 16009, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16009, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Fan Dance
-        { 16007, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 16007, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Reverse Cascade
-        { 15991, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 15991, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Fountainfall
-        { 15992, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 15992, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Fountain
-        { 15990, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 15990, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Cascade
-        { 15989, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 15989, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Windmill
-        { 15993, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 15993, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Bladeshower
-        { 15994, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
+        { 15994, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Rising Windmill
-        { 15995, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
+        { 15995, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Bloodshower
-        { 15996, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
+        { 15996, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Fan Dance II
-        { 16008, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
+        { 16008, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Fan Dance IV
-        { 25791, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
+        { 25791, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement, AcReqProps.Sight}},
         // Starfall Dance
-        { 25792, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 25792, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.Sight}},
         // Improvisation
         { 16014, new AcReqProps[]{AcReqProps.LegMovement, AcReqProps.Movement}},
         // En Avant
@@ -1469,15 +1476,15 @@ public static class ActionDataCore
         // Arms Length
         { 7548, new AcReqProps[]{AcReqProps.Movement}},
         // Slice
-        { 24373, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 24373, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Waxing Slice
         { 24374, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Infernal Slice
-        { 24375, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 24375, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Gallows
-        { 24383, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 24383, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Gibbet
-        { 24382, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 24382, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // Shadow Of Death
         { 24378, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Harpe
@@ -1487,11 +1494,11 @@ public static class ActionDataCore
         // Enshroud
         { 24394, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // blood stalk
-        { 34689, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
-        // sould scythe
-        { 24381, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 34689, new AcReqProps[]{AcReqProps.Movement}},
+        // soul scythe
+        { 24381, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // gluttony
-        { 24393, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 24393, new AcReqProps[]{AcReqProps.Movement}},
         // communio
         { 24398, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // plentiful harvest
@@ -1507,13 +1514,13 @@ public static class ActionDataCore
         // grim swathe
         { 24392, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // guillotine
-        { 24384, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 24384, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // whorl of death
-        { 24379, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 24379, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // spinning scythe
-        { 24376, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 24376, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},
         // nightmare scythe
-        { 24377, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},    
+        { 24377, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement, AcReqProps.LegMovement}},    
     };
 
     // Collection for Sage
@@ -1535,6 +1542,7 @@ public static class ActionDataCore
         { 7571, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // Repose
         { 16560, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
+        
         // Pneuma
         { 24318, new AcReqProps[]{AcReqProps.Movement, AcReqProps.ArmMovement}},
         // krasis
@@ -1552,19 +1560,19 @@ public static class ActionDataCore
         // physis
         { 24288, new AcReqProps[]{AcReqProps.Sight}},
         // Phlegma
-        { 24289, new AcReqProps[]{AcReqProps.Sight, AcReqProps.Movement, AcReqProps.ArmMovement}},
+        { 24289, new AcReqProps[]{AcReqProps.Sight, AcReqProps.Movement, AcReqProps.LegMovement}},
         // Eukrasia
-        { 24290, new AcReqProps[]{AcReqProps.None}},
+        { 24290, new AcReqProps[]{AcReqProps.Sight}},
         // soteria
         { 24294, new AcReqProps[]{AcReqProps.Sight}},
         // icarus
         { 24295, new AcReqProps[]{AcReqProps.Sight}},
         // druocole
-        { 24296, new AcReqProps[]{AcReqProps.Sight}},
+        { 24296, new AcReqProps[]{AcReqProps.Sight, AcReqProps.LegMovement}},
         // dyskrasia
         { 24297, new AcReqProps[]{AcReqProps.None}},
         // kerachole
-        { 24298, new AcReqProps[]{AcReqProps.None}},
+        { 24298, new AcReqProps[]{AcReqProps.LegMovement}},
         // Ixochole
         { 24299, new AcReqProps[]{AcReqProps.None}},
         // zoe

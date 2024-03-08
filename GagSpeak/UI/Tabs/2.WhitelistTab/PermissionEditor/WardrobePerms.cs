@@ -119,98 +119,108 @@ public partial class WhitelistPanel {
 
             // None of the editable states should be enabled if the wardrobe is not enabled
             if(!_tempWhitelistChar._enableWardrobe || _activePanelTab==WhitelistPanelTab.TheirSettings==false) { ImGui.BeginDisabled();}
-            if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
-                // Force Enable a Restraint Set option, if the permission is enabled
-                ImGui.AlignTextToFramePadding();
-                ImGuiUtil.DrawFrameColumn($"Toggle Set:");
-                if(ImGui.IsItemHovered()) { var tt = tooltips["ToggleSetTT"](); ImGui.SetTooltip($"{tt}"); }
-                ImGui.TableNextColumn();
-                string restraintSetResult = _restraintSetToEnable; // get the input timer storage
-                ImGui.AlignTextToFramePadding();
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                if (ImGui.InputTextWithHint("##RestraintSetName", "Restraint Set Name..",
-                ref restraintSetResult, 36, ImGuiInputTextFlags.None)) {
-                    _restraintSetToEnable = restraintSetResult;
-                }
-                if(ImGui.IsItemHovered()) { var tt = tooltips["ToggleSetTT"](); ImGui.SetTooltip($"{tt}"); }
-                ImGui.TableNextColumn();
-                ImGuiUtil.Center("2");
-                if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
-                ImGui.TableNextColumn();
-                if(!_tempWhitelistChar._enableRestraintSets) { ImGui.BeginDisabled(); }
-                if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-                tooltips["ToggleButtonTT"](), _activePanelTab==WhitelistPanelTab.TheirSettings && !(dynamicTier >= DynamicTier.Tier2))) {
-                    ToggleRestraintSetByName(_restraintSetToEnable);
-                    _interactOrPermButtonEvent.Invoke(5);
-                }
-                // end the disabled state
-                if(!_tempWhitelistChar._enableRestraintSets) { ImGui.EndDisabled(); }
-                // Lock Restraint Set option, if the permission is enabled
-                if(!_tempWhitelistChar._restraintSetLocking) { ImGui.BeginDisabled(); }
-                ImGui.AlignTextToFramePadding();
-                ImGuiUtil.DrawFrameColumn($"Lock Set:");
-                if(ImGui.IsItemHovered()) { var tt = tooltips["LockSetTT"](); ImGui.SetTooltip($"{tt}"); }
-                ImGui.TableNextColumn();
-                string restraintSetLockResult = _restraintSetLockDuration; // get the input timer storage
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                if (ImGui.InputTextWithHint("##RestraintSetLockDuration", "Ex: 0h2m7s",
-                ref restraintSetLockResult, 12, ImGuiInputTextFlags.None)) {
-                    _restraintSetLockDuration = restraintSetLockResult;
-                }
-                if(ImGui.IsItemHovered()) { var tt = tooltips["LockSetTT"](); ImGui.SetTooltip($"{tt}"); }
-                ImGui.TableNextColumn();
-                ImGuiUtil.Center("1");
-                if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
-                ImGui.TableNextColumn();
-                if(ImGuiUtil.DrawDisabledButton("Lock##LockRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-                tooltips["ToggleButtonTT"](), !(dynamicTier >= DynamicTier.Tier1))) {
-                    LockRestraintSetToPlayer(_restraintSetToEnable, _restraintSetLockDuration);
-                    _interactOrPermButtonEvent.Invoke(5);
-                }
-                // end the disabled state
-                if(!_tempWhitelistChar._restraintSetLocking) { ImGui.EndDisabled(); }
-                // dont need any state to try and unlock
-                ImGui.AlignTextToFramePadding();
-                ImGuiUtil.DrawFrameColumn($"Unlock Set:");
-                if(ImGui.IsItemHovered()) { var tt = tooltips["UnlockSetTT"](); ImGui.SetTooltip($"{tt}"); }
-                ImGui.TableNextColumn();
-                string restraintSetUnlockResult = _resrtaintSetToUnlock; // get the input timer storage
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                if (ImGui.InputTextWithHint("##RestraintSetToUnlock", "RestraintSet Name..",
-                ref restraintSetUnlockResult, 36, ImGuiInputTextFlags.None)) {
-                    _resrtaintSetToUnlock = restraintSetUnlockResult;
-                }
-                if(ImGui.IsItemHovered()) { var tt = tooltips["UnlockSetTT"](); ImGui.SetTooltip($"{tt}"); }
-                ImGui.TableNextColumn();
-                ImGuiUtil.Center("0");
-                if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
-                ImGui.TableNextColumn();
-                if(ImGui.Button("Unlock##UnlockRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
-                    UnlockRestraintSetToPlayer(_resrtaintSetToUnlock);
-                    _interactOrPermButtonEvent.Invoke(5);
-                }
-                if(ImGui.IsItemHovered()) { var tt = tooltips["ToggleButtonTT"](); ImGui.SetTooltip($"{tt}"); }
-                // list of stored sets
+            try
+            {
+                
                 if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
-                    ImGuiUtil.DrawFrameColumn("Stored Sets: ");
-                    if(ImGui.IsItemHovered()) { var tt = tooltips["StoredSetListTT"](); ImGui.SetTooltip($"{tt}"); }
+                    // Force Enable a Restraint Set option, if the permission is enabled
+                    ImGui.AlignTextToFramePadding();
+                    ImGuiUtil.DrawFrameColumn($"Toggle Set:");
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["ToggleSetTT"](); ImGui.SetTooltip($"{tt}"); }
                     ImGui.TableNextColumn();
-                    // Create a combo box with the stored restraint data (had to convert to array because am dumb)
-                    string[] restraintData = _tempWhitelistChar._storedRestraintSets.ToArray();
-                    int currentRestraintIndex = _activeStoredSetListIdx==0 ? 0 : _activeStoredSetListIdx; // This should be the current selected index
+                    string restraintSetResult = _restraintSetToEnable; // get the input timer storage
+                    ImGui.AlignTextToFramePadding();
                     ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                    if (ImGui.Combo("##storedRestraintData", ref currentRestraintIndex, restraintData, restraintData.Length)) {
-                        // If an item is selected from the dropdown, update the restraint set name field
-                        _restraintSetToEnable = restraintData[currentRestraintIndex];
-                        _resrtaintSetToUnlock = restraintData[currentRestraintIndex];
-                        // update the index to display
-                        _activeStoredSetListIdx = currentRestraintIndex;
+                    if (ImGui.InputTextWithHint("##RestraintSetName", "Restraint Set Name..",
+                    ref restraintSetResult, 36, ImGuiInputTextFlags.None)) {
+                        _restraintSetToEnable = restraintSetResult;
                     }
-                    if(ImGui.IsItemHovered()) { var tt = tooltips["StoredSetListTT"](); ImGui.SetTooltip($"{tt}"); }
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["ToggleSetTT"](); ImGui.SetTooltip($"{tt}"); }
+                    ImGui.TableNextColumn();
+                    ImGuiUtil.Center("2");
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
+                    ImGui.TableNextColumn();
+                    if(!_tempWhitelistChar._enableRestraintSets) { ImGui.BeginDisabled(); }
+                    try
+                    {
+                        if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+                        tooltips["ToggleButtonTT"](), _activePanelTab==WhitelistPanelTab.TheirSettings && !(dynamicTier >= DynamicTier.Tier2))) {
+                            ToggleRestraintSetByName(_restraintSetToEnable);
+                            _interactOrPermButtonEvent.Invoke(5);
+                        }
+                    } finally {
+                        if(!_tempWhitelistChar._enableRestraintSets) { ImGui.EndDisabled(); }
+                    }
+                    // Lock Restraint Set option, if the permission is enabled
+                    if(!_tempWhitelistChar._restraintSetLocking) { ImGui.BeginDisabled(); }
+                    try
+                    {
+                        ImGui.AlignTextToFramePadding();
+                        ImGuiUtil.DrawFrameColumn($"Lock Set:");
+                        if(ImGui.IsItemHovered()) { var tt = tooltips["LockSetTT"](); ImGui.SetTooltip($"{tt}"); }
+                        ImGui.TableNextColumn();
+                        string restraintSetLockResult = _restraintSetLockDuration; // get the input timer storage
+                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                        if (ImGui.InputTextWithHint("##RestraintSetLockDuration", "Ex: 0h2m7s",
+                        ref restraintSetLockResult, 12, ImGuiInputTextFlags.None)) {
+                            _restraintSetLockDuration = restraintSetLockResult;
+                        }
+                        if(ImGui.IsItemHovered()) { var tt = tooltips["LockSetTT"](); ImGui.SetTooltip($"{tt}"); }
+                        ImGui.TableNextColumn();
+                        ImGuiUtil.Center("1");
+                        if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
+                        ImGui.TableNextColumn();
+                        if(ImGuiUtil.DrawDisabledButton("Lock##LockRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
+                        tooltips["ToggleButtonTT"](), !(dynamicTier >= DynamicTier.Tier1))) {
+                            LockRestraintSetToPlayer(_restraintSetToEnable, _restraintSetLockDuration);
+                            _interactOrPermButtonEvent.Invoke(5);
+                        }
+                    } finally {
+                        if(!_tempWhitelistChar._restraintSetLocking) { ImGui.EndDisabled(); }
+                    }
+                    // dont need any state to try and unlock
+                    ImGui.AlignTextToFramePadding();
+                    ImGuiUtil.DrawFrameColumn($"Unlock Set:");
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["UnlockSetTT"](); ImGui.SetTooltip($"{tt}"); }
+                    ImGui.TableNextColumn();
+                    string restraintSetUnlockResult = _resrtaintSetToUnlock; // get the input timer storage
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                    if (ImGui.InputTextWithHint("##RestraintSetToUnlock", "RestraintSet Name..",
+                    ref restraintSetUnlockResult, 36, ImGuiInputTextFlags.None)) {
+                        _resrtaintSetToUnlock = restraintSetUnlockResult;
+                    }
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["UnlockSetTT"](); ImGui.SetTooltip($"{tt}"); }
+                    ImGui.TableNextColumn();
+                    ImGuiUtil.Center("0");
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
+                    ImGui.TableNextColumn();
+                    if(ImGui.Button("Unlock##UnlockRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
+                        UnlockRestraintSetToPlayer(_resrtaintSetToUnlock);
+                        _interactOrPermButtonEvent.Invoke(5);
+                    }
+                    if(ImGui.IsItemHovered()) { var tt = tooltips["ToggleButtonTT"](); ImGui.SetTooltip($"{tt}"); }
+                    // list of stored sets
+                    if(_activePanelTab==WhitelistPanelTab.TheirSettings) {
+                        ImGuiUtil.DrawFrameColumn("Stored Sets: ");
+                        if(ImGui.IsItemHovered()) { var tt = tooltips["StoredSetListTT"](); ImGui.SetTooltip($"{tt}"); }
+                        ImGui.TableNextColumn();
+                        // Create a combo box with the stored restraint data (had to convert to array because am dumb)
+                        string[] restraintData = _tempWhitelistChar._storedRestraintSets.ToArray();
+                        int currentRestraintIndex = _activeStoredSetListIdx==0 ? 0 : _activeStoredSetListIdx; // This should be the current selected index
+                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                        if (ImGui.Combo("##storedRestraintData", ref currentRestraintIndex, restraintData, restraintData.Length)) {
+                            // If an item is selected from the dropdown, update the restraint set name field
+                            _restraintSetToEnable = restraintData[currentRestraintIndex];
+                            _resrtaintSetToUnlock = restraintData[currentRestraintIndex];
+                            // update the index to display
+                            _activeStoredSetListIdx = currentRestraintIndex;
+                        }
+                        if(ImGui.IsItemHovered()) { var tt = tooltips["StoredSetListTT"](); ImGui.SetTooltip($"{tt}"); }
+                    }
                 }
+            } finally {
+                if(!_tempWhitelistChar._enableWardrobe || _activePanelTab==WhitelistPanelTab.TheirSettings==false) { ImGui.EndDisabled();}
             }
-            // end the disabled state
-            if(!_tempWhitelistChar._enableWardrobe || _activePanelTab==WhitelistPanelTab.TheirSettings==false) { ImGui.EndDisabled();}
         }
         // pop the spacing
         ImGui.PopStyleVar();

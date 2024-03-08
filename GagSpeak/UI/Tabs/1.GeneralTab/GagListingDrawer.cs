@@ -108,10 +108,6 @@ public class GagListingsDrawer : IDisposable
     /// </list> </summary>
     public void DrawGagAndLockListing(int ID, GagSpeakConfig config, GagTypeFilterCombo _gagTypeFilterCombo, GagLockFilterCombo _gagLockFilterCombo,
     int layerIndex, string displayLabel) {
-        // if we are locked, set the locked to true
-        if(_config.isLocked[layerIndex]) {
-            ImGui.BeginDisabled();
-        }
         // push our styles
         using var    id = ImRaii.PushId($"{ID}_listing"); // push the ID
         var     spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemSpacing.Y }; // push spacing
@@ -153,12 +149,17 @@ public class GagListingsDrawer : IDisposable
                 if(!_adjustDisp[layerIndex]){ // inch our way down half the distance of a newline
                     ImGui.SetCursorPosY(ImGui.GetCursorPosY() + ImGui.GetFrameHeight() / 1.4f);
                 }
-                // Draw the combos
-                if (DrawGagTypeItemCombo(ID, layerIndex, _config.isLocked[layerIndex], ImGui.GetContentRegionAvail().X, _gagTypeFilterCombo)) {}
-                // Adjust the width of the padlock dropdown to most of the original width
-                if (DrawGagLockItemCombo(ID, layerIndex, _config.isLocked[layerIndex], ImGui.GetContentRegionAvail().X - 50*ImGuiHelpers.GlobalScale, _gagLockFilterCombo)) {}
-                // end our disabled fields, if any, here
-                if(_config.isLocked[layerIndex]) { ImGui.EndDisabled(); } // end the disabled part here, if it was disabled
+                // if we are locked, lock the fields
+                if(_config.isLocked[layerIndex]) { ImGui.BeginDisabled();}
+                try{
+                    // Draw the combos
+                    if (DrawGagTypeItemCombo(ID, layerIndex, _config.isLocked[layerIndex], ImGui.GetContentRegionAvail().X, _gagTypeFilterCombo)) {}
+                    // Adjust the width of the padlock dropdown to most of the original width
+                    if (DrawGagLockItemCombo(ID, layerIndex, _config.isLocked[layerIndex], ImGui.GetContentRegionAvail().X - 50*ImGuiHelpers.GlobalScale, _gagLockFilterCombo)) {}
+                }
+                finally {
+                   if(_config.isLocked[layerIndex]) { ImGui.EndDisabled(); } // end the disabled part here, if it was disabled
+                }
                 
                 // get the type of button label that will display
                 _buttonLabel = _config.isLocked[layerIndex] ? "Unlock" : "Lock"; // we want to display unlock button if we are currently locked

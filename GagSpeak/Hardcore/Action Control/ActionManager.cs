@@ -14,6 +14,7 @@ using GagSpeak.Wardrobe;
 using GagSpeak.Gagsandlocks;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using GagSpeak.Services;
+using GagSpeak.CharacterData;
 
 namespace GagSpeak.Hardcore.Actions;
 public unsafe class GsActionManager : IDisposable
@@ -91,13 +92,15 @@ public unsafe class GsActionManager : IDisposable
         }
     }
 
-    private void EnableProperties(int index) {
+    private void EnableProperties(int setIndex, int idxOfAssigner) {
         // if the index isnt out of range, then apply the settings
-        if(index != -1) {
+        if(setIndex != -1) {
             // apply stimulation modifier, if any
             _hcManager.ApplyMultipler();
-            // activate hotbar lock
-            _hotbarLocker.SetHotbarLockState(true);
+            // activate hotbar lock, if we have any properties enabled
+            if(_config.hardcoreMode && _hcManager._perPlayerConfigs[idxOfAssigner]._rsProperties[setIndex].AnyPropertyTrue()) {
+                _hotbarLocker.SetHotbarLockState(true);
+            }
         }
     }
 
@@ -249,10 +252,11 @@ public unsafe class GsActionManager : IDisposable
         // if we are ready to initialize the actions, we should update our job list
         UpdateJobList();
         // see if we should enable the sets incase we load this prior to the restraint set manager loading.
-        if(_restraintSetManager.IsAnySetEnabled(out int enabledIdx, out string assignerOfSet)) {
+        if(_hcManager.IsAnySetEnabled(out int enabledIdx, out string assignerOfSet, out int idxOfAssigner)) {
             GSLogger.LogType.Debug($"[Action Manager]: Restraint set index {enabledIdx}, activated by {assignerOfSet}, is now active");            
-            EnableProperties(enabledIdx);
-        } else {
+            EnableProperties(enabledIdx, idxOfAssigner);
+        } 
+        else {
             GSLogger.LogType.Debug($"[Action Manager]: No restraint sets are active");
         }
         _framework.Update += framework_Update;
@@ -264,8 +268,11 @@ public unsafe class GsActionManager : IDisposable
         // when restraint set is active, change the actively enabled restraint set index so that
         // we know which set is active when we try applying affects to the hotbar
         if(e.ToggleType == RestraintSetToggleType.Enabled) {
-            EnableProperties(e.SetIndex);
-            GSLogger.LogType.Debug($"[Action Manager]: Restraint set index {e.SetIndex} is now active");
+            // dont need to do this but it gives us the variables without us needing to use characterHandler, i know its messy
+            if(_hcManager.IsAnySetEnabled(out int enabledIdx, out string assignerOfSet, out int idxOfAssigner)) {
+                EnableProperties(e.SetIndex, idxOfAssigner);
+                GSLogger.LogType.Debug($"[Action Manager]: Restraint set index {e.SetIndex} is now active");
+            }
         }
         // if we are disabling the restraint set, we should restore our hotbar slots to the saved state over the live state
         if(e.ToggleType == RestraintSetToggleType.Disabled) {

@@ -40,7 +40,9 @@ public class WardrobeRestraintCompartment
         // draw the editor for that set
         _editor.Draw();
         // remove the disabled state
-        } finally { if(_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._locked) { ImGui.EndDisabled(); } }
+        } finally {
+            if(_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._locked) { ImGui.EndDisabled(); }
+        }
     }
 
     public float GetSetSelectorWidth()

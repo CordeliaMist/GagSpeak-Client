@@ -92,126 +92,124 @@ public class WorkshopTab : ITab, IDisposable
         if (!child) { return;}
         if(!_mediator.isRecording && _mediator.finishedRecording) { ImGui.BeginDisabled(); }
         try{
-        // Draw the waveform
-        
-        float[] xs = Enumerable.Range(0, recordedPositions.Count).Select(i => (float)i).ToArray();  // x-values
-        float[] ys = recordedPositions.Select(pos => (float)pos).ToArray();  // y-values
-        float latestX = xs.Length > 0 ? xs[xs.Length - 1] : 0; // The latest x-value
-        // Transform the x-values so that the latest position appears at x=0
-        for (int i = 0; i < xs.Length; i++) {
-            xs[i] -= latestX;
-        }
-        // get the xpos so we can draw it back a bit to span the whole width
-        var xPos = ImGui.GetCursorPosX();
-        var yPos = ImGui.GetCursorPosY();
-        ImGui.SetCursorPos(new Vector2(xPos - ImGuiHelpers.GlobalScale * 10, yPos - ImGuiHelpers.GlobalScale * 10));
-        var width = ImGui.GetContentRegionAvail().X + ImGuiHelpers.GlobalScale * 10;
-        // set up the color map for our plots.
-        ImPlot.PushStyleColor(ImPlotCol.Line, ColorId.LushPinkLine.Value());
-        ImPlot.PushStyleColor(ImPlotCol.PlotBg, ColorId.LovenseScrollingBG.Value());
-        // draw the waveform
-        ImPlot.SetNextAxesLimits(- 150, 0, -5, 110, ImPlotCond.Always);
-        if(ImPlot.BeginPlot("##Waveform", new System.Numerics.Vector2(width, 125), ImPlotFlags.NoBoxSelect | ImPlotFlags.NoMenus
-         | ImPlotFlags.NoLegend | ImPlotFlags.NoFrame)) {
-            ImPlot.SetupAxes("X Label", "Y Label", 
-                ImPlotAxisFlags.NoGridLines | ImPlotAxisFlags.NoLabel | ImPlotAxisFlags.NoTickLabels | ImPlotAxisFlags.NoTickMarks | ImPlotAxisFlags.NoHighlight,
-                ImPlotAxisFlags.NoGridLines | ImPlotAxisFlags.NoLabel | ImPlotAxisFlags.NoTickLabels | ImPlotAxisFlags.NoTickMarks);
-            if (xs.Length > 0 || ys.Length > 0) {
-                ImPlot.PlotLine("Recorded Positions", ref xs[0], ref ys[0], xs.Length);
+            // Draw the waveform
+            float[] xs = Enumerable.Range(0, recordedPositions.Count).Select(i => (float)i).ToArray();  // x-values
+            float[] ys = recordedPositions.Select(pos => (float)pos).ToArray();  // y-values
+            float latestX = xs.Length > 0 ? xs[xs.Length - 1] : 0; // The latest x-value
+            // Transform the x-values so that the latest position appears at x=0
+            for (int i = 0; i < xs.Length; i++) {
+                xs[i] -= latestX;
             }
-            ImPlot.EndPlot();
-        }
-        // clear the styles
-        ImPlot.PopStyleColor(2);
-        // shift up again
-        xPos = ImGui.GetCursorPosX();
-        yPos = ImGui.GetCursorPosY();
-        ImGui.SetCursorPosY(yPos - ImGuiHelpers.GlobalScale * 13);
-        ImGui.Separator();
-        yPos = ImGui.GetCursorPosY();
-        ImGui.SetCursorPosY(yPos - ImGuiHelpers.GlobalScale);
-
-        using (var table2 = ImRaii.Table("ThePatternCreationTable", 2, ImGuiTableFlags.NoPadInnerX |  ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.BordersV)) {
-            if (!table2) { return; } // make sure our table was made
-            ImGui.TableSetupColumn("InteractivePatternDrawer",  ImGuiTableColumnFlags.WidthStretch);                  
-            ImGui.TableSetupColumn("InteractionButtons",        ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Time Remainingmmm..").X);
-            ImGui.TableNextColumn();
-            // create styles for the next plot
-            ImPlot.PushStyleColor(ImPlotCol.PlotBg, ColorId.LovenseDragButtonBG.Value());
-            // Draw the first row of the table
-            // Draw a thin line with a timer to show the current position of the circle
-            width = ImGui.GetContentRegionAvail().X;
-            var height = ImGui.GetContentRegionAvail().Y + ImGui.GetTextLineHeight() + ImGuiHelpers.GlobalScale * 5;
-            // go to the next line and draw the grid we can move out thing in
-            yPos = ImGui.GetCursorPosY();
-            ImGui.SetCursorPosY(yPos - ImGui.GetTextLineHeight());
-            ImPlot.SetNextAxesLimits(- 50, + 50, -10, 110, ImPlotCond.Always);
-            var PreviousPos = circlePos[1]; // store the Y position
-            if (ImPlot.BeginPlot("##Box", new System.Numerics.Vector2(width+ImGui.GetTextLineHeight(), height), ImPlotFlags.NoBoxSelect
+            // get the xpos so we can draw it back a bit to span the whole width
+            var xPos = ImGui.GetCursorPosX();
+            var yPos = ImGui.GetCursorPosY();
+            ImGui.SetCursorPos(new Vector2(xPos - ImGuiHelpers.GlobalScale * 10, yPos - ImGuiHelpers.GlobalScale * 10));
+            var width = ImGui.GetContentRegionAvail().X + ImGuiHelpers.GlobalScale * 10;
+            // set up the color map for our plots.
+            ImPlot.PushStyleColor(ImPlotCol.Line, ColorId.LushPinkLine.Value());
+            ImPlot.PushStyleColor(ImPlotCol.PlotBg, ColorId.LovenseScrollingBG.Value());
+            // draw the waveform
+            ImPlot.SetNextAxesLimits(- 150, 0, -5, 110, ImPlotCond.Always);
+            if(ImPlot.BeginPlot("##Waveform", new System.Numerics.Vector2(width, 125), ImPlotFlags.NoBoxSelect | ImPlotFlags.NoMenus
             | ImPlotFlags.NoLegend | ImPlotFlags.NoFrame)) {
                 ImPlot.SetupAxes("X Label", "Y Label", 
-                    ImPlotAxisFlags.NoGridLines | ImPlotAxisFlags.NoLabel | ImPlotAxisFlags.NoTickLabels | ImPlotAxisFlags.NoTickMarks | ImPlotAxisFlags.NoMenus | ImPlotAxisFlags.NoHighlight,
-                    ImPlotAxisFlags.NoGridLines | ImPlotAxisFlags.NoMenus | ImPlotAxisFlags.NoLabel | ImPlotAxisFlags.NoHighlight);
-                ImPlot.SetupAxisTicks(ImAxis.Y1, ref positions[0], 11, labels);
-                ImPlot.DragPoint(0, ref circlePos[0], ref circlePos[1], ColorId.LushPinkButton.Value(), 20, ImPlotDragToolFlags.NoCursors);
-                
-                // if the mouse button is released, while we are looping and dragging turn dragging off
-                if (isDragging && ImGui.IsMouseReleased(ImGuiMouseButton.Left)) {
-                    isDragging = false;
-                    loopIndex = 0; // reset the index
-                    GSLogger.LogType.Debug("Dragging Period Ended!");
+                    ImPlotAxisFlags.NoGridLines | ImPlotAxisFlags.NoLabel | ImPlotAxisFlags.NoTickLabels | ImPlotAxisFlags.NoTickMarks | ImPlotAxisFlags.NoHighlight,
+                    ImPlotAxisFlags.NoGridLines | ImPlotAxisFlags.NoLabel | ImPlotAxisFlags.NoTickLabels | ImPlotAxisFlags.NoTickMarks);
+                if (xs.Length > 0 || ys.Length > 0) {
+                    ImPlot.PlotLine("Recorded Positions", ref xs[0], ref ys[0], xs.Length);
                 }
-                // if our mouse is down...
-                if (ImGui.IsMouseDown(ImGuiMouseButton.Left)) {
-
-                    // if we are not yet marked as dragging, and the positions are different, then mark that we are dragging
-                    if (!isDragging && PreviousPos != circlePos[1]) {
-                        isDragging = true;
-                        tempStoredLoopPositions = new List<double>(); // start a new list
-                        loopIndex = 0; // reset the index
-                        GSLogger.LogType.Debug("Dragging Period Started!");
-                    }
-                }
-                // account for floating and boundry crossing
-                AccountForFloating();
-                // end the plot
                 ImPlot.EndPlot();
             }
-            // pop the styles
-            ImPlot.PopStyleColor();
-            ImGui.TableNextColumn();
-            // create another table inside here
-            DrawSideButtonsTable();
-            // now we can draw the buttons
-            width = ImGui.GetContentRegionAvail().X;
-            // Draw the buttons for recording and stopping the recording
-            if(!_mediator.isRecording) {
-                if(ImGuiUtil.DrawDisabledButton("Start Recording##StartRecordingButton", new Vector2(width, -1), string.Empty, _mediator.isRecording)) {
-                    _mediator.isRecording = !_mediator.isRecording;
-                    StartRecording();
+            // clear the styles
+            ImPlot.PopStyleColor(2);
+            // shift up again
+            xPos = ImGui.GetCursorPosX();
+            yPos = ImGui.GetCursorPosY();
+            ImGui.SetCursorPosY(yPos - ImGuiHelpers.GlobalScale * 13);
+            ImGui.Separator();
+            yPos = ImGui.GetCursorPosY();
+            ImGui.SetCursorPosY(yPos - ImGuiHelpers.GlobalScale);
+
+            using (var table2 = ImRaii.Table("ThePatternCreationTable", 2, ImGuiTableFlags.NoPadInnerX |  ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.BordersV)) {
+                if (!table2) { return; } // make sure our table was made
+                ImGui.TableSetupColumn("InteractivePatternDrawer",  ImGuiTableColumnFlags.WidthStretch);                  
+                ImGui.TableSetupColumn("InteractionButtons",        ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Time Remainingmmm..").X);
+                ImGui.TableNextColumn();
+                // create styles for the next plot
+                ImPlot.PushStyleColor(ImPlotCol.PlotBg, ColorId.LovenseDragButtonBG.Value());
+                // Draw the first row of the table
+                // Draw a thin line with a timer to show the current position of the circle
+                width = ImGui.GetContentRegionAvail().X;
+                var height = ImGui.GetContentRegionAvail().Y + ImGui.GetTextLineHeight() + ImGuiHelpers.GlobalScale * 5;
+                // go to the next line and draw the grid we can move out thing in
+                yPos = ImGui.GetCursorPosY();
+                ImGui.SetCursorPosY(yPos - ImGui.GetTextLineHeight());
+                ImPlot.SetNextAxesLimits(- 50, + 50, -10, 110, ImPlotCond.Always);
+                var PreviousPos = circlePos[1]; // store the Y position
+                if (ImPlot.BeginPlot("##Box", new System.Numerics.Vector2(width+ImGui.GetTextLineHeight(), height), ImPlotFlags.NoBoxSelect | ImPlotFlags.NoLegend | ImPlotFlags.NoFrame)) {
+                    ImPlot.SetupAxes("X Label", "Y Label", 
+                        ImPlotAxisFlags.NoGridLines | ImPlotAxisFlags.NoLabel | ImPlotAxisFlags.NoTickLabels | ImPlotAxisFlags.NoTickMarks | ImPlotAxisFlags.NoMenus | ImPlotAxisFlags.NoHighlight,
+                        ImPlotAxisFlags.NoGridLines | ImPlotAxisFlags.NoMenus | ImPlotAxisFlags.NoLabel | ImPlotAxisFlags.NoHighlight);
+                    ImPlot.SetupAxisTicks(ImAxis.Y1, ref positions[0], 11, labels);
+                    ImPlot.DragPoint(0, ref circlePos[0], ref circlePos[1], ColorId.LushPinkButton.Value(), 20, ImPlotDragToolFlags.NoCursors);
+                    
+                    // if the mouse button is released, while we are looping and dragging turn dragging off
+                    if (isDragging && ImGui.IsMouseReleased(ImGuiMouseButton.Left)) {
+                        isDragging = false;
+                        loopIndex = 0; // reset the index
+                        GSLogger.LogType.Debug("Dragging Period Ended!");
+                    }
+                    // if our mouse is down...
+                    if (ImGui.IsMouseDown(ImGuiMouseButton.Left)) {
+
+                        // if we are not yet marked as dragging, and the positions are different, then mark that we are dragging
+                        if (!isDragging && PreviousPos != circlePos[1]) {
+                            isDragging = true;
+                            tempStoredLoopPositions = new List<double>(); // start a new list
+                            loopIndex = 0; // reset the index
+                            GSLogger.LogType.Debug("Dragging Period Started!");
+                        }
+                    }
+                    // account for floating and boundry crossing
+                    AccountForFloating();
+                    // end the plot
+                    ImPlot.EndPlot();
                 }
-            } else {
-                if(ImGuiUtil.DrawDisabledButton("Stop Recording##StopRecordingButton", new Vector2(width, -1), string.Empty, !_mediator.isRecording)) {
-                    _mediator.isRecording = !_mediator.isRecording;
-                    StopRecording();
-                    // for saving a pattern after it is finished recording
-                    if(!_mediator.isRecording && _mediator.finishedRecording) {
-                        // Get the size and position of the main window
-                        Vector2 mainWindowSize = ImGui.GetWindowSize();
-                        Vector2 mainWindowPos = ImGui.GetWindowPos();
-                        // Calculate the center of the main window
-                        Vector2 center = mainWindowPos + mainWindowSize / 2.0f;
-                        // Get the size of the SavePatternWindow
-                        Vector2 savePatternWindowSize = new Vector2(200, 100); // You need to implement GetSize method in SavePatternWindow
-                        // Calculate the position of the SavePatternWindow so that it's centered relative to the main window
-                        Vector2 savePatternWindowPos = center - savePatternWindowSize / 2.0f;
-                        // Set the position of the SavePatternWindow
-                        ImGui.SetNextWindowPos(savePatternWindowPos);
-                        _SavePatternWindow.Toggle();
+                // pop the styles
+                ImPlot.PopStyleColor();
+                ImGui.TableNextColumn();
+                // create another table inside here
+                DrawSideButtonsTable();
+                // now we can draw the buttons
+                width = ImGui.GetContentRegionAvail().X;
+                // Draw the buttons for recording and stopping the recording
+                if(!_mediator.isRecording) {
+                    if(ImGuiUtil.DrawDisabledButton("Start Recording##StartRecordingButton", new Vector2(width, -1), string.Empty, _mediator.isRecording)) {
+                        _mediator.isRecording = !_mediator.isRecording;
+                        StartRecording();
+                    }
+                } else {
+                    if(ImGuiUtil.DrawDisabledButton("Stop Recording##StopRecordingButton", new Vector2(width, -1), string.Empty, !_mediator.isRecording)) {
+                        _mediator.isRecording = !_mediator.isRecording;
+                        StopRecording();
+                        // for saving a pattern after it is finished recording
+                        if(!_mediator.isRecording && _mediator.finishedRecording) {
+                            // Get the size and position of the main window
+                            Vector2 mainWindowSize = ImGui.GetWindowSize();
+                            Vector2 mainWindowPos = ImGui.GetWindowPos();
+                            // Calculate the center of the main window
+                            Vector2 center = mainWindowPos + mainWindowSize / 2.0f;
+                            // Get the size of the SavePatternWindow
+                            Vector2 savePatternWindowSize = new Vector2(200, 100); // You need to implement GetSize method in SavePatternWindow
+                            // Calculate the position of the SavePatternWindow so that it's centered relative to the main window
+                            Vector2 savePatternWindowPos = center - savePatternWindowSize / 2.0f;
+                            // Set the position of the SavePatternWindow
+                            ImGui.SetNextWindowPos(savePatternWindowPos);
+                            _SavePatternWindow.Toggle();
+                        }
                     }
                 }
             }
-        }
         } catch (Exception e) {
             GSLogger.LogType.Error($"{e} Error drawing the toybox workshop subtab");
         } finally {

@@ -171,15 +171,20 @@ public partial class WhitelistPanel {
         ImGui.SameLine();
         if(_tempWhitelistChar._yourStatusToThem == RoleLean.None) {
             ImGui.BeginDisabled();
-            if (ImGui.Button("Remove Relation With Player##RemoveOne", buttonWidth2)) {
-                GSLogger.LogType.Debug("[Whitelist]: Sending Request to remove relation to player");
-                RequestRelationRemovalToPlayer();
-                // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
+            try
+            {
+                if (ImGui.Button("Remove Relation With Player##RemoveOne", buttonWidth2)) {
+                    GSLogger.LogType.Debug("[Whitelist]: Sending Request to remove relation to player");
+                    RequestRelationRemovalToPlayer();
+                    // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
+                }
+                if(ImGui.IsItemHovered()) {
+                    ImGui.SetTooltip($"Removes both ends of the dynamic relation with {_tempWhitelistChar._name.Split(' ')[0]}.");
+                }
             }
-            if(ImGui.IsItemHovered()) {
-                ImGui.SetTooltip($"Removes both ends of the dynamic relation with {_tempWhitelistChar._name.Split(' ')[0]}.");
+            finally {
+                ImGui.EndDisabled();
             }
-            ImGui.EndDisabled();
         } else {
             if (ImGui.Button("Remove Relation With Player##RemoveTwo", buttonWidth2)) {
                 GSLogger.LogType.Debug("[Whitelist]: Sending Request to remove relation to player");

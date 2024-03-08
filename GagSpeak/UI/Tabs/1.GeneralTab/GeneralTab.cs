@@ -102,48 +102,50 @@ public class GeneralTab : ITab, IDisposable
         // Let's create a table in this panel
         var xPos = ImGui.GetCursorPosX();
         var yPos = ImGui.GetCursorPosY();
-        using (var table = ImRaii.Table("Main Declarations", 3)) {
-            if(!table) { return; } // make sure our table was made
-            // Identify our columns.
-            ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Set Safewordm").X);
-            ImGui.TableSetupColumn("Data", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("mmmmmmmmmmmmmmmmmm").X);
-            ImGui.TableSetupColumn("Cooldowns", ImGuiTableColumnFlags.WidthStretch);
-
-            // draw our our first row
-            ImGuiUtil.DrawFrameColumn("Set Safeword");
-            ImGui.TableNextColumn();
-            // if the safeword was used, disable the section and show cooldown message
-            if(_characterHandler.playerChar._safewordUsed) { ImGui.BeginDisabled(); }
-
-            // add variables for the safeword stuff
-            var width = new Vector2(-1, 0);
-            var safeword  = _tempSafeword ?? _characterHandler.playerChar._safeword; // temp storage to hold until we de-select the text input
-            ImGui.SetNextItemWidth(width.X);
-            if (ImGui.InputText("##Safeword", ref safeword, 30, ImGuiInputTextFlags.None))
-                _tempSafeword = safeword;
-            if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
-                _characterHandler.playerChar._safeword = safeword;
-                _tempSafeword = null;
-            }
-            if(ImGui.IsItemHovered()) { ImGui.SetTooltip("Can be triggered with /safeword (your safeword)\n[obviously without the ()]"); }
-            // draw the cooldown timer
-            if(_characterHandler.playerChar._safewordUsed) { ImGui.EndDisabled(); }
-            ImGui.TableNextColumn();
-            if(_characterHandler.playerChar._safewordUsed) {
-                ImGui.Text($"CD:{_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
-            }
-        } 
-        // if we used our safeword
-        if(_characterHandler.playerChar._safewordUsed) {
-            ImGui.SameLine();
-            // create a timer that executes whenever you use the safeword command. This blocks all actions for the next 5m
-            ImGui.Text($"Safeword Used! Disabling All Actions! CD: {_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
-        }
-
-        // disable this interactability if our safeword is on cooldown
+        
+        // if the safeword was used, disable the section and show cooldown message
         if(_characterHandler.playerChar._safewordUsed) { ImGui.BeginDisabled(); }
+        try
+        {
+            using (var table = ImRaii.Table("Main Declarations", 3)) {
+                if(!table) { return; } // make sure our table was made
+                // Identify our columns.
+                ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Set Safewordm").X);
+                ImGui.TableSetupColumn("Data", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("mmmmmmmmmmmmmmmmmm").X);
+                ImGui.TableSetupColumn("Cooldowns", ImGuiTableColumnFlags.WidthStretch);
+
+                // draw our our first row
+                ImGuiUtil.DrawFrameColumn("Set Safeword");
+                ImGui.TableNextColumn();
+
+                // add variables for the safeword stuff
+                var width = new Vector2(-1, 0);
+                var safeword  = _tempSafeword ?? _characterHandler.playerChar._safeword; // temp storage to hold until we de-select the text input
+                ImGui.SetNextItemWidth(width.X);
+                if (ImGui.InputText("##Safeword", ref safeword, 30, ImGuiInputTextFlags.None))
+                    _tempSafeword = safeword;
+                if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
+                    _characterHandler.playerChar._safeword = safeword;
+                    _tempSafeword = null;
+                }
+                if(ImGui.IsItemHovered()) { ImGui.SetTooltip("Can be triggered with /safeword (your safeword)\n[obviously without the ()]"); }
+                // draw the cooldown timer
+                if(_characterHandler.playerChar._safewordUsed) { ImGui.EndDisabled(); }
+                ImGui.TableNextColumn();
+                if(_characterHandler.playerChar._safewordUsed) {
+                    ImGui.Text($"CD:{_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
+                }
+            }
+            // if we used our safeword
+            if(_characterHandler.playerChar._safewordUsed) {
+                ImGui.SameLine();
+                // create a timer that executes whenever you use the safeword command. This blocks all actions for the next 5m
+                ImGui.Text($"Safeword Used! Disabling All Actions! CD: {_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
+            }
+        }
+        finally { if(_characterHandler.playerChar._safewordUsed) { ImGui.EndDisabled(); } }
+        // draw the gag listings
         ImGui.NewLine();
-        // Now let's draw our 3 gag appliers
         _gagListingsDrawer.PrepareGagListDrawing(); // prepare our listings
         // draw our 3 gag listings
         int i = 0;

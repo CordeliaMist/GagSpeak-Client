@@ -12,7 +12,6 @@ public unsafe class HotbarLocker
         _atkHelpers = atkHelpers;
     }
     public void SetHotbarLockState(bool state) {
-        _lockState = state;
         // set the lock state
         var actionBar = _atkHelpers.GetUnitBase("_ActionBar");
         if (actionBar == null) return;

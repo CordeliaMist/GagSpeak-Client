@@ -40,9 +40,9 @@ public partial class ToyboxPatternTable {
     // draw the pattern table
     private void DrawPatternsTable() {
         ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(ImGui.GetStyle().CellPadding.X * 0.2f, ImGui.GetStyle().CellPadding.Y)); // Modify the X padding
+        if(_patternHandler.GetActiveIdx() != -1 && _patternHandler._patterns[_patternHandler._activePatternIndex]._isActive) { ImGui.BeginDisabled(); }
+        if(_characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); } // end before drawing pattern so that we can make paste button visable
         try{
-            if(_patternHandler.GetActiveIdx() != -1 && _patternHandler._patterns[_patternHandler._activePatternIndex]._isActive) { ImGui.BeginDisabled(); }
-            if(_characterHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); } // end before drawing pattern so that we can make paste button visable
             using (var table = ImRaii.Table("UniquePatternListCreator", 6, ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY, new Vector2(0, -1*ImGuiHelpers.GlobalScale))) {
                 if (!table) { return; }
                 // draw the header row
@@ -129,7 +129,7 @@ public partial class ToyboxPatternTable {
         // if it isnt the active pattern change the buttons color to be somewhat faded, by getting the current stylevar color and then adjusting the vector4 to have lower opacity
         var iconString = !isPlaying ? FontAwesomeIcon.PlayCircle : FontAwesomeIcon.StopCircle;
         // allow us to stop this pattern if it is enabled
-        if(_patternHandler.GetActiveIdx() != -1 && _patternHandler._patterns[_patternHandler._activePatternIndex]._isActive) { ImGui.EndDisabled(); }
+        if(_patternHandler.GetActiveIdx() != -1 && _patternHandler._patterns[_patternHandler._activePatternIndex]._isActive) { ImGui.BeginDisabled(); }
         // draw the button
         try
         {
@@ -146,7 +146,7 @@ public partial class ToyboxPatternTable {
         } catch (System.Exception e) {
             GSLogger.LogType.Debug($"{e} Error drawing the pattern table");
         } finally {
-            if(_patternHandler.GetActiveIdx() != -1 && _patternHandler._patterns[_patternHandler._activePatternIndex]._isActive) { ImGui.BeginDisabled(); }
+            if(_patternHandler.GetActiveIdx() != -1 && _patternHandler._patterns[_patternHandler._activePatternIndex]._isActive) { ImGui.EndDisabled(); }
         }
         ImGui.TableNextColumn();
         if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Copy.ToIconString(), new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetFrameHeightWithSpacing()+ImGui.GetFrameHeight()),
