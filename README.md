@@ -16,8 +16,8 @@ GagSpeak is made with the intent of being more than just a one-sided translator.
 - View all nessisary information in the gagspeak debugger
 - over 50 types of gags
 - equip up to 3 gags at once
-- chat garbler will be able to make new garbler messages by combining the garbling of each gag together!
-- link glamour items to each type of gag, so glamours with modded gags get applied when gags are applied
+- chat garbler combines garble priorities of multiple gags together for further realism!
+- link glamour items to each type of gag!
 - Toggle if each gag item link is enabled or disabled individually
 - toggle universally as well if you want too!
 - Add endless ammounts of stored restraint sets!
@@ -26,9 +26,9 @@ GagSpeak is made with the intent of being more than just a one-sided translator.
 - Restraint Sets can act as "overlays" or "Glamour Applications"
 - Restraint Set Lists can be copied and sent to others so they have an autofill dropdown for you!
 - Use the new puppeteer module
-- Setup unique trigger phrases for each whitelisted player
-- Setup global trigger phrases if you really want
-- Setup unique alias tables for each whitelisted player to enhance how orders fit into normal conversation
+- Unique trigger phrases for each whitelisted player
+- Global trigger phrases if you really want
+- Alias tables for each whitelisted player to enhance how orders fit into conversation
 - Setup custom start and end characters to what defines what is encosed within brackets.
 - Configure what channels puppeteer trigger should be read from, seperate from gagspeak channels
 - Experience the all new Toybox Module!
