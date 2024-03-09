@@ -11,8 +11,8 @@ namespace GagSpeak.CharacterData;
 
 // Settings set by the player & not visable to whitelisted players (REQUESTING INFO SENDS THEM INFO FROM WHITELISTCHARDATA & INFO BASE)
 public enum RevertStyle {
-    ToAutomationOnly,
     ToGameOnly,
+    ToAutomationOnly,
     ToGameThenAutomation,
 }
 
@@ -23,7 +23,7 @@ public class PlayerGlobalPerms : CharacterInfoBase
     public  bool            _doCmdsFromFriends { get; set; } = false;                   // gives anyone on your friendlist access to use GagSpeak commands on you
     public  bool            _doCmdsFromParty { get; set; } = false;                     // gives anyone in your party access to use GagSpeak commands on you
     public  bool            _liveGarblerWarnOnZoneChange { get; set; } = false;         // enables or disables the live garbler warning on zone change
-    public  RevertStyle     _revertStyle { get; set; } = RevertStyle.ToAutomationOnly;  // determines if you revert to automation or to game
+    public  RevertStyle     _revertStyle { get; set; } = RevertStyle.ToGameOnly;  // determines if you revert to automation or to game
     public  string          _globalTriggerPhrase { get; set; } = "";                    // the global trigger phrase for the puppeteer
     public  bool            _globalAllowSitRequests { get; set; } = false;              // if you allow anyone to use sit requests
     public  bool            _globalAllowMotionRequests { get; set; } = false;           // if you allow anyone to use motion requests

@@ -50,7 +50,7 @@ public partial class CharacterHandler
     public void UpdateIntensityLevel(int intensity) {
         if(playerChar._intensityLevel != intensity) {
             playerChar._intensityLevel = intensity;
-            _saveService.QueueSave(this);
+            Save();
         }
     }
 

@@ -65,6 +65,7 @@ public partial class HC_PerPlayerConfig
     }
 
     public void SetAllowBlindfold(bool newVal) { _allowBlindfold = newVal;}
+    public void SetForcedFirstPerson(bool newVal) { _forceLockFirstPerson = newVal;}
     public void SetBlindfolded(bool blindfolded) {
         _blindfolded = blindfolded;
         _rsPropertyChanged.Invoke(HardcoreChangeType.Blindfolded, blindfolded ? RestraintSetChangeType.Enabled : RestraintSetChangeType.Disabled);

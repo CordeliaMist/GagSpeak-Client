@@ -28,6 +28,7 @@ public class GagSpeakChangelog
         Add2_8_0_0(Changelog);
         Add2_8_4_0(Changelog);
         Add2_8_5_0(Changelog);
+        Add3_0_0_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -54,6 +55,24 @@ public class GagSpeakChangelog
             _config.Save();
         }
     }
+
+    private static void Add3_0_0_0(Changelog log)
+        => log.NextVersion("Version 3.0.0.0 Release")
+            .RegisterImportant("The Hardcore Tab is now finally public, and the official 3.0 launch is here!")
+            .RegisterEntry("A quick summary of everything new since 2.0:")
+            .RegisterHighlight("》 The unhinged Hardcore Tab is now public, use with caution!")
+            .RegisterHighlight("》 The The Wardrobe has been reworked to allow restraint sets to have mods and animations attached to them!")
+            .RegisterHighlight("》 The Toybox now has a simulated vibrator, which will play realistic vibrator sounds to your audio output device and function with everything a connected lovense toy would!")
+            .RegisterHighlight("》 The Restraint set lists have been reworked to allow you to rename by right clicking the title on the list now, and also the copy restraint set list updates properly")
+            .RegisterHighlight("》 Tons of bugs were squashed.")
+            .RegisterEntry("The Hardcore tab introduces restraint set properties! Apply certain properties to sets ONLY when equipped by that player!")
+            .RegisterEntry("restraint set properties modify which actions can be used, your movement speed, and your GCD speed!")
+            .RegisterEntry("The Hardcore tab introduces a new feature: the orders tab! Force other people to follow you around, or sit on the ground before you, unable to do anything else until you give them the command!")
+            .RegisterEntry("The Hardcore tab introduces a new feature: the restrictions tab! Humilation or tame your submissives by forcing them to stay locked up, for real! They can't teleport, return, or leave estates until you say so!")
+            .RegisterEntry("The Hardcore tab introduces a new feature: the blindfold! Veil a overlay of lace ontop of another persons screen while equipping a blindfold over them, limiting their vision while giving them just enough to see out of!")
+            .RegisterEntry("The pump gag and panel gags have been added to the realistic chat garbler!")
+            .RegisterEntry("Buttons to open your config folder directly and offer positive feedback have also been added to the general tab!")
+            .RegisterEntry("The whitelist tab now has a new hardcore section for dominants to control their submissives who have hardcore enabled with.");
 
     private static void Add2_8_5_0(Changelog log)
         => log.NextVersion("Version 2.8.5.1 Release")

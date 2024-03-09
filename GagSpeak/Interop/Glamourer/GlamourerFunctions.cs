@@ -141,6 +141,10 @@ public class GlamourerFunctions : IDisposable
                     if(_characterHandler.playerChar._allowItemAutoEquip && _characterHandler.playerChar._selectedGagTypes.Any(g => g != "None")) {
                         await ApplyGagItemsToCachedCharacterData();
                     }
+                    // update our blindfold
+                    if( _hardcoreManager.IsBlindfoldedForAny(out int enabledIdx, out string playerWhoBlindfoldedYou)) {
+                        await EquipBlindfold(enabledIdx);
+                    }
                 }
 
                 // condition 2 --> it was an disable restraint set event, we should revert back to automation, but then reapply the gags
@@ -149,11 +153,11 @@ public class GlamourerFunctions : IDisposable
                     try{ 
                         // now perform a revert based on our customization option
                         switch(_characterHandler.playerChar._revertStyle) {
-                            case RevertStyle.ToAutomationOnly:
-                                await _Interop.GlamourerRevertCharacterToAutomation(_onFrameworkService._address);
-                                break;
                             case RevertStyle.ToGameOnly:
                                 await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
+                                break;
+                            case RevertStyle.ToAutomationOnly:
+                                await _Interop.GlamourerRevertCharacterToAutomation(_onFrameworkService._address);
                                 break;
                             case RevertStyle.ToGameThenAutomation:
                                 await _Interop.GlamourerRevertCharacter(_onFrameworkService._address);
@@ -170,15 +174,10 @@ public class GlamourerFunctions : IDisposable
                         GSLogger.LogType.Debug($"[GlamourEventFired]: Reapplying gags");
                         await ApplyGagItemsToCachedCharacterData();
                         GSLogger.LogType.Debug($"[GlamourEventFired]: Reapplying blindfold");
-                        var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
-                        if(idx != -1) {
-                            await _Interop.SetItemToCharacterAsync(
-                                _onFrameworkService._address,
-                                Convert.ToByte(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot),
-                                _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
-                                _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameStain.Id, // The _drawData._gameStain.Id
-                                0
-                            );
+                        if( _hardcoreManager.IsBlindfoldedForAny(out int enabledIdx, out string playerWhoBlindfoldedYou)) {
+                            await EquipBlindfold(enabledIdx);
+                        } else {
+                            GSLogger.LogType.Debug($"[GlamourEventFired]: Player was not blindfolded, IGNORING");
                         }
                     }
                 }
@@ -224,6 +223,12 @@ public class GlamourerFunctions : IDisposable
                     );
                     // reapply any restraints hiding under them, if any
                     await ApplyRestrainSetToCachedCharacterData();
+                    // update blindfold
+                    if( _hardcoreManager.IsBlindfoldedForAny(out int enabledIdx, out string playerWhoBlindfoldedYou)) {
+                        await EquipBlindfold(enabledIdx);
+                    } else {
+                        GSLogger.LogType.Debug($"[GlamourEventFired]: Player was not blindfolded, IGNORING");
+                    }
                 }
 
                 // condition 5 --> it was a gag refresh event, we should reapply all the gags
@@ -260,16 +265,12 @@ public class GlamourerFunctions : IDisposable
                 if(e.UpdateType == UpdateType.BlindfoldEquipped)
                 {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Blindfold Equipped");
-                    var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
+                    // get the index of the person who equipped it onto you
+                    var idx = _characterHandler.GetWhitelistIndex(e.AssignerName);
                     if(idx != -1) {
-                        GSLogger.LogType.Debug($"[GlamourEventFired]: Found index {idx} for blindfold");
-                        await _Interop.SetItemToCharacterAsync(
-                            _onFrameworkService._address,
-                            Convert.ToByte(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot),
-                            _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
-                            _hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._gameStain.Id, // The _drawData._gameStain.Id
-                            0
-                        );
+                        await EquipBlindfold(idx);
+                    } else {
+                        GSLogger.LogType.Debug($"[GlamourEventFired]: Assigner {e.AssignerName} is not on your whitelist, so not setting item.");
                     }
                 }
 
@@ -277,16 +278,11 @@ public class GlamourerFunctions : IDisposable
                 if(e.UpdateType == UpdateType.BlindfoldUnEquipped)
                 {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Blindfold UnEquipped");
-                    var idx = _hardcoreManager._perPlayerConfigs.FindIndex(x => x._blindfolded == true);
+                    var idx = _characterHandler.GetWhitelistIndex(e.AssignerName);
                     if(idx != -1) {
-                        GSLogger.LogType.Debug($"[GlamourEventFired]: Found index {idx} for blindfold");
-                        await _Interop.SetItemToCharacterAsync(
-                            _onFrameworkService._address,
-                            Convert.ToByte(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot),
-                            ItemIdVars.NothingItem(_hardcoreManager._perPlayerConfigs[idx]._blindfoldItem._slot).Id.Id, // The _drawData._gameItem.Id.Id
-                            0,
-                            0
-                        );
+                        await UnequipBlindfold(idx);
+                    } else {
+                        GSLogger.LogType.Debug($"[GlamourEventFired]: Assigner {e.AssignerName} is not on your whitelist, so not setting item.");
                     }
                 }
             } catch (Exception ex) {
@@ -301,6 +297,29 @@ public class GlamourerFunctions : IDisposable
         }
     }
 #region Task Methods for Glamour Updates
+    public async Task EquipBlindfold(int idxOfBlindfold) {
+        GSLogger.LogType.Debug($"[GlamourEventFired]: Found index {idxOfBlindfold} for blindfold");
+        // attempt to equip the blindfold to the player
+        await _Interop.SetItemToCharacterAsync(
+            _onFrameworkService._address,
+            Convert.ToByte(_hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._slot),
+            _hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
+            _hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._gameStain.Id, // The _drawData._gameStain.Id
+            0
+        );
+    }
+
+    public async Task UnequipBlindfold(int idxOfBlindfold) {
+        GSLogger.LogType.Debug($"[GlamourEventFired]: Found index {idxOfBlindfold} for blindfold");
+        // attempt to unequip the blindfold from the player
+        await _Interop.SetItemToCharacterAsync(
+            _onFrameworkService._address,
+            Convert.ToByte(_hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._slot),
+            ItemIdVars.NothingItem(_hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._slot).Id.Id, // The _drawData._gameItem.Id.Id
+            0,
+            0
+        );
+    }
     /// <summary> Updates the raw glamourer customization data with our gag items and restraint sets, if applicable </summary>
     public async Task UpdateCachedCharacterData() {
         // for privacy reasons, we must first make sure that our options for allowing such things are enabled.
@@ -314,6 +333,13 @@ public class GlamourerFunctions : IDisposable
             await ApplyGagItemsToCachedCharacterData();
         } else {
             GSLogger.LogType.Debug($"[GlamourerChanged]: Item Auto-Equip disabled, IGNORING");
+        }
+
+        // try and get the blindfolded status to see if we are blindfolded
+        if( _hardcoreManager.IsBlindfoldedForAny(out int enabledIdx, out string playerWhoBlindfoldedYou)) {
+            await EquipBlindfold(enabledIdx);
+        } else {
+            GSLogger.LogType.Debug($"[GlamourerChanged]: Player was not blindfolded, IGNORING");
         }
     }
 

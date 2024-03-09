@@ -47,6 +47,7 @@ public class MovementManager : IDisposable
     // for having the movement memory -- was originally private static, revert back if it causes issues.
     private             MoveController          _MoveController;
     // for controlling walking speed, follow movement manager, and sitting/standing.
+    public unsafe       GameCameraManager*      cameraManager = GameCameraManager.Instance(); // for the camera manager object
     public unsafe       XivControl.Control*     gameControl = XivControl.Control.Instance(); // instance to have control over our walking
     // get the keystate ref values
     delegate ref        int                     GetRefValue(int vkCode);
@@ -161,7 +162,7 @@ public class MovementManager : IDisposable
         // if we are able to update our hardcore effects
         if (AllowFrameworkHardcoreUpdates()) {
             // and we are in a valid condition to do so (ignore this for now unless we get crash reports)
-            //if(InConditionToApplyEffects()) {}
+            //if(InConditionToApplyEffects())
 
             // If the player is being forced to sit, we want to completely immobilize them
             var sitting = isForcedSitting();
@@ -221,6 +222,18 @@ public class MovementManager : IDisposable
             // otherwise, disable the hooks if it is inactive
             else {
                 _autoDialogSelect.Disable(); // disable the hooks for prompt selection
+            }
+
+            // if we are blindfoled and have forcedfirstperson to true, force first person
+            if(_hcManager.IsBlindfoldedForAny(out int enabledBlindfoldIdx, out string playerWhoBlindfoldedYou)
+            && _hcManager._perPlayerConfigs[enabledBlindfoldIdx]._forceLockFirstPerson)
+            {
+                if(cameraManager != null && cameraManager->Camera != null
+                && cameraManager->Camera->Mode != (int)CameraControlMode.FirstPerson)
+                {
+                    // force first person
+                    cameraManager->Camera->Mode = (int)CameraControlMode.FirstPerson;
+                }
             }
         }
     }

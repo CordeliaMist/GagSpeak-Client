@@ -6,8 +6,8 @@
             "Jdtug"
         ],
         "Name": "GagSpeak",
-        "Punchline": "Truely have one feel their own speech muffled when gagged.",
-        "Description": "Dom & Sub modes, whitelist feature, channel access control, apply up to 3 gags. Over 65+ Gags, 7 unique locks. Safewords for safety!",
+        "Punchline": "Truely the All-In-One BDSM Plugin at this point..",
+        "Description": "Make one feel their own speach restricted when gagged.... and configure restraint sets, gag glamours, control others with puppeteer, explore hardcore control, sync to lovense devices/simulated vibes and more~",
         "Tags": [ 
             "Speak",
             "Gag",
@@ -15,21 +15,26 @@
             "Translator",
             "Control",
             "BDSM",
-            "RP"
+            "RP",
+            "Hardcore",
+            "Puppeteer",
+            "Lovense",
+            "Vibe",
+            "Toybox"
         ],
         "InternalName": "GagSpeak",
-        "AssemblyVersion": "2.9.2.0",
-        "TestingAssemblyVersion": "2.9.2.0",
+        "AssemblyVersion": "3.0.0.0",
+        "TestingAssemblyVersion": "3.0.0.0",
         "RepoUrl": "https://github.com/CordeliaMist/Dalamud-GagSpeak",
         "ApplicableVersion": "any",
         "DalamudApiLevel": 9,
         "IsHide": "False",
         "IsTestingExclusive": "False",
-        "DownloadCount": 11325,
+        "DownloadCount": 35849,
         "LastUpdate": 1618608322,
-        "DownloadLinkInstall": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v2.9.2.0-Release/latest.zip",
-        "DownloadLinkUpdate": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v2.9.2.0-Release/latest.zip",
-        "DownloadLinkTesting": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v2.9.2.0-Release/latest.zip",
+        "DownloadLinkInstall": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v3.0.0.0-Release/latest.zip",
+        "DownloadLinkUpdate": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v3.0.0.0-Release/latest.zip",
+        "DownloadLinkTesting": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v3.0.0.0-Release/latest.zip",
         "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/images/icon.png"
     }
 ]

@@ -408,13 +408,13 @@ public class ConfigSettingsTab : ITab
             ImGui.NewLine();
             ImGui.Spacing();
             var password  = _tempPassword; // temp storage to hold until we de-select the text input
-            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*150);
+            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale*125);
             if (ImGui.InputTextWithHint($"BetaTester: {_config.AdminMode}##TestingPassKey", "TestingPassKey", ref password, 128, ImGuiInputTextFlags.None))
                 _tempPassword = password;
             if (ImGui.IsItemDeactivatedAfterEdit()) { // will only update our safeword once we click away from the safeword bar
                 var passwordBytes = System.Text.Encoding.UTF8.GetBytes(password);
                 var base64Password = System.Convert.ToBase64String(passwordBytes);
-                if(base64Password == "SGFyZGNvcmVCb25kYWdlR2FtZXJzIEFkbWluQmV0YVRlc3RpbmcgUGFzc3dvcmQgS2V5") {
+                if(base64Password == "QmV0YSBUZXN0aW5nIEtleSBGb3IgVHJpZ2dlciBUZXN0aW5nIFdvdyBTbyBjb29sIG9tZyBoZWhl") {
                     _config.AdminMode = true;
                 } else {
                     _config.AdminMode = false;

@@ -193,7 +193,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 _safewordCommandEvent.Invoke();
                 // fire the safewordUsed bool to true so that we set the cooldown
                 _characterHandler.SetSafewordUsed(true);
-                var cooldownTime = _config.AdminMode ? "2s" : "10m";
+                var cooldownTime = "5m"; // 5 minutes
                 _timerService.StartTimer("SafewordUsed", cooldownTime, 1000, () => _characterHandler.SetSafewordUsed(false));
             }
             // otherwise inform the user that the cooldown for safeword being used is still present

@@ -296,8 +296,20 @@ public partial class HardcoreManager
         Save();
     }
 
+    public void SetForcedFirstPerson(int playerIdx, bool forcedFirstPerson) { 
+        GSLogger.LogType.Debug($"[HardcoreManager] Setting ForcedFirstPerson to {forcedFirstPerson}");
+        _perPlayerConfigs[playerIdx].SetForcedFirstPerson(forcedFirstPerson); 
+        Save();
+    }
+
     public async Task SetBlindfolded(int playerIdx, bool blindfolded, string assignerName = "") {
-        // apply the blindfold logic
+        // if our new state is enabled and there is currently any other index currently enabled, return false
+        // (blindfolded == true means going from not blindfolded to blindfolded)
+        if(blindfolded && IsBlindfoldedForAny(out int enabledIdx, out string playerWhoBlindfoldedYou)) {
+            GSLogger.LogType.Debug($"[HardcoreManager] Failed to set blindfolded to {blindfolded}, {playerWhoBlindfoldedYou} has already blindfolded you!");
+            return;
+        }
+        // otherwise, we can handle the blindfold logic
         await HandleBlindfoldLogic(playerIdx, blindfolded, assignerName);
         // apply the changes
         _perPlayerConfigs[playerIdx].SetBlindfolded(blindfolded);

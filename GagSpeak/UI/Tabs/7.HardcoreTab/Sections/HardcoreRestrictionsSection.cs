@@ -87,8 +87,13 @@ public class HC_ControlRestrictions
             UIHelpers.CheckboxNoConfig($"{name} can blindfold you.",
             $"Whenever {name} wants, they can blindfold you. (Triggers are NOT case sensative)",
             _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowBlindfold,
-            v => _hcManager.SetAllowBlindfold(_charHandler.activeListIdx, v)
-            );
+            v => _hcManager.SetAllowBlindfold(_charHandler.activeListIdx, v));
+            ImGui.SameLine();
+            // draw out the forced 1st person option
+            UIHelpers.CheckboxNoConfig($"Force 1st Person",
+            $"Forces you to be in first person view when blindfolded.",
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._forceLockFirstPerson,
+            v => _hcManager.SetForcedFirstPerson(_charHandler.activeListIdx, v));
             ImGui.SameLine();
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.RightAlign((_hcManager._perPlayerConfigs[_charHandler.activeListIdx]._blindfolded ? FontAwesomeIcon.UserCheck : FontAwesomeIcon.UserTimes).ToIconString());

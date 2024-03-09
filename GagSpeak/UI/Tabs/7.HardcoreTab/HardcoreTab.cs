@@ -19,13 +19,13 @@ public class HardcoreTab : ITab
     }
 
     public void DrawContent() {
-        if(!_config.AdminMode) { ImGui.BeginDisabled(); }
+        if(!_config.hardcoreMode) { ImGui.BeginDisabled(); }
         try{
             _selector.Draw(GetSetSelectorSize());
             ImGui.SameLine();
             _panel.Draw();
         } finally {
-            if(!_config.AdminMode) { ImGui.EndDisabled(); }
+            if(!_config.hardcoreMode) { ImGui.EndDisabled(); }
         }
     }
 

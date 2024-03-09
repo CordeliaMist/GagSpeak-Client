@@ -5,6 +5,9 @@ namespace GagSpeak.UI;
 
 // Enum to represent different color IDs
 public enum ColorId {
+    VibrantPink,
+    VibrantPinkHovered,
+    VibrantPinkPressed,
     LushPinkLine,
     LushPinkButton,
     LovenseScrollingBG,
@@ -14,15 +17,6 @@ public enum ColorId {
     SideButton,
     SideButtonBG,
     WhiteMostlyOpaque,
-
-    // button,
-    // header buttons
-    // donation buttons
-    // window BG
-    // header BG
-    // list BG
-    // line color
-
 }
 
 public static class Colors
@@ -34,6 +28,9 @@ public static class Colors
     public static (Vector4 DefaultColor, string Name, string Description) Data(this ColorId color)
         => color switch
         {
+            ColorId.VibrantPink             => (new Vector4(.977f, .380f, .640f, .914f),    "Vibrant Pink",                 "Description for Vibrant Pink"),
+            ColorId.VibrantPinkHovered      => (new Vector4(.986f, .464f, .691f, .955f),    "Vibrant Pink Hovered",         "Description for Vibrant Pink Hovered"),
+            ColorId.VibrantPinkPressed      => (new Vector4(.846f, .276f, .523f, .769f),    "Vibrant Pink Pressed",         "Description for Vibrant Pink Pressed"),
             ColorId.LushPinkLine            => (new Vector4(.806f, .102f, .407f, 1),        "Lush Pink Line",               "Description for Lush Pink Line"),
             ColorId.LushPinkButton          => (new Vector4(1, .051f, .462f, 1),            "Lush Pink Button",             "Description for Lush Pink Button"),
             ColorId.LovenseScrollingBG      => (new Vector4(0.042f, 0.042f, 0.042f, 0.930f),"Lovense Scrolling BG",         "Description for Lovense Scrolling BG"),

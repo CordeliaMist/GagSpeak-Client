@@ -31,12 +31,12 @@ public partial class HC_PerPlayerConfig
 
     // if active, a blindfold overlay is visable (global setting, independant of restraint set
     public bool _allowBlindfold { get; private set; } = false;     // if you give player permission
+    public bool _forceLockFirstPerson { get; private set; } = false; // if you force first person view
     public bool _blindfolded { get; private set; } = false;        // if the player has activated it
     public EquipDrawData _blindfoldItem; // the item bound to the blindfold slot
     
-
     // the list of restraint set properties
-    public List<HC_RestraintProperties> _rsProperties;             // the list of restraint set properties
+    public List<HC_RestraintProperties> _rsProperties;
 
 
     [JsonIgnore]
@@ -59,6 +59,7 @@ public partial class HC_PerPlayerConfig
             ["AllowForcedToStay"] = _allowForcedToStay,
             ["ForcedToStay"] = _forcedToStay,
             ["AllowBlindfold"] = _allowBlindfold,
+            ["ForceFirstPerson"] = _forceLockFirstPerson,
             ["Blindfolded"] = _blindfolded,
             ["BlindfoldItem"] = _blindfoldItem.Serialize(),
             ["RestraintProperties"] = new JArray(_rsProperties.Select(setProps => setProps.Serialize())),
@@ -74,6 +75,7 @@ public partial class HC_PerPlayerConfig
             _allowForcedToStay = jsonObject["AllowForcedToStay"]?.Value<bool>() ?? false;
             _forcedToStay = jsonObject["ForcedToStay"]?.Value<bool>() ?? false;
             _allowBlindfold = jsonObject["AllowBlindfold"]?.Value<bool>() ?? false;
+            _forceLockFirstPerson = jsonObject["ForceFirstPerson"]?.Value<bool>() ?? false;
             _blindfolded = jsonObject["Blindfolded"]?.Value<bool>() ?? false;
             var blindfoldItemObject = jsonObject["BlindfoldItem"]?.Value<JObject>();
             if (blindfoldItemObject != null) {

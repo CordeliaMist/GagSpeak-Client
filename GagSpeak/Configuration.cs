@@ -115,6 +115,11 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
             GSLogger.LogType.Debug($"[Config]: PhoneticRestrictions is null, creating new list");
             this.phoneticSymbolList = PhonemMasterLists.MasterListEN_US;}
         
+        // for 3.0, do this so that any beta testing have keys reset
+        if(AdminMode) {
+            AdminMode = false;
+        }
+
         processingInfoRequest = false;
         // for toybox stuff
         if(intifacePortValue.Length < 10) {
@@ -184,8 +189,8 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
 
     public static string GetRevertStyleAlias(RevertStyle revertStyle) => revertStyle switch
     {
-        RevertStyle.ToAutomationOnly => "Glamourer Automation",
         RevertStyle.ToGameOnly => "Game State",
+        RevertStyle.ToAutomationOnly => "Glamourer Automation",
         RevertStyle.ToGameThenAutomation => "Game then Automation",
         _ => "Unknown"
     };

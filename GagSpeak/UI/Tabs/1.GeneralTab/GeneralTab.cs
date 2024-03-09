@@ -14,6 +14,7 @@ using GagSpeak.CharacterData;
 using GagSpeak.UI.Equipment;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using Dalamud.Plugin;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>
@@ -21,6 +22,7 @@ public class GeneralTab : ITab, IDisposable
 {
     private readonly    GagSpeakConfig          _config;                    // the config for the plugin
     private readonly    GagSpeakChangelog       _changelog;
+    private readonly    DalamudPluginInterface  _pi;                        // the plugin interface for the plugin
     private readonly    CharacterHandler        _characterHandler;          // the character handler for the plugin
     private readonly    TimerService            _timerService;              // the timer service for the plugin
     private readonly    GagListingsDrawer       _gagListingsDrawer;         // the drawer for the gag listings
@@ -33,10 +35,12 @@ public class GeneralTab : ITab, IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneralTab"/> class.
     /// </summary> 
-    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config, GagSpeakChangelog changelog,
-    CharacterHandler characterHandler, TimerService timerService, GagAndLockManager lockManager, GagService gagService) {
+    public GeneralTab(GagListingsDrawer gagListingsDrawer, GagSpeakConfig config,
+    GagSpeakChangelog changelog, DalamudPluginInterface pi, CharacterHandler characterHandler,
+    TimerService timerService, GagAndLockManager lockManager, GagService gagService) {
         _config = config;
         _changelog = changelog;
+        _pi = pi;
         _characterHandler = characterHandler;
         _timerService = timerService;
         _gagListingsDrawer = gagListingsDrawer;
@@ -99,9 +103,11 @@ public class GeneralTab : ITab, IDisposable
     private void DrawGeneral() {
         // let's start by drawing the outline for the container
         using var child = ImRaii.Child("GeneralTabPanel", -Vector2.One, true, ImGuiWindowFlags.NoScrollbar);
+        var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
+        ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         // Let's create a table in this panel
-        var xPos = ImGui.GetCursorPosX();
-        var yPos = ImGui.GetCursorPosY();
+        float xPos = ImGui.GetCursorPosX();
+        float yPos = ImGui.GetCursorPosY();
         
         // if the safeword was used, disable the section and show cooldown message
         if(_characterHandler.playerChar._safewordUsed) { ImGui.BeginDisabled(); }
@@ -169,34 +175,7 @@ public class GeneralTab : ITab, IDisposable
 
         // Draw the changelog
         // before we go down, lets draw the changelog button on the top right
-        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 5.25f * ImGui.GetFrameHeight(), yPos + ImGuiHelpers.GlobalScale));
-        xPos = ImGui.GetCursorPosX();
-        yPos = ImGui.GetCursorPosY();
-        ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | 0x005E5BFF);
-        ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | 0x005E5BFF);
-        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | 0x005E5BFF);
-        ImGui.Text(" ");
-        ImGui.SameLine();
-        if (ImGui.Button("Changelog", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
-            // force open the changelog here
-            _changelog.Changelog.ForceOpen = true;
-        }
-        ImGui.SetCursorPos(new Vector2(xPos, yPos+30));
-        ImGui.Text(" ");
-        ImGui.SameLine();
-        if (ImGui.Button("Short YT Guides", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
-            ImGui.SetTooltip( "Only if you want to though!");
-            Process.Start(new ProcessStartInfo {FileName = "https://www.youtube.com/playlist?list=PLGzKipCtkx7EAyk1k5gRFG8ZyKB0FMTR3", UseShellExecute = true});
-        }
-        ImGui.SetCursorPos(new Vector2(xPos, yPos+60));
-        ImGui.Text(" ");
-        ImGui.SameLine();
-        if (ImGui.Button("Toss a Thanks!♥", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
-            ImGui.SetTooltip( "Only if you want to though!");
-            Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
-        }
-        // pop off the colors we pushed
-        ImGui.PopStyleColor(3);
+        DrawHelperButtons(xPos, yPos);
     }
 
     /// <summary>
@@ -225,6 +204,64 @@ public class GeneralTab : ITab, IDisposable
             } else if (timerName == $"{Padlocks.MistressTimerPadlock}_Identifier{i}") {
                 _timerService.remainingTimes[timerName] = $"Time Remaining: {remainingTime.Days} Days, {remainingTime.Hours} Hours, {remainingTime.Minutes} Minutes, {remainingTime.Seconds} Seconds";
             }
+        }
+    }
+
+    /// <summary>
+    /// This function draws the helper buttons for the window of the General Tab
+    /// </summary>
+    private void DrawHelperButtons(float xPos, float yPos) {
+        ImGui.SetCursorPos(new Vector2(ImGui.GetWindowContentRegionMax().X - 5.25f * ImGui.GetFrameHeight(), yPos + ImGuiHelpers.GlobalScale));
+        xPos = ImGui.GetCursorPosX();
+        yPos = ImGui.GetCursorPosY();
+        ImGui.PushStyleColor(ImGuiCol.Button, ColorId.VibrantPink.Value());
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ColorId.VibrantPinkHovered.Value());
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, ColorId.VibrantPinkPressed.Value());
+        // put everything in a try-catch loop so we dont have color spaz problems
+        try
+        {
+            ImGui.Text(" ");
+            ImGui.SameLine();
+            if (ImGui.Button("Changelog", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
+                // force open the changelog here
+                _changelog.Changelog.ForceOpen = true;
+            }
+            ImGui.SetCursorPos(new Vector2(xPos, yPos+30));
+            ImGui.Text(" ");
+            ImGui.SameLine();
+            if (ImGui.Button("Short YT Guides", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
+                ImGui.SetTooltip( "Only if you want to though!");
+                Process.Start(new ProcessStartInfo {FileName = "https://www.youtube.com/playlist?list=PLGzKipCtkx7EAyk1k5gRFG8ZyKB0FMTR3", UseShellExecute = true});
+            }
+            ImGui.SetCursorPos(new Vector2(xPos, yPos+60));
+            ImGui.Text(" ");
+            ImGui.SameLine();
+            if (ImGui.Button("Toss a Thanks ♥", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
+                ImGui.SetTooltip( "Only if you want to though!");
+                Process.Start(new ProcessStartInfo {FileName = "https://ko-fi.com/cordeliamist", UseShellExecute = true});
+            }
+            ImGui.SetCursorPos(new Vector2(xPos, yPos+90));
+            ImGui.Text(" ");
+            ImGui.SameLine();
+            if (ImGui.Button("Let me know what\n"+
+                            "   you enjoyed! ♥", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()*2))) {
+                ImGui.SetTooltip( "Only if you want to though!");
+                Process.Start(new ProcessStartInfo {FileName = "https://forms.gle/4AL43XUeWna2DtYK7", UseShellExecute = true});
+            }
+            ImGui.SetCursorPos(new Vector2(xPos, yPos+142.5f));
+            ImGui.Text(" ");
+            ImGui.SameLine();
+            if (ImGui.Button("Open Plugin Config Folder", new Vector2(5f * ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
+                ImGui.SetTooltip( "For when you need to inspect or remove config files for debugging purposes.\nModifying them directly could lead to TONS of bugs, so be careful!");
+                try{
+                    var ConfigDirectory = _pi.ConfigDirectory.FullName;
+                    Process.Start(new ProcessStartInfo {FileName = ConfigDirectory, UseShellExecute = true});
+                } catch(Exception e) {
+                    GSLogger.LogType.Error($"[ConfigFileOpen] Failed to open the config directory. {e.Message}");
+                }
+            }
+        } finally {
+            ImGui.PopStyleColor(3);
         }
     }
 }
