@@ -2,6 +2,7 @@
 ![Banner Image](images/promopic2.png)
 # Overview
 GagSpeak is made with the intent of being more than just a one-sided translator. Gagspeak will allow the user to muffle their speech using a sophisticated garbler algorithm, based on real life gag sound data, to accurately garble speech for each individual gag in their own unique way.
+```
 - tons of safety precautions and privacy checks
 - has encrypted messaging
 - whitelist management
@@ -51,6 +52,7 @@ GagSpeak is made with the intent of being more than just a one-sided translator.
 - Lock your submissive away in chambers or estate rooms or more, preventing all actions that would allow them to leave~
 - New UI structure to the wardrobe, puppeteer, patterns, and toybox overview
 - no lovense? no problem! Use the new simulated vibrator, playing realistically sounding vibrator audio to your output device, and works with all lovense related actions! So now you can enhance your toybox fun with anyone!
+```
 
 I invested way to much time into safety, security, privacy, and features for this plugin, and I'm very happy with how far things have come.
 ## For those who just want to install the plugin:
