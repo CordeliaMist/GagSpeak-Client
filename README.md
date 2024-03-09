@@ -16,7 +16,7 @@ GagSpeak is made with the intent of being more than just a one-sided translator.
 - View all nessisary information in the gagspeak debugger
 - over 50 types of gags
 - equip up to 3 gags at once
-- chat garbler will be able to make new garbler messages by combining the garbling properties of each gag equipped together!
+- chat garbler will be able to make new garbler messages by combining the garbling of each gag together!
 - link glamour items to each type of gag, so glamours with modded gags get applied when gags are applied
 - Toggle if each gag item link is enabled or disabled individually
 - toggle universally as well if you want too!
@@ -24,11 +24,11 @@ GagSpeak is made with the intent of being more than just a one-sided translator.
 - Self-Lock yourself into restraint sets, or lock others for set times!
 - Revert to automation or game when disabled
 - Restraint Sets can act as "overlays" or "Glamour Applications"
-- Restraint Set Lists can be copied and sent to others so they have an autofill dropdown for which of your sets to apply
+- Restraint Set Lists can be copied and sent to others so they have an autofill dropdown for you!
 - Use the new puppeteer module
 - Setup unique trigger phrases for each whitelisted player
 - Setup global trigger phrases if you really want
-- Setup unique alias tables for each whitelisted player to use so they can enhance how easily their orders fit into normal conversation
+- Setup unique alias tables for each whitelisted player to enhance how orders fit into normal conversation
 - Setup custom start and end characters to what defines what is encosed within brackets.
 - Configure what channels puppeteer trigger should be read from, seperate from gagspeak channels
 - Experience the all new Toybox Module!
@@ -47,11 +47,12 @@ GagSpeak is made with the intent of being more than just a one-sided translator.
 - Interact with the new unhinged hardcore tab!
 - Gain full control over your submissive with the hardcore tab
 - Enforce your submissive to follow you when ordered, unable to prevent it until they are finished
-- Enforce your submissive to sit or groundsit when ordered, unable to rebel until they allow you to stand again
-- Veil your submissives eyes with lace with the new blindfold feature, limiting their sight just enough to where it feels good
-- Lock your submissive away in chambers or estate rooms or more, preventing all actions that would allow them to leave~
+- Enforce your submissive to sit or groundsit when ordered, stuck until they allow you to stand again
+- Veil your submissives eyes with lace with the new blindfold feature, limiting their sight
+- Lock your submissive away in chambers or estate rooms, preventing them from leaving~
 - New UI structure to the wardrobe, puppeteer, patterns, and toybox overview
-- no lovense? no problem! Use the new simulated vibrator, playing realistically sounding vibrator audio to your output device, and works with all lovense related actions! So now you can enhance your toybox fun with anyone!
+- no lovense? no problem! Use the new simulated vibrator, playing realistically sounding vibrator audio
+to your output device, and works with all lovense related actions! Enhance your toybox fun with anyone!
 ```
 
 I invested way to much time into safety, security, privacy, and features for this plugin, and I'm very happy with how far things have come.
