@@ -136,7 +136,6 @@ public class GeneralTab : ITab, IDisposable
                 }
                 if(ImGui.IsItemHovered()) { ImGui.SetTooltip("Can be triggered with /safeword (your safeword)\n[obviously without the ()]"); }
                 // draw the cooldown timer
-                if(_characterHandler.playerChar._safewordUsed) { ImGui.EndDisabled(); }
                 ImGui.TableNextColumn();
                 if(_characterHandler.playerChar._safewordUsed) {
                     ImGui.Text($"CD:{_timerService.remainingTimes.GetValueOrDefault("SafewordUsed", "N/A")}");
@@ -163,11 +162,7 @@ public class GeneralTab : ITab, IDisposable
             }
             i++;
             if(i<3) { ImGui.NewLine(); }
-        }
-
-        // end of disabled stuff
-        if(_characterHandler.playerChar._safewordUsed) { ImGui.EndDisabled(); }
-    
+        }    
         // let people know which gags are not working
         ImGui.Text("These Gags dont work yet! If you have any IRL, contact me to help fill in the data!");
         ImGui.TextColored(new Vector4(0,1,0,1), "Bit Gag Padded, Bone Gag, Chopstick Gag, Dental Gag, Hook Gag,\n"+
