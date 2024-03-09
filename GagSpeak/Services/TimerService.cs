@@ -19,7 +19,6 @@ public class TimerService : IDisposable
    private readonly  GagSpeakConfig                _config;                // for config options
    private readonly  CharacterHandler              _characterHandler;      // for getting the whitelist
    private readonly  RestraintSetManager           _restraintSetManager;    // for clearing restraint set timers
-   private readonly  InfoRequestEvent              _infoRequestEvent;      // event to notify subscribers when info is requested
    public event      Action<string, TimeSpan>?     RemainingTimeChanged;   // event to notify subscribers when remaining time changes
    public            Dictionary<string, TimerData> timers;                 // Dictionary to store active timers
    public readonly   Dictionary<string, string>    remainingTimes;         // Dictionary to store active timers for UI
@@ -30,11 +29,10 @@ public class TimerService : IDisposable
    /// <item><c>config</c><param name="config"> - The GagSpeak configuration.</param></item>
    /// </list> </summary>
    public TimerService(GagSpeakConfig config, CharacterHandler characterHandler, 
-   RestraintSetManager restraintSetManager ,InfoRequestEvent infoRequestEvent) {
+   RestraintSetManager restraintSetManager) {
       _config = config;
       _characterHandler = characterHandler;
       _restraintSetManager = restraintSetManager;
-      _infoRequestEvent = infoRequestEvent;
       timers = new Dictionary<string, TimerData>();
       remainingTimes = new Dictionary<string, string>();
       // this is only called every time the plugin is loaded, so call restoretimerdata to restore any active timers.
@@ -127,27 +125,12 @@ public class TimerService : IDisposable
                onElapsed?.Invoke(); // invoke the action that you put in the _timerService.StartTimer() method
                timers.Remove(timerName); // remove the timer from the timer service's TIMERS dictionary
                SaveTimerData(_config); // save the timerdata so that we properly update the config's timerdata with the correct
-               // check if the info request condition is met, and if so, invoke the event.
-               CheckForInfoRequestInvokeConditoin();
          }
          // if the remaining time is greater than zero, then the timer is still active.
          else {
                // Notify subscribers about remaining time change
                RemainingTimeChanged?.Invoke(timerName, remainingTime);
          }
-      }
-   }
-
-   /// <summary>
-   /// Checks to see if someone is requesting info and if a timer by the name of "InteractionCooldown" either
-   /// isnt in the timerservice AND the configs sendInfoName is not null or empty.
-   /// </summary>
-   public void CheckForInfoRequestInvokeConditoin() {
-      // first check to see if our interaction cooldown timer is gone, and if so, invoke the info request condition
-      GSLogger.LogType.Debug($"[Timer Service]: Checking for info request invoke condition...");
-      if (!timers.ContainsKey("interactionButtonPressed") && !string.IsNullOrEmpty(_config.sendInfoName) && _config.acceptingInfoRequests && _config.processingInfoRequest == false) {
-         GSLogger.LogType.Debug($"[Timer Service]: Info request invoke condition met, invoking event...");
-         _infoRequestEvent.Invoke();
       }
    }
 

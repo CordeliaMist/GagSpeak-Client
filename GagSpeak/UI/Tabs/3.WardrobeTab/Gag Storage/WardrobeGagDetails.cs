@@ -20,7 +20,7 @@ namespace GagSpeak.UI.Tabs.WardrobeTab;
 /// <summary> This class is used to handle the ConfigSettings Tab. </summary>
 public class GagStorageDetails
 {
-    private const float _comboWidth = 345;
+    private const float _comboWidth = 315;
     private readonly    IDataManager                    _gameData;              // for getting the game data
     private readonly    TextureService                  _textures;              // for getting the textures
     private readonly    FontService                     _fonts;                 // for getting the fonts

@@ -82,6 +82,8 @@ public unsafe class GsActionManager : IDisposable
         _setToggleEvent.SetToggled -= OnRestraintSetToggled;
         _rsPropertyChangedEvent.SetChanged -= OnRestraintSetPropertyChanged;
         _framework.Update -= framework_Update;
+        // set lock to visable again
+        _hotbarLocker.SetHotbarLockState(false);
         // dispose of the hook
         if (UseActionHook != null) {
             if (UseActionHook.IsEnabled) {

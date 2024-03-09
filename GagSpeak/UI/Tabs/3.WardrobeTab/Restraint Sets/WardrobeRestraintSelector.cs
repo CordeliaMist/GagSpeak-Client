@@ -24,6 +24,7 @@ public class RestraintSetSelector : IDisposable
     private readonly    RS_ListChanged      _rsListChanged; // for getting the restraint set list changed event
     private readonly    ListCopier          _listCopier;          // for getting the list copier
     private             Vector2             _defaultItemSpacing;
+    private             bool                _listNeedsUpdate = true;
 
     /// <summary> Initializes a new instance wardrobe tab"/> class. <summary>
     public RestraintSetSelector(RestraintSetManager restraintSetManager, TimerService timerService,
@@ -87,9 +88,10 @@ public class RestraintSetSelector : IDisposable
             if (ImGui.InputTextWithHint("##Rename", "Input new set name here...", ref currentText, 100, ImGuiInputTextFlags.EnterReturnsTrue))
             {
                 // If text is updated, update the name of the restraint set
-                if (currentText != oldText)
+                if (currentText != oldText) {
                     restraintSet._name = currentText;
-
+                    _listNeedsUpdate = true;
+                }
                 // Close the context menu
                 ImGui.CloseCurrentPopup();
             }
@@ -106,6 +108,7 @@ public class RestraintSetSelector : IDisposable
 
         if (ImGui.Button("Add Set", new Vector2(buttonWidth.X-ImGuiHelpers.GlobalScale*10, buttonWidth.Y))) {
             _restraintSetManager.AddNewRestraintSet();
+            _listNeedsUpdate = true;
         }
         if(ImGui.IsItemHovered()) {
             ImGui.SetTooltip("Append a new restraint set to the list here");
@@ -118,11 +121,12 @@ public class RestraintSetSelector : IDisposable
                 // if the set only has one item, just replace it with a blank template
                 if (_restraintSetManager._restraintSets.Count == 1) {
                     _restraintSetManager._restraintSets[0] = new RestraintSet();
-                    _restraintSetManager.Save();
-                    _restraintSetManager._selectedIdx = 0;
+                    _restraintSetManager.SetSelectedIdx(0); // will also save
+                    _listNeedsUpdate = true; // stupid primative solution to a larger problem
                 } else {
                     _restraintSetManager.DeleteRestraintSet(_restraintSetManager._selectedIdx);
-                    _restraintSetManager._selectedIdx = 0;
+                    _restraintSetManager.SetSelectedIdx(0); // will also save
+                    _listNeedsUpdate = true; // stupid primative solution to a larger problem
                 }
             }
             if(ImGui.IsItemHovered()) {
@@ -140,8 +144,9 @@ public class RestraintSetSelector : IDisposable
         }
         
         // update the list copier if we need to
-        if(_restraintSetManager._restraintSets.Count != _listCopier._items.Count) {
+        if(_restraintSetManager._restraintSets.Count != _listCopier._items.Count || _listNeedsUpdate) {
             _listCopier.UpdateListInfo(_restraintSetManager._restraintSets.Select(x => x._name).ToList());
+            _listNeedsUpdate = false;
         }
         // list copier should draw the button here with the correct parameters
         _listCopier.DrawCopyButton("Copy Restraint Set List", "Copied Restraint Set List to clipboard",

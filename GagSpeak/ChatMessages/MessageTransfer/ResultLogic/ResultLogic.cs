@@ -26,13 +26,15 @@ public partial class ResultLogic {
     private readonly    GagService             _gagService;            // used to get the gag service
     private readonly    TimerService           _timerService;          // used to get the timer service
     private readonly    GagSpeakGlamourEvent   _gagSpeakGlamourEvent;  // used to get the glamour event
+    private readonly    InfoRequestEvent       _infoRequestedEvent;    // used to get the info request service
     private readonly    PlugService            _plugService;           // used to get the plug service
     private readonly    SoundPlayer            _soundPlayer;           // used to get the sound player
 
-    public ResultLogic(IChatGui clientChat, IClientState clientState, GagSpeakConfig config, CharacterHandler characterHandler,
-    PatternHandler patternHandler, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager, 
-    PlugService plugService, GagAndLockManager lockManager, GagService gagService, TimerService timerService,
-    GagSpeakGlamourEvent gagSpeakGlamourEvent, SoundPlayer soundPlayer, HardcoreManager hardcoreManager) {
+    public ResultLogic(IChatGui clientChat, IClientState clientState, GagSpeakConfig config,
+    CharacterHandler characterHandler, PatternHandler patternHandler, GagStorageManager gagStorageManager,
+    RestraintSetManager restraintSetManager, PlugService plugService, GagAndLockManager lockManager,
+    GagService gagService, TimerService timerService, GagSpeakGlamourEvent gagSpeakGlamourEvent,
+    SoundPlayer soundPlayer, HardcoreManager hardcoreManager, InfoRequestEvent infoRequestEvent) {
         _clientChat = clientChat;
         _clientState = clientState;
         _config = config;
@@ -44,6 +46,7 @@ public partial class ResultLogic {
         _lockManager = lockManager;
         _gagService = gagService;
         _timerService = timerService;
+        _infoRequestedEvent = infoRequestEvent;
         _plugService = plugService;
         _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
         _soundPlayer = soundPlayer;

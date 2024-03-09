@@ -47,13 +47,13 @@ public sealed class PenumbraChangedItemTooltip : IDisposable
         switch (slot) {
             case EquipSlot.RFinger:
                 using (_ = !openTooltip ? null : ImRaii.Tooltip()) {
-                    ImGui.TextUnformatted($"{prefix}ALT + Right-Click to apply to selected Restraint Set (Right Finger).");
-                    ImGui.TextUnformatted($"{prefix}ALT + Shift + Right-Click to apply to selected Restraint Set (Left Finger).");
+                    ImGui.TextUnformatted($"{prefix}ALT + Left-Click to apply to selected Restraint Set (Right Finger).");
+                    ImGui.TextUnformatted($"{prefix}ALT + Shift + Left-Click to apply to selected Restraint Set (Left Finger).");
                 }
                 break;
             default:
                 using (_ = !openTooltip ? null : ImRaii.Tooltip()) {
-                    ImGui.TextUnformatted($"{prefix}ALT + Right-Click to apply to selected Restraint Set.");
+                    ImGui.TextUnformatted($"{prefix}ALT + Left-Click to apply to selected Restraint Set.");
                 }
                 break;
         }
@@ -103,7 +103,7 @@ public sealed class PenumbraChangedItemTooltip : IDisposable
     private void OnPenumbraClick(MouseButton button, ChangedItemType type, uint id)
     {
         LastClick = DateTime.UtcNow;
-        if (button is not MouseButton.Right)
+        if (button is not MouseButton.Left)
             return;
 
         if (!_clientState.IsLoggedIn || _clientState.LocalContentId == 0) {

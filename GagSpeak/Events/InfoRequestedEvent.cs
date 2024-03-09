@@ -11,13 +11,17 @@ public class InfoRequestEvent
     public delegate void InfoRequestEventHandler(object sender, InfoRequestEventArgs e);
     public event InfoRequestEventHandler? InfoRequest;
 
-    public void Invoke() {
+    public void Invoke(string playerName) {
         GSLogger.LogType.Debug($"[InfoRequestEvent] Invoked");
-        InfoRequest?.Invoke(this, new InfoRequestEventArgs());
+        InfoRequest?.Invoke(this, new InfoRequestEventArgs(playerName));
     }
 }
 
 public class InfoRequestEventArgs : EventArgs
 {
-    // You can add properties here to pass additional information about the info request
+    public string PlayerName { get; }
+
+    public InfoRequestEventArgs(string playerName) {
+        PlayerName = playerName;
+    }
 }

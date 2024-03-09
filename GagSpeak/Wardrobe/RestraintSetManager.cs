@@ -112,7 +112,7 @@ public class RestraintSetManager : ISavable, IDisposable
 
     public void SetSelectedIdx(int idx) {
         _selectedIdx = idx;
-        Save();
+        _saveService.QueueSave(this);
     }
 
     public int GetRestraintSetIndex(string setName) {

@@ -13,6 +13,10 @@ using Dalamud.Interface.Utility;
 using GagSpeak.UI.Equipment;
 using GagSpeak.UI.Tabs.GeneralTab;
 using OtterGui;
+using System.Threading.Tasks;
+using Dalamud.Game.Text.SeStringHandling;
+using OtterGui.Classes;
+using System.Threading;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 public partial class WhitelistPanel {
@@ -201,14 +205,20 @@ public partial class WhitelistPanel {
         if (ImGui.Button("Request Info", buttonWidth)) {
             // send a message to the player requesting their current info
             GSLogger.LogType.Debug("[Whitelist]: Sending Request for Player Info");
-            InfoSendAndRequestHelpers.RequestInfoFromPlayer(_characterHandler.activeListIdx,
-            _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
-            // we need to set the sendInfoName to the player name @ world so we know who we are looking for when we start recieving info
-            _config.SetSendInfoName(_tempWhitelistChar._name +
-            "@" + _tempWhitelistChar._homeworld);
-            _config.SetAcceptInfoRequests(false);
-            // Start a 5-second cooldown timer
-            _interactOrPermButtonEvent.Invoke(5);
+            // reset variables before we send the request
+            if (_config.sendInfoName == "" && _config.acceptingInfoRequests == true && _config.processingInfoRequest == false)
+            {
+                // we MUST satisfy these conditions to send a message, otherwise, do not send it.
+                _config.SetSendInfoName(_tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld);
+                _config.SetAcceptInfoRequests(false);
+                // send it
+                InfoSendAndRequestHelpers.RequestInfoFromPlayer(_characterHandler.activeListIdx,
+                _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
+                // Start a 5-second cooldown timer
+                _interactOrPermButtonEvent.Invoke(5);
+            } else {
+                _chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Rejecting request for info, you are currently providing info to someone or waiting for someone to provide info to you.").AddItalicsOff().BuiltString);
+            }
         }
         if(ImGui.IsItemHovered()) {
             ImGui.SetTooltip($"Sends a request for information to {_tempWhitelistChar._name.Split(' ')[0]}.\n"+

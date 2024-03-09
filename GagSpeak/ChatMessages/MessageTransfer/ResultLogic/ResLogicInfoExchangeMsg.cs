@@ -16,17 +16,20 @@ public partial class ResultLogic {
             string world = parts.Length > 1 ? parts.Last() : "";
             string playerName = string.Join(" ", parts.Take(parts.Length - 1));
             // locate player in whitelist
-            if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-                // Player has sent us an info request, so we are setting this to their name to know who we are sending it to
-                _config.SetSendInfoName(playerName + "@" + world);
-                // print it
-                _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is requesting an update on your info for the profile viewer." +
-                "Providing Over the next 3 Seconds.").AddItalicsOff().BuiltString);
-                // log it
-                GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");
-                // invoke the interaction button cooldown timer
-                _timerService.StartTimer("InteractionCooldown", "5s", 100, () => {});
+            if(_characterHandler.IsPlayerInWhitelist(playerName) && _config.acceptingInfoRequests && !_config.processingInfoRequest)
+            {
+                    // only if the following is satisfied are we able to provide info. 
+                    _config.SetSendInfoName(playerName + "@" + world);
+                    _config.SetAcceptInfoRequests(false);
+                    _config.SetprocessingInfoRequest(true);
+                    _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"{playerName} is requesting an update on your info.. Providing..").AddItalicsOff().BuiltString);
+                    // invoke the info request service
+                    _infoRequestedEvent.Invoke(playerName);
+                
+            } else {
+                return LogError($"ERROR, {playerName} requested info but you do not satisfy the criteria to provide info to them! (Plz let cordy know about this if you believe it a bug)");
             }
+            GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for recieving an information request message");
         } catch {
             return LogError($"ERROR, Invalid information request message parse.");
         }
@@ -35,8 +38,6 @@ public partial class ResultLogic {
 
     /// <summary> Handles the information provide part 1 of 4 messages below. </summary>
     public bool ResLogicProvideInfoPartOne(DecodedMessageMediator decodedMessageMediator, ref bool isHandled) {
-        // because we stored the name of who we need to send it to in our config before p.
-        _config.SetprocessingInfoRequest(true); // this might cause some bugs, but the button in the debug tab can fix it
         string senderName = _config.sendInfoName.Substring(0, _config.sendInfoName.IndexOf('@'));
         int Idx = -1;
         if(_characterHandler.IsPlayerInWhitelist(senderName)) {
