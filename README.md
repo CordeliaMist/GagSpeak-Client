@@ -61,9 +61,6 @@ I invested way to much time into safety, security, privacy, and features for thi
 https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/repo.json
 ```
 
-## Notice:
-Not all gags were able to get ALL of their data in time, as such, some are incomplete, or have no data. At the moment, the ball gag will give you the most accurate realism, and the others may need some fine tuning.
-
 ## For Aspiring plugin Developers:
 I struggled a fuck ton learning all this shit. I got laughed at, denied, and talked down on by so many other plugin devs while I tried to make this plugin. I am very thankful for the few who helped me learn how to do plugin development for dalamud and enhance my ability to learn and understand C# better.
 
