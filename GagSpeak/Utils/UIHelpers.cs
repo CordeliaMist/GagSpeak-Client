@@ -160,18 +160,15 @@ public static class UIHelpers
             System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
     }
 
-    /// <summary>
-    /// function for removing special symbols
-    /// <list type="Bullet">
-    /// <item><c>value</c><param name="value"> - The input string</param></item>
-    /// </list> </summary>
+    /// <summary> function for removing special symbols </summary>
     /// <returns> The string with special symbols removed </returns>
     public static string RemoveSpecialSymbols(string value) {
-        Regex rgx = new Regex(@"[^a-zA-Z:/._\ '-]");
+        Regex rgx = new Regex(@"[^\u4e00-\u9fff a-zA-Z:/._\ '-]");
         //      [^...] matches any character not in the brackets.
         //      a-z matches any lowercase letter.
         //      A-Z matches any uppercase letter.
         //      :/._\ '- matches a colon, slash, period, underscore, space, or hyphen, or apostrophe.
+        //      \u4e00-\u9fff matches any Chinese character.
         return rgx.Replace(value, "");
     }
 
