@@ -59,6 +59,7 @@ public class HC_ControlRestrictions
         _gameItemCombo = EquipSlotExtensions.EqdpSlots.Select(e => new GameItemCombo(_gameData, e, _itemData,  GagSpeak.Log)).ToArray();
         _stainCombo = new StainColorCombo(_comboWidth-20, _stainData);
     }
+    // im fucking paranojid now
     public void Draw() {
         _comboLength = _comboWidth * ImGuiHelpers.GlobalScale;
         // if we are not in hardcore mode, then disable interaction with anything in this tab
