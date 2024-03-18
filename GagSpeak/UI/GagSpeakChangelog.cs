@@ -29,6 +29,7 @@ public class GagSpeakChangelog
         Add2_8_4_0(Changelog);
         Add2_8_5_0(Changelog);
         Add3_0_0_0(Changelog);
+        Add3_0_0_2(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -55,6 +56,15 @@ public class GagSpeakChangelog
             _config.Save();
         }
     }
+
+    private static void Add3_0_0_2(Changelog log)
+        => log.NextVersion("Version 3.0.0.2 Release")
+            .RegisterHighlight("Minor patch update after some self experiementing, to just fix some annoying things")
+            .RegisterEntry("Fixed the possibility to use ESC to exit the blindfold state")
+            .RegisterEntry("Fixed the possibility of having the restraint set manager lockup when removing an index on a very rare occurance")
+            .RegisterEntry("Added a button for fixing faulty request info in the whitelist tab")
+            .RegisterEntry("Added the requirement to hit SHIFT+CTRL+CLICK to hit either fix faulty request info or remove relation")
+            .RegisterEntry("Fixed the pattern player from locking up fully on loop, providing endless pleasure that was unable to stop (i found this out the hard way lol)");
 
     private static void Add3_0_0_0(Changelog log)
         => log.NextVersion("Version 3.0.0.0 Release")

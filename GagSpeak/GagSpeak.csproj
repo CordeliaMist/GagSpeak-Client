@@ -6,7 +6,7 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <Copyright>Copyright © 2023</Copyright>
     <LangVersion>latest</LangVersion>
-    <Version>3.0.0.1</Version>
+    <Version>3.0.0.2</Version>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>

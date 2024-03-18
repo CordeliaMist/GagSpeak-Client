@@ -86,8 +86,8 @@ public class HC_ControlRestrictions
             // draw out the options
             UIHelpers.CheckboxNoConfig($"{name} can blindfold you.",
             $"Whenever {name} wants, they can blindfold you. (Triggers are NOT case sensative)",
-            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._allowBlindfold,
-            v => _hcManager.SetAllowBlindfold(_charHandler.activeListIdx, v));
+            _hcManager._perPlayerConfigs[_charHandler.activeListIdx]._blindfolded,
+            v => _hcManager.SetBlindfolded(_charHandler.activeListIdx, v, "Nika Akame"));
             ImGui.SameLine();
             // draw out the forced 1st person option
             UIHelpers.CheckboxNoConfig($"Force 1st Person",
