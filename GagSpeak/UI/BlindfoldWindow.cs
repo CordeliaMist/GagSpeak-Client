@@ -36,12 +36,17 @@ public class BlindfoldWindow : Window, IDisposable
 
     public unsafe BlindfoldWindow(UiBuilder uiBuilder, DalamudPluginInterface pluginInterface) : base(GetLabel(),
     ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoMouseInputs | ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove |
-    ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoDocking) {
+    ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoNavFocus) {
         _uiBuilder = uiBuilder;
         _pi = pluginInterface;
         // determine if the pop out window is shown
         IsOpen = false;
+        // make it not close on escape
+        RespectCloseHotkey = false;
+        // make it not close on ui hide
         _uiBuilder.DisableUserUiHide = true;
+
+        // Load the image
         var imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "BlindfoldLace_Sensual.png");
         textureWrap = _uiBuilder.LoadImage(imagePath);
         // set the stopwatch to send an elapsed time event after 2 seconds then stop

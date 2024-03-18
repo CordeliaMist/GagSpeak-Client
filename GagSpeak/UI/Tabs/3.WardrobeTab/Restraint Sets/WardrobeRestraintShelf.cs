@@ -30,8 +30,10 @@ public class WardrobeRestraintCompartment
         using var child = ImRaii.Child("##RestraintSetShelf", new Vector2(ImGui.GetContentRegionAvail().X, -1), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
         if (!child)
             return;
-        // make content disabled
-        if(_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._locked) { ImGui.BeginDisabled(); }
+
+        // make content disabled (the temp index is to fix a bug which occurs when the index is changed within this loop and the end condition is different)
+        var tempIndexLockBool = _restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._locked;
+        if(tempIndexLockBool) { ImGui.BeginDisabled(); }
         try{
         // draw the selector for the set
         _selector.Draw(GetSetSelectorWidth());
@@ -41,7 +43,7 @@ public class WardrobeRestraintCompartment
         _editor.Draw();
         // remove the disabled state
         } finally {
-            if(_restraintSetManager._restraintSets[_restraintSetManager._selectedIdx]._locked) { ImGui.EndDisabled(); }
+            if(tempIndexLockBool) { ImGui.EndDisabled(); }
         }
     }
 

@@ -158,8 +158,8 @@ public partial class WhitelistPanel {
     private void DrawPlayerPermissionsButtons() {
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero)
             .Push(ImGuiStyleVar.FrameRounding, 0);
-        var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X * 0.25f, 0);
-        var buttonWidth2 = new Vector2(ImGui.GetContentRegionAvail().X * 0.5f, 0);
+        var buttonWidth = new Vector2(ImGui.GetContentRegionAvail().X * 0.225f, 0);
+        var buttonWidth2 = new Vector2(ImGui.GetContentRegionAvail().X * 0.45f, 0);
         // add a button to display it
         if (ImGui.Button("Mini-Profile", buttonWidth)) {
             // Get the currently selected user
@@ -190,13 +190,13 @@ public partial class WhitelistPanel {
                 ImGui.EndDisabled();
             }
         } else {
-            if (ImGui.Button("Remove Relation With Player##RemoveTwo", buttonWidth2)) {
+            if (ImGuiUtil.DrawDisabledButton("Remove Relation With Player##RemoveTwo", buttonWidth2,
+            $"Removes both ends of the dynamic relation with {_tempWhitelistChar._name.Split(' ')[0]}.\n\nMust hold CTRL and SHIFT to execute.",
+            !(ImGui.GetIO().KeyShift && ImGui.GetIO().KeyCtrl), false))
+            {
                 GSLogger.LogType.Debug("[Whitelist]: Sending Request to remove relation to player");
                 RequestRelationRemovalToPlayer();
                 // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
-            }
-            if(ImGui.IsItemHovered()) {
-                ImGui.SetTooltip($"Removes both ends of the dynamic relation with {_tempWhitelistChar._name.Split(' ')[0]}.");
             }
         } 
 
@@ -224,6 +224,17 @@ public partial class WhitelistPanel {
             ImGui.SetTooltip($"Sends a request for information to {_tempWhitelistChar._name.Split(' ')[0]}.\n"+
             "This then makes them send back all of their information to you. This process can around 8seconds to process.\n\n"+
             "It is HIGHLY RECOMMENDED to use this whenever meet up with someone before you begin interacting.");
+        }
+
+        // the request info fixer
+        ImGui.SameLine();
+        if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.ExclamationTriangle.ToIconString(), new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetFrameHeight()),
+        "Reset Faulty Request Info.\nONLY do this if you are getting error messages in chat. if you do, both you AND your partner must hit this button to fix issues.\n\nMust hold SHIFT and CTRL to execute.",
+        !(ImGui.GetIO().KeyShift && ImGui.GetIO().KeyCtrl), true))
+        {
+            _config.SetSendInfoName("");
+            _config.SetAcceptInfoRequests(true);
+            _config.SetprocessingInfoRequest(false);
         }
     }
   

@@ -35,6 +35,16 @@ public class PatternHandler : ISavable
         }
     }
     
+    public bool IsAnyPatternPlaying(out int playingIdx) {
+        if(_patterns.Any(p => p._isActive)) {
+            playingIdx = _patterns.FindIndex(p => p._isActive);
+            return true;
+        } else {
+            playingIdx = -1;
+            return false;
+        }
+    }
+
     public int GetActiveIdx() => _activePatternIndex;
 
     public bool IsActivePatternInBounds() => _activePatternIndex >= 0 && _activePatternIndex < _patterns.Count;

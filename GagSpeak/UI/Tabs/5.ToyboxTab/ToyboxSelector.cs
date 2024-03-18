@@ -84,16 +84,23 @@ public class ToyboxSelector
         ImGui.SameLine();
         // Device State Button
         var deviceStateButton = _charHandler.playerChar._isToyActive ? FontAwesomeIcon.ToggleOn : FontAwesomeIcon.ToggleOff;
-        if (ImGuiUtil.DrawDisabledButton(deviceStateButton.ToIconString(), buttonWidth,
-        _charHandler.playerChar._isToyActive ? "Toy is Active" : "Toy is Inactive", false, true))
+        // only make this togglable if the UI is not locked
+        if(_charHandler.playerChar._lockToyboxUI) { ImGui.BeginDisabled(); }
+        try
         {
-            _charHandler.ToggleToyState();
-            // see what the new state is, and update the vibe accordingly
-            if(_charHandler.playerChar._isToyActive) {
-                _ = _plugService.ToyboxVibrateAsync((byte)((_charHandler.playerChar._intensityLevel/(double)_plugService.stepCount)*100), 20);
-            } else {
-                _ = _plugService.ToyboxVibrateAsync(0, 20);
+            if (ImGuiUtil.DrawDisabledButton(deviceStateButton.ToIconString(), buttonWidth,
+            _charHandler.playerChar._isToyActive ? "Toy is Active" : "Toy is Inactive", false, true))
+            {
+                _charHandler.ToggleToyState();
+                // see what the new state is, and update the vibe accordingly
+                if(_charHandler.playerChar._isToyActive) {
+                    _ = _plugService.ToyboxVibrateAsync((byte)((_charHandler.playerChar._intensityLevel/(double)_plugService.stepCount)*100), 20);
+                } else {
+                    _ = _plugService.ToyboxVibrateAsync(0, 20);
+                }
             }
+        } finally {
+            if(_charHandler.playerChar._lockToyboxUI) { ImGui.EndDisabled(); }
         }
         ImGui.SameLine();
         // the connect/disconnect button
