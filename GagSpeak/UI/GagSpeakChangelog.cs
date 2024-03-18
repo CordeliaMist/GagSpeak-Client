@@ -58,7 +58,7 @@ public class GagSpeakChangelog
     }
 
     private static void Add3_0_0_2(Changelog log)
-        => log.NextVersion("Version 3.0.0.2 Release")
+        => log.NextVersion("Version 3.0.0.3 Release")
             .RegisterHighlight("Minor patch update after some self experiementing, to just fix some annoying things")
             .RegisterEntry("Fixed the possibility to use ESC to exit the blindfold state")
             .RegisterEntry("Fixed the possibility of having the restraint set manager lockup when removing an index on a very rare occurance")
