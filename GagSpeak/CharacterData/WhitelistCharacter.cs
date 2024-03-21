@@ -87,7 +87,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         if (_timeOfCommitment == default(DateTimeOffset))
             return ""; // Display nothing if commitment time is not set
         TimeSpan duration = DateTimeOffset.Now - _timeOfCommitment; // Get the duration
-        int days = duration.Days % 30;
+        int days = duration.Days;
         // Display the duration in the desired format
         return $"{days}d, {duration.Hours}h, {duration.Minutes}m, {duration.Seconds}s";
     }
