@@ -19,8 +19,9 @@ public enum BlindfoldType { Light, Sensual }
 
 public class BlindfoldWindow : Window, IDisposable
 {
+    private readonly GagSpeakConfig _config;
     private DalamudPluginInterface  _pi;
-    private IDalamudTextureWrap     textureWrap;
+    private IDalamudTextureWrap?    textureWrap;
     private UiBuilder               _uiBuilder;
     private TimerRecorder           _timerRecorder;
     private Stopwatch               stopwatch = new Stopwatch();
@@ -33,10 +34,12 @@ public class BlindfoldWindow : Window, IDisposable
     float easedProgress = 0.0f;
     float startY = -ImGui.GetIO().DisplaySize.Y;
     float midY = 0.2f * ImGui.GetIO().DisplaySize.Y;
-
-    public unsafe BlindfoldWindow(UiBuilder uiBuilder, DalamudPluginInterface pluginInterface) : base(GetLabel(),
+    string imagePath = "";
+    public unsafe BlindfoldWindow(UiBuilder uiBuilder, DalamudPluginInterface pluginInterface,
+    GagSpeakConfig config) : base(GetLabel(),
     ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoMouseInputs | ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove |
     ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoNavFocus) {
+        _config = config;
         _uiBuilder = uiBuilder;
         _pi = pluginInterface;
         // determine if the pop out window is shown
@@ -45,9 +48,12 @@ public class BlindfoldWindow : Window, IDisposable
         RespectCloseHotkey = false;
         // make it not close on ui hide
         _uiBuilder.DisableUserUiHide = true;
-
         // Load the image
-        var imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "BlindfoldLace_Sensual.png");
+        if(_config.blindfoldType == BlindfoldType.Light) {
+            imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "Blindfold_Light.png");
+        } else {
+            imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "BlindfoldLace_Sensual.png");
+        }
         textureWrap = _uiBuilder.LoadImage(imagePath);
         // set the stopwatch to send an elapsed time event after 2 seconds then stop
         _timerRecorder = new TimerRecorder(2000, ToggleWindow);
@@ -55,6 +61,7 @@ public class BlindfoldWindow : Window, IDisposable
 
     public void Dispose() {
         _timerRecorder.Dispose();
+        textureWrap?.Dispose();
     }
 
     public override unsafe void PreDraw() {
@@ -65,7 +72,6 @@ public class BlindfoldWindow : Window, IDisposable
     }
 
     public void ChangeBlindfoldType(BlindfoldType type) {
-        var imagePath = "";
         if(type == BlindfoldType.Light) {
             imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "Blindfold_Light.png");
             textureWrap?.Dispose(); // Dispose the old image to free resources
@@ -89,7 +95,7 @@ public class BlindfoldWindow : Window, IDisposable
     }
 
     public void ActivateWindow() {
-        GSLogger.LogType.Debug($"BlindfoldWindow: Activating window");
+        GSLogger.LogType.Debug($"BlindfoldWindow: Activating window with image {imagePath}");
         // if an active timer is running
         if (_timerRecorder.IsRunning) {
             // we were trying to deactivate the window, so stop the timer and turn off the window
@@ -198,7 +204,7 @@ public class BlindfoldWindow : Window, IDisposable
         // get the window size
         var windowSize = ImGui.GetWindowSize();
         // Draw the image with the updated alpha value
-        ImGui.Image(textureWrap.ImGuiHandle, windowSize, Vector2.Zero, Vector2.One, new Vector4(1.0f, 1.0f, 1.0f, imageAlpha));
+        ImGui.Image(textureWrap!.ImGuiHandle, windowSize, Vector2.Zero, Vector2.One, new Vector4(1.0f, 1.0f, 1.0f, imageAlpha));
     }
 
     public override void PostDraw()

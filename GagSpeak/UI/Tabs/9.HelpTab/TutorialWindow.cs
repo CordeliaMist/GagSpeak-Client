@@ -47,6 +47,7 @@ public class TutorialWindow : Window
         "Wardrobe RestraintSets", "Puppeteer", "Toybox Overview", "Toybox Workshop", "Settings", "Dynamic Tier System"
     };
 
+    // what
     TutorialTabType[] tabTypes = {
         TutorialTabType.General, TutorialTabType.WhitelistOverview, TutorialTabType.WhitelistGeneral, 
         TutorialTabType.WhitelistGags, TutorialTabType.WhitelistWardrobe, TutorialTabType.WhitelistPuppeteer, 
@@ -78,6 +79,12 @@ public class TutorialWindow : Window
         for (int i = 0; i < imageNames.Length; i++) {
             var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, imageNames[i]);
             textureWraps[i] = _uiBuilder.LoadImage(imagePath);
+        }
+    }
+
+    public void Dispose() {
+        foreach (var textureWrap in textureWraps) {
+            textureWrap.Dispose();
         }
     }
 

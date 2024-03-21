@@ -29,7 +29,6 @@ public class HC_ControlRestrictions
     private readonly BlindfoldWindow    _blindfoldWindow;
     private readonly IClientState       _client;
     private const float _comboWidth = 200;
-    private readonly FontService        _fonts;                 // for getting the fonts
     private readonly IDataManager       _gameData;              // for getting the game data
     private readonly TextureService     _textures;              // for getting the textures
     private          Vector2            _iconSize;              // for setting the icon size
@@ -41,9 +40,8 @@ public class HC_ControlRestrictions
     public HC_ControlRestrictions(HardcoreManager hardcoreManager, GsActionManager actionManager,
     CharacterHandler charHandler, FontService fontService, IClientState client, DictStain stainData,
     GagSpeakConfig config, IDataManager gameData, TextureService textures, ItemData itemData,
-    FontService fonts, BlindfoldWindow blindfoldWindow) {
+    BlindfoldWindow blindfoldWindow) {
         _gameData = gameData;
-        _fonts = fonts;
         _textures = textures;
         _itemData = itemData;
         _stainData = stainData;

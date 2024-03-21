@@ -1,43 +1,26 @@
 using System.Numerics;
 using Dalamud.Interface.Utility;
-using GagSpeak.CharacterData;
-using GagSpeak.Services;
 using GagSpeak.ToyboxandPuppeteer;
 using ImGuiNET;
-using Dalamud.Utility;
 using OtterGui;
-using GagSpeak.Utility;
-using System.Runtime.CompilerServices;
 using Dalamud.Interface.Utility.Raii;
-using OtterGuiInternal.Enums;
-using System.IO;
 using Dalamud.Plugin;
-using Dalamud.Plugin.Services;
 using System;
 using GagSpeak.Interop;
 using Newtonsoft.Json;
 using System.Linq;
 
-
 namespace GagSpeak.UI.Tabs.ToyboxTab;
 public class PatternSubtab
 {
-    private readonly    CharacterHandler    _charHandler;
-    private readonly    IClientState        _client;
     private readonly    ToyboxPatternTable  _patternTable; // for getting the pattern table
     private readonly    PatternPlayback     _patternPlayback;
     private readonly    PatternHandler      _patternCollection;
-    private readonly    FontService         _fontService; // for getting the font
-    private             int?                _tempSliderValue; // for storing the slider value
-    public PatternSubtab(DalamudPluginInterface pluginInterface, CharacterHandler charHandler,
-    ToyboxPatternTable patternTable, PatternHandler patternCollection, FontService fontService,
-    PatternPlayback patternPlayback, IClientState client) {
-        _charHandler = charHandler;
-        _client = client;
+    public PatternSubtab(DalamudPluginInterface pluginInterface, ToyboxPatternTable patternTable,
+    PatternHandler patternCollection, PatternPlayback patternPlayback) {
         _patternTable = patternTable;
         _patternPlayback = patternPlayback;
         _patternCollection = patternCollection;
-        _fontService = fontService;    
     }
 
     public void Draw() {

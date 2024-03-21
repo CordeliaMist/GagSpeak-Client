@@ -7,16 +7,15 @@ using GagSpeak.ChatMessages.MessageTransfer;
 using GagSpeak.ChatMessages;
 using GagSpeak.CharacterData;
 using Dalamud.Interface;
-using System;
 using GagSpeak.Services;
 using Dalamud.Interface.Utility;
 using GagSpeak.UI.Equipment;
 using GagSpeak.UI.Tabs.GeneralTab;
 using OtterGui;
-using System.Threading.Tasks;
 using Dalamud.Game.Text.SeStringHandling;
 using OtterGui.Classes;
-using System.Threading;
+using System.Collections.Generic;
+using System;
 
 namespace GagSpeak.UI.Tabs.WhitelistTab;
 public partial class WhitelistPanel {
@@ -28,7 +27,6 @@ public partial class WhitelistPanel {
     private readonly    FontService                 _fontService;
     private readonly    IClientState                _clientState;
     private readonly    IChatGui                    _chatGui;
-    private readonly    IDataManager                _dataManager;
     private readonly    MessageEncoder              _messageEncoder;
     private readonly    OnChatMsgManager            _chatManager;
     private readonly    UserProfileWindow           _userProfileWindow;
@@ -37,8 +35,9 @@ public partial class WhitelistPanel {
     private WhitelistedCharacterInfo    _tempWhitelistChar;
     private WhitelistPanelTab           _activePanelTab;
 
+    #pragma warning disable CS8618
     public WhitelistPanel(InteractOrPermButtonEvent interactOrPermButtonEvent, GagSpeakConfig config,
-    CharacterHandler characterHandler, IClientState clientState, IChatGui chatGui, IDataManager dataManager,
+    CharacterHandler characterHandler, IClientState clientState, IChatGui chatGui,
     MessageEncoder messageEncoder, OnChatMsgManager chatManager, UserProfileWindow userProfileWindow, 
     FontService fontService, GagService gagService, GagListingsDrawer gagListingsDrawer) {
         _interactOrPermButtonEvent = interactOrPermButtonEvent;
@@ -46,7 +45,6 @@ public partial class WhitelistPanel {
         _characterHandler = characterHandler;
         _clientState = clientState;
         _chatGui = chatGui;
-        _dataManager = dataManager;
         _messageEncoder = messageEncoder;
         _chatManager = chatManager;
         _userProfileWindow = userProfileWindow;
@@ -75,6 +73,7 @@ public partial class WhitelistPanel {
         // initialize the tooltips
         InitializeToolTips();
     }
+    #pragma warning restore CS8618
 
     public void Draw(ref bool _interactions)
     {

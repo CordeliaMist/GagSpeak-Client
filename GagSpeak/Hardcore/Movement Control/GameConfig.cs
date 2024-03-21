@@ -71,7 +71,7 @@ public static unsafe class GameConfig {
         private readonly Dictionary<uint, string> nameMap = new();
         private string[] ignoredNames = Array.Empty<string>();
 
-        public GameConfigSection(ConfigBase* configBase, string[] ignoredNames = null) {
+        public GameConfigSection(ConfigBase* configBase, string[] ignoredNames = null!) {
             this.configBase = configBase;
 
             if (ignoredNames != null) {

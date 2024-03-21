@@ -30,6 +30,7 @@ public class GagSpeakChangelog
         Add2_8_5_0(Changelog);
         Add3_0_0_0(Changelog);
         Add3_0_0_2(Changelog);
+        Add3_0_1_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -57,8 +58,17 @@ public class GagSpeakChangelog
         }
     }
 
+    private static void Add3_0_1_0(Changelog log)
+        => log.NextVersion("Version 3.0.1.0 Release")
+            .RegisterHighlight("Fixed issues for patch 6.5 patch removing DX9 Support.")
+            .RegisterEntry("Fixed issue where texturewrap images causes memory corruption (hopefully)")
+            .RegisterEntry("I always had functionality for the simulated vibe/connected lovense toy battery display, but now its actually visable.")
+            .RegisterEntry("Fixed all invalid and outdated signatures for the plugin.")
+            .RegisterEntry("Fixed the case where the light blindfold didnt have a chat window cut-out from it")
+            .RegisterEntry("Updated plugin functionality to adhere to the new .NET 8.0 implementation");
+
     private static void Add3_0_0_2(Changelog log)
-        => log.NextVersion("Version 3.0.0.3 Release")
+        => log.NextVersion("Version 3.0.0.2 Release")
             .RegisterHighlight("Minor patch update after some self experiementing, to just fix some annoying things")
             .RegisterEntry("Fixed the possibility to use ESC to exit the blindfold state")
             .RegisterEntry("Fixed the possibility of having the restraint set manager lockup when removing an index on a very rare occurance")

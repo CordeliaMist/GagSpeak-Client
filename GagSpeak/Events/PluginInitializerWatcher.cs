@@ -19,12 +19,10 @@ public class InitializationManager
     public TaskCompletionSource<bool> _hardcoreManagerReadyForEvent = new TaskCompletionSource<bool>();
     public TaskCompletionSource<bool> _OrdersReadyForEvent = new TaskCompletionSource<bool>();
     public TaskCompletionSource<bool> _actionManagerReadyForEvent = new TaskCompletionSource<bool>();
-    public TaskCompletionSource<bool> _pluginMain = new TaskCompletionSource<bool>();
     public event Action? CharacterHandlerInitialized;
     public event Action? RS_ManagerInitialized;
     public event Action? HardcoreManagerInitialized;
     public event Action? MovementManagerInitialized;
-    public event Action? ActionManagerInitialized;
 
     public void CompleteStep(InitializationSteps step) {
         CompletedSteps.Add(step);

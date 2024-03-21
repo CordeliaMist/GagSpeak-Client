@@ -90,7 +90,7 @@ public unsafe class GsActionManager : IDisposable
                 UseActionHook.Disable();
             }
             UseActionHook.Dispose();
-            UseActionHook = null;
+            UseActionHook = null!;
         }
     }
 

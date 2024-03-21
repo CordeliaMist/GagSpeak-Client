@@ -109,7 +109,7 @@ public class HardcoreMsgDetector
                 }
 
                 // if nobody is, then we are ok to begin.
-                if (TryGetPlayerFromObjectTable(senderName, out GameObject SenderObj)) {
+                if (TryGetPlayerFromObjectTable(senderName, out GameObject? SenderObj)) {
                     // the player is valid, and they are targetable, and we have forced to follow set to false
                     if(playerConfig._forcedFollow == false && SenderObj != null && SenderObj.IsTargetable) {
                         // we meet all the conditions to perform our logic, so we should set forced to folloow to true, locking our movement
@@ -224,7 +224,7 @@ public class HardcoreMsgDetector
         return false;
     }
 
-    private bool TryGetPlayerFromObjectTable(string senderName, out GameObject SenderObj) {
+    private bool TryGetPlayerFromObjectTable(string senderName, out GameObject? SenderObj) {
         foreach (var obj in _objectTable) {
             if (obj is PlayerCharacter pc && pc.Name.TextValue == senderName) {
                 SenderObj = pc;

@@ -21,11 +21,13 @@ public class DalamudServices {
 		services.AddDalamudService<ICommandManager>(pi);		// For interfacing with commands
 		services.AddDalamudService<ICondition>(pi);				// For interfacing with the plugin configuration
 		services.AddDalamudService<IGameGui>(pi);				// for parsing object data
+		services.AddDalamudService<IDtrBar>(pi);				// modifying the top bar of the game window
 		services.AddDalamudService<IDataManager>(pi);			// for parsing object data
 		services.AddDalamudService<IFramework>(pi);				// For interfacing with the dalamud framework (scheduler, timings, etc.)
 		services.AddDalamudService<IGameInteropProvider>(pi);	// helps with detouring the chat input for our plugin
 		services.AddDalamudService<IGameConfig>(pi);			// For interfacing with the game network
 		services.AddDalamudService<IKeyState>(pi);				// for the file system selector to use to get our state
+        services.AddDalamudService<INotificationManager>(pi);	// dumbass notifcation messager added with .NET 8 implementation
 		services.AddDalamudService<IObjectTable>(pi);			// For interfacing with the object table
 		services.AddDalamudService<IPartyFinderGui>(pi);		// For interfacing with the party finder (may remove)
 		services.AddDalamudService<IPluginLog>(pi);				// For interfacing with the plugin logger

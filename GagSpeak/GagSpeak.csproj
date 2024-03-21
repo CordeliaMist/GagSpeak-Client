@@ -3,10 +3,10 @@
     <Import Project="Dalamud.Plugin.Bootstrap.targets" />
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Copyright>Copyright © 2023</Copyright>
     <LangVersion>latest</LangVersion>
-    <Version>3.0.0.3</Version>
+    <Version>3.0.1.0</Version>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>

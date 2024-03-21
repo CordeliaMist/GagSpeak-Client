@@ -22,7 +22,7 @@ public static class GenericHelpers
     }
 
     public static bool EqualsAny<T>(this T obj, params T[] values) {
-        return values.Any(x => x.Equals(obj));
+        return values.Any(x => x!.Equals(obj));
     }
 
     // execute agressive inlining functions safely

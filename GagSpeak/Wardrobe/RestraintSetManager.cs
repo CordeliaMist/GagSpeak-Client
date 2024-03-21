@@ -430,8 +430,13 @@ public class RestraintSetManager : ISavable, IDisposable
             }
             foreach (var item in restraintSetsArray) {
                 var restraintSet = new RestraintSet();
-                restraintSet.Deserialize(item.Value<JObject>());
-                _restraintSets.Add(restraintSet);
+                var ItemValue = item.Value<JObject>();
+                if (ItemValue != null) {
+                    restraintSet.Deserialize(ItemValue);
+                    _restraintSets.Add(restraintSet);
+                } else {
+                    GSLogger.LogType.Error($"[RestraintSetManager] Array contains an invalid entry (it is null), skipping!");
+                }
             }
         } catch (Exception ex) {
             GSLogger.LogType.Error($"Failure to load automated designs: Error during parsing. {ex}");

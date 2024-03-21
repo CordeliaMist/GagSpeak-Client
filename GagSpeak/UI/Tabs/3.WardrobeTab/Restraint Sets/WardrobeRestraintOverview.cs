@@ -21,17 +21,14 @@ namespace GagSpeak.UI.Tabs.WardrobeTab;
 public class RestraintSetOverview : IDisposable
 {
     private readonly    RestraintSetManager _rsManager; // for getting the restraint sets
-    private readonly    RS_ListChanged      _rsListChanged; // for getting the restraint set list changed event
     private readonly    ModAssociations     _modAssociations;     // for getting the mod associations
     private readonly    TimerService        _timerService;        // for getting the timer service
     private             string              _inputTimer = "";     // for getting the input timer
-    private             Vector2             _defaultItemSpacing;
 
     /// <summary> Initializes a new instance wardrobe tab"/> class. <summary>
-    public RestraintSetOverview(RestraintSetManager restraintSetManager, TimerService timerService,
-    RS_ListChanged restraintSetListChanged, ModAssociations modAssociations) {
+    public RestraintSetOverview(RestraintSetManager restraintSetManager,
+    TimerService timerService, ModAssociations modAssociations) {
         _rsManager = restraintSetManager;
-        _rsListChanged = restraintSetListChanged;
         _modAssociations = modAssociations;
         _timerService = timerService;
 

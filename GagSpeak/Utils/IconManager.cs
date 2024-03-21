@@ -54,6 +54,7 @@ public class IconManager : IDisposable
             public byte[] Remainder;
         
             public GraphicFontIcon(BinaryReader reader, ITextureProvider textureProvider, IGameConfig gameConfig) {
+                _gameConfig = gameConfig;
                 _textureProvider = textureProvider;
                 ID = reader.ReadUInt16();
                 Position = new Vector2(reader.ReadUInt16(), reader.ReadUInt16());
@@ -223,8 +224,13 @@ public class IconManager : IDisposable
             type += "/";
             
         var formatStr = $"ui/icon/{{0:D3}}000/{(hq?"hq/":"")}{{1}}{{2:D6}}.tex";
+        // ignore the possible null reference remarks
+        #pragma warning disable CS8600, CS8603
+
         TexFile file = _data.GetFile<TexFile>(string.Format(formatStr, (object) (iconId / 1000), (object) type, (object) iconId));
         return file != null || type.Length <= 0 ? file : _data.GetFile<TexFile>(string.Format(formatStr, (object) (iconId / 1000), (object) string.Empty, (object) iconId));
+
+        #pragma warning restore CS8600, CS8603
     }
         
 
@@ -237,9 +243,9 @@ public class IconManager : IDisposable
     }
 
     public IDalamudTextureWrap GetIconTexture(int iconId, bool hq = false) {
-        if (this.disposed) return null;
+        if (this.disposed) return null!;
         if (this.iconTextures.ContainsKey((iconId, hq))) return this.iconTextures[(iconId, hq)];
-        this.iconTextures.Add((iconId, hq), null);
+        this.iconTextures.Add((iconId, hq), null!);
         try{
         LoadIconTexture(iconId, hq);
         } catch (Exception ex) {

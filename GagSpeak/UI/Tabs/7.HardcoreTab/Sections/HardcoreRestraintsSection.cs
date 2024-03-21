@@ -21,11 +21,9 @@ public class HC_RestraintSetProperties
     private readonly    RestraintSetManager     _restraintSetManager;
     private readonly    RestraintSetSelector    _restraintSetSelector;
     private readonly    FontService             _fontService;
-    private             Vector2                 _VisibilityIconSize;
     private readonly    TextureService          _textures;              // for getting the textures
     private readonly    Vector2                 _iconSize;              // size of icons that can display
     private             string[]                _eyeIcon;
-    private             string?                 _tempOffsetVal;
     private             int                     _curSetIdx;
     public HC_RestraintSetProperties(CharacterHandler characterHandler, RestraintSetManager restraintSetManager,
     RestraintSetSelector restraintSetSelector, FontService fontService, HardcoreManager hardcoreManager,

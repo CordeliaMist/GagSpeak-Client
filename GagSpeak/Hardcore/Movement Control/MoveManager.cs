@@ -2,30 +2,19 @@ using System;
 using System.Runtime.InteropServices;
 using Dalamud.Game.ClientState.Keys;
 using Condition = Dalamud.Game.ClientState.Conditions.ConditionFlag;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using XivControl = FFXIVClientStructs.FFXIV.Client.Game.Control;
 using Dalamud.Plugin.Services;
 using GagSpeak.Events;
 using GagSpeak.Utility;
-using PInvoke;
-using WinKeys = System.Windows.Forms.Keys;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Linq;
 using System.Threading.Tasks;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
-using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using System.Numerics;
-using Dalamud.Game.ClientState.Objects;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
-using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Game.ClientState.Objects.Enums;
 using System.Collections.Generic;
-using Dalamud.Game.Gui.PartyFinder.Types;
 using GagSpeak.Services;
 
 namespace GagSpeak.Hardcore.Movement;
@@ -38,7 +27,6 @@ public class MovementManager : IDisposable
     private readonly    IFramework              _framework;
     private readonly    IKeyState               _keyState;
     private readonly    CharacterHandler        _charaManager;
-    private readonly    ITargetManager          _targetManager; // target manager
     private readonly    IObjectTable            _objectTable;   // object table
     private readonly    OptionPromptListeners   _autoDialogSelect;
     private readonly    OnFrameworkService      _onFrameworkService;
@@ -51,23 +39,21 @@ public class MovementManager : IDisposable
     public unsafe       XivControl.Control*     gameControl = XivControl.Control.Instance(); // instance to have control over our walking
     // get the keystate ref values
     delegate ref        int                     GetRefValue(int vkCode);
-    private static      GetRefValue             getRefValue;
+    private static      GetRefValue?            getRefValue;
     private             bool                    WasCancelled = false; // if true, we have cancelled any movement keys
-    private static      MovementMode            CameraMode = MovementMode.Standard; // camera mode fetched from movement mode
 
     // the list of keys that are blocked while movement is disabled. Req. to be static, must be set here.
-    public MovementManager(ICondition condition, IKeyState keyState, ITargetManager targetManager,
-    MoveController MoveController, HardcoreManager hardcoreManager, IObjectTable objectTable,
-    RS_PropertyChangedEvent RS_PropertyChangedEvent, IFramework framework, OnFrameworkService onFrameworkService,
-    IClientState clientState, GagSpeakConfig config, InitializationManager manager,
-    CharacterHandler characterManager, OptionPromptListeners autoDialogSelect) {
+    public MovementManager(ICondition condition, IKeyState keyState, MoveController MoveController,
+    HardcoreManager hardcoreManager, IObjectTable objectTable, RS_PropertyChangedEvent RS_PropertyChangedEvent,
+    IFramework framework, OnFrameworkService onFrameworkService, IClientState clientState,
+    GagSpeakConfig config, InitializationManager manager, CharacterHandler characterManager,
+    OptionPromptListeners autoDialogSelect) {
         _config = config;
         _condition = condition;
         _charaManager = characterManager;
         _clientState = clientState;
         _MoveController = MoveController;
         _framework = framework;
-        _targetManager = targetManager;
         _objectTable = objectTable;
         _keyState = keyState;
         _onFrameworkService = onFrameworkService;
@@ -79,7 +65,7 @@ public class MovementManager : IDisposable
         // attempt to set the value safely
         GenericHelpers.Safe(delegate {
             getRefValue = (GetRefValue)Delegate.CreateDelegate(typeof(GetRefValue), _keyState, 
-                            _keyState.GetType().GetMethod("GetRefValue", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(int) }, null));
+                            _keyState.GetType().GetMethod("GetRefValue", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(int) }, null)!);
         });
 
         // run an async task that will await to apply affects until we are logged in, after which it will fire the restraint effect logic
@@ -238,9 +224,11 @@ public class MovementManager : IDisposable
         }
     }
 
+
+    // Helper functions for minimizing the content in the framework update code section above
     public float GetTargetDistance(Dalamud.Game.ClientState.Objects.Types.GameObject target) {
         Vector2 position = new(target.Position.X, target.Position.Z);
-        Vector2 selfPosition = new(_clientState.LocalPlayer.Position.X, _clientState.LocalPlayer.Position.Z);
+        Vector2 selfPosition = new(_clientState.LocalPlayer!.Position.X, _clientState.LocalPlayer.Position.Z);
         return Math.Max(0, Vector2.Distance(position, selfPosition) - target.HitboxRadius - _clientState.LocalPlayer.HitboxRadius);
     }
 
@@ -338,7 +326,7 @@ public class MovementManager : IDisposable
         }
     }
 
-    // set the key state
-    private static void SetKeyState(VirtualKey key, int state) => getRefValue((int)key) = state;
+    // set the key state (if you start crashing when using this you probably have a fucked up getrefvalue)
+    private static void SetKeyState(VirtualKey key, int state) => getRefValue!((int)key) = state;
 #endregion Framework Updates
 }

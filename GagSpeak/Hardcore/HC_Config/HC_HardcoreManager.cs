@@ -165,8 +165,13 @@ public partial class HardcoreManager : ISavable, IDisposable
             if (characterSettingsArray != null) {
                 foreach (var item in characterSettingsArray) {
                     var HC_SettingsforPlayer = new HC_PerPlayerConfig(_rsPropertyChanged);
-                    HC_SettingsforPlayer.Deserialize(item.Value<JObject>());
-                    _perPlayerConfigs.Add(HC_SettingsforPlayer);
+                    var itemValue = item.Value<JObject>();
+                    if (itemValue != null) {
+                        HC_SettingsforPlayer.Deserialize(itemValue);
+                        _perPlayerConfigs.Add(HC_SettingsforPlayer);
+                    } else {
+                        GSLogger.LogType.Error($"[HardcoreManager] Array contains an invalid entry (it is null), skipping!");
+                    }
                 }
             }
             // stored entries

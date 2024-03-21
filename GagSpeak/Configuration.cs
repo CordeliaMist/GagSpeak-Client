@@ -46,7 +46,7 @@ public class GagSpeakConfig : IPluginConfiguration, ISavable
     public  bool                                hardcoreMode { get; set; } = false;                     // Is the plugin in hardcore mode
     public  bool                                UiOpenOnEnable { get; set; } = false;                   // Should the UI open when the plugin is enabled
     public  Dictionary<string,DateTimeOffset>   timerData { get; set; }                                 // stores the timer data for the plugin
-    public  BlindfoldType                       blindfoldType { get; set; } = BlindfoldType.Sensual;       // The type of blindfold to use
+    public  BlindfoldType                       blindfoldType { get; set; } = BlindfoldType.Sensual;    // The type of blindfold to use
     public  static bool                         usingLegacyControls = GameConfig.UiControl.GetBool("MoveMode"); // is the client using legacy controls?
     // stuff for the gaglistingDrawer
     public  List<bool>                          isLocked { get; set; }                                  // determines if the gaglisting should have its UI locked

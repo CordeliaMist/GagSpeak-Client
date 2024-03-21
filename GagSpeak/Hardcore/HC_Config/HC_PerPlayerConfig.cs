@@ -91,8 +91,13 @@ public partial class HC_PerPlayerConfig
             if (rsPropertiesArray != null) {
                 foreach (var item in rsPropertiesArray) {
                     var rsProperty = new HC_RestraintProperties();
-                    rsProperty.Deserialize(item.Value<JObject>());
-                    _rsProperties.Add(rsProperty);
+                    var itemValue = item.Value<JObject>();
+                    if (itemValue != null) {
+                        rsProperty.Deserialize(itemValue);
+                        _rsProperties.Add(rsProperty);
+                    } else {
+                        GSLogger.LogType.Error($"[HC_PerPlayerConfig] itemValue in the array of objects is null, skipping over!");
+                    }
                 }
             }
         } catch (Exception ex) {

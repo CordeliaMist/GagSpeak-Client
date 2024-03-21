@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
 public partial class ResultLogic {
@@ -12,7 +14,7 @@ public partial class ResultLogic {
             // if you have hardcore mode enabled
             if(_config.hardcoreMode) {
                 // toggle the blindfold state
-                _hardcoreManager.SetBlindfolded(index, !_hardcoreManager._perPlayerConfigs[index]._blindfolded, playerName);
+                Task.Run(() => _hardcoreManager.SetBlindfolded(index, !_hardcoreManager._perPlayerConfigs[index]._blindfolded, playerName));
                 GSLogger.LogType.Debug($"[Message ResLogic]: {playerName} has toggled your blindfold, enjoy the darkness~");
                 return true;
             }

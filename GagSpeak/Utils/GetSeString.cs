@@ -14,7 +14,7 @@ public static class GS_GetSeString
     {
         if (textPtr == IntPtr.Zero) {
             GSLogger.LogType.Error("GetSeString: textPtr is null");
-            return null;
+            return null!;
         }
 
         try {
@@ -22,7 +22,7 @@ public static class GS_GetSeString
         }
         catch (Exception ex) {
             GSLogger.LogType.Error($"Error in GetSeString: {ex.Message}");
-            return null;
+            return null!;
         }
     }
 

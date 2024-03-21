@@ -12,16 +12,20 @@ namespace GagSpeak.Hardcore.Movement;
 // by far the most brainfuckery i've ever dealt with in my life, if you dont understand any of this i dont blame you one bit.
 public class MoveController : IDisposable
 {
+    // possibility of null reference is very common here, so we can ignore most cases where it is flagged.
+    #pragma warning disable CS8602
+
     private readonly HardcoreManager _hcManager;
     private readonly IObjectTable _objectTable;
     public bool DisablingALLMovement { get; private set; } = false;
     public bool DisablingMouseMovement { get; private set; } = false;
 
     // controls the complete blockage of movement from the player (Blocks /follow movement)
+    #pragma warning disable CS0649
     [Signature("F3 0F 10 05 ?? ?? ?? ?? 0F 2E C6 0F 8A", ScanType = ScanType.StaticAddress, Fallibility = Fallibility.Infallible)]
     private nint forceDisableMovementPtr;
     private unsafe ref int ForceDisableMovement => ref *(int*)(forceDisableMovementPtr + 4);
-
+    #pragma warning restore CS0649
 
     // prevents LMB+RMB moving by processing it prior to the games update movement check.
     public unsafe delegate byte MoveOnMousePreventorDelegate(MoveControllerSubMemberForMine* thisx);
@@ -112,6 +116,8 @@ public class MoveController : IDisposable
         // initialize from attributes
         interopProvider.InitializeFromAttributes(this);        
     }
+
+    #pragma warning restore CS8602
 
     // Hook enablers
     public void EnableMovementHooks() {

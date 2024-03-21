@@ -23,7 +23,6 @@ namespace GagSpeak.UI.Tabs.WardrobeTab;
 public class RestraintSetEditor
 {
     private const float DefaultWidth = 187;
-    private             Vector2                         _VisibilityIconSize;
     private readonly    IDataManager                    _gameData;              // for getting the game data
     private readonly    TextureService                  _textures;              // for getting the textures
     private readonly    RestraintSetManager             _restraintSetManager;   // for getting the restraint set manager

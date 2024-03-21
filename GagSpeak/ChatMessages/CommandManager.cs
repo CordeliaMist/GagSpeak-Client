@@ -179,7 +179,7 @@ public class CommandManager : IDisposable // Our main command list manager
                 _timerService.ClearRestraintSetTimer();
                 _glamourEvent.Invoke(UpdateType.Safeword); // revert to game state
                 try{
-                    IntPtr playerAddress = _clientState.LocalPlayer!.Address;
+                    var playerAddress = _clientState.LocalPlayer!.Address;
                     Task.Run(async () => await _glamourerInterop.GlamourerRevertCharacterToAutomation(playerAddress));
                 } catch (Exception e) {
                     GSLogger.LogType.Error($"Error reverting glamourer to automation: {e.Message}");

@@ -9,23 +9,28 @@ using Buttplug;
 using Buttplug.Client;
 using Buttplug.Client.Connectors;
 using Buttplug.Client.Connectors.WebsocketConnector;
+using Dalamud.Game.Gui.Dtr;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
 using GagSpeak.Events;
 using GagSpeak.Utility;
+using Lumina.Excel.GeneratedSheets2;
 // Thank you to Ryuuki for most of this code. I have modified it to fit the needs of GagSpeak
 // Big Warning: This is a very NSFW service. It is a service that connects to a toybox server and controls a lovense device.
 // This service is not to be used in any way that is not consensual. It is also not to be used in any way that is not legal.
 namespace GagSpeak.Services;
 public class PlugService : IDisposable
 {
-    private GagSpeakConfig _config; // for getting the intiface port
+    private          GagSpeakConfig _config; // for getting the intiface port
     private readonly CharacterHandler _characterHandler; // for getting the whitelist
     private readonly IChatGui _chatGui; // for sending messages to the chat
     private readonly ActiveDeviceChangedEvent _activeDeviceChangedEvent;
-    public ButtplugClient client;
-    public ButtplugWebsocketConnector connector;
-    public ButtplugClientDevice? activeDevice; // our connected device
+    private readonly IFramework _framework;
+    public           ButtplugClient client;
+    public           ButtplugWebsocketConnector connector;
+    public           ButtplugClientDevice? activeDevice; // our connected device
     // our plugServiceAttributes
     public int deviceIndex;         // know our actively selected device index in _client.Devices[]
     public bool anyDeviceConnected; // to know if any device is connected without needing to interact with server
@@ -33,10 +38,15 @@ public class PlugService : IDisposable
     public double stepInterval;         // know the step size of our active device
     public int stepCount;           // know the step count of our active device
     public double batteryLevel;     // know the battery level of our active device
+    private DateTime lastBatteryCheck;
+    // internal var for the dtr bar
+    private readonly DtrBarEntry DtrEntry;
+    
     public PlugService(GagSpeakConfig config, CharacterHandler characterHandler, IChatGui chatGui,
-    ActiveDeviceChangedEvent activeDeviceChangedEvent) {
+    IFramework framework, ActiveDeviceChangedEvent activeDeviceChangedEvent, IDtrBar dtrBar) {
         _config = config;
         _characterHandler = characterHandler;
+        _framework = framework;
         _activeDeviceChangedEvent = activeDeviceChangedEvent;
         _chatGui = chatGui;
         // initially assume we have no connected devices
@@ -45,6 +55,7 @@ public class PlugService : IDisposable
         deviceIndex = -1;
         stepCount = 0;
         batteryLevel = 0;
+        lastBatteryCheck = DateTime.MinValue;
         ////// STEP ONE /////////
         // connect to connector and then client
         connector = CreateNewConnector();
@@ -62,6 +73,13 @@ public class PlugService : IDisposable
         ////// STEP THREE /////////
         // Now that our events are set up, we can connect to server (and any other event subscribers)
         _activeDeviceChangedEvent.ActiveDeviceChanged += OnActiveDeviceChanged;
+
+        ////// POST SETUP ////////
+        // set the dtr bar entry
+        DtrEntry = dtrBar.Get("GagSpeak");
+
+        // framework update stuff for battery display
+        _framework.Update += FrameworkOnUpdate;
     }
 
     // when this service is disposed, we need to be sure to dispose of the client and the connector
@@ -69,12 +87,52 @@ public class PlugService : IDisposable
         client.DisconnectAsync();
         client.Dispose();
         connector.Dispose();
+        // framework disposal
+        DtrEntry.Remove();
+        _framework.Update -= FrameworkOnUpdate;
+
         // dispose of our events
         client.DeviceAdded -= OnDeviceAdded;
         client.DeviceRemoved -= OnDeviceRemoved;
         client.ScanningFinished -= OnScanningFinished;
         client.ServerDisconnect -= OnServerDisconnect;
     }
+#region Framework manager
+    /// <summary> The invokable framework function </summary>
+    private void FrameworkOnUpdate(IFramework framework) {
+        if (activeDevice != null)
+        {
+            string displayName = string.IsNullOrEmpty(activeDevice.DisplayName) ? activeDevice.Name : activeDevice.DisplayName;
+            int batteryPercent = (int)(batteryLevel * 100);
+
+            DtrEntry.Text = new SeString(
+                new IconPayload(BitmapFontIcon.ElementLightning),
+                new TextPayload($"{displayName} - {batteryPercent}%"));
+
+            DtrEntry.Shown = true;
+        }
+        else if(_characterHandler.playerChar._usingSimulatedVibe && _characterHandler.playerChar._isToyActive)
+        {
+            DtrEntry.Text = new SeString(
+                new IconPayload(BitmapFontIcon.ElementLightning),
+                new TextPayload("Simulated Vibe Active"));
+            
+            DtrEntry.Shown = true;
+        }
+        else
+        {
+            DtrEntry.Shown = false;
+        }
+
+        // trigger a battery check every 15 seconds while connected
+        if (activeDevice != null && (DateTime.Now - lastBatteryCheck).TotalSeconds > 10)
+        {
+            GetBatteryLevelForActiveDevice();
+            lastBatteryCheck = DateTime.Now;
+        }
+    }
+
+#endregion Framework manager
 
 #region Event Handlers
     /// <summary Fired every time a device is added to the client </summary>

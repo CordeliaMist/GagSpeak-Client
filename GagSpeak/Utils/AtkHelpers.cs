@@ -34,11 +34,11 @@ public unsafe class AtkHelpers {
         return (AtkUnitBase*)_gameGui.GetAddonByName(name, index);
     }
 
-    public T* GetUnitBase<T>(string name = null, int index = 1) where T : unmanaged {
+    public T* GetUnitBase<T>(string name = null!, int index = 1) where T : unmanaged {
         if (string.IsNullOrEmpty(name)) {
-            var attr = (Addon) typeof(T).GetCustomAttribute(typeof(Addon));
+            var attr = (Addon) typeof(T).GetCustomAttribute(typeof(Addon))!;
             if (attr != null) {
-                name = attr.AddonIdentifiers.FirstOrDefault();
+                name = attr.AddonIdentifiers.FirstOrDefault()!;
             }
         }
 
@@ -46,12 +46,12 @@ public unsafe class AtkHelpers {
         return (T*) _gameGui.GetAddonByName(name, index);
     }
 
-    public bool GetUnitBase<T>(out T* unitBase, string name=null, int index = 1) where T : unmanaged {
+    public bool GetUnitBase<T>(out T* unitBase, string name=null!, int index = 1) where T : unmanaged {
         unitBase = null;
         if (string.IsNullOrEmpty(name)) {
-            var attr = (Addon) typeof(T).GetCustomAttribute(typeof(Addon));
+            var attr = (Addon) typeof(T).GetCustomAttribute(typeof(Addon))!;
             if (attr != null) {
-                name = attr.AddonIdentifiers.FirstOrDefault();
+                name = attr.AddonIdentifiers.FirstOrDefault()!;
             }
         }
 
