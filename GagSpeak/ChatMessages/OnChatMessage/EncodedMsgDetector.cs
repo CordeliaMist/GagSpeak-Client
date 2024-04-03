@@ -4,6 +4,7 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Enums;
 using GagSpeak.ChatMessages.MessageTransfer;
 using GagSpeak.CharacterData;
+using GagSpeak.Utility;
 
 namespace GagSpeak.ChatMessages;
 /// <summary>
@@ -129,7 +130,7 @@ public class EncodedMsgDetector
         foreach (var t in _objectTable) {
             if (!(t is PlayerCharacter pc)) continue;
             if (pc.Name.TextValue == nameInput) {
-                if(_characterHandler.IsPlayerInWhitelist(nameInput)) {
+                if(AltCharHelpers.IsPlayerInWhitelist(nameInput)) {
                     return true;
                 }
             }

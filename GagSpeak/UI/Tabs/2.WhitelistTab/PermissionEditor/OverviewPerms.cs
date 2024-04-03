@@ -62,7 +62,7 @@ public partial class WhitelistPanel {
             if(ImGui.IsItemHovered()) { var tt = tooltips["ExtendedLockTimesTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             var extendedLockTimesIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._grantExtendedLockTimes
-                                                  : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._grantExtendedLockTimes;
+                                                  : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._grantExtendedLockTimes;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((extendedLockTimesIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
@@ -195,14 +195,17 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+        
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_tempWhitelistChar._name}'s Extended Lock Times Option for your character!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s Extended Lock Times Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistGrantExtendedLockTimes(_tempWhitelistIdx, !_tempWhitelistChar._grantExtendedLockTimes);
+        _characterHandler.SetWhitelistGrantExtendedLockTimes(_characterHandler.activeListIdx, !_tempWhitelistChar._grantExtendedLockTimes);
         _chatManager.SendRealMessage(_messageEncoder.OrderToggleExtendedLockTimes(playerPayload, targetPlayer));
     }
 
@@ -210,14 +213,17 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_tempWhitelistChar._name}'s Live Chat Garbler Option for your character!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s Live Chat Garbler Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistDirectChatGarblerActive(_tempWhitelistIdx, !_tempWhitelistChar._directChatGarblerActive);
+        _characterHandler.SetWhitelistDirectChatGarblerActive(_characterHandler.activeListIdx, !_tempWhitelistChar._directChatGarblerActive);
         _chatManager.SendRealMessage(_messageEncoder.GagOrderToggleLiveChatGarbler(playerPayload, targetPlayer));
     }
 
@@ -225,14 +231,17 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_tempWhitelistChar._name}'s Live Chat Garbler Lock Option for your character!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s Live Chat Garbler Lock Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistDirectChatGarblerLocked(_tempWhitelistIdx, !_tempWhitelistChar._directChatGarblerLocked);
+        _characterHandler.SetWhitelistDirectChatGarblerLocked(_characterHandler.activeListIdx, !_tempWhitelistChar._directChatGarblerLocked);
         _chatManager.SendRealMessage(_messageEncoder.GagOrderToggleLiveChatGarblerLock(playerPayload, targetPlayer));
     }
 

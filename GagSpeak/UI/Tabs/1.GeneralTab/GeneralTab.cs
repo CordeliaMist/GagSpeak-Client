@@ -2,19 +2,17 @@
 using System.Numerics;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Interface.Utility;
+using Dalamud.Plugin;
 using ImGuiNET;
 using OtterGui;
 using OtterGui.Widgets;
 using GagSpeak.Services;
-using Dalamud.Interface.Utility;
-
 using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;
 using GagSpeak.UI.Equipment;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
-using Dalamud.Plugin;
 
 namespace GagSpeak.UI.Tabs.GeneralTab;
 /// <summary> This class is used to handle the general tab for the GagSpeak plugin. </summary>

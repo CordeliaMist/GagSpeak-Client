@@ -183,7 +183,7 @@ public class DebugWindow : Window //, IDisposable
         // Whitelist uder information
         ImGui.Text("Whitelist:"); ImGui.Indent();
         foreach (var whitelistPlayerData in _characterHandler.whitelistChars) {
-            ImGui.Text(whitelistPlayerData._name);
+            ImGui.Text(whitelistPlayerData._charNAW[whitelistPlayerData._charNAWIdxToProcess]._name);
             ImGui.Indent();
             ImGui.Text($"Relationship to this Player: {whitelistPlayerData._yourStatusToThem}");
             ImGui.Text($"Relationship to You: {whitelistPlayerData._theirStatusToYou}");

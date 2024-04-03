@@ -82,7 +82,7 @@ public class MovementManager : IDisposable
             }
             // if we are blindfolded by anyone, we should apply that as well
             if(_hcManager.IsBlindfoldedForAny(out int enabledBlindfoldIdx, out string playerWhoBlindfoldedYou)) {
-                await _hcManager.HandleBlindfoldLogic(enabledBlindfoldIdx, _hcManager._perPlayerConfigs[enabledBlindfoldIdx]._blindfolded, _charaManager.whitelistChars[enabledBlindfoldIdx]._name);
+                await _hcManager.HandleBlindfoldLogic(enabledBlindfoldIdx, _hcManager._perPlayerConfigs[enabledBlindfoldIdx]._blindfolded, playerWhoBlindfoldedYou);
             }
         });
 
@@ -171,7 +171,6 @@ public class MovementManager : IDisposable
                 if(_clientState.LocalPlayer!.Position != _hcManager.LastPosition) {
                     _hcManager.LastMovementTime = DateTimeOffset.Now;           // reset timer
                     _hcManager.LastPosition = _clientState.LocalPlayer.Position;// update last position
-                    // GSLogger.LogType.Debug($"[MovementManager]: PlayerPosition: {_hcManager.LastPosition}");
                 } 
                 // otherwise, they are not moving, so check if the timer has gone past 6000ms
                 else {

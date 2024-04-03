@@ -5,9 +5,7 @@ using OtterGui.Raii;
 using GagSpeak.Utility;
 using OtterGui;
 using GagSpeak.CharacterData;
-using System.Linq;
 using Dalamud.Interface.Utility;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Text.SeStringHandling;
 using OtterGui.Classes;
@@ -49,14 +47,14 @@ public partial class WhitelistPanel {
             // create a dropdown for the gag type,
             ImGui.Text("Select Gag Type:");
             int width = (int)ImGui.GetContentRegionAvail().X;
-            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, _tempWhitelistIdx, ref _gagLabel,
+            _gagListingsDrawer.DrawGagTypeItemCombo((layer)+10, _characterHandler.activeListIdx, ref _gagLabel,
                                                     layer, false, width, _gagTypeFilterCombo[layer]);
             if(ImGui.IsItemHovered()) { var tt = tooltips["GagTypeSelectionTT"](); ImGui.SetTooltip($"{tt}"); }
             
             // set up a temp password storage field here.
             ImGui.Text("Select Gag Lock Type:");
             width = (int)ImGui.GetContentRegionAvail().X;
-            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, _tempWhitelistIdx, ref _lockLabel,
+            _gagListingsDrawer.DrawGagLockItemCombo((layer)+10, _characterHandler.activeListIdx, ref _lockLabel,
             layer, width, _gagLockFilterCombo[layer]);
             if(ImGui.IsItemHovered()) { var tt = tooltips["GagPadlockSelectionTT"](); ImGui.SetTooltip($"{tt}"); }
             
@@ -74,7 +72,7 @@ public partial class WhitelistPanel {
             if (ImGuiUtil.DrawDisabledButton("Apply Gag", new Vector2(ImGui.GetContentRegionAvail().X, 34*ImGuiHelpers.GlobalScale), 
             $"{tt1}", _gagLabel == "None")) {
                 // execute the generation of the apply gag layer string
-                ApplyGagOnPlayer(layer, _gagLabel, _tempWhitelistIdx,
+                ApplyGagOnPlayer(layer, _gagLabel, _characterHandler.activeListIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
                 _interactOrPermButtonEvent.Invoke(5);
@@ -83,7 +81,7 @@ public partial class WhitelistPanel {
             var tt2 = tooltips["ApplyPadlockTT"]();
             if (ImGuiUtil.DrawDisabledButton("Lock Gag", new Vector2(ImGui.GetContentRegionAvail().X, 34*ImGuiHelpers.GlobalScale), 
             $"{tt2}", _lockLabel == "None")) {
-                LockGagOnPlayer(layer, _lockLabel, _tempWhitelistIdx,
+                LockGagOnPlayer(layer, _lockLabel, _characterHandler.activeListIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui, _config);
                 // Start a 5-second cooldown timer
                 _interactOrPermButtonEvent.Invoke(5);
@@ -99,7 +97,7 @@ public partial class WhitelistPanel {
                         $"type of that player!").AddItalicsOff().BuiltString
                     );
                 } else {
-                    UnlockGagOnPlayer(layer, _lockLabel, _tempWhitelistIdx, _characterHandler,
+                    UnlockGagOnPlayer(layer, _lockLabel, _characterHandler.activeListIdx, _characterHandler,
                     _config, _chatGui, _chatManager, _messageEncoder, _clientState);
                     // Start a 5-second cooldown timer
                     _interactOrPermButtonEvent.Invoke(5);
@@ -108,7 +106,7 @@ public partial class WhitelistPanel {
             if(ImGui.IsItemHovered()) { var tt = tooltips["UnlockPadlockTT"](); ImGui.SetTooltip($"{tt}"); }
             // remove gags
             if (ImGui.Button("Remove This Gag", new Vector2(ImGui.GetContentRegionAvail().X, 34*ImGuiHelpers.GlobalScale))) {
-                RemoveGagFromPlayer(layer, _gagLabel, _tempWhitelistIdx,
+                RemoveGagFromPlayer(layer, _gagLabel, _characterHandler.activeListIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
                 _interactOrPermButtonEvent.Invoke(5);
@@ -116,7 +114,7 @@ public partial class WhitelistPanel {
             if(ImGui.IsItemHovered()) { var tt = tooltips["RemoveGagTT"](); ImGui.SetTooltip($"{tt}"); }
             // remove all gags
             if (ImGui.Button("Remove All Gags", new Vector2(ImGui.GetContentRegionAvail().X, 34*ImGuiHelpers.GlobalScale))) {
-                RemoveAllGagsFromPlayer(_tempWhitelistIdx,
+                RemoveAllGagsFromPlayer(_characterHandler.activeListIdx,
                 _characterHandler, _chatManager, _messageEncoder, _clientState, _chatGui);
                 // Start a 5-second cooldown timer
                 _interactOrPermButtonEvent.Invoke(5);
@@ -149,9 +147,9 @@ public partial class WhitelistPanel {
         {
             chatGui.Print(
                 new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Applying a "+ gagType+
-                $" to {characterHandler.whitelistChars[listIdx]._name}").AddItalicsOff().BuiltString);
+                $" to {characterHandler.whitelistChars[listIdx]._charNAW[characterHandler.whitelistChars[listIdx]._charNAWIdxToProcess]._name}").AddItalicsOff().BuiltString);
             // update information and send message
-            string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
+            string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(listIdx);
             chatManager.SendRealMessage(gagMessages.GagEncodedApplyMessage(playerPayload, targetPlayer, gagType, (layer+1).ToString()));
             characterHandler.SetWhitelistSelectedGagTypes(listIdx, layer, gagType); // note that this wont always be accurate, and is why request info exists.
         }
@@ -171,14 +169,15 @@ public partial class WhitelistPanel {
         {
             // get the padlock type
             Enum.TryParse(lockLabel, true, out Padlocks padlockType);
-            GSLogger.LogType.Debug($"Padlock Type: {padlockType}, assigning to whitelisted user {characterHandler.whitelistChars[listIdx]._name}");
+            GSLogger.LogType.Debug($"Padlock Type: {padlockType}, assigning to whitelisted user {characterHandler.whitelistChars[listIdx]._charNAW[0]._name}");
             _config.whitelistPadlockIdentifier.SetType(padlockType);
-            GSLogger.LogType.Debug($"Validating password for {characterHandler.whitelistChars[listIdx]._name}");
+            GSLogger.LogType.Debug($"Validating password for {characterHandler.whitelistChars[listIdx]._charNAW[0]._name}");
             _config.whitelistPadlockIdentifier.ValidatePadlockPasswords(
-                true, characterHandler, playerPayload.PlayerName, characterHandler.whitelistChars[listIdx]._name, playerPayload.PlayerName);
+                true, characterHandler, playerPayload.PlayerName, characterHandler.whitelistChars[listIdx]._charNAW[0]._name, playerPayload.PlayerName);
             
             // if we make it here, we have a valid password, so we can send the message            
-            string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
+            string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(listIdx);
+            string targetPlayerName = AltCharHelpers.FetchName(listIdx, characterHandler.whitelistChars[listIdx]._charNAWIdxToProcess);
             // we'll execute a kind of padlock and do extra checks, based on the type it is.
 
             // these require no password
@@ -188,7 +187,7 @@ public partial class WhitelistPanel {
             {
                 chatManager.SendRealMessage(gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockLabel, (layer+1).ToString()));
                 // update information after sending message and verifying, and setting cooldown timer
-                chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {characterHandler.whitelistChars[listIdx]._name}"+
+                chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {targetPlayerName}"+
                 $"'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
                 
                 GSLogger.LogType.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
@@ -205,7 +204,7 @@ public partial class WhitelistPanel {
                 chatManager.SendRealMessage(gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockLabel, 
                 (layer+1).ToString(), _config.whitelistPadlockIdentifier._inputTimer));
                 // update information after sending message and verifying, and setting cooldown timer
-                chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {characterHandler.whitelistChars[listIdx]._name}"+
+                chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {targetPlayerName}"+
                 $"'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
                 
                 GSLogger.LogType.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
@@ -219,8 +218,8 @@ public partial class WhitelistPanel {
                 chatManager.SendRealMessage(gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockLabel, 
                 (layer+1).ToString(), _config.whitelistPadlockIdentifier._inputCombination));
                 // update information after sending message and verifying, and setting cooldown timer
-                chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {characterHandler.whitelistChars[listIdx]._name}"+
-                $"'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
+                chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {targetPlayerName}'s "+
+                $"{characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} with a "+lockLabel+" padlock").AddItalicsOff().BuiltString);
                 
                 GSLogger.LogType.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
                 characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, _config.whitelistPadlockIdentifier._padlockType);
@@ -232,9 +231,8 @@ public partial class WhitelistPanel {
                 chatManager.SendRealMessage(gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockLabel, 
                 (layer+1).ToString(), _config.whitelistPadlockIdentifier._inputPassword));
                 // update information after sending message and verifying, and setting cooldown timer
-                chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking "+
-                $"{characterHandler.whitelistChars[listIdx]._name}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} "+
-                $"with a {lockLabel} padlock").AddItalicsOff().BuiltString);
+                chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {targetPlayerName}'s "+
+                $"{characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} with a {lockLabel} padlock").AddItalicsOff().BuiltString);
                 
                 GSLogger.LogType.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
                 characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, _config.whitelistPadlockIdentifier._padlockType);
@@ -246,9 +244,8 @@ public partial class WhitelistPanel {
                 chatManager.SendRealMessage(gagMessages.GagEncodedLockMessage(playerPayload, targetPlayer, lockLabel, 
                 (layer+1).ToString(), _config.whitelistPadlockIdentifier._inputPassword, _config.whitelistPadlockIdentifier._inputTimer));
                 // update information after sending message and verifying, and setting cooldown timer
-                chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking "+
-                $"{characterHandler.whitelistChars[listIdx]._name}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} "+
-                $"with a {lockLabel} padlock").AddItalicsOff().BuiltString);
+                chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Locking {targetPlayerName}'s "+
+                $"{characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} with a {lockLabel} padlock").AddItalicsOff().BuiltString);
                 
                 GSLogger.LogType.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
                 characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, _config.whitelistPadlockIdentifier._padlockType);
@@ -256,7 +253,8 @@ public partial class WhitelistPanel {
                 characterHandler.SetWhitelistSelectedGagPadlockTimer(listIdx, layer, UIHelpers.GetEndTime(_config.whitelistPadlockIdentifier._inputTimer));
             }
         } else {
-            chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Cannot lock {characterHandler.whitelistChars[listIdx]._name}"+
+            chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Cannot lock "+
+            $"{characterHandler.whitelistChars[listIdx]._charNAW[characterHandler.whitelistChars[listIdx]._charNAWIdxToProcess]._name}"+
             $"'s gag, it is already locked!").AddItalicsOff().BuiltString);
         }
     }
@@ -271,7 +269,8 @@ public partial class WhitelistPanel {
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         if (!characterHandler.IsIndexWithinBounds(listIdx)) { return; }
         // get player string
-        string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(listIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(listIdx, characterHandler.whitelistChars[listIdx]._charNAWIdxToProcess);
         // check which gag it is
         GSLogger.LogType.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType}");
 
@@ -281,13 +280,12 @@ public partial class WhitelistPanel {
         || _config.whitelistPadlockIdentifier._padlockType == Padlocks.MistressTimerPadlock)
         {
             if(_config.whitelistPadlockIdentifier.ValidatePadlockPasswords(true, characterHandler, playerPayload.PlayerName,
-                                                                            characterHandler.whitelistChars[listIdx]._name, playerPayload.PlayerName))
+                                                        AltCharHelpers.FetchOriginalName(listIdx), playerPayload.PlayerName))
             {
                 GSLogger.LogType.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType} validated for unlock");
                 // update information after sending message and verifying, and setting cooldown timer
                 chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Unlocking "+
-                $"{characterHandler.whitelistChars[listIdx]._name}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} gag")
-                .AddItalicsOff().BuiltString);
+                $"{targetPlayerName}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} gag").AddItalicsOff().BuiltString);
                 // send it
                 chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString()));
                 characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, Padlocks.None);
@@ -307,14 +305,14 @@ public partial class WhitelistPanel {
         else if (_config.whitelistPadlockIdentifier._padlockType == Padlocks.CombinationPadlock)
         {
             if(_config.whitelistPadlockIdentifier.ValidatePadlockPasswords(true, characterHandler, playerPayload.PlayerName,
-            characterHandler.whitelistChars[listIdx]._name, playerPayload.PlayerName))
+            characterHandler.whitelistChars[listIdx]._charNAW[0]._name, playerPayload.PlayerName))
             {
                 GSLogger.LogType.Debug($"Padlock Type: {_config.whitelistPadlockIdentifier._padlockType} validated for unlock");
                 if(_config.whitelistPadlockIdentifier._inputCombination == characterHandler.whitelistChars[listIdx]._selectedGagPadlockPassword[layer]) {
                     GSLogger.LogType.Debug($"Padlock Type: Input combination matches players lock combination, sending unlock message");
                     // update information after sending message and verifying, and setting cooldown timer
                     chatGui.Print(
-                        new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Unlocking {characterHandler.whitelistChars[listIdx]._name}'s"+
+                        new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Unlocking {targetPlayerName}'s"+
                         characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]+" gag").AddItalicsOff().BuiltString);
                     chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(),
                     _config.whitelistPadlockIdentifier._inputCombination));
@@ -324,7 +322,7 @@ public partial class WhitelistPanel {
 
                 } else {
                     chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Incorrect combination for "+
-                    $"{characterHandler.whitelistChars[listIdx]._name}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} gag").AddItalicsOff().BuiltString);
+                    $"{targetPlayerName}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} gag").AddItalicsOff().BuiltString);
                 }
             }
         }
@@ -332,14 +330,14 @@ public partial class WhitelistPanel {
         {
             // if its one of these, validate the password is correct
             if(_config.whitelistPadlockIdentifier.ValidatePadlockPasswords(true, characterHandler, playerPayload.PlayerName, 
-            characterHandler.whitelistChars[listIdx]._name, playerPayload.PlayerName))
+            characterHandler.whitelistChars[listIdx]._charNAW[0]._name, playerPayload.PlayerName))
             {
                 // if they are correct, send the message
                 if(_config.whitelistPadlockIdentifier._inputPassword == characterHandler.whitelistChars[listIdx]._selectedGagPadlockPassword[layer])
                 {      
                     GSLogger.LogType.Debug($"Padlock Type: Input password matches players lock password, sending unlock message");       
                     chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Unlocking "+
-                    $"{characterHandler.whitelistChars[listIdx]._name}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} gag")
+                    $"{targetPlayerName}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} gag")
                     .AddItalicsOff().BuiltString);
                     
                     chatManager.SendRealMessage(gagMessages.GagEncodedUnlockMessage(playerPayload, targetPlayer, (layer+1).ToString(), _config.whitelistPadlockIdentifier._inputPassword));
@@ -351,7 +349,7 @@ public partial class WhitelistPanel {
                     }
                 } else {
                     chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Incorrect password for "+
-                    $"{characterHandler.whitelistChars[listIdx]._name}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} gag")
+                    $"{targetPlayerName}'s {characterHandler.whitelistChars[listIdx]._selectedGagTypes[layer]} gag")
                     .AddItalicsOff().BuiltString);
                 }
             }
@@ -366,19 +364,22 @@ public partial class WhitelistPanel {
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         if (!characterHandler.IsIndexWithinBounds(listIdx)) { return; }
+        // get the name
+        string targetPlayerName = AltCharHelpers.FetchName(listIdx, characterHandler.whitelistChars[listIdx]._charNAWIdxToProcess);
+        
         // check if the current selected player's gag layer has a lock that isnt none. If it doesnt, unlock the gag, otherwise, let the player know they couldnt remove it
         if (characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[layer] != Padlocks.None)
         {
-            chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Cannot remove {characterHandler.whitelistChars[listIdx]._name}'s "+
-            $"{gagType} gag, it is locked!").AddItalicsOff().BuiltString);
+            chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Cannot remove "+
+            $"{targetPlayerName}'s {gagType} gag, it is locked!").AddItalicsOff().BuiltString);
             return;
         }
         else
         {
-            chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Removing {characterHandler.whitelistChars[listIdx]._name}'s "+
-            $"{gagType} gag").AddItalicsOff().BuiltString);
+            chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Removing "+
+            $"{targetPlayerName}'s {gagType} gag").AddItalicsOff().BuiltString);
             // update information and send message
-            string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
+            string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(listIdx);
             chatManager.SendRealMessage(gagMessages.GagEncodedRemoveMessage(playerPayload, targetPlayer, (layer+1).ToString()));
             characterHandler.SetWhitelistSelectedGagTypes(listIdx, layer, "None");
             characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, layer, Padlocks.None);
@@ -394,20 +395,21 @@ public partial class WhitelistPanel {
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         if (!characterHandler.IsIndexWithinBounds(listIdx)) { return; }
+        // get then name
+        string targetPlayerName = AltCharHelpers.FetchName(listIdx, characterHandler.whitelistChars[listIdx]._charNAWIdxToProcess);
+        
         // if any gags have locks on them, then done extcute this logic
         for (int i = 0; i < 3; i++) {
             if (characterHandler.whitelistChars[listIdx]._selectedGagPadlocks[i] != Padlocks.None) {
                 chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Cannot remove "+
-                $"{characterHandler.whitelistChars[listIdx]._name}'s gags, one or more of them are locked!").AddItalicsOff().BuiltString);
+                $"{targetPlayerName}'s gags, one or more of them are locked!").AddItalicsOff().BuiltString);
                 return;
             }
         } // if we make it here, we are able to remove them, so remove them!
         // print to chat so the player has a log of what they did
-        chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Removing all gags from "+
-        $"{characterHandler.whitelistChars[listIdx]._name}").AddItalicsOff().BuiltString);
+        chatGui.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Removing all gags from {targetPlayerName}").AddItalicsOff().BuiltString);
         // update information and send message
-        string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
-        chatManager.SendRealMessage(gagMessages.GagEncodedRemoveAllMessage(playerPayload, targetPlayer));
+        chatManager.SendRealMessage(gagMessages.GagEncodedRemoveAllMessage(playerPayload, targetPlayerName));
         for (int i = 0; i < characterHandler.whitelistChars[listIdx]._selectedGagTypes.Count; i++) {
             characterHandler.SetWhitelistSelectedGagTypes(listIdx, i, "None");
             characterHandler.SetWhitelistSelectedGagPadlocks(listIdx, i, Padlocks.None);

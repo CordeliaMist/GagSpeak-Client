@@ -89,7 +89,7 @@ public partial class WhitelistPanel {
                 if(ImGui.IsItemHovered()) { var tt = tooltips["AllowChangeToyStateTT"](); ImGui.SetTooltip(tt); }
                 ImGui.TableNextColumn();
                 var toyStatePerm = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._allowChangingToyState 
-                                            : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._allowChangingToyState;
+                                            : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowChangingToyState;
                 using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                     ImGuiUtil.Center((toyStatePerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
                 }
@@ -106,7 +106,7 @@ public partial class WhitelistPanel {
                         _interactOrPermButtonEvent.Invoke(5);
                     } else {
                         // toggles if this person can change your toy state
-                        _characterHandler.ToggleChangeToyState(_tempWhitelistIdx);
+                        _characterHandler.ToggleChangeToyState(_characterHandler.activeListIdx);
                     }
                 }
                 // Can Control Intensity
@@ -114,7 +114,7 @@ public partial class WhitelistPanel {
                 if(ImGui.IsItemHovered()) { var tt = tooltips["CanControlIntensityTT"](); ImGui.SetTooltip(tt); }
                 ImGui.TableNextColumn();
                 var toyIntensityPerm = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._allowsIntensityControl 
-                                                : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._allowIntensityControl;
+                                                : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowIntensityControl;
                 using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                     ImGuiUtil.Center((toyIntensityPerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
                 }
@@ -129,7 +129,7 @@ public partial class WhitelistPanel {
                     if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleToyIntensityControl", new Vector2(ImGui.GetContentRegionAvail().X, 0),
                     tooltips["ToggleButtonTT"](), false)) {
                         // toggles if this person can change your toy state
-                        _characterHandler.ToggleAllowIntensityControl(_tempWhitelistIdx);
+                        _characterHandler.ToggleAllowIntensityControl(_characterHandler.activeListIdx);
                     }
                 }
                 // Enable Restraint Sets option
@@ -137,7 +137,7 @@ public partial class WhitelistPanel {
                 if(ImGui.IsItemHovered()) { var tt = tooltips["CanExecutePatternsTT"](); ImGui.SetTooltip(tt); }
                 ImGui.TableNextColumn();
                 var patternExecuttionPerm = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._allowsUsingPatterns 
-                                                : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._allowUsingPatterns;
+                                                : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._allowUsingPatterns;
                 using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                     ImGuiUtil.Center((patternExecuttionPerm ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
                 }
@@ -152,7 +152,7 @@ public partial class WhitelistPanel {
                     if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleAllowingPatternExecution", new Vector2(ImGui.GetContentRegionAvail().X, 0),
                     tooltips["ToggleButtonTT"](), false)) {
                         // toggles if this person can change your toy state
-                        _characterHandler.ToggleAllowPatternExecution(_tempWhitelistIdx);
+                        _characterHandler.ToggleAllowPatternExecution(_characterHandler.activeListIdx);
                     }
                 }
             } finally {
@@ -242,14 +242,17 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_tempWhitelistChar._name}'s Enable Toybox Option!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s Enable Toybox Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistEnableToybox(_tempWhitelistIdx, !_tempWhitelistChar._enableToybox);
+        _characterHandler.SetWhitelistEnableToybox(_characterHandler.activeListIdx, !_tempWhitelistChar._enableToybox);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleEnableToyboxOption(playerPayload, targetPlayer));
     }
 
@@ -257,14 +260,17 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_tempWhitelistChar._name}'s Toy State!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s Toy State!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistAllowChangingToyState(_tempWhitelistIdx, !_tempWhitelistChar._allowChangingToyState);
+        _characterHandler.SetWhitelistAllowChangingToyState(_characterHandler.activeListIdx, !_tempWhitelistChar._allowChangingToyState);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleActiveToyboxOption(playerPayload, targetPlayer));
     }
 
@@ -272,14 +278,17 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_tempWhitelistChar._name}'s Toy Active Option!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s Toy Active Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistToyIsActive(_tempWhitelistIdx, !_tempWhitelistChar._isToyActive);
+        _characterHandler.SetWhitelistToyIsActive(_characterHandler.activeListIdx, !_tempWhitelistChar._isToyActive);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleToyOnOff(playerPayload, targetPlayer));
     }
 
@@ -287,14 +296,17 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Updating  "+ 
-            $"{_tempWhitelistChar._name}'s Toy Intensity to {newIntensityLevel}!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s Toy Intensity to {newIntensityLevel}!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistIntensityLevel(_tempWhitelistIdx, (byte)newIntensityLevel);
+        _characterHandler.SetWhitelistIntensityLevel(_characterHandler.activeListIdx, (byte)newIntensityLevel);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxUpdateActiveToyIntensity(playerPayload, targetPlayer, newIntensityLevel));
     }
 
@@ -302,12 +314,15 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Executing  "+ 
-            $"{_tempWhitelistChar._name}'s Toy Pattern [{patternName}]!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s Toy Pattern [{patternName}]!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxExecuteStoredToyPattern(playerPayload, targetPlayer, patternName));
     }
@@ -316,14 +331,17 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
-            $"{_tempWhitelistChar._name}'s Toybox Lock Option!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s Toybox Lock Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistAllowToyboxLocking(_tempWhitelistIdx, !_tempWhitelistChar._lockToyboxUI);
+        _characterHandler.SetWhitelistAllowToyboxLocking(_characterHandler.activeListIdx, !_tempWhitelistChar._lockToyboxUI);
         _chatManager.SendRealMessage(_messageEncoder.EncodeToyboxToggleLockToyboxUI(playerPayload, targetPlayer));
     }
 #endregion ButtonHelpers

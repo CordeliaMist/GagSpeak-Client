@@ -74,8 +74,12 @@ public partial class MessageDecoder {
                             decodedMessageMediator.layerAssigner[0] = layerInfo.Split("which had been secured by")[1].Trim().Split(", ")[0].Trim();
                         }
                         // if it was locked with a timer, then we need to get the timer
-                        if (layerInfo.Contains("with") && layerInfo.Contains("remaining")) {
-                            decodedMessageMediator.layerTimer[0] = layerInfo.Split("with")[1].Trim().Split("remaining, ")[0].Trim();
+                        if (layerInfo.Contains(", with") && layerInfo.Contains("remaining, ")) {
+                            int startIndex = layerInfo.IndexOf(", with") + 6;
+                            int endIndex = layerInfo.IndexOf("remaining, ");
+                            decodedMessageMediator.layerTimer[0] = layerInfo.Substring(startIndex, endIndex - startIndex).Trim();
+                            //decodedMessageMediator.layerTimer[0] = layerInfo.Substring(0, endIndex).Trim(); 
+                            // layerInfo.Split(", with")[1].Trim().Split("remaining, ")[0].Trim();
                         }
                         // if it was locked with a password, then we need to get the password
                         if(layerInfo.Contains("with the password")) {
@@ -85,10 +89,19 @@ public partial class MessageDecoder {
                 }
 
                 // debug info
-                GSLogger.LogType.Debug($"[Message Decoder]: share info1: (Type) {decodedMessageMediator.encodedCmdType} || (Assigner) {decodedMessageMediator.assignerName} || "+
-                $"(YourStatusToThem) {decodedMessageMediator.dynamicLean} || (TheirStatusToYou) {decodedMessageMediator.theirDynamicLean} || "+
-                $"(SafewordUsed) {decodedMessageMediator.safewordUsed} || (ExtendedLocks) {decodedMessageMediator.extendedLockTimes} || "+
-                $"(GaggedVoice) {decodedMessageMediator.directChatGarblerActive} || (SealedLips) {decodedMessageMediator.directChatGarblerLocked}");
+                GSLogger.LogType.Debug($"[Message Decoder]: share info1: (Type) {decodedMessageMediator.encodedCmdType}\n"+
+                $"(Assigner) {decodedMessageMediator.assignerName}\n"+
+                $"(yourStatusToThem) {decodedMessageMediator.dynamicLean}\n"+
+                $"(theirStatusToYou) {decodedMessageMediator.theirDynamicLean}\n"+
+                $"(SafewordUsed) {decodedMessageMediator.safewordUsed}\n"+
+                $"(ExtendedLocks) {decodedMessageMediator.extendedLockTimes}\n"+
+                $"(GaggedVoice) {decodedMessageMediator.directChatGarblerActive}\n"+
+                $"(SealedLips) {decodedMessageMediator.directChatGarblerLocked}\n"+
+                $"(gagtype[0]) {decodedMessageMediator.layerGagName[0]}\n"+
+                $"(gagpadlock[0]) {decodedMessageMediator.layerPadlock[0]}\n"+
+                $"(gagtimer[0]) {decodedMessageMediator.layerTimer[0]}\n"+
+                $"(gagAssigner[0]) {decodedMessageMediator.layerAssigner[0]}\n"+
+                $"(gagPassword[0]) {decodedMessageMediator.layerPassword[0]}");
             } else {
                 GSLogger.LogType.Error($"[Message Decoder]: share info: Failed to decode message: {recievedMessage}");
             }
@@ -141,10 +154,16 @@ public partial class MessageDecoder {
                     }
                 }
                 // debug result
-                GSLogger.LogType.Debug($"[Message Decoder]: share info2: (gagtype[1]) {decodedMessageMediator.layerGagName[1]} || (gagtype[2]) {decodedMessageMediator.layerGagName[2]} "+
-                $"|| (gagpadlock[1]) {decodedMessageMediator.layerPadlock[1]} || (gagpadlock[2]) {decodedMessageMediator.layerPadlock[2]} || (gagtimer[1]) {decodedMessageMediator.layerTimer[1]} "+
-                $"|| (gagtimer[2]) {decodedMessageMediator.layerTimer[2]} || (gagAssigner[1]) {decodedMessageMediator.layerAssigner[1]} || (gagAssigner[2]) {decodedMessageMediator.layerAssigner[2]} "+
-                $"|| (gagPassword[1]) {decodedMessageMediator.layerPassword[1]} || (gagPassword[2]) {decodedMessageMediator.layerPassword[2]}");
+                GSLogger.LogType.Debug($"[Message Decoder]: share info2: (gagtype[1]) {decodedMessageMediator.layerGagName[1]}\n"+
+                $"(gagpadlock[1]) {decodedMessageMediator.layerPadlock[1]}\n"+
+                $"(gagtimer[1]) {decodedMessageMediator.layerTimer[1]}\n"+
+                $"(gagAssigner[1]) {decodedMessageMediator.layerAssigner[1]}\n"+
+                $"(gagPassword[1]) {decodedMessageMediator.layerPassword[1]}\n"+
+                $"(gagtype[2]) {decodedMessageMediator.layerGagName[2]}\n"+
+                $"(gagpadlock[2]) {decodedMessageMediator.layerPadlock[2]}\n"+
+                $"(gagtimer[2]) {decodedMessageMediator.layerTimer[2]}\n"+
+                $"(gagAssigner[2]) {decodedMessageMediator.layerAssigner[2]}\n"+
+                $"(gagPassword[2]) {decodedMessageMediator.layerPassword[2]}");
             } else {
                 GSLogger.LogType.Error($"[Message Decoder]: share info2: Failed to decode message: {recievedMessage}");
             }
@@ -187,11 +206,15 @@ public partial class MessageDecoder {
                 // all commands state
                 decodedMessageMediator.allowAllCommands = match.Groups["allCommandsState"].Value.Trim() == "and all of their actions" ? true : false;
                 // debug result
-                GSLogger.LogType.Debug($"[Message Decoder]: share info3: (Type) {decodedMessageMediator.encodedCmdType} || (WardrobeState) {decodedMessageMediator.isWardrobeEnabled} || "+
-                $"(GagStorageState) {decodedMessageMediator.isGagStorageLockUIEnabled} || (RestraintSetEnable) {decodedMessageMediator.isEnableRestraintSets} || "+
-                $"(RestraintLock) {decodedMessageMediator.isRestraintSetLocking} || (PuppeteerTrigger) {decodedMessageMediator.triggerPhrase} || "+
-                $"(SitRequestState) {decodedMessageMediator.allowSitRequests} || (MotionRequestState) {decodedMessageMediator.allowMotionRequests} || "+
-                $"(AllCommandsState) {decodedMessageMediator.allowAllCommands} || (toyboxEnabled) {decodedMessageMediator.isToyboxEnabled}");
+                GSLogger.LogType.Debug($"[Message Decoder]: share info3: (Type) {decodedMessageMediator.encodedCmdType}\n"+
+                $"(WardrobeState) {decodedMessageMediator.isWardrobeEnabled}\n"+
+                $"(GagStorageState) {decodedMessageMediator.isGagStorageLockUIEnabled}\n"+
+                $"(RestraintSetEnable) {decodedMessageMediator.isEnableRestraintSets}\n"+
+                $"(RestraintLock) {decodedMessageMediator.isRestraintSetLocking}\n"+
+                $"(PuppeteerTrigger) {decodedMessageMediator.triggerPhrase}\n"+
+                $"(SitRequestState) {decodedMessageMediator.allowSitRequests}\n"+
+                $"(MotionRequestState) {decodedMessageMediator.allowMotionRequests}\n"+
+                $"(AllCommandsState) {decodedMessageMediator.allowAllCommands}");
             } else {
                 GSLogger.LogType.Error($"[Message Decoder]: share info3: Failed to decode message: {recievedMessage}");
             }
@@ -229,11 +252,17 @@ public partial class MessageDecoder {
                 // get hardcore mode state
                 decodedMessageMediator.inHardcoreMode = match.Groups["InHardcore"].Value.Trim() == "Left" ? true : false;
                 // debug result
-                GSLogger.LogType.Debug($"[Message Decoder]: share info4: (Type) {decodedMessageMediator.encodedCmdType} || (ToggleToyState) {decodedMessageMediator.isChangingToyStateAllowed} || "+
-                $"(CanControlIntensity) {decodedMessageMediator.isIntensityControlAllowed} || (IntensityLevel) {decodedMessageMediator.intensityLevel} || "+
-                $"(ToyPatternState) {decodedMessageMediator.isUsingPatternsAllowed} || (ToyboxLockState) {decodedMessageMediator.isToyboxLockingAllowed}" 
-                + $" || (ToyActiveState) {decodedMessageMediator.toyState}" + $" || (ToyStepCount) {decodedMessageMediator.toyStepCount}" + $" || (HardcoreSettings) "+
-                $"{match.Groups["hardcoreSettings"].Value.Trim()}" + $" || (InHardcore) {decodedMessageMediator.inHardcoreMode}");
+                GSLogger.LogType.Debug($"[Message Decoder]: share info4: (Type) {decodedMessageMediator.encodedCmdType}\n"+
+                $"(ToyboxEnabled) {decodedMessageMediator.isToyboxEnabled}\n"+
+                $"(ToggleToyState) {decodedMessageMediator.isChangingToyStateAllowed}\n"+
+                $"(CanControlIntensity) {decodedMessageMediator.isIntensityControlAllowed}\n"+
+                $"(IntensityLevel) {decodedMessageMediator.intensityLevel}\n"+
+                $"(ToyPatternState) {decodedMessageMediator.isUsingPatternsAllowed}\n"+
+                $"(ToyboxLockState) {decodedMessageMediator.isToyboxLockingAllowed}\n"+
+                $"(ToyActiveState) {decodedMessageMediator.toyState}\n"+
+                $"(ToyStepCount) {decodedMessageMediator.toyStepCount}\n"+
+                $"(HardcoreSettings) {match.Groups["hardcoreSettings"].Value.Trim()}\n"+
+                $"(InHardcore) {decodedMessageMediator.inHardcoreMode}");
             } else {
                 GSLogger.LogType.Error($"[Message Decoder]: share info4: Failed to decode message: {recievedMessage}");
             }

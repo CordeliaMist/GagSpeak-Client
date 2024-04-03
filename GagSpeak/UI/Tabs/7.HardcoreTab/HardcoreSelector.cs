@@ -1,21 +1,20 @@
 using System.Numerics;
 using Dalamud.Interface;
-using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using GagSpeak.CharacterData;
 using GagSpeak.Hardcore.Movement;
 using ImGuiNET;
 using OtterGui;
-using Penumbra.GameData.Structs;
+using GagSpeak.Utility;
 
 namespace GagSpeak.UI.Tabs.HardcoreTab;
 public class HardcoreSelector
 {
-    private readonly    CharacterHandler    _characterHandler;   // for getting the whitelist
+    private readonly    CharacterHandler    _charHandler;   // for getting the whitelist
     private             Vector2             _defaultItemSpacing; // for setting the item spacing
     
     public HardcoreSelector(CharacterHandler characterHandler) {
-        _characterHandler = characterHandler;
+        _charHandler = characterHandler;
     }
 
     public void Draw(float width) {
@@ -42,16 +41,30 @@ public class HardcoreSelector
         using var style     = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, _defaultItemSpacing);
         var       skips     = OtterGui.ImGuiClip.GetNecessarySkips(ImGui.GetTextLineHeight());
         var       remainder = OtterGui.ImGuiClip.ClippedDraw(
-                                    _characterHandler.whitelistChars, skips, DrawSelectable);
+                                    _charHandler.whitelistChars, skips, DrawSelectable);
         OtterGui.ImGuiClip.DrawEndDummy(remainder, ImGui.GetTextLineHeight());
     }
 
-    private void DrawSelectable(WhitelistedCharacterInfo characterInfo) {
-        var equals = _characterHandler.activeListIdx == _characterHandler.GetWhitelistIndex(characterInfo._name);
-        if (ImGui.Selectable(characterInfo._name, equals) && !equals)
+
+    public void DrawSelectable(WhitelistedCharacterInfo characterInfo) {
+        // if the character is in the whitelist,
+        // might be able to modify this to be something besides the first index
+        if(AltCharHelpers.IsPlayerInWhitelist(characterInfo._charNAW[0]._name, out int whitelistCharIdx))
         {
-            // update the active list index
-            _characterHandler.activeListIdx = _characterHandler.GetWhitelistIndex(characterInfo._name);
+            // first we need to see if the active index is set to the current characters main name index
+            var equals = _charHandler.activeListIdx == whitelistCharIdx;
+            
+            // if the selectable is not the active list index, update it
+            string selectableLabel = characterInfo._charNAWIdxToProcess == 0
+                ? characterInfo._charNAW[characterInfo._charNAWIdxToProcess]._name
+                : $"{characterInfo._charNAW[characterInfo._charNAWIdxToProcess]._name} (Alt)";
+
+            if (ImGui.Selectable(selectableLabel, equals) && !equals)
+            {
+                // update the active list index
+                _charHandler.activeListIdx = whitelistCharIdx;
+                _charHandler.Save();
+            }
         }
     }
 

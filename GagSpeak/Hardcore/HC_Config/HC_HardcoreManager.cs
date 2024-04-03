@@ -10,6 +10,7 @@ using GagSpeak.CharacterData;
 using GagSpeak.Hardcore.Movement;
 using GagSpeak.UI;
 using System.Numerics;
+
 namespace GagSpeak.Hardcore;
 public partial class HardcoreManager : ISavable, IDisposable
 {

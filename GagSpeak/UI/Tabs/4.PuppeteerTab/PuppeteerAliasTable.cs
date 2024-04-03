@@ -126,7 +126,7 @@ public partial class PuppeteerAliasTable {
             _tempNewAlias._inputCommand = newAliasText; // Update the new alias entry input
         }
         if(ImGui.IsItemHovered()) { 
-            ImGui.SetTooltip($"When {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} "+
+            ImGui.SetTooltip($"When {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAW[0]._name.Split(' ')[0]} "+
             "says this as a part of the command for you to execute after your trigger phrase,\n"+
             "You will replace it with the alias output command before executing it.");
         }

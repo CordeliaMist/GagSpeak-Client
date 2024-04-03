@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
@@ -6,7 +5,6 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
 using GagSpeak.Hardcore;
-using GagSpeak.Hardcore.Actions;
 using GagSpeak.Services;
 using GagSpeak.Utility;
 using ImGuiNET;
@@ -36,7 +34,7 @@ public class HC_Orders
             if (!child)
                 return;
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
-            var name = $"{_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]}";
+            var name = $"{AltCharHelpers.FetchCurrentName().Split(' ')[0]}";
             var yourName = "";
             if(_client.LocalPlayer == null) { yourName = "You"; }
             else { yourName = $"{_client.LocalPlayer.Name.ToString().Split(' ')[0]}"; }

@@ -57,7 +57,7 @@ public class RestraintSetSelector : IDisposable
 
 #region  RestraintSetSelector
     public void DrawRestraintSetSelector(float width, float height, Vector2 ItemSpacing, bool borderAllowed = true) {
-        using var child = ImRaii.Child("##Selector", new Vector2(width, height), borderAllowed);
+        using var child = ImRaii.Child("##Selector", new Vector2(width, height), borderAllowed, ImGuiWindowFlags.NoScrollbar);
         if (!child)
             return;
 

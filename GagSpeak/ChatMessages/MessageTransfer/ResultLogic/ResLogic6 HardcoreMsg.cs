@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using GagSpeak.Utility;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
@@ -8,13 +9,12 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the dynamictier and index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx, out int CharNameIdx))
+        {
             // if you have hardcore mode enabled
             if(_config.hardcoreMode) {
                 // toggle the blindfold state
-                Task.Run(() => _hardcoreManager.SetBlindfolded(index, !_hardcoreManager._perPlayerConfigs[index]._blindfolded, playerName));
+                Task.Run(() => _hardcoreManager.SetBlindfolded(whitelistCharIdx, !_hardcoreManager._perPlayerConfigs[whitelistCharIdx]._blindfolded, playerName));
                 GSLogger.LogType.Debug($"[Message ResLogic]: {playerName} has toggled your blindfold, enjoy the darkness~");
                 return true;
             }

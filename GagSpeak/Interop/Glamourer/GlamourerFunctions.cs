@@ -11,21 +11,15 @@ using GagSpeak.Gagsandlocks;
 using GagSpeak.UI.Equipment;
 using System.Collections.Generic;
 using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using GagSpeak.Services;
 using GagSpeak.Hardcore;
 
 namespace GagSpeak.Interop;
 
-/// <summary>
-/// Create a sealed class for our interop manager.
-/// </summary>
-
 public class GlamourerFunctions : IDisposable
 {
     public static bool disableGlamChangeEvent { get; set; } = false;           // disables the glam change event
     public static bool finishedDrawingGlamChange { get; set; } = false;        // disables the glamourer
-    private readonly    GagSpeakConfig                  _config;                // the plugin interface
     private readonly    GagStorageManager               _gagStorageManager;     // the gag storage manager
     private readonly    RestraintSetManager             _restraintSetManager;   // the restraint set manager
     private readonly    HardcoreManager                 _hardcoreManager;       // the hardcore manager
@@ -37,11 +31,10 @@ public class GlamourerFunctions : IDisposable
     private             Action<StateChangeType, nint, Lazy<string>> _ChangedDelegate;       // delgate for  GlamourChanged, so it is subscribed and disposed properly
     private             CancellationTokenSource         _cts;
 
-    public GlamourerFunctions(GagSpeakConfig gagSpeakConfig, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager,
-    CharacterHandler characterHandler, GlamourerService GlamourerService, IFramework framework, GagSpeakGlamourEvent gagSpeakGlamourEvent,
-    OnFrameworkService onFrameworkService, HardcoreManager hardcoreManager) {
+    public GlamourerFunctions(GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager,
+    CharacterHandler characterHandler, GlamourerService GlamourerService, IFramework framework,
+    GagSpeakGlamourEvent gagSpeakGlamourEvent, OnFrameworkService onFrameworkService, HardcoreManager hardcoreManager) {
         // initialize the glamourer interop class
-        _config = gagSpeakConfig;
         _gagStorageManager = gagStorageManager;
         _restraintSetManager = restraintSetManager;
         _hardcoreManager = hardcoreManager;
@@ -266,10 +259,12 @@ public class GlamourerFunctions : IDisposable
                 {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Blindfold Equipped");
                     // get the index of the person who equipped it onto you
-                    var idx = _characterHandler.GetWhitelistIndex(e.AssignerName);
-                    if(idx != -1) {
-                        await EquipBlindfold(idx);
-                    } else {
+                    if(AltCharHelpers.IsPlayerInWhitelist(e.AssignerName, out int whitelistCharIdx))
+                    {
+                        await EquipBlindfold(whitelistCharIdx);
+                    } 
+                    else
+                    {
                         GSLogger.LogType.Debug($"[GlamourEventFired]: Assigner {e.AssignerName} is not on your whitelist, so not setting item.");
                     }
                 }
@@ -278,10 +273,13 @@ public class GlamourerFunctions : IDisposable
                 if(e.UpdateType == UpdateType.BlindfoldUnEquipped)
                 {
                     GSLogger.LogType.Debug($"[GlamourEventFired]: Processing Blindfold UnEquipped");
-                    var idx = _characterHandler.GetWhitelistIndex(e.AssignerName);
-                    if(idx != -1) {
-                        await UnequipBlindfold(idx);
-                    } else {
+                    // get the index of the person who equipped it onto you
+                    if(AltCharHelpers.IsPlayerInWhitelist(e.AssignerName, out int whitelistCharIdx))
+                    {
+                        await UnequipBlindfold(whitelistCharIdx);
+                    } 
+                    else
+                    {
                         GSLogger.LogType.Debug($"[GlamourEventFired]: Assigner {e.AssignerName} is not on your whitelist, so not setting item.");
                     }
                 }
@@ -444,11 +442,10 @@ public class GlamourerFunctions : IDisposable
         var words = tempAssignerName.Split(' ');
         tempAssignerName = string.Join(" ", words.Take(2)); // should only take the first two words
         // if the name matches anyone in the Whitelist:
-        if(_characterHandler.whitelistChars.Any(w => w._name == tempAssignerName)) {
+        if(AltCharHelpers.IsPlayerInWhitelist(tempAssignerName, out int whitelistCharIdx)) {
             // if the _yourStatusToThem is pet or slave, and the _theirStatusToYou is Mistress, then we can equip the gag.
-            int playerIdx = _characterHandler.GetWhitelistIndex(tempAssignerName);
-            if(_characterHandler.whitelistChars[playerIdx].IsRoleLeanSubmissive(_characterHandler.whitelistChars[playerIdx]._yourStatusToThem) 
-            && _characterHandler.whitelistChars[playerIdx].IsRoleLeanDominant(_characterHandler.whitelistChars[playerIdx]._theirStatusToYou))
+            if(_characterHandler.whitelistChars[whitelistCharIdx].IsRoleLeanSubmissive(_characterHandler.whitelistChars[whitelistCharIdx]._yourStatusToThem) 
+            && _characterHandler.whitelistChars[whitelistCharIdx].IsRoleLeanDominant(_characterHandler.whitelistChars[whitelistCharIdx]._theirStatusToYou))
             {
                 GSLogger.LogType.Debug($"[ValidGagAssignerUser]: You are a pet/slave to the gag assigner, and {tempAssignerName} is your Mistress. Because this two way relationship is established, allowing Item Auto-Eqiup.");
                 return true;

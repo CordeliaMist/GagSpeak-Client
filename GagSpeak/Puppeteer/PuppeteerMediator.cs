@@ -4,6 +4,7 @@ using GagSpeak.CharacterData;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emote = Lumina.Excel.GeneratedSheets.Emote;
+using GagSpeak.Utility;
 
 namespace GagSpeak.ToyboxandPuppeteer;
 // a mediator for holding timer information and tracks when a pattern has been saved
@@ -44,34 +45,31 @@ public class PuppeteerMediator
     /// <summary> Checks if whitelisted players message contains your trigger word </summary>
     /// <returns> True if the message contains the trigger word, false if not </returns>
     public bool ContainsTriggerWord(string SenderName, string messageRecieved, out string puppeteerMessageToSend) {
-        int indexOfWhitelistedChar = _characterHandler.GetWhitelistIndex(SenderName); // our temp name in our whitelist
-        // if the index is -1, then the sender is not whitelisted
-        if (indexOfWhitelistedChar == -1) {
-            // if user is not in whitelist, exit early.
-            puppeteerMessageToSend = string.Empty;
-            return false;
-        }
-        string triggerWords = _characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._triggerPhraseForPuppeteer;
-        string[] triggerWordArray = triggerWords.Split('|');
-
-        foreach (string triggerWord in triggerWordArray)
+        // if the player is in the whitelist
+        if(AltCharHelpers.IsPlayerInWhitelist(SenderName, out int whitelistCharIdx))
         {
-            if (string.IsNullOrEmpty(triggerWord) || string.IsNullOrWhiteSpace(triggerWord) || triggerWord == "" || triggerWord == " ")
+            string triggerWords = _characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._triggerPhraseForPuppeteer;
+            string[] triggerWordArray = triggerWords.Split('|');
+
+            foreach (string triggerWord in triggerWordArray)
             {
-                continue;
-            }
-            // now that we have our trigger word, see if the trigger word exists within our message
-            var match = MatchTriggerWord(messageRecieved, triggerWord);
-            if (match.Success)
-            {
-                string remainingMessage = messageRecieved.Substring(match.Index + match.Length).Trim();
-                remainingMessage = GetSubstringWithinParentheses(remainingMessage, indexOfWhitelistedChar);
-                if (remainingMessage != null)
+                if (string.IsNullOrEmpty(triggerWord) || string.IsNullOrWhiteSpace(triggerWord) || triggerWord == "" || triggerWord == " ")
                 {
-                    remainingMessage = ConvertSquareToAngleBrackets(remainingMessage);
-                    puppeteerMessageToSend = remainingMessage;
-                    GSLogger.LogType.Debug($"[PuppeteerMediator]: Index of Whitelisted Char in found Match: {indexOfWhitelistedChar}");
-                    return true;
+                    continue;
+                }
+                // now that we have our trigger word, see if the trigger word exists within our message
+                var match = MatchTriggerWord(messageRecieved, triggerWord);
+                if (match.Success)
+                {
+                    string remainingMessage = messageRecieved.Substring(match.Index + match.Length).Trim();
+                    remainingMessage = GetSubstringWithinParentheses(remainingMessage, whitelistCharIdx);
+                    if (remainingMessage != null)
+                    {
+                        remainingMessage = ConvertSquareToAngleBrackets(remainingMessage);
+                        puppeteerMessageToSend = remainingMessage;
+                        GSLogger.LogType.Debug($"[PuppeteerMediator]: Index of Whitelisted Char in found Match: {whitelistCharIdx}");
+                        return true;
+                    }
                 }
             }
         }
@@ -81,38 +79,39 @@ public class PuppeteerMediator
     }
 
     public bool MeetsSettingCriteria(string SenderName, SeString messageRecieved) {
-        int indexOfWhitelistedChar = _characterHandler.GetWhitelistIndex(SenderName); // our temp name in our whitelist
-        // if the index is -1, then the sender is not whitelisted
-        if (indexOfWhitelistedChar == -1) { return false; }
-        // At this point, our main concern is if the message to play is within the parameters of the settings we set
-        // for the player. If the player has the setting enabled, then we can proceed.
-        if(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._allowSitRequests) {
-            if(messageRecieved.TextValue == "sit" || messageRecieved.TextValue == "groundsit")
-            {
-                GSLogger.LogType.Debug($"[PuppeteerMediator]: valid sit command");
-                return true;
-            } else {
-                GSLogger.LogType.Debug($"[PuppeteerMediator]: not a sit command");
-            }
-        }
-        if(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._allowMotionRequests) {
-            // we can check to see if it is a valid emote
-            var emotes = _dataManager.GetExcelSheet<Emote>();
-            if(emotes != null){
-                // check if the message matches any emotes from that sheet
-                foreach (var emote in emotes) {
-                    if (messageRecieved.TextValue == emote.Name.RawString.Replace(" ", "").ToLower()) {
-                        GSLogger.LogType.Debug($"[PuppeteerMediator]: valid emote command");
-                        // then it is an emote, and we have enabled that option, so return true
-                        return true;
-                    }
+        // if the player is in the whitelist
+        if(AltCharHelpers.IsPlayerInWhitelist(SenderName, out int whitelistCharIdx))
+        {
+            // At this point, our main concern is if the message to play is within the parameters of the settings we set
+            // for the player. If the player has the setting enabled, then we can proceed.
+            if(_characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._allowSitRequests) {
+                if(messageRecieved.TextValue == "sit" || messageRecieved.TextValue == "groundsit")
+                {
+                    GSLogger.LogType.Debug($"[PuppeteerMediator]: valid sit command");
+                    return true;
+                } else {
+                    GSLogger.LogType.Debug($"[PuppeteerMediator]: not a sit command");
                 }
-                GSLogger.LogType.Debug($"[PuppeteerMediator]: not a valid emote!");
             }
-        }
-        if(_characterHandler.playerChar._uniquePlayerPerms[indexOfWhitelistedChar]._allowAllCommands) {
-            GSLogger.LogType.Debug($"[PuppeteerMediator]: valid all type command order");
-            return true;
+            if(_characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._allowMotionRequests) {
+                // we can check to see if it is a valid emote
+                var emotes = _dataManager.GetExcelSheet<Emote>();
+                if(emotes != null){
+                    // check if the message matches any emotes from that sheet
+                    foreach (var emote in emotes) {
+                        if (messageRecieved.TextValue == emote.Name.RawString.Replace(" ", "").ToLower()) {
+                            GSLogger.LogType.Debug($"[PuppeteerMediator]: valid emote command");
+                            // then it is an emote, and we have enabled that option, so return true
+                            return true;
+                        }
+                    }
+                    GSLogger.LogType.Debug($"[PuppeteerMediator]: not a valid emote!");
+                }
+            }
+            if(_characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._allowAllCommands) {
+                GSLogger.LogType.Debug($"[PuppeteerMediator]: valid all type command order");
+                return true;
+            }
         }
         // if we reach here, it means we dont meet the criteria
         GSLogger.LogType.Debug($"[PuppeteerMediator]: not a valid command, or all commands is not active");
@@ -155,27 +154,27 @@ public class PuppeteerMediator
     }
 
     public SeString ConvertAliasCommandsIfAny(string SenderName, string puppeteerMessageToSend) {
-        // as a final step, let's check your alias list for the player, and translate any aliases you have set for them
-        int indexOfWhitelistedChar = _characterHandler.GetWhitelistIndex(SenderName); // our temp name in our whitelist
-        // we dont really need to do this check, but im being safe
-        if (indexOfWhitelistedChar == -1) { return puppeteerMessageToSend; }
-        // now we can use this index to scan our aliasLists
-        AliasList aliasListToScan = _characterHandler.playerChar._triggerAliases[indexOfWhitelistedChar];
-        // Sort the aliases by length in descending order, to ensure longer equivalent input variants are taken before shorter ones.
-        var sortedAliases = aliasListToScan._aliasTriggers.OrderByDescending(alias => alias._inputCommand.Length);
-        // see if our message contains any of the alias strings. For it to match, it must match the full alias string.
-        foreach (AliasTrigger alias in aliasListToScan._aliasTriggers) {
-            // if the alias is enabled
-            if (alias._enabled 
-            && !string.IsNullOrWhiteSpace(alias._inputCommand) 
-            && !string.IsNullOrWhiteSpace(alias._outputCommand) 
-            && puppeteerMessageToSend.Contains(alias._inputCommand))
-            {
-                // replace the alias command with the output command
-                puppeteerMessageToSend = puppeteerMessageToSend.Replace(alias._inputCommand, alias._outputCommand);
+        // if the player is in the whitelist
+        if(AltCharHelpers.IsPlayerInWhitelist(SenderName, out int whitelistCharIdx))
+        {
+            // now we can use this index to scan our aliasLists
+            AliasList aliasListToScan = _characterHandler.playerChar._triggerAliases[whitelistCharIdx];
+            // Sort the aliases by length in descending order, to ensure longer equivalent input variants are taken before shorter ones.
+            var sortedAliases = aliasListToScan._aliasTriggers.OrderByDescending(alias => alias._inputCommand.Length);
+            // see if our message contains any of the alias strings. For it to match, it must match the full alias string.
+            foreach (AliasTrigger alias in aliasListToScan._aliasTriggers) {
+                // if the alias is enabled
+                if (alias._enabled 
+                && !string.IsNullOrWhiteSpace(alias._inputCommand) 
+                && !string.IsNullOrWhiteSpace(alias._outputCommand) 
+                && puppeteerMessageToSend.Contains(alias._inputCommand))
+                {
+                    // replace the alias command with the output command
+                    puppeteerMessageToSend = puppeteerMessageToSend.Replace(alias._inputCommand, alias._outputCommand);
+                }
             }
+            GSLogger.LogType.Debug($"[PuppeteerMediator]: New Message: {puppeteerMessageToSend}");
         }
-        GSLogger.LogType.Debug($"[PuppeteerMediator]: New Message: {puppeteerMessageToSend}");
         return puppeteerMessageToSend;
     }
 

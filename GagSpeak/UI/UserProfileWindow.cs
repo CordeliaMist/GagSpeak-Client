@@ -10,7 +10,7 @@ using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 using OtterGui;
 using GagSpeak.CharacterData;
-using System.Runtime.CompilerServices;
+using GagSpeak.Utility;
 
 namespace GagSpeak.UI;
 /// <summary> 
@@ -58,18 +58,18 @@ public class UserProfileWindow : Window, IDisposable
             ImGui.Image(_dalamudTextureWrap.ImGuiHandle, new Vector2(60, 60));
             ImGui.NextColumn();
             ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.2f, 0.9f),
-            $"Player: {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}");
+            $"Player: {AltCharHelpers.FetchCurrentName()}");
             ImGui.TextColored(new Vector4(0.4f, 0.9f, 0.4f, 1.0f),
-            $"World: {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._homeworld}");
+            $"World: {AltCharHelpers.FetchCurrentWorld()}");
             ImGui.TextColored(new Vector4(0.4f, 0.9f, 0.4f, 1.0f),
-            $"{_characterHandler.GetDynamicTierClient(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name)} Dynamic Strength");
+            $"{_characterHandler.GetDynamicTierClient(AltCharHelpers.FetchCurrentName())} Dynamic Strength");
             ImGui.NextColumn(); ImGui.Columns(1); ImGui.Separator();
             if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem == RoleLean.None) {
                 ImGui.Text($"Relation To Character: "); ImGui.SameLine();
                 ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1.0f),
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem}");
             } else {
-                ImGui.Text($"You are {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}'s: "); ImGui.SameLine();
+                ImGui.Text($"You are {AltCharHelpers.FetchCurrentName().Split(' ')[0]}'s: "); ImGui.SameLine();
                 ImGui.TextColored(new Vector4(0.9f, 0.2f, 0.4f, 1.0f),
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem}");
             }
@@ -78,7 +78,7 @@ public class UserProfileWindow : Window, IDisposable
                 ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1.0f),
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou}");
             } else {
-                ImGui.Text($"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} is your: "); ImGui.SameLine();
+                ImGui.Text($"{AltCharHelpers.FetchCurrentName().Split(' ')[0]} is your: "); ImGui.SameLine();
                 ImGui.TextColored(new Vector4(0.9f, 0.2f, 0.4f, 1.0f),
                 $"{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou}");
             }

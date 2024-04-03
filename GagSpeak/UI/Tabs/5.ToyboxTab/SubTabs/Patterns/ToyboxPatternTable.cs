@@ -9,10 +9,8 @@ using OtterGui;
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using System.Text;
 using GagSpeak.Interop;
 using Dalamud.Interface.Utility;
-using GagSpeak.Utility;
 
 namespace GagSpeak.UI.Tabs.ToyboxTab;
 public partial class ToyboxPatternTable {

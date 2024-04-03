@@ -270,12 +270,12 @@ public class PadlockIdentifier
             GSLogger.LogType.Debug($"[PadlockIdentifer]: You are the assigner");
             // if we reach this point, it means we are the one assigning it and are in dom mode.
             // next make sure the target we are using this on views us as mistress
-            if(characterHandler.whitelistChars.Any(w => targetPlayerName.Contains(w._name)
+            if(characterHandler.whitelistChars.Any(w => w._charNAW.Any(tuple => tuple.Item1 == targetPlayerName)
             && (w._yourStatusToThem == RoleLean.Mistress || w._yourStatusToThem == RoleLean.Master || w._yourStatusToThem == RoleLean.Owner) 
             && w.IsRoleLeanSubmissive(w._theirStatusToYou)))
             {
                 // if we reached this point our dynamic is OK for a mistress assigning a lock to a pet or slave
-                GSLogger.LogType.Debug($"[PadlockIdentifer]: You are the Mistress locking the padlock to your submissive, {targetPlayerName}");
+                GSLogger.LogType.Debug($"[PadlockIdentifer]: You are the Mistress locking/unlocking the padlock to your submissive, {targetPlayerName}");
                 return true;
             }
             else {
@@ -288,12 +288,12 @@ public class PadlockIdentifier
         if(targetPlayerName == YourPlayerName) { // need to fix this later
             GSLogger.LogType.Debug($"[PadlockIdentifer]: You are the target");
             // at this point we know what relation we are, so now we must verify the relations
-            if(characterHandler.whitelistChars.Any(w => assignerPlayerName.Contains(w._name)
+            if(characterHandler.whitelistChars.Any(w => w._charNAW.Any(tuple => tuple.Item1 == assignerPlayerName)
             && w.IsRoleLeanSubmissive(w._yourStatusToThem) 
             &&(w._theirStatusToYou == RoleLean.Mistress || w._theirStatusToYou == RoleLean.Master || w._theirStatusToYou == RoleLean.Owner)))
             {
                 // if we reached this point we know our dynamic is sucessful and we can accept it.
-                GSLogger.LogType.Debug($"[PadlockIdentifer]: You are the submissive recieving the lock from your mistress, {assignerPlayerName}");
+                GSLogger.LogType.Debug($"[PadlockIdentifer]: You are the submissive recieving the lock/unlock from your mistress, {assignerPlayerName}");
                 return true;
             }
             else {

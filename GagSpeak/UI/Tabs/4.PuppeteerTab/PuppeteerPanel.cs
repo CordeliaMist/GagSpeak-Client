@@ -7,6 +7,7 @@ using Dalamud.Interface.Utility;
 using GagSpeak.Services;
 using OtterGui;
 using System;
+using GagSpeak.Utility;
 
 namespace GagSpeak.UI.Tabs.PuppeteerTab;
 public partial class PuppeteerPanel
@@ -40,7 +41,7 @@ public partial class PuppeteerPanel
 
     // draw the header
     private void DrawPermissionsHeader() {
-        WindowHeader.Draw($"Setup Puppeteer Preferences For {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}",
+        WindowHeader.Draw($"Setup Puppeteer Preferences For {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess)}",
         0, ImGui.GetColorU32(ImGuiCol.FrameBg), 0);
     }
 
@@ -51,14 +52,16 @@ public partial class PuppeteerPanel
         if (!child) { return; }
         var width = ImGui.GetContentRegionAvail().X;
         var yPos = ImGui.GetCursorPosY();
+        // temp name
+        string tempPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
         // draw the trigger phrase
         ImGui.PushFont(_fonts.UidFont);
         try{
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
-            ImGui.Text($"Trigger that {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} can use on You");
+            ImGui.Text($"Trigger that {tempPlayerName.Split(' ')[0]} can use on You");
             if(ImGui.IsItemHovered()) {
-                ImGui.SetTooltip($"The Trigger Phrase that you have set for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]}.\n"+
-                                $"If {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} says this in chat in any enabled channels,\n"+
+                ImGui.SetTooltip($"The Trigger Phrase that you have set for {tempPlayerName.Split(' ')[0]}.\n"+
+                                $"If {tempPlayerName.Split(' ')[0]} says this in chat in any enabled channels,\n"+
                                 $"you will execute whatever comes after the trigger phrase,\n(or what is enclosed within the start and end brackets)");
             }
         } finally {
@@ -76,7 +79,7 @@ public partial class PuppeteerPanel
             // example display
             ImGui.Text("Example:");
             ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1.0f,1.0f,0.0f,1.0f), $"<{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}> "+
+            ImGui.TextColored(new Vector4(1.0f,1.0f,0.0f,1.0f), $"<{tempPlayerName}> "+
             $"{displayText} {_characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._StartCharForPuppeteerTrigger} "+
             $"glamour apply Hogtied | p | [me] {_characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._EndCharForPuppeteerTrigger}");
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"The spaces between the brackets and commands/trigger phrases are optional."); }
@@ -87,7 +90,7 @@ public partial class PuppeteerPanel
             // store the input text boxes trigger phrase
             var TriggerPhrase  = _tempTriggerPhrase ?? _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._triggerPhraseForPuppeteer;
             ImGui.SetNextItemWidth(width);
-            if (ImGui.InputTextWithHint($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sTriggerPhrase",
+            if (ImGui.InputTextWithHint($"##{tempPlayerName}sTriggerPhrase",
             "Phrase that makes you execute commands", ref TriggerPhrase, 64, ImGuiInputTextFlags.EnterReturnsTrue)) {
                 _tempTriggerPhrase = TriggerPhrase;
             }
@@ -102,7 +105,7 @@ public partial class PuppeteerPanel
         // draw out the start and end characters
         var tempStartParam  = _tempStartParameter ?? _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._StartCharForPuppeteerTrigger;
         ImGui.SetNextItemWidth(20*ImGuiHelpers.GlobalScale);
-        if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sBegin",
+        if (ImGui.InputText($"##{tempPlayerName}sBegin",
         ref tempStartParam, 1, ImGuiInputTextFlags.EnterReturnsTrue)) {
             _tempStartParameter = tempStartParam;
         }
@@ -120,7 +123,7 @@ public partial class PuppeteerPanel
         var tempEndParam  = _tempEndParameter ?? _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._EndCharForPuppeteerTrigger;
         ImGui.SameLine();
         ImGui.SetNextItemWidth(20*ImGuiHelpers.GlobalScale);
-        if (ImGui.InputText($"##{_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name}sEnd", 
+        if (ImGui.InputText($"##{tempPlayerName}sEnd", 
         ref tempEndParam, 1, ImGuiInputTextFlags.EnterReturnsTrue)) {
             _tempEndParameter = tempEndParam;
         }
@@ -144,7 +147,7 @@ public partial class PuppeteerPanel
         }
         ImGui.SameLine();
         ImGuiUtil.LabeledHelpMarker("Sitting", 
-        $"If you are giving {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} access "+
+        $"If you are giving {tempPlayerName.Split(' ')[0]} access "+
         "to make you execute /sit and /groundsit commands with your trigger phrase.");
         // next box
         ImGui.SameLine();
@@ -153,7 +156,7 @@ public partial class PuppeteerPanel
         }
         ImGui.SameLine();
         ImGuiUtil.LabeledHelpMarker("Emotes", 
-            $"If you are giving {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} access "+
+            $"If you are giving {tempPlayerName.Split(' ')[0]} access "+
             "to make you execute emotes and expressions with your trigger phrase.");
         ImGui.SameLine();
         // next box
@@ -162,7 +165,7 @@ public partial class PuppeteerPanel
         }
         ImGui.SameLine();
         ImGuiUtil.LabeledHelpMarker("All", 
-            $"If you are giving {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} access "+
+            $"If you are giving {tempPlayerName.Split(' ')[0]} access "+
             "to make you execute any command with your trigger phrase.");
         // go to draw out the alias table.
         yPos = ImGui.GetCursorPosY();

@@ -19,9 +19,10 @@ public enum BlindfoldType { Light, Sensual }
 
 public class BlindfoldWindow : Window, IDisposable
 {
+    IDalamudTextureWrap textureWrap1;
+    IDalamudTextureWrap textureWrap2;
     private readonly GagSpeakConfig _config;
     private DalamudPluginInterface  _pi;
-    private IDalamudTextureWrap?    textureWrap;
     private UiBuilder               _uiBuilder;
     private TimerRecorder           _timerRecorder;
     private Stopwatch               stopwatch = new Stopwatch();
@@ -34,7 +35,6 @@ public class BlindfoldWindow : Window, IDisposable
     float easedProgress = 0.0f;
     float startY = -ImGui.GetIO().DisplaySize.Y;
     float midY = 0.2f * ImGui.GetIO().DisplaySize.Y;
-    string imagePath = "";
     public unsafe BlindfoldWindow(UiBuilder uiBuilder, DalamudPluginInterface pluginInterface,
     GagSpeakConfig config) : base(GetLabel(),
     ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoMouseInputs | ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove |
@@ -48,20 +48,15 @@ public class BlindfoldWindow : Window, IDisposable
         RespectCloseHotkey = false;
         // make it not close on ui hide
         _uiBuilder.DisableUserUiHide = true;
-        // Load the image
-        if(_config.blindfoldType == BlindfoldType.Light) {
-            imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "Blindfold_Light.png");
-        } else {
-            imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "BlindfoldLace_Sensual.png");
-        }
-        textureWrap = _uiBuilder.LoadImage(imagePath);
+        // Load the images
+        textureWrap1 = _pi.UiBuilder.LoadImage(Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "Blindfold_Light.png"));
+        textureWrap2 = _pi.UiBuilder.LoadImage(Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "BlindfoldLace_Sensual.png"));
         // set the stopwatch to send an elapsed time event after 2 seconds then stop
         _timerRecorder = new TimerRecorder(2000, ToggleWindow);
     }
 
     public void Dispose() {
         _timerRecorder.Dispose();
-        textureWrap?.Dispose();
     }
 
     public override unsafe void PreDraw() {
@@ -73,13 +68,11 @@ public class BlindfoldWindow : Window, IDisposable
 
     public void ChangeBlindfoldType(BlindfoldType type) {
         if(type == BlindfoldType.Light) {
-            imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "Blindfold_Light.png");
-            textureWrap?.Dispose(); // Dispose the old image to free resources
-            textureWrap = _uiBuilder.LoadImage(imagePath); // Load the new image
+            _config.blindfoldType = BlindfoldType.Light;
+            _config.Save();
         } else {
-            imagePath = Path.Combine(_pi.AssemblyLocation.Directory?.FullName!, "BlindfoldLace_Sensual.png");
-            textureWrap?.Dispose(); // Dispose the old image to free resources
-            textureWrap = _uiBuilder.LoadImage(imagePath); // Load the new image
+            _config.blindfoldType = BlindfoldType.Sensual;
+            _config.Save();
         }
     }
 
@@ -95,7 +88,6 @@ public class BlindfoldWindow : Window, IDisposable
     }
 
     public void ActivateWindow() {
-        GSLogger.LogType.Debug($"BlindfoldWindow: Activating window with image {imagePath}");
         // if an active timer is running
         if (_timerRecorder.IsRunning) {
             // we were trying to deactivate the window, so stop the timer and turn off the window
@@ -204,7 +196,11 @@ public class BlindfoldWindow : Window, IDisposable
         // get the window size
         var windowSize = ImGui.GetWindowSize();
         // Draw the image with the updated alpha value
-        ImGui.Image(textureWrap!.ImGuiHandle, windowSize, Vector2.Zero, Vector2.One, new Vector4(1.0f, 1.0f, 1.0f, imageAlpha));
+        if(_config.blindfoldType == BlindfoldType.Light) {
+            ImGui.Image(textureWrap1!.ImGuiHandle, windowSize, Vector2.Zero, Vector2.One, new Vector4(1.0f, 1.0f, 1.0f, imageAlpha));
+        } else {
+            ImGui.Image(textureWrap2!.ImGuiHandle, windowSize, Vector2.Zero, Vector2.One, new Vector4(1.0f, 1.0f, 1.0f, imageAlpha));
+        }
     }
 
     public override void PostDraw()

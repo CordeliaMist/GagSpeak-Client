@@ -11,10 +11,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using GagSpeak.Wardrobe;
-using GagSpeak.Gagsandlocks;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using GagSpeak.Services;
-using GagSpeak.CharacterData;
 
 namespace GagSpeak.Hardcore.Actions;
 public unsafe class GsActionManager : IDisposable
@@ -26,7 +23,6 @@ public unsafe class GsActionManager : IDisposable
     private readonly IDataManager _dataManager;
     private readonly GagSpeakConfig _config;
     private readonly HardcoreManager _hcManager;
-    private readonly RestraintSetManager _restraintSetManager;
     private readonly HotbarLocker _hotbarLocker;
     private readonly RS_PropertyChangedEvent _rsPropertyChangedEvent;
     private readonly RS_ToggleEvent _setToggleEvent;
@@ -48,14 +44,13 @@ public unsafe class GsActionManager : IDisposable
 
 #endregion Attributes
     public unsafe GsActionManager(IClientState clientState, IFramework framework, IGameInteropProvider interop,
-    RestraintSetManager restraintSetManager, HardcoreManager hardcoreManager, RS_PropertyChangedEvent RS_PropertyChangedEvent,
+    HardcoreManager hardcoreManager, RS_PropertyChangedEvent RS_PropertyChangedEvent,
     IDataManager dataManager, RS_ToggleEvent setToggleEvent, GagSpeakConfig config, HotbarLocker hotbarLocker,
     InitializationManager manager, GagSpeakGlamourEvent glamourEvent, OnFrameworkService onFrameworkService)
     {
         _clientState = clientState;
         _framework = framework;
         _gameInteropProvider = interop;
-        _restraintSetManager = restraintSetManager;
         _hcManager = hardcoreManager;
         _rsPropertyChangedEvent = RS_PropertyChangedEvent;
         _dataManager = dataManager;

@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface;
-using Dalamud.Interface.Internal.Windows.Data.Widgets;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
-using GagSpeak.CharacterData;
 using GagSpeak.Interop;
 using GagSpeak.Services;
 using GagSpeak.Utility;
@@ -21,7 +18,6 @@ namespace GagSpeak.UI.Tabs.WhitelistTab;
 /// <summary> This class is used to handle the whitelist tab. </summary>
 public class WhitelistSelector
 {
-    //private readonly    CharacterHandler    _characterHandler;   // for getting the whitelist
     private readonly    ListMediator        _listMediator;       // for keeping the hardcore list and whitelist in sync
     private readonly    IClientState        _clientState;        // for getting the local player
     private readonly    IDataManager        _dataManager;        // for getting the world name
@@ -98,10 +94,31 @@ public class WhitelistSelector
                 }
             }
         }
-        // If the player is not targetted or not close enough, end the disabled button
-        if (!playerTargetted || !playerCloseEnough) { ImGui.EndDisabled(); }
         var xPos = ImGui.GetCursorPosX();
         var yPos = ImGui.GetCursorPosY();
+        ImGui.SetCursorPos(new Vector2(xPos, yPos + ImGuiHelpers.GlobalScale));
+        // Create a button for adding the targetted player as an alternate name for the active player, assuming they are within proxy.
+        if (ImGui.Button($"Target is {AltCharHelpers.FetchActiveIdxOriginalName().Split(' ')[0]}'s alt", buttonWidth)) {
+            // prevent possible null in _clientState.LocalPlayer.TargetObject
+            if (_clientState.LocalPlayer != null && _clientState.LocalPlayer.TargetObject != null) {
+                if (_clientState.LocalPlayer.TargetObject.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.Player) { // if the player is targetting another player
+                    GSLogger.LogType.Debug($"[Whitelist]: Targeted Player: {_clientState.LocalPlayer.TargetObject.Name.TextValue}");
+                    string targetName = UIHelpers.CleanSenderName(_clientState.LocalPlayer.TargetObject.Name.TextValue); // Clean the sender name
+                    // if the object kind of the target is a player, then get the character parse of that player
+                    var targetCharacter = (PlayerCharacter)_clientState.LocalPlayer.TargetObject;
+                    // now we can get the name and world from them
+                    var world = targetCharacter.HomeWorld.Id;
+                    var worldName = _dataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.World>()?.GetRow((uint)world)?.Name?.ToString() ?? "Unknown";
+                    GSLogger.LogType.Debug($"[Whitelist]: Targeted Player: {targetName} from {world}, {worldName}");
+                    // if the person is already in the whitelist
+                    _listMediator.AddPlayerAsAltPlayer(targetName, worldName);
+                }
+            }
+        }
+        // If the player is not targetted or not close enough, end the disabled button
+        if (!playerTargetted || !playerCloseEnough) { ImGui.EndDisabled(); }
+        xPos = ImGui.GetCursorPosX();
+        yPos = ImGui.GetCursorPosY();
         ImGui.SetCursorPos(new Vector2(xPos, yPos + ImGuiHelpers.GlobalScale));
         if (ImGui.Button("Remove Player", buttonWidth)) {
             if (_listMediator.GetNewWhitelistCount() == 1) {

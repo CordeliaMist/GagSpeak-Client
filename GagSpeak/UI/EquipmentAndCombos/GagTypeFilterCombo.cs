@@ -5,7 +5,6 @@ using OtterGui.Raii;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface.Utility;
-using GagSpeak.Events;
 using GagSpeak.Services;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;

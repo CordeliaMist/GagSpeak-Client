@@ -1,13 +1,4 @@
-using Dalamud.Hooking;
-using Dalamud.Logging;
-using Dalamud.Plugin.Services;
-using Dalamud.Utility.Signatures;
-using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.UI.Misc;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace GagSpeak.Hardcore;
 

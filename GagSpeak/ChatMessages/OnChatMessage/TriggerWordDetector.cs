@@ -17,7 +17,8 @@ public class TriggerWordDetector
         _puppeteerMediator = puppeteerMediator;
     }
 
-    public bool IsValidGlobalTriggerWord(SeString chatmessage, XivChatType type, out SeString messageToSend) {
+    public bool IsValidGlobalTriggerWord(SeString chatmessage, XivChatType type, out SeString messageToSend)
+    {
         // create the string that will be sent out
         messageToSend = new SeString();
         // see if it contains your trigger word for them
@@ -56,7 +57,8 @@ public class TriggerWordDetector
         // create the string that will be sent out
         messageToSend = new SeString();
         // see if it contains your trigger word for them
-        if(_puppeteerMediator.ContainsTriggerWord(senderName, chatmessage.TextValue, out string puppeteerMessageToSend)){
+        if(_puppeteerMediator.ContainsTriggerWord(senderName, chatmessage.TextValue, out string puppeteerMessageToSend))
+        {
             if(puppeteerMessageToSend != string.Empty) {
                 // apply any alias translations, if any
                 messageToSend = _puppeteerMediator.ConvertAliasCommandsIfAny(senderName, puppeteerMessageToSend);

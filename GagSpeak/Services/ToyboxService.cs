@@ -1,13 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Buttplug;
 using Buttplug.Client;
-using Buttplug.Client.Connectors;
 using Buttplug.Client.Connectors.WebsocketConnector;
 using Dalamud.Game.Gui.Dtr;
 using Dalamud.Game.Text.SeStringHandling;
@@ -16,7 +10,6 @@ using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
 using GagSpeak.Events;
 using GagSpeak.Utility;
-using Lumina.Excel.GeneratedSheets2;
 // Thank you to Ryuuki for most of this code. I have modified it to fit the needs of GagSpeak
 // Big Warning: This is a very NSFW service. It is a service that connects to a toybox server and controls a lovense device.
 // This service is not to be used in any way that is not consensual. It is also not to be used in any way that is not legal.

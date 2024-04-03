@@ -1,14 +1,4 @@
-using Dalamud.Hooking;
-using Dalamud.Logging;
-using Dalamud.Plugin.Services;
-using Dalamud.Utility.Signatures;
-using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.UI.Misc;
-using Penumbra.GameData.Structs;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace GagSpeak.Hardcore;
 // enums for helping retain the correct type of spell for the accosiated properties checked on the action

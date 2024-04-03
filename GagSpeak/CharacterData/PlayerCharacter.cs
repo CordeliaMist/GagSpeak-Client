@@ -86,22 +86,23 @@ public class PlayerGlobalPerms : CharacterInfoBase
         return derivedSerialized;
     }
 
-    public override void Deserialize(JObject jsonObject) {
+    public override void Deserialize(JObject jsonObject, int version) {
         // we need to know which config we have before we deserialize, if it was the old one or the new one.
         _uniquePlayerPerms.Clear();
         var uniquePlayerPermsArray = jsonObject["UniquePlayerPerms"]?.Value<JArray>();
         // see if uniquePlayerPerms is an empty array
         if (uniquePlayerPermsArray == null || uniquePlayerPermsArray.Count == 0) {
             GSLogger.LogType.Debug($"[PlayerGlobalPerms]: We Have an outdated file!");
-            DeserializeOld(jsonObject);
+            DeserializeOld(jsonObject, version);
         } else {
             GSLogger.LogType.Debug($"[PlayerGlobalPerms]: We Have Most Recently updated file!");
-            DeserializeNew(jsonObject);
+            DeserializeNew(jsonObject, version);
             // will need to clear and then deserialize the trigger aliass
         }
     }
 
-    private void DeserializeOld(JObject jsonObject) {
+    // deprecated deserialization method
+    private void DeserializeOld(JObject jsonObject, int version) {
         #pragma warning disable CS8604 // Possible null reference argument.
         try{
             // will need to clear and then deserialize the trigger aliass
@@ -114,7 +115,7 @@ public class PlayerGlobalPerms : CharacterInfoBase
                     _triggerAliases.Add(alias);
                 }
             }
-            base.Deserialize(jsonObject);
+            base.Deserialize(jsonObject, version);
             _safeword = jsonObject["Safeword"]?.Value<string>() ?? "safeword";
             _doCmdsFromFriends = jsonObject["DoCmdsFromFriends"]?.Value<bool>() ?? false;
             _doCmdsFromParty = jsonObject["DoCmdsFromParty"]?.Value<bool>() ?? false;
@@ -165,7 +166,7 @@ public class PlayerGlobalPerms : CharacterInfoBase
         }
     }
 
-    private void DeserializeNew(JObject jsonObject) {
+    private void DeserializeNew(JObject jsonObject, int version) {
         try{
             // will need to clear and then deserialize the trigger aliass
             _triggerAliases.Clear();
@@ -190,7 +191,7 @@ public class PlayerGlobalPerms : CharacterInfoBase
                 GSLogger.LogType.Debug($"[PlayerGlobalPerms]: Deserialized {uniquePlayerPermsArray.Count} UniquePlayerPerms");
             }
             // deserialize the rest of the base class
-            base.Deserialize(jsonObject);
+            base.Deserialize(jsonObject, version);
             _safeword = jsonObject["Safeword"]?.Value<string>() ?? "safeword";
             _doCmdsFromFriends = jsonObject["DoCmdsFromFriends"]?.Value<bool>() ?? false;
             _doCmdsFromParty = jsonObject["DoCmdsFromParty"]?.Value<bool>() ?? false;
