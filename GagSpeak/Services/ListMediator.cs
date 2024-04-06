@@ -1,7 +1,5 @@
-using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
 using GagSpeak.Hardcore;
 using ImGuiNET;
@@ -9,8 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text.RegularExpressions;
-using Emote = Lumina.Excel.GeneratedSheets.Emote;
+using GagSpeak.Utility;
 
 namespace GagSpeak.Services;
 // a mediator for keeping the hardcore list and whitelist in sync
@@ -29,6 +26,11 @@ public class ListMediator
         _characterHandler.AddNewWhitelistItem(playerName, playerWorld);
         // and update hardcore manager
         _hardcoreManager.AddNewPlayerConfig();
+    }
+
+    public void AddPlayerAsAltPlayer(string playerName, string playerWorld) {
+        // update whitelist
+        _characterHandler.AddAlternateNameToPlayer(playerName, playerWorld);
     }
 
     public void ReplacePlayerInList(int index, string playerName, string playerWorld) {
@@ -65,7 +67,7 @@ public class ListMediator
 
     // draws the whitelist
     public void DrawWhitelistSelector(float width, Vector2 _defaultItemSpacing) {
-        using var child = ImRaii.Child("##WhitelistSelector", new Vector2(width, -(3*ImGui.GetFrameHeight() + 2*ImGuiHelpers.GlobalScale)), true);
+        using var child = ImRaii.Child("##WhitelistSelector", new Vector2(width, -(4*ImGui.GetFrameHeight() + 3*ImGuiHelpers.GlobalScale)), true);
         if (!child)
             return;
 
@@ -77,16 +79,28 @@ public class ListMediator
     }
 
     public void DrawSelectable(WhitelistedCharacterInfo characterInfo) {
-        var equals = _characterHandler.activeListIdx == _characterHandler.GetWhitelistIndex(characterInfo._name);
-        if (ImGui.Selectable(characterInfo._name, equals) && !equals)
+        // if the character is in the whitelist,
+        // might be able to modify this to be something besides the first index
+        if(AltCharHelpers.IsPlayerInWhitelist(characterInfo._charNAW[0]._name, out int whitelistCharIdx))
         {
-            // update the active list index
-            _characterHandler.activeListIdx = _characterHandler.GetWhitelistIndex(characterInfo._name);
+            // first we need to see if the active index is set to the current characters main name index
+            var equals = _characterHandler.activeListIdx == whitelistCharIdx;
+            
+            // if the selectable is not the active list index, update it
+            string selectableLabel = characterInfo._charNAWIdxToProcess == 0
+                ? characterInfo._charNAW[characterInfo._charNAWIdxToProcess]._name
+                : $"{characterInfo._charNAW[characterInfo._charNAWIdxToProcess]._name} (Alt)";
+
+            if (ImGui.Selectable(selectableLabel, equals) && !equals)
+            {
+                // update the active list index
+                SetNewActiveIndex(whitelistCharIdx);
+            }
         }
     }
 
     public bool IsPlayerInWhitelist(string targetName) {
-        return _characterHandler.whitelistChars.Any(item => item._name == targetName);
+        return _characterHandler.whitelistChars.Any(x => x._charNAW.Any(tuple => tuple._name == targetName));
     }
 
     // get new whitelist player list count
@@ -101,11 +115,11 @@ public class ListMediator
 
     // get active list players name
     public string GetActiveListName() {
-        return _characterHandler.whitelistChars[_characterHandler.activeListIdx]._name;
+        return _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAW[0]._name;
     }
 
     public string GetNameAtIndexZero() {
-        return _characterHandler.whitelistChars[0]._name;
+        return _characterHandler.whitelistChars[0]._charNAW[0]._name;
     }
 
     // is whitelist index in bounds

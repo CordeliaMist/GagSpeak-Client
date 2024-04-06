@@ -21,8 +21,6 @@ public sealed class GlamourerService : IDisposable
     /// <summary> Initialize the IPC Subscriber callgates:  </summary>
     public readonly ICallGateSubscriber<(int, int)> _ApiVersions; // Gets Glamourer's API version.
     public readonly ICallGateSubscriber<GameObject?, string>? _GetAllCustomizationFromCharacter; // get all customization from YOUR player character
-    // public readonly ICallGateSubscriber<string, GameObject?, uint, object>? _ApplyAllToCharacterLock; // applies ALL (customization & gear) to player character, then locks it
-    // public readonly ICallGateSubscriber<string, GameObject?, uint, object>? _ApplyOnlyEquipmentToCharacterLock; // apply equipment to character, then lock
     public readonly ICallGateSubscriber<string, GameObject?, object>? _ApplyOnlyEquipmentToCharacter; // for applying equipment to player
     public readonly ICallGateSubscriber<string, GameObject?, object>? _ApplyOnlyCustomizationsToCharacter; // for applying customizations to player
     public readonly ICallGateSubscriber<GameObject?, uint, bool> _UnlockCharacter; // Unlocks yourself, allowing you to edit again.
@@ -47,8 +45,6 @@ public sealed class GlamourerService : IDisposable
         _GetAllCustomizationFromCharacter = _pluginInterface.GetIpcSubscriber<GameObject?, string>("Glamourer.GetAllCustomizationFromCharacter");
         
         // apply callgates
-            // _ApplyAllToCharacterLock = _pluginInterface.GetIpcSubscriber<string, GameObject?, uint, object>("Glamourer.ApplyAllToCharacterLock");
-            // _ApplyOnlyEquipmentToCharacterLock = _pluginInterface.GetIpcSubscriber<string, GameObject?, uint, object>("Glamourer.ApplyOnlyEquipmentToCharacterLock");
         _ApplyOnlyEquipmentToCharacter = _pluginInterface.GetIpcSubscriber<string, GameObject?, object>("Glamourer.ApplyOnlyEquipmentToCharacter"); // Meant for you
         _ApplyOnlyCustomizationsToCharacter = _pluginInterface.GetIpcSubscriber<string, GameObject?, object>("Glamourer.ApplyOnlyCustomizationToCharacter"); // Meant for you
         

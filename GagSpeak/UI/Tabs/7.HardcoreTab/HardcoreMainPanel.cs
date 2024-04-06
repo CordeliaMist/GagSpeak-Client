@@ -1,16 +1,7 @@
-using System;
-using System.Linq;
 using System.Numerics;
-using Dalamud.Interface.Utility;
-using GagSpeak.CharacterData;
-using GagSpeak.Services;
-using GagSpeak.Utility;
 using ImGuiNET;
 using OtterGui;
 using OtterGui.Raii;
-using GagSpeak.Events;
-using System.Diagnostics;
-using Dalamud.Interface;
 
 namespace GagSpeak.UI.Tabs.HardcoreTab;
 // what type of hardcore restrictions are we looking at modifying?

@@ -126,8 +126,12 @@ public class RestraintSet //: IDisposable
         _locked = jsonObject["Locked"]?.Value<bool>() ?? false;
         _wasEnabledBy = jsonObject["WasEnabledBy"]?.Value<string>() ?? string.Empty;
         _wasLockedBy = jsonObject["WasLockedBy"]?.Value<string>() ?? string.Empty;
-        _lockedTimer = jsonObject["LockedTimer"] != null ? DateTimeOffset.Parse(jsonObject["LockedTimer"].Value<string>()) : default;
-
+        // handle the way it imports the locked timer
+        if (_locked) {
+            _lockedTimer = jsonObject["LockedTimer"] != null ? DateTimeOffset.Parse(jsonObject["LockedTimer"].Value<string>()) : default;
+        } else {
+            _lockedTimer = DateTimeOffset.Now;
+        }
         _drawData.Clear();
         var drawDataArray = jsonObject["DrawData"]?.Value<JArray>();
         if (drawDataArray != null) {

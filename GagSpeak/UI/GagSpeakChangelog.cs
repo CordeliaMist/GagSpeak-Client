@@ -31,6 +31,7 @@ public class GagSpeakChangelog
         Add3_0_0_0(Changelog);
         Add3_0_0_2(Changelog);
         Add3_0_1_0(Changelog);
+        Add3_1_0_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -58,8 +59,17 @@ public class GagSpeakChangelog
         }
     }
 
+    private static void Add3_1_0_0(Changelog log)
+        => log.NextVersion("Version 3.1.0.0 Release")
+            .RegisterHighlight("You can now append characters alt accounts as registered alts of a whitelisted user.")
+            .RegisterEntry("Registered alts will maintain the same permissions, dynamic, and interactions as the associated main account.")
+            .RegisterEntry("In essence this means people who have EU and NA accounts dont need to worry about resetting dynamics every time they migrate.")
+            .RegisterEntry("Other minor bug fixes.")
+            .RegisterEntry("Updated submodule dependancies.")
+            .RegisterEntry("If the plugin still is not loading at this point, i blame the .net 8 update.");
+
     private static void Add3_0_1_0(Changelog log)
-        => log.NextVersion("Version 3.0.1.0 Release")
+        => log.NextVersion("Version 3.0.1.1 Release")
             .RegisterHighlight("Fixed issues for patch 6.5 patch removing DX9 Support.")
             .RegisterEntry("Fixed issue where texturewrap images causes memory corruption (hopefully)")
             .RegisterEntry("I always had functionality for the simulated vibe/connected lovense toy battery display, but now its actually visable.")

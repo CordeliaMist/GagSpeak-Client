@@ -9,49 +9,50 @@ namespace GagSpeak.CharacterData;
 /// <summary> A class to hold the data for the whitelist character </summary>
 public class WhitelistedCharacterInfo : CharacterInfoBase
 {
-    public string           _name { get; set; }                              // get the character name
-    public string           _homeworld { get; set; }                         // get the characters world (dont know how to get this for now)
-    public RoleLean         _yourStatusToThem { get; set; }                  // who you are to them
-    public RoleLean         _theirStatusToYou { get; set; }                  // who they are to you
-    public RoleLean         _pendingRelationRequestFromYou { get; set; }     // displays the current dyanmic request sent by you to this player
-    public RoleLean         _pendingRelationRequestFromPlayer { get; set; }  // displays the current dynamic request from this player to you
-    public DateTimeOffset   _timeOfCommitment { get; set; }                  // how long has your commitment lasted?
+    public List<(string _name, string _homeworld)> _charNAW { get; set; }  // get the character name and world
+    public int              _charNAWIdxToProcess { get; set; } = 0;                 // get the index of the character name and world to process
+    public RoleLean         _yourStatusToThem { get; set; }                         // who you are to them
+    public RoleLean         _theirStatusToYou { get; set; }                         // who they are to you
+    public RoleLean         _pendingRelationRequestFromYou { get; set; }            // displays the current dyanmic request sent by you to this player
+    public RoleLean         _pendingRelationRequestFromPlayer { get; set; }         // displays the current dynamic request from this player to you
+    public DateTimeOffset   _timeOfCommitment { get; set; }                         // how long has your commitment lasted?
     //////////////////// FIELDS THAT ARE TWO WAY MODIFIABLE ////////////////////
-    public bool             _grantExtendedLockTimes { get; set; } = false;   // [TIER 2] if whitelisted user allows you to use extended lock times
-    public bool             _inHardcoreMode { get; set; } = false;           // [TIER 0] if they are in hardcore mode
-    public bool             _enableRestraintSets { get; set; } = false;      // [TIER 2] allows dom to enable spesific restraint sets
-    public bool             _restraintSetLocking { get; set; } = false;      // [TIER 1] enables / disables all restraint set locking 
-    public string           _theirTriggerPhrase { get; set; } = "";          // [TIER 0] this whitelisted user's trigger phrase
-    public string           _theirTriggerStartChar { get; set; } = "(";      // [TIER 0] what to have instead of () surrounding full commands
-    public string           _theirTriggerEndChar { get; set; } = ")";        // [TIER 0] what to have instead of () surrounding full commands
-    public bool             _allowsSitRequests { get; set; } = false;        // [TIER 1] if they allow you to use sit requests
-    public bool             _allowsMotionRequests { get; set; } = false;     // [TIER 2] if they allow you to use motion requests
-    public bool             _allowsAllCommands { get; set; } = false;        // [TIER 4] If they allow you to use all commands on them
-    public bool             _allowChangingToyState { get; set; } = false;    // [TIER 1] Basically, "They can turn on my vibe, at my selected slider position"
-    public bool             _allowsIntensityControl { get; set; } = false;   // [TIER 3] Basically says "This person can adjust the intensity slider"
-    public bool             _allowsUsingPatterns { get; set; } = false;      // [TIER 0] Do they allow you to execute stored patterns
-    public int              _activeToystepSize { get; set; } = 0;            // [TIER 0] the step count of the vibe
+    public bool             _grantExtendedLockTimes { get; set; } = false;          // [TIER 2] if whitelisted user allows you to use extended lock times
+    public bool             _inHardcoreMode { get; set; } = false;                  // [TIER 0] if they are in hardcore mode
+    public bool             _enableRestraintSets { get; set; } = false;             // [TIER 2] allows dom to enable spesific restraint sets
+    public bool             _restraintSetLocking { get; set; } = false;             // [TIER 1] enables / disables all restraint set locking 
+    public string           _theirTriggerPhrase { get; set; } = "";                 // [TIER 0] this whitelisted user's trigger phrase
+    public string           _theirTriggerStartChar { get; set; } = "(";             // [TIER 0] what to have instead of () surrounding full commands
+    public string           _theirTriggerEndChar { get; set; } = ")";               // [TIER 0] what to have instead of () surrounding full commands
+    public bool             _allowsSitRequests { get; set; } = false;               // [TIER 1] if they allow you to use sit requests
+    public bool             _allowsMotionRequests { get; set; } = false;            // [TIER 2] if they allow you to use motion requests
+    public bool             _allowsAllCommands { get; set; } = false;               // [TIER 4] If they allow you to use all commands on them
+    public bool             _allowChangingToyState { get; set; } = false;           // [TIER 1] Basically, "They can turn on my vibe, at my selected slider position"
+    public bool             _allowsIntensityControl { get; set; } = false;          // [TIER 3] Basically says "This person can adjust the intensity slider"
+    public bool             _allowsUsingPatterns { get; set; } = false;             // [TIER 0] Do they allow you to execute stored patterns
+    public int              _activeToystepSize { get; set; } = 0;                   // [TIER 0] the step count of the vibe
     /////////////// STORED INFORMATION ABOUT A PLAYERS HARDCORE SETTINGS ///////////////////////
-    public bool             _allowForcedFollow { get; set; } = false;        // ONLYGIVENBYPLAYER if they allow you to use follow orders
-    public bool             _forcedFollow { get; set; } = false;             // [TIER 0] Any tier can, but player must consent by enabling above perm
-    public bool             _allowForcedSit { get; set; } = false;           // ONLYGIVENBYPLAYER if they allow you to use sit orders
-    public bool             _forcedSit { get; set; } = false;                // [TIER 0] Any tier can, but player must consent by enabling above perm
-    public bool             _allowForcedToStay { get; set; } = false;       // ONLYGIVENBYPLAYER if they allow you to use stay orders
-    public bool             _forcedToStay { get; set; } = false;            // [TIER 0] Any tier can, but player must consent by enabling above perm
-    public bool             _allowBlindfold { get; set; } = false;          // ONLYGIVENBYPLAYER if they allow you to use blindfold
-    public bool             _blindfolded { get; set; } = false;             // [TIER 0] Any tier can, but player must consent by enabling above perm
+    public bool             _allowForcedFollow { get; set; } = false;               // ONLYGIVENBYPLAYER if they allow you to use follow orders
+    public bool             _forcedFollow { get; set; } = false;                    // [TIER 0] Any tier can, but player must consent by enabling above perm
+    public bool             _allowForcedSit { get; set; } = false;                  // ONLYGIVENBYPLAYER if they allow you to use sit orders
+    public bool             _forcedSit { get; set; } = false;                       // [TIER 0] Any tier can, but player must consent by enabling above perm
+    public bool             _allowForcedToStay { get; set; } = false;               // ONLYGIVENBYPLAYER if they allow you to use stay orders
+    public bool             _forcedToStay { get; set; } = false;                    // [TIER 0] Any tier can, but player must consent by enabling above perm
+    public bool             _allowBlindfold { get; set; } = false;                  // ONLYGIVENBYPLAYER if they allow you to use blindfold
+    public bool             _blindfolded { get; set; } = false;                     // [TIER 0] Any tier can, but player must consent by enabling above perm
 
     //////////////////// FIELDS TO BE USED TO STORE THIS PERSONS LIST NAMES ////////////////////
-    public List<string>                 _storedRestraintSets { get; set; }   // contains the list of restraint set names (if imported)
-    public Dictionary<string, string>   _storedAliases { get; set; }         // contains the list of gag types (if imported)
-    public List<string>                 _storedPatternNames { get; set; }    // contains the list of pattern names (if imported)
+    public List<string>                 _storedRestraintSets { get; set; }          // contains the list of restraint set names (if imported)
+    public Dictionary<string, string>   _storedAliases { get; set; }                // contains the list of gag types (if imported)
+    public List<string>                 _storedPatternNames { get; set; }           // contains the list of pattern names (if imported)
 
     ////////////////////////////////////////////////// PROTECTED FIELDS ////////////////////////////////////////////////////
     
     public WhitelistedCharacterInfo() : this("None None", "None") { }
     public WhitelistedCharacterInfo(string name, string homeworld) {
-        _name = name;
-        _homeworld = homeworld;
+        _charNAW = new List<(string, string)>() { (name, homeworld) };
+        // _name = name;
+        // _homeworld = homeworld;
         _yourStatusToThem = RoleLean.None;
         _theirStatusToYou = RoleLean.None;
         _pendingRelationRequestFromPlayer = RoleLean.None;
@@ -63,6 +64,12 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         _storedPatternNames = new List<string>();
     }
 #region General Interactions
+    public void RemoveAltCharacter(int index) {
+        if (index < 0 || index >= _charNAW.Count) return;
+        _charNAW.RemoveAt(index);
+        _charNAWIdxToProcess = 0;
+    }
+
     public bool IsRoleLeanDominant(RoleLean roleLean) {
         if(roleLean == RoleLean.Dominant || roleLean == RoleLean.Mistress || roleLean == RoleLean.Master || roleLean == RoleLean.Owner) {
             return true;
@@ -179,8 +186,8 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
     public override JObject Serialize() {
         try{
             JObject derivedSerialized = new JObject() {
-                ["Name"] = _name,
-                ["Homeworld"] = _homeworld,
+                ["CharNameAndWorld"] = JToken.FromObject(_charNAW), // ["Name"] = _name, ["Homeworld"] = _homeworld,
+                ["CharNAWIdxToProcess"] = _charNAWIdxToProcess,
                 ["YourStatusToThem"] = _yourStatusToThem.ToString(),
                 ["TheirStatusToYou"] = _theirStatusToYou.ToString(),
                 ["PendingRequestFromYou"] = _pendingRelationRequestFromYou.ToString(),
@@ -228,10 +235,22 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         }
     }
 
-    public override void Deserialize(JObject jsonObject) {
-        base.Deserialize(jsonObject);
-        _name = jsonObject["Name"]?.Value<string>() ?? "None";
-        _homeworld = jsonObject["Homeworld"]?.Value<string>() ?? "None";
+    public override void Deserialize(JObject jsonObject, int version) {
+        base.Deserialize(jsonObject, version);
+        // handle the player name and world based on the version
+        if (version == 1)
+        {
+            var name = jsonObject["Name"]?.Value<string>() ?? "None";
+            var homeworld = jsonObject["Homeworld"]?.Value<string>() ?? "None";
+            _charNAW = new List<(string, string)> { (name, homeworld) };
+        }
+        else if (version == 2)
+        {
+            _charNAW = jsonObject["CharNameAndWorld"]?.ToObject<List<(string, string)>>() ?? new List<(string, string)> { ("None", "None") };
+        }
+        _charNAWIdxToProcess = jsonObject["CharNAWIdxToProcess"]?.Value<int>() ?? 0;
+        // _name = jsonObject["Name"]?.Value<string>() ?? "None";
+        // _homeworld = jsonObject["Homeworld"]?.Value<string>() ?? "None";
         _yourStatusToThem = Enum.TryParse(jsonObject["YourStatusToThem"]?.Value<string>(), out RoleLean statusToThem) ? statusToThem : RoleLean.None;
         _theirStatusToYou = Enum.TryParse(jsonObject["TheirStatusToYou"]?.Value<string>(), out RoleLean statusToYou) ? statusToYou : RoleLean.None;
         _pendingRelationRequestFromYou = Enum.TryParse(jsonObject["PendingRequestFromYou"]?.Value<string>(), out RoleLean requestFromYou) ? requestFromYou : RoleLean.None;
@@ -243,7 +262,7 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
         _enableRestraintSets = jsonObject["EnableRestraintSets"]?.Value<bool>() ?? false;
         _restraintSetLocking = jsonObject["RestraintSetLocking"]?.Value<bool>() ?? false;
         
-        _theirTriggerPhrase = jsonObject["TheirTriggerPhrase"]?.Value<string>() ?? "";
+        _theirTriggerPhrase = jsonObject["TriggerPhrase"]?.Value<string>() ?? "";
         _theirTriggerStartChar = jsonObject["StartCharForPuppeteerTrigger"]?.Value<string>() ?? "(";
         _theirTriggerEndChar = jsonObject["EndCharForPuppeteerTrigger"]?.Value<string>() ?? ")";
         _allowsSitRequests = jsonObject["AllowsSitRequests"]?.Value<bool>() ?? false;

@@ -1,20 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
-using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Interface.Utility;
 using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 using GagSpeak.Events;
-using GagSpeak.Interop.Penumbra;
 using GagSpeak.Wardrobe;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using OtterGui;
-using OtterGui.Classes;
-using OtterGui.Log;
 using OtterGui.Raii;
 
 namespace GagSpeak.Interop.Penumbra;
@@ -177,6 +171,7 @@ public class ModAssociations : IDisposable
             }
         }
     }
+    
     private void DrawNewModRow()
     {
         var currentName = _modCombo.CurrentSelection.Mod.Name;

@@ -4,6 +4,7 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
 using GagSpeak.CharacterData;
 using GagSpeak.Services;
+using GagSpeak.Utility;
 using ImGuiNET;
 using OtterGui;
 
@@ -35,7 +36,7 @@ public class TriggersSubtab
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
-        var name = $"{_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]}";
+        var name = $"{AltCharHelpers.FetchCurrentName().Split(' ')[0]}";
         var yourName = "";
         if(_client.LocalPlayer == null) { yourName = "You"; }
         else { yourName = $"{_client.LocalPlayer.Name.ToString().Split(' ')[0]}"; }

@@ -62,12 +62,25 @@ public class ToyboxSelector
         OtterGui.ImGuiClip.DrawEndDummy(remainder, ImGui.GetTextLineHeight());
     }
 
-    private void DrawSelectable(WhitelistedCharacterInfo characterInfo) {
-        var equals = _charHandler.activeListIdx == _charHandler.GetWhitelistIndex(characterInfo._name);
-        if (ImGui.Selectable(characterInfo._name, equals) && !equals)
+    public void DrawSelectable(WhitelistedCharacterInfo characterInfo) {
+        // if the character is in the whitelist,
+        // might be able to modify this to be something besides the first index
+        if(AltCharHelpers.IsPlayerInWhitelist(characterInfo._charNAW[0]._name, out int whitelistCharIdx))
         {
-            // update the active list index
-            _charHandler.activeListIdx = _charHandler.GetWhitelistIndex(characterInfo._name);
+            // first we need to see if the active index is set to the current characters main name index
+            var equals = _charHandler.activeListIdx == whitelistCharIdx;
+            
+            // if the selectable is not the active list index, update it
+            string selectableLabel = characterInfo._charNAWIdxToProcess == 0
+                ? characterInfo._charNAW[characterInfo._charNAWIdxToProcess]._name
+                : $"{characterInfo._charNAW[characterInfo._charNAWIdxToProcess]._name} (Alt)";
+
+            if (ImGui.Selectable(selectableLabel, equals) && !equals)
+            {
+                // update the active list index
+                _charHandler.activeListIdx = whitelistCharIdx;
+                _charHandler.Save();
+            }
         }
     }
 

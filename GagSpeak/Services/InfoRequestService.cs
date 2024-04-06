@@ -8,6 +8,7 @@ using GagSpeak.UI.Tabs.WhitelistTab;
 using System.Threading.Tasks;
 using Dalamud.Game.Text.SeStringHandling;
 using OtterGui.Classes;
+using GagSpeak.Utility;
 
 namespace GagSpeak.Services;
 
@@ -45,7 +46,7 @@ public class InfoRequestService : IDisposable
 
     // this can be done more effectively with tasks and await but dont want to risk breaking gamework thread
     private async void SendInformation(object sender, InfoRequestEventArgs e) {
-        if (_characterHandler.IsPlayerInWhitelist(e.PlayerName))
+        if (AltCharHelpers.IsPlayerInWhitelist(e.PlayerName))
         {
             await Task.Delay(1000);
             GSLogger.LogType.Information("[InfoRequestService]: Player is in your whitelist, sending info...");

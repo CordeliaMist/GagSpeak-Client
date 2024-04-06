@@ -1,14 +1,10 @@
 using System.Numerics;
 using Dalamud.Interface.Utility.Raii;
-using GagSpeak.CharacterData;
 using GagSpeak.Hardcore;
 using ImGuiNET;
 using OtterGui;
 using Dalamud.Utility;
-using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.Interop;
 using Lumina.Excel.GeneratedSheets;
 using Dalamud.Plugin.Services;

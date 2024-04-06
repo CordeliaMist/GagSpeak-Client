@@ -9,6 +9,7 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using XivCommon.Functions;
 using GagSpeak.CharacterData;
 using GagSpeak.ToyboxandPuppeteer;
+using GagSpeak.Utility;
 
 namespace GagSpeak.ChatMessages;
 /// <summary>
@@ -154,7 +155,7 @@ public class OnChatMsgManager
         }
         
         // personal puppeteer trgger
-        if(senderName != null  && _characterHandler.playerChar._allowPuppeteer && _characterHandler.IsPlayerInWhitelist(senderName) && isHandled == false)
+        if(senderName != null  && _characterHandler.playerChar._allowPuppeteer && AltCharHelpers.IsPlayerInWhitelist(senderName) && isHandled == false)
         {
             // if it contains a trigger word, then process it
             if(_triggerWordDetector.IsValidPuppeteerTriggerWord(senderName, chatmessage, type, ref isHandled, out SeString messageToSend)) {
@@ -165,7 +166,7 @@ public class OnChatMsgManager
         }
 
         // check for incoming verbal hardcore features (future)
-        if(senderName != null && isHandled == false && (_characterHandler.IsPlayerInWhitelist(senderName) || senderName == _clientState.LocalPlayer?.Name.TextValue))
+        if(senderName != null && isHandled == false && (AltCharHelpers.IsPlayerInWhitelist(senderName) || senderName == _clientState.LocalPlayer?.Name.TextValue))
         {
             if(_hardcoreMsgDetector.IsValidMsgTrigger(senderName, chatmessage, type, out SeString messageToSend)) {
                 // if we are in a valid chatchannel, then send it
@@ -175,8 +176,7 @@ public class OnChatMsgManager
         }
 
         // check for handling triggers for the vibe toybox (future) [MsTress Project]
-        if(senderName != null  && _characterHandler.playerChar._enableToybox
-        && _characterHandler.IsPlayerInWhitelist(senderName) && isHandled == false)
+        if(senderName != null && _characterHandler.playerChar._enableToybox && AltCharHelpers.IsPlayerInWhitelist(senderName) && isHandled == false)
         {
             // scan for any vibe toybox triggers
         }

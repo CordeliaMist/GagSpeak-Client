@@ -10,6 +10,7 @@ using GagSpeak.Interop;
 using ImGuiNET;
 using Newtonsoft.Json;
 using OtterGui;
+using GagSpeak.Utility;
 
 namespace GagSpeak.UI.Tabs.PuppeteerTab;
 public class PuppeteerSelector
@@ -48,12 +49,25 @@ public class PuppeteerSelector
         OtterGui.ImGuiClip.DrawEndDummy(remainder, ImGui.GetTextLineHeight());
     }
 
-    private void DrawSelectable(WhitelistedCharacterInfo characterInfo) {
-        var equals = _characterHandler.activeListIdx == _characterHandler.GetWhitelistIndex(characterInfo._name);
-        if (ImGui.Selectable(characterInfo._name, equals) && !equals)
+    public void DrawSelectable(WhitelistedCharacterInfo characterInfo) {
+        // if the character is in the whitelist,
+        // might be able to modify this to be something besides the first index
+        if(AltCharHelpers.IsPlayerInWhitelist(characterInfo._charNAW[0]._name, out int whitelistCharIdx))
         {
-            // update the active list index
-            _characterHandler.activeListIdx = _characterHandler.GetWhitelistIndex(characterInfo._name);
+            // first we need to see if the active index is set to the current characters main name index
+            var equals = _characterHandler.activeListIdx == whitelistCharIdx;
+            
+            // if the selectable is not the active list index, update it
+            string selectableLabel = characterInfo._charNAWIdxToProcess == 0
+                ? characterInfo._charNAW[characterInfo._charNAWIdxToProcess]._name
+                : $"{characterInfo._charNAW[characterInfo._charNAWIdxToProcess]._name} (Alt)";
+
+            if (ImGui.Selectable(selectableLabel, equals) && !equals)
+            {
+                // update the active list index
+                _characterHandler.activeListIdx = whitelistCharIdx;
+                _characterHandler.Save();
+            }
         }
     }
 
@@ -63,7 +77,7 @@ public class PuppeteerSelector
             .Push(ImGuiStyleVar.FrameRounding, 0);
         var buttonWidth = new Vector2(width, ImGui.GetFrameHeight());
         if(ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Copy.ToIconString(), buttonWidth,
-        $"Copy alias list for {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._name.Split(' ')[0]} to the clipboard", false, true)) {
+        $"Copy alias list for {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]} to the clipboard", false, true)) {
             CopyAliasDataToClipboard();
         }
         style.Pop();

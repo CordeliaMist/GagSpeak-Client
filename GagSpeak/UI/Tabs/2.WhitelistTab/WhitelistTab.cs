@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using Dalamud.Interface.Utility;
-using GagSpeak.CharacterData;
 using GagSpeak.Events;
 using GagSpeak.Services;
 using ImGuiNET;
@@ -19,16 +17,14 @@ public class WhitelistTab : ITab, IDisposable
 {
     private readonly    WhitelistSelector           _selector;
     private readonly    WhitelistPanel              _panel;
-    private readonly    CharacterHandler            _characterHandler;
     private readonly    TimerService                _timerService;
     private readonly    InteractOrPermButtonEvent   _buttonInteractionEvent;
     private bool                                    _interactions;
 
     public WhitelistTab(WhitelistSelector selector, WhitelistPanel panel,
-    CharacterHandler characterHandler, TimerService timerService, InteractOrPermButtonEvent buttonInteractionEvent) {
+    TimerService timerService, InteractOrPermButtonEvent buttonInteractionEvent) {
         _selector = selector;
         _panel = panel;
-        _characterHandler = characterHandler;
         _timerService = timerService;
         _buttonInteractionEvent = buttonInteractionEvent;
         // set the helpers to defaults

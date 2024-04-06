@@ -1,4 +1,5 @@
 using GagSpeak.CharacterData;
+using GagSpeak.Utility;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
@@ -8,9 +9,9 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the dynamictier and index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName))
+        {
+            // get the dynamictier
             DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier == DynamicTier.Tier4) {
@@ -36,14 +37,14 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the dynamictier and index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx, out int CharNameIdx))
+        {
+            // get the dynamictier
             DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier != DynamicTier.Tier0) {
                 // likely change this to an individual item later
-                _characterHandler.ToggleChangeToyState(index);
+                _characterHandler.ToggleChangeToyState(whitelistCharIdx);
                 return true;
             } else {
                 GSLogger.LogType.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling your active toy");
@@ -60,14 +61,14 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the dynamictier and index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx))
+        {
+            // get the dynamictier
             DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier >= DynamicTier.Tier3) {
                 // likely change this to an individual item later
-                _characterHandler.ToggleAllowIntensityControl(index);
+                _characterHandler.ToggleAllowIntensityControl(whitelistCharIdx);
                 return true;
             } else {
                 GSLogger.LogType.Error($"[Message Decoder]: Your dynamic with {playerName} is not strong enough to grant access to toggling your active toy");
@@ -84,13 +85,14 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx))
+        {
             // update the active toy's vibe intensity levels
             if(_characterHandler.playerChar._isToyActive) {
                 // now check to see if our device is turned on (via the setting changeState), and if the user has the permission to change the state
-                if(_characterHandler.playerChar._uniquePlayerPerms[index]._allowChangingToyState && _characterHandler.playerChar._uniquePlayerPerms[index]._allowIntensityControl) {
+                if(_characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._allowChangingToyState 
+                && _characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._allowIntensityControl)
+                {
                     // update the active connected vibe, if one is
                     if(_plugService.HasConnectedDevice() && _plugService.IsClientConnected() && _plugService.anyDeviceConnected) {
                         _ = _plugService.ToyboxVibrateAsync((byte)((decodedMessageMediator.intensityLevel/(double)_plugService.stepCount)*100), 20);
@@ -129,12 +131,12 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the dynamictier and index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx))
+        {
+            // get the dynamictier
             DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
-            if(_characterHandler.playerChar._uniquePlayerPerms[index]._allowUsingPatterns) {
+            if(_characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._allowUsingPatterns) {
                 // execute the stored toy pattern
                 if(_patternHandler.ExecutePattern(decodedMessageMediator.patternNameToExecute)) {
                     GSLogger.LogType.Debug($"[Message Decoder]: {playerName} has executed the stored toy pattern {decodedMessageMediator.patternNameToExecute}");
@@ -160,9 +162,9 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the dynamictier and index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName))
+        {
+            // get the dynamictier
             DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier == DynamicTier.Tier4 || tier == DynamicTier.Tier3) {
@@ -187,11 +189,10 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the dynamictier and index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx))
+        {
             // if the sender is someone in your whitelist who has the allow changing toy state permission enabled, allow them to toggle your toys state
-            if(_characterHandler.playerChar._uniquePlayerPerms[index]._allowChangingToyState) {
+            if(_characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._allowChangingToyState) {
                 // toggle the toys state
                 _characterHandler.ToggleToyState();
                 return true;

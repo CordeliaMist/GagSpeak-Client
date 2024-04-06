@@ -12,20 +12,21 @@ public static class InfoSendAndRequestHelpers {
 #region RequestInfoHelpers
     public static void RequestInfoFromPlayer(int listIdx, CharacterHandler characterHandler, ChatMessages.OnChatMsgManager chatManager,
     ChatMessages.MessageTransfer.MessageEncoder gagMessages, IClientState clientState, IChatGui chatGui)
-    {    
-        GSLogger.LogType.Debug($"[WhitelistTab]: Requesting information from player: {characterHandler.whitelistChars[listIdx]._name}");
+    {
+        GSLogger.LogType.Debug($"[WhitelistTab]: Requesting information from player: {characterHandler.whitelistChars[listIdx]._charNAW[characterHandler.whitelistChars[listIdx]._charNAWIdxToProcess]._name}");
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(clientState, out playerPayload);
         if (!characterHandler.IsIndexWithinBounds(listIdx)) { 
-            GSLogger.LogType.Error($"[WhitelistTab]: Error, Index out of bounds for requesting information from player: {characterHandler.whitelistChars[listIdx]._name}");
+            GSLogger.LogType.Error($"[WhitelistTab]: Error, Index out of bounds for requesting information from player: "+
+            $"{characterHandler.whitelistChars[listIdx]._charNAW[characterHandler.whitelistChars[listIdx]._charNAWIdxToProcess]._name}");
             return;
         }
         // print to chat that you sent the request
         chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Sending information request to " +
-            $"{characterHandler.whitelistChars[listIdx]._name}, please wait...").AddItalicsOff().BuiltString);
+            $"{characterHandler.whitelistChars[listIdx]._charNAW[characterHandler.whitelistChars[listIdx]._charNAWIdxToProcess]._name}, please wait...").AddItalicsOff().BuiltString);
         // send the message
-        string targetPlayer = characterHandler.whitelistChars[listIdx]._name + "@" + characterHandler.whitelistChars[listIdx]._homeworld;
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(listIdx); 
         // set the sender name to our active recieving info from var, 
         chatManager.SendRealMessage(gagMessages.EncodeRequestInfoMessage(playerPayload, targetPlayer));
     }

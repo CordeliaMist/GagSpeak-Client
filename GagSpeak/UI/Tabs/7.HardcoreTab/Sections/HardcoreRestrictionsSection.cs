@@ -6,10 +6,7 @@ using ImGuiNET;
 using OtterGui;
 using Dalamud.Plugin.Services;
 using GagSpeak.Hardcore.Actions;
-using JetBrains.Annotations;
-using Dalamud.Game.Text.SeStringHandling;
 using GagSpeak.Utility;
-using System.Runtime.InteropServices;
 using GagSpeak.Services;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
@@ -67,7 +64,7 @@ public class HC_ControlRestrictions
             if (!child)
                 return;
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
-            var name = $"{_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]}";
+            var name = $"{AltCharHelpers.FetchCurrentName().Split(' ')[0]}";
             var yourName = "";
             if(_client.LocalPlayer == null) { yourName = "You"; }
             else { yourName = $"{_client.LocalPlayer.Name.ToString().Split(' ')[0]}"; }

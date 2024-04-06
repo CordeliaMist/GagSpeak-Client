@@ -158,36 +158,28 @@ public partial class CharacterHandler
 
     // for not spamming the save service during info request transfer, do it all in bulk
     public void UpdateWhitelistGagInfoPart1(string whitelistName, string[] GagTypes, string[] Padlocks, string[] Passwords, string[] Timers, string[] Assigners) {
-        int Idx = -1;
-        if(IsPlayerInWhitelist(whitelistName)){
-            Idx = GetWhitelistIndex(whitelistName);
-        }
-        if(Idx != -1) {
-            whitelistChars[Idx]._selectedGagTypes[0] = GagTypes[0];
-            whitelistChars[Idx]._selectedGagPadlocks[0] = Enum.TryParse(Padlocks[0], out Padlocks padlockType) ? padlockType : Gagsandlocks.Padlocks.None;
-            whitelistChars[Idx]._selectedGagPadlockPassword[0] = Passwords[0];
-            whitelistChars[Idx]._selectedGagPadlockTimer[0] = string.IsNullOrEmpty(Timers[0]) ? DateTimeOffset.Now : UIHelpers.GetEndTime(Timers[0]);
-            whitelistChars[Idx]._selectedGagPadlockAssigner[0] = Assigners[0];
+        if(AltCharHelpers.IsPlayerInWhitelist(whitelistName, out int whitelistCharIdx)){
+            whitelistChars[whitelistCharIdx]._selectedGagTypes[0] = GagTypes[0];
+            whitelistChars[whitelistCharIdx]._selectedGagPadlocks[0] = Enum.TryParse(Padlocks[0], out Padlocks padlockType) ? padlockType : Gagsandlocks.Padlocks.None;
+            whitelistChars[whitelistCharIdx]._selectedGagPadlockPassword[0] = Passwords[0];
+            whitelistChars[whitelistCharIdx]._selectedGagPadlockTimer[0] = string.IsNullOrEmpty(Timers[0]) ? DateTimeOffset.Now : UIHelpers.GetEndTime(Timers[0]);
+            whitelistChars[whitelistCharIdx]._selectedGagPadlockAssigner[0] = Assigners[0];
         }
         _saveService.QueueSave(this);
     }
 
     public void UpdateWhitelistGagInfoPart2(string whitelistName, string[] GagTypes, string[] Padlocks, string[] Passwords, string[] Timers, string[] Assigners) {
-        int Idx = -1;
-        if(IsPlayerInWhitelist(whitelistName)){
-            Idx = GetWhitelistIndex(whitelistName);
-        }
-        if(Idx != -1) {
-            whitelistChars[Idx]._selectedGagTypes[1] = GagTypes[1];
-            whitelistChars[Idx]._selectedGagTypes[2] = GagTypes[2];
-            whitelistChars[Idx]._selectedGagPadlocks[1] = Enum.TryParse(Padlocks[1], out Padlocks padlockType2) ? padlockType2 : Gagsandlocks.Padlocks.None;
-            whitelistChars[Idx]._selectedGagPadlocks[2] = Enum.TryParse(Padlocks[2], out Padlocks padlockType3) ? padlockType3 : Gagsandlocks.Padlocks.None;
-            whitelistChars[Idx]._selectedGagPadlockPassword[1] = Passwords[1];
-            whitelistChars[Idx]._selectedGagPadlockPassword[2] = Passwords[2];
-            whitelistChars[Idx]._selectedGagPadlockTimer[1] = string.IsNullOrEmpty(Timers[1]) ? DateTimeOffset.Now : UIHelpers.GetEndTime(Timers[1]);
-            whitelistChars[Idx]._selectedGagPadlockTimer[2] = string.IsNullOrEmpty(Timers[2]) ? DateTimeOffset.Now : UIHelpers.GetEndTime(Timers[2]);
-            whitelistChars[Idx]._selectedGagPadlockAssigner[1] = Assigners[1];
-            whitelistChars[Idx]._selectedGagPadlockAssigner[2] = Assigners[2]; 
+        if(AltCharHelpers.IsPlayerInWhitelist(whitelistName, out int whitelistCharIdx)){
+            whitelistChars[whitelistCharIdx]._selectedGagTypes[1] = GagTypes[1];
+            whitelistChars[whitelistCharIdx]._selectedGagTypes[2] = GagTypes[2];
+            whitelistChars[whitelistCharIdx]._selectedGagPadlocks[1] = Enum.TryParse(Padlocks[1], out Padlocks padlockType2) ? padlockType2 : Gagsandlocks.Padlocks.None;
+            whitelistChars[whitelistCharIdx]._selectedGagPadlocks[2] = Enum.TryParse(Padlocks[2], out Padlocks padlockType3) ? padlockType3 : Gagsandlocks.Padlocks.None;
+            whitelistChars[whitelistCharIdx]._selectedGagPadlockPassword[1] = Passwords[1];
+            whitelistChars[whitelistCharIdx]._selectedGagPadlockPassword[2] = Passwords[2];
+            whitelistChars[whitelistCharIdx]._selectedGagPadlockTimer[1] = string.IsNullOrEmpty(Timers[1]) ? DateTimeOffset.Now : UIHelpers.GetEndTime(Timers[1]);
+            whitelistChars[whitelistCharIdx]._selectedGagPadlockTimer[2] = string.IsNullOrEmpty(Timers[2]) ? DateTimeOffset.Now : UIHelpers.GetEndTime(Timers[2]);
+            whitelistChars[whitelistCharIdx]._selectedGagPadlockAssigner[1] = Assigners[1];
+            whitelistChars[whitelistCharIdx]._selectedGagPadlockAssigner[2] = Assigners[2]; 
         }
         _saveService.QueueSave(this);
     }

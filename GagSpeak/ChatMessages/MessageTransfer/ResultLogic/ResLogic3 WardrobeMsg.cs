@@ -15,7 +15,7 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if( _characterHandler.IsPlayerInWhitelist(playerName)) {
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName)) {
             // get its index
             DynamicTier dynamicStrength = _characterHandler.GetDynamicTierNonClient(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
@@ -45,18 +45,16 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if( _characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the whitelist index
-            int whitelistIdx = _characterHandler.GetWhitelistIndex(playerName);
-            // get its index
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx))
+        {
             DynamicTier dynamicStrength = _characterHandler.GetDynamicTierNonClient(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
             if(dynamicStrength >= DynamicTier.Tier2) {
                 // toggle the enable restraint sets option for that player
-                _characterHandler.ToggleEnableRestraintSets(whitelistIdx);
+                _characterHandler.ToggleEnableRestraintSets(whitelistCharIdx);
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Enable Restraint Sets has been toggled "+
-                $"to {_characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._enableRestraintSets}.").AddItalicsOff().BuiltString);
+                $"to {_characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._enableRestraintSets}.").AddItalicsOff().BuiltString);
                 GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling enable restraint sets");
                 return true;
             } else {
@@ -76,17 +74,16 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if( _characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get its index
-            int idx = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx))
+        {
             DynamicTier dynamicStrength = _characterHandler.GetDynamicTierNonClient(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
             if(dynamicStrength != DynamicTier.Tier0) {
                 // toggle the allow restraint locking option for that player
-                _characterHandler.ToggleRestraintSetLocking(idx);
+                _characterHandler.ToggleRestraintSetLocking(whitelistCharIdx);
                 // notify the user that the request as been sent. 
                 _clientChat.Print(new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Allow Restraint Locking "+
-                $"has been toggled to {_characterHandler.playerChar._uniquePlayerPerms[idx]._restraintSetLocking}.").AddItalicsOff().BuiltString);
+                $"has been toggled to {_characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._restraintSetLocking}.").AddItalicsOff().BuiltString);
                 GSLogger.LogType.Debug($"[MsgResultLogic]: Sucessful Logic Parse for toggling allow restraint locking");
                 return true;
             } else {
@@ -106,9 +103,11 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if( _characterHandler.IsPlayerInWhitelist(playerName)) {
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName))
+        {
             // toggle the gag storage if we have a tier above 1 or higher
-            if(_characterHandler.playerChar._allowRestraintSetAutoEquip == true && _characterHandler.GetDynamicTierNonClient(playerName) >= DynamicTier.Tier2) {
+            if(_characterHandler.playerChar._allowRestraintSetAutoEquip == true && _characterHandler.GetDynamicTierNonClient(playerName) >= DynamicTier.Tier2)
+            {
                 // see if our restraint set is anywhere in the list
                 int setIdx = _restraintSetManager.GetRestraintSetIndex(decodedMessageMediator.setToLockOrUnlock);
                 // exit if the index is -1
@@ -148,13 +147,13 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if( _characterHandler.IsPlayerInWhitelist(playerName)) {
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx))
+        {
             // get its index
             DynamicTier dynamicStrength = _characterHandler.GetDynamicTierNonClient(playerName);
-            int whitelistIdx = _characterHandler.GetWhitelistIndex(playerName);
             // toggle the gag storage if we have a tier above 1 or higher
             if(dynamicStrength != DynamicTier.Tier0 && _characterHandler.playerChar._allowRestraintSetAutoEquip 
-            && _characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._restraintSetLocking) {
+            && _characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._restraintSetLocking) {
                 // see if our restraint set is anywhere in the list
                 int setIdx = _restraintSetManager.GetRestraintSetIndex(decodedMessageMediator.setToLockOrUnlock);
                 // exit if the index is -1
@@ -165,7 +164,7 @@ public partial class ResultLogic {
                 }
                 // make sure that the formatted time is not longer than 12 hours
                 if (UIHelpers.GetEndTime(decodedMessageMediator.layerTimer[0]) - DateTimeOffset.Now > TimeSpan.FromHours(12)
-                && _characterHandler.playerChar._uniquePlayerPerms[whitelistIdx]._grantExtendedLockTimes == false) {
+                && _characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._grantExtendedLockTimes == false) {
                     isHandled = true;
                     LogError($"[MsgResultLogic]: Timer {decodedMessageMediator.layerTimer[0]} is too long, it must be less than 12 hours unless your partner "+
                     "has allowd you to have extended lock times.");
@@ -210,7 +209,8 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if( _characterHandler.IsPlayerInWhitelist(playerName)) {
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName))
+        {
             // unlock the restraint set
             if(_lockManager.UnlockRestraintSet(decodedMessageMediator.setToLockOrUnlock, playerName)) {
                 // notify the user that the request as been sent. 

@@ -27,9 +27,10 @@ public enum TutorialTabType {
     DynamicTiers,
 }
 
-public class TutorialWindow : Window
+public class TutorialWindow : Window, IDisposable
 {
     IDalamudTextureWrap[] textureWraps = new IDalamudTextureWrap[14]; // for image display
+    private readonly DalamudPluginInterface _pluginInterface;
     public TutorialTabType SelectedTutorialTab { get; set; }
     private readonly UiBuilder _uiBuilder;
     public bool isShown { get; set; }
@@ -58,7 +59,8 @@ public class TutorialWindow : Window
 
     public TutorialWindow(UiBuilder uiBuilder, DalamudPluginInterface pluginInterface) : base(GetLabel()) {
         _uiBuilder = uiBuilder;
-        // determine if the pop out window is shown
+        _pluginInterface = pluginInterface;
+        // determine if the pop out window is showns
         IsOpen = false;
         
         // if the display size is too small, set the minimum size
@@ -77,15 +79,16 @@ public class TutorialWindow : Window
         }
         // Load the images
         for (int i = 0; i < imageNames.Length; i++) {
-            var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, imageNames[i]);
-            textureWraps[i] = _uiBuilder.LoadImage(imagePath);
+            var imagePath = Path.Combine(_pluginInterface.AssemblyLocation.Directory?.FullName!, imageNames[i]);
+            textureWraps[i] = _pluginInterface.UiBuilder.LoadImage(imagePath);
         }
     }
 
     public void Dispose() {
-        foreach (var textureWrap in textureWraps) {
-            textureWrap.Dispose();
-        }
+        // foreach (var textureWrap in textureWraps) {
+        //     textureWrap?.Dispose();
+        // }
+        GSLogger.LogType.Information("TUTORIAL WINDOW IMAGES DISPOSED");
     }
 
     public override void Draw() {

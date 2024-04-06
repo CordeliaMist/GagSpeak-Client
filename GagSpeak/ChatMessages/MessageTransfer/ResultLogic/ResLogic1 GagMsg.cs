@@ -132,7 +132,7 @@ public partial class ResultLogic {
         // extract the player name
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if player exists in your whitelist
-        if(!_characterHandler.IsPlayerInWhitelist(playerName)) {
+        if(!AltCharHelpers.IsPlayerInWhitelist(playerName)) {
             isHandled = true; return LogError("[MsgResultLogic]: Cannot toggle live chat garbler for non-whitelisted player.");
         }
         // get the dynamic tier of your relation with that person
@@ -159,7 +159,7 @@ public partial class ResultLogic {
         // extract the player name
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(!_characterHandler.IsPlayerInWhitelist(playerName)) {
+        if(!AltCharHelpers.IsPlayerInWhitelist(playerName)) {
             isHandled = true; return LogError("[MsgResultLogic]: Cannot toggle live chat garbler lock for non-whitelisted player.");
         }
         // get the dynamic tier
@@ -181,7 +181,7 @@ public partial class ResultLogic {
         // extract the player name
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(!_characterHandler.IsPlayerInWhitelist(playerName)) {
+        if(!AltCharHelpers.IsPlayerInWhitelist(playerName)) {
             isHandled = true; return LogError("[MsgResultLogic]: Cannot toggle extended lock times for non-whitelisted player.");
         }
         // get the dynamic tier

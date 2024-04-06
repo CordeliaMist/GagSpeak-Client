@@ -12,6 +12,7 @@ using GagSpeak.Wardrobe;
 namespace GagSpeak.CharacterData;
 public partial class CharacterHandler : ISavable
 {
+    public int Version = 2; // the version of the whitelist character info 
     public PlayerGlobalPerms playerChar { get; protected set; }
     public List<WhitelistedCharacterInfo> whitelistChars { get; protected set; }
     // store the active whitelist index
@@ -46,14 +47,6 @@ public partial class CharacterHandler : ISavable
 
 
 #region Whitelist Handler Functions
-    public bool IsPlayerInWhitelist(string playerName) {
-        return whitelistChars.Any(x => x._name == playerName);
-    }
-
-    public int GetWhitelistIndex(string playerName) {
-        return whitelistChars.FindIndex(x => x._name == playerName);
-    }
-
     public bool IsIndexWithinBounds(int index) {
         return index >= 0 && index < whitelistChars.Count;
     }
@@ -63,6 +56,13 @@ public partial class CharacterHandler : ISavable
         // update the player chars things to match the whitelist edit
         playerChar.AddNewWhitelistItemPerms();
         // save
+        _saveService.QueueSave(this);
+    }
+
+    // would probably be wise to have the index as a parmeter but it should always be the active one.
+    public void AddAlternateNameToPlayer(string alternateName, string worldName) {
+        // add the alternate name to the player
+        whitelistChars[activeListIdx]._charNAW.Add((alternateName, worldName));
         _saveService.QueueSave(this);
     }
 
@@ -134,35 +134,19 @@ public partial class CharacterHandler : ISavable
         RoleLean curTheirStatusToYou = whitelistChars[whitelistIdxToCheck]._theirStatusToYou;
         // now we need to store if the two way commitment if made
         bool twoWayCommitmentMade = curYourStatusToThem != RoleLean.None && curTheirStatusToYou != RoleLean.None;
-        // if it is the same, we can do checks, otherwise, return false
-        if(twoWayCommitmentMade) {
-            if(
-                // your status to them remains dominant or remains submissive
-                UIHelpers.IsRoleLeanDomHelper(curYourStatusToThem) && UIHelpers.IsRoleLeanDomHelper(newLeanYourStatusToThem)
-                ||
-                UIHelpers.IsRoleLeanSubHelper(curYourStatusToThem) && UIHelpers.IsRoleLeanSubHelper(newLeanYourStatusToThem)
-                && // and their status to you remains dominant or remains submissive
-                UIHelpers.IsRoleLeanDomHelper(curTheirStatusToYou) && UIHelpers.IsRoleLeanDomHelper(newLeanTheirStatusToYou)
-                ||
-                UIHelpers.IsRoleLeanSubHelper(curTheirStatusToYou) && UIHelpers.IsRoleLeanSubHelper(newLeanTheirStatusToYou)
-            ) { // then we return true to prevent the timer.
-                return true;
-            }
-            // otherwise we just return false;
-        }
-        return false;
+        return twoWayCommitmentMade;
     }
 
 
     public DynamicTier GetDynamicTierClient(string playerName) {
         return whitelistChars
-                .FirstOrDefault(x => x._name == playerName)
+                .FirstOrDefault(x => x._charNAW.Any(tuple => tuple._name == playerName))
                 ?.GetDynamicTierClient() ?? DynamicTier.Tier0;
     }
 
     public DynamicTier GetDynamicTierNonClient(string playerName) {
         return whitelistChars
-                .FirstOrDefault(x => x._name == playerName)
+                .FirstOrDefault(x => x._charNAW.Any(tuple => tuple._name == playerName))
                 ?.GetDynamicTierNonClient() ?? DynamicTier.Tier0;
     }
 
@@ -198,7 +182,8 @@ public partial class CharacterHandler : ISavable
         }
         // return the new object under the label "RestraintSets"
         return new JObject() {
-            ["SelectedIdx"] = activeListIdx,
+            ["Version"] = Version,
+            ["ActiveListIdx"] = activeListIdx,
             ["PlayerCharacterData"] = playerChar.Serialize(),
             ["WhitelistData"] = array,
         };
@@ -216,18 +201,27 @@ public partial class CharacterHandler : ISavable
         try {
             var text = File.ReadAllText(file);
             var jsonObject = JObject.Parse(text);
+            Version = jsonObject["Version"]?.Value<int>() ?? 1;
             activeListIdx = jsonObject["SelectedIdx"]?.Value<int>() ?? 0;
+
             // Deserialize PlayerCharacterData
             var playerCharacterData = jsonObject["PlayerCharacterData"]?.Value<JObject>();
             if (playerCharacterData != null) {
                 playerChar = new PlayerGlobalPerms();
-                playerChar.Deserialize(playerCharacterData);
+                playerChar.Deserialize(playerCharacterData, Version);
             }
+
             var whitelistCharsArray = jsonObject["WhitelistData"].Value<JArray>();
             foreach (var item in whitelistCharsArray) {
                 var listedCharacter = new WhitelistedCharacterInfo();
-                listedCharacter.Deserialize(item.Value<JObject>());
+                listedCharacter.Deserialize(item.Value<JObject>(), Version);
                 whitelistChars.Add(listedCharacter);
+            }
+
+            // if the version was 1, and finished loading, it has made all of the migrations to version 2, so update it
+            if (Version == 1) {
+                Version = 2;
+                GSLogger.LogType.Debug($"[CharacterHandler] CharacterData.json updated to version 2.");
             }
         } catch (Exception ex) {
             GSLogger.LogType.Error($"Failure to load Whitelisted Data: Error during parsing. {ex}");

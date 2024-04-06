@@ -1,16 +1,11 @@
 using System;
 using System.Numerics;
-using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using Dalamud.Plugin;
-using Dalamud.Interface;
-using Dalamud.Interface.Internal;
 using ImGuiNET;
 using OtterGui.Raii;
 using OtterGui.Widgets;
 using GagSpeak.ChatMessages;
-using GagSpeak.Interop;
 using GagSpeak.Services;
 using GagSpeak.Utility;
 using GagSpeak.UI.Tabs.GeneralTab;

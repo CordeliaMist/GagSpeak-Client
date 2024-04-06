@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Timers;
 using GagSpeak.CharacterData;
-using GagSpeak.Events;
 using GagSpeak.Utility;
 using GagSpeak.Wardrobe;
 

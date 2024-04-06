@@ -55,7 +55,7 @@ public class HC_RestraintSetProperties
                 return;
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 5*ImGuiHelpers.GlobalScale);
             ImGui.PushFont(_fontService.UidFont);
-            var name = $"{_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]}";
+            var name = $"{AltCharHelpers.FetchCurrentName().Split(' ')[0]}";
             ImGuiUtil.Center($"Restraint Set Properties for {name}");
             ImGui.PopFont();
             using (var table = ImRaii.Table("restraintSetPropertiesTable", 2, ImGuiTableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGuiHelpers.GlobalScale*235f))) {

@@ -15,14 +15,9 @@ using GagSpeak.Wardrobe;
 using GagSpeak.Interop;
 using GagSpeak.Services;
 using GagSpeak.ChatMessages.MessageTransfer;
-using System.Runtime.CompilerServices;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.CharacterData;
-using GagSpeak.ToyboxandPuppeteer;
-using GagSpeak.Hardcore.Movement;
-using GagSpeak.Hardcore.Actions;
 using GagSpeak.Hardcore;
-using ImGuiNET;
 
 namespace GagSpeak.ChatMessages;
 
@@ -685,7 +680,7 @@ public class CommandManager : IDisposable // Our main command list manager
             GSLogger.LogType.Debug("[Command Manager]: Player is self, returning true");
             return true;
         }
-        if (_characterHandler.whitelistChars.Any(w => playerName.Contains(w._name))) { 
+        if (_characterHandler.whitelistChars.Any(w => w._charNAW.Any(n => playerName.Contains(n._name)))) { 
             GSLogger.LogType.Debug("[Command Manager]: Player is whitelisted, returning true");
             return true;
         }
@@ -698,7 +693,7 @@ public class CommandManager : IDisposable // Our main command list manager
         if(_clientState.LocalPlayer != null) { playerPayload = new PlayerPayload(_clientState.LocalPlayer.Name.TextValue, _clientState.LocalPlayer.HomeWorld.Id); }
         else { throw new Exception("Player is null!");}
         if (playerName == playerPayload.PlayerName) { return true;}
-        if (_characterHandler.whitelistChars.Any(w => playerName.Contains(w._name) && w.IsRoleLeanDominant(w._yourStatusToThem))) { return true;}
+        if (_characterHandler.whitelistChars.Any(w => w._charNAW.Any(n => playerName.Contains(n._name) && w.IsRoleLeanDominant(w._yourStatusToThem)))) { return true;}
         return false;
     }
 #endregion Helper Functions

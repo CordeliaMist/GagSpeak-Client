@@ -11,6 +11,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using GagSpeak.Hardcore.Movement;
 using GagSpeak.UI;
 using System.Threading.Tasks;
+using GagSpeak.Utility;
 
 namespace GagSpeak.Hardcore;
 public partial class HardcoreManager
@@ -89,16 +90,22 @@ public partial class HardcoreManager
     /// <returns> true if it is found, false if not, passes out the enabled set IDX, assigner name, and IDX of assigner name in whitelist </returns>
     public bool IsAnySetEnabled(out int enabledIdx, out string assignerName, out int assignerIdx) {
         // if we get the sucess on the restraintsetmanager func it means it exists
-        if(_restraintSetManager.IsAnySetEnabled(out enabledIdx, out assignerName)) {
+        if(_restraintSetManager.IsAnySetEnabled(out enabledIdx, out assignerName))
+        {
             // if this is true it means enabledIdx is valid, lets double check the assigner is valid
-            assignerIdx = _characterHandler.GetWhitelistIndex(assignerName);
-            if(assignerIdx != -1) {
+            if(AltCharHelpers.IsPlayerInWhitelist(assignerName, out int whitelistCharIdx))
+            {
+                assignerIdx = whitelistCharIdx;
                 return true;
-            } else {
+            }
+            else
+            {
                 assignerIdx = -1;
                 return false;
             }
-        } else {
+        }
+        else
+        {
             assignerIdx = -1;
             return false;
         }
@@ -112,7 +119,7 @@ public partial class HardcoreManager
         enabledIdx = _perPlayerConfigs.FindIndex(x => x._forcedFollow);
         // if the index is not -1, then find the name of the index you are on
         if(enabledIdx != -1) {
-            playerWhoForceFollowedYou = _characterHandler.whitelistChars[enabledIdx]._name;
+            playerWhoForceFollowedYou = _characterHandler.whitelistChars[enabledIdx]._charNAW[_characterHandler.whitelistChars[enabledIdx]._charNAWIdxToProcess]._name;
             return true;
         } else {
             playerWhoForceFollowedYou = "INVALID";
@@ -127,7 +134,7 @@ public partial class HardcoreManager
         enabledIdx = _perPlayerConfigs.FindIndex(x => x._forcedSit);
         // if the index is not -1, then find the name of the index you are on
         if(enabledIdx != -1) {
-            playerWhoForceSittedYou = _characterHandler.whitelistChars[enabledIdx]._name;
+            playerWhoForceSittedYou = _characterHandler.whitelistChars[enabledIdx]._charNAW[_characterHandler.whitelistChars[enabledIdx]._charNAWIdxToProcess]._name;
             return true;
         } else {
             playerWhoForceSittedYou = "INVALID";
@@ -142,7 +149,7 @@ public partial class HardcoreManager
         enabledIdx = _perPlayerConfigs.FindIndex(x => x._forcedToStay);
         // if the index is not -1, then find the name of the index you are on
         if(enabledIdx != -1) {
-            playerWhoForceStayedYou = _characterHandler.whitelistChars[enabledIdx]._name;
+            playerWhoForceStayedYou = _characterHandler.whitelistChars[enabledIdx]._charNAW[_characterHandler.whitelistChars[enabledIdx]._charNAWIdxToProcess]._name;
             return true;
         } else {
             playerWhoForceStayedYou = "INVALID";
@@ -157,7 +164,8 @@ public partial class HardcoreManager
         enabledIdx = _perPlayerConfigs.FindIndex(x => x._blindfolded);
         // if the index is not -1, then find the name of the index you are on
         if(enabledIdx != -1) {
-            playerWhoBlindfoldedYou = _characterHandler.whitelistChars[enabledIdx]._name;
+            // might change to proper idx later
+            playerWhoBlindfoldedYou = _characterHandler.whitelistChars[enabledIdx]._charNAW[_characterHandler.whitelistChars[enabledIdx]._charNAWIdxToProcess]._name;
             return true;
         } else {
             playerWhoBlindfoldedYou = "INVALID"; // should never EVER reach here.

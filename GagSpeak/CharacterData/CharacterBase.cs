@@ -70,7 +70,7 @@ public class CharacterInfoBase
         };
     }
 
-    public virtual void Deserialize(JObject jsonObject) {
+    public virtual void Deserialize(JObject jsonObject, int version) {
         _safewordUsed = jsonObject["SafewordUsed"]?.Value<bool>() ?? false;
         _directChatGarblerActive = jsonObject["DirectChatGarblerActive"]?.Value<bool>() ?? false;
         _directChatGarblerLocked = jsonObject["DirectChatGarblerLocked"]?.Value<bool>() ?? false;

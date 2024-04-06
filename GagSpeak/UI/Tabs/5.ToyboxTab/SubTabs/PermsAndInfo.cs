@@ -66,7 +66,7 @@ public class PermsAndInfoSubtab : IDisposable
         // pop the zero spacing style var for everything inside
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
-        var name = $"{_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]}";
+        var name = AltCharHelpers.FetchName(_charHandler.activeListIdx, _charHandler.whitelistChars[_charHandler.activeListIdx]._charNAWIdxToProcess);
         var yourName = "";
         if(_client.LocalPlayer == null) { yourName = "You"; }
         else { yourName = $"{_client.LocalPlayer.Name.ToString().Split(' ')[0]}"; }
@@ -83,25 +83,25 @@ public class PermsAndInfoSubtab : IDisposable
         // in the first section, draw out the permissions
         // draw the permission buttons
         UIHelpers.CheckboxNoConfig("State",
-        $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} can turn your toys on/off",
+        $"If {name.Split(' ')[0]} can turn your toys on/off",
         _charHandler.playerChar._uniquePlayerPerms[_charHandler.activeListIdx]._allowChangingToyState,
         v => _charHandler.ToggleChangeToyState(_charHandler.activeListIdx)
         );
         ImGui.SameLine();
         UIHelpers.CheckboxNoConfig("Intensity", 
-        $"If  {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} can adjust your active toys intensity.",
+        $"If {name.Split(' ')[0]} can adjust your active toys intensity.",
         _charHandler.playerChar._uniquePlayerPerms[_charHandler.activeListIdx]._allowIntensityControl,
         v => _charHandler.ToggleAllowIntensityControl(_charHandler.activeListIdx)
         );
         ImGui.SameLine();
         UIHelpers.CheckboxNoConfig("Patterns",
-        $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} can execute patterns to your toys",
+        $"If {name.Split(' ')[0]} can execute patterns to your toys",
         _charHandler.playerChar._uniquePlayerPerms[_charHandler.activeListIdx]._allowUsingPatterns,
         v => _charHandler.ToggleAllowPatternExecution(_charHandler.activeListIdx)
         );
         ImGui.SameLine();
         UIHelpers.CheckboxNoConfig("Triggers",
-        $"If {_charHandler.whitelistChars[_charHandler.activeListIdx]._name.Split(' ')[0]} can execute triggers involving their name",
+        $"If {name.Split(' ')[0]} can execute triggers involving their name",
         _charHandler.playerChar._uniquePlayerPerms[_charHandler.activeListIdx]._allowUsingTriggers,
         v => _charHandler.ToggleAllowToyboxTriggers(_charHandler.activeListIdx)
         );

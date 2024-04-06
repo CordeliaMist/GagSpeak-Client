@@ -1,5 +1,6 @@
 using System.Linq;
 using GagSpeak.CharacterData;
+using GagSpeak.Utility;
 
 namespace GagSpeak.ChatMessages.MessageTransfer;
 /// <summary> This class is used to handle the decoding of messages for the GagSpeak plugin. </summary>
@@ -11,14 +12,13 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the dynamictier and index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx)) {
+            // get the dynamictier
             DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier >= DynamicTier.Tier1) {
                 // set the boolean for if they allow sit requests
-                _characterHandler.ToggleAllowSitRequests(index);
+                _characterHandler.ToggleAllowSitRequests(whitelistCharIdx);
                 return true;
             } else {
                 // return false
@@ -36,14 +36,13 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the dynamictier and index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx)) {
+            // get the dynamictier
             DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier >= DynamicTier.Tier2) {
                 // set the boolean for if they allow motion requests
-                _characterHandler.ToggleAllowMotionRequests(index);
+                _characterHandler.ToggleAllowMotionRequests(whitelistCharIdx);
                 return true;
             } else {
                 // return false
@@ -61,14 +60,13 @@ public partial class ResultLogic {
         // get playerName
         string playerName = decodedMessageMediator.GetPlayerName(decodedMessageMediator.assignerName);
         // see if they exist
-        if(_characterHandler.IsPlayerInWhitelist(playerName)) {
-            // get the dynamictier and index
-            int index = _characterHandler.GetWhitelistIndex(playerName);
+        if(AltCharHelpers.IsPlayerInWhitelist(playerName, out int whitelistCharIdx)) {
+            // get the dynamictier
             DynamicTier tier = _characterHandler.GetDynamicTierNonClient(playerName);
             // make sure they have the correct tier to execute this
             if(tier == DynamicTier.Tier4) {
                 // set the boolean for if they allow all commands
-                _characterHandler.ToggleAllowAllCommands(index);
+                _characterHandler.ToggleAllowAllCommands(whitelistCharIdx);
                 return true;
             } else {
                 // return false

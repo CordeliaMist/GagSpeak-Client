@@ -62,7 +62,7 @@ public partial class WhitelistPanel {
             if(ImGui.IsItemHovered()) { var tt = tooltips["AllowTogglingRestraintSetsTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             var enableRestraintSets = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._enableRestraintSets 
-                                                : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._enableRestraintSets;
+                                                : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._enableRestraintSets;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((enableRestraintSets ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
@@ -77,7 +77,7 @@ public partial class WhitelistPanel {
                     TogglePlayerAllowToggleRestraintSets();
                     _interactOrPermButtonEvent.Invoke(5);
                 } else {
-                    _characterHandler.ToggleEnableRestraintSets(_tempWhitelistIdx);
+                    _characterHandler.ToggleEnableRestraintSets(_characterHandler.activeListIdx);
                 }
             }
             // Restraint Set Locking option
@@ -85,7 +85,7 @@ public partial class WhitelistPanel {
             if(ImGui.IsItemHovered()) { var tt = tooltips["AllowLockingRestraintSetsTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             var restraintSetLocking = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._restraintSetLocking 
-                                               : _characterHandler.playerChar._uniquePlayerPerms[_tempWhitelistIdx]._restraintSetLocking;
+                                               : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._restraintSetLocking;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((restraintSetLocking ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
@@ -100,7 +100,7 @@ public partial class WhitelistPanel {
                     TogglePlayerRestraintSetLockingOption();
                     _interactOrPermButtonEvent.Invoke(5);
                 } else {
-                    _characterHandler.ToggleRestraintSetLocking(_tempWhitelistIdx);
+                    _characterHandler.ToggleRestraintSetLocking(_characterHandler.activeListIdx);
                 }
             }
         }
@@ -231,14 +231,17 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+
-            $"{_tempWhitelistChar._name}'s GagStorageUILock state!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s GagStorageUILock state!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistLockGagStorageOnGagLock(_tempWhitelistIdx, !_tempWhitelistChar._lockGagStorageOnGagLock);
+        _characterHandler.SetWhitelistLockGagStorageOnGagLock(_characterHandler.activeListIdx, !_tempWhitelistChar._lockGagStorageOnGagLock);
         _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeGagStorageUiLockToggle(playerPayload, targetPlayer));
     }
 
@@ -246,14 +249,17 @@ public partial class WhitelistPanel {
         // get the player payload
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+
-            $"{_tempWhitelistChar._name}'s Allow RestraintSet Toggling Option!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s Allow RestraintSet Toggling Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistEnableRestraintSets(_tempWhitelistIdx, !_tempWhitelistChar._enableRestraintSets);
+        _characterHandler.SetWhitelistEnableRestraintSets(_characterHandler.activeListIdx, !_tempWhitelistChar._enableRestraintSets);
         _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeToggleRestraintSetsOption(playerPayload, targetPlayer));
     }
 
@@ -261,14 +267,17 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+
-            $"{_tempWhitelistChar._name}'s allow RestraintSet Locking Option!").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s allow RestraintSet Locking Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistRestraintSetLocking(_tempWhitelistIdx, !_tempWhitelistChar._restraintSetLocking);
+        _characterHandler.SetWhitelistRestraintSetLocking(_characterHandler.activeListIdx, !_tempWhitelistChar._restraintSetLocking);
         _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeToggleRestraintSetLockingOption(playerPayload, targetPlayer));
     }
 
@@ -276,12 +285,15 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-        if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+        if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Now attempting to toggle "+
-            $"{_tempWhitelistChar._name}'s {restraintSetNameToApply} restraint set.").AddItalicsOff().BuiltString);
+            $"{targetPlayerName}'s {restraintSetNameToApply} restraint set.").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
         _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeToggleRestraintSet(playerPayload, targetPlayer, restraintSetNameToApply));
     }
@@ -289,12 +301,15 @@ public partial class WhitelistPanel {
     public void LockRestraintSetToPlayer(string restraintSetNameToApply, string timeToLock) {
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload); // THIS IS THE SENDER
-         if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+         if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Now attempting to lock "+
-            $"{_tempWhitelistChar._name}'s {restraintSetNameToApply} restraint set for "+
+            $"{targetPlayerName}'s {restraintSetNameToApply} restraint set for "+
             $"{timeToLock}. Keep in mind if they have this option disabled, it will not apply.").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
         _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeRestraintSetLock(playerPayload, targetPlayer, restraintSetNameToApply, timeToLock));
@@ -304,12 +319,15 @@ public partial class WhitelistPanel {
         // get the player payload    
         PlayerPayload playerPayload; // get player payload
         UIHelpers.GetPlayerPayload(_clientState, out playerPayload);
-         if (!_characterHandler.IsIndexWithinBounds(_tempWhitelistIdx)) { return; }
-        string targetPlayer = _tempWhitelistChar._name + "@" + _tempWhitelistChar._homeworld;
+         if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
+
+        string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Attempting to unlock "+
-            $"{_tempWhitelistChar._name}'s [{restraintSetNameToApply}] restraint set. "+
+            $"{targetPlayerName}'s [{restraintSetNameToApply}] restraint set. "+
             "Keep in mind if you are not the one who assigned it and they did not do it to themselves, it will not unlock.").AddItalicsOff().BuiltString);
         // updating whitelist with new information and send message
         _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeRestraintSetUnlock(playerPayload, targetPlayer, restraintSetNameToApply));

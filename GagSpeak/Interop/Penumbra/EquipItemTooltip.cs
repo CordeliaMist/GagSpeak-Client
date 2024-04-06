@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Dalamud;
 using Dalamud.Plugin.Services;
 using GagSpeak.Wardrobe;
 using ImGuiNET;
