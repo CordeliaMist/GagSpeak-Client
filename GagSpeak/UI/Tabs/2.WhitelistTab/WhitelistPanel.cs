@@ -81,6 +81,7 @@ public partial class WhitelistPanel {
         {
             _tempWhitelistIdx = _characterHandler.activeListIdx;
             _tempWhitelistChar = _characterHandler.whitelistChars[_characterHandler.activeListIdx];
+            InitializeToolTips();
         }
         // draw out the panel
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };

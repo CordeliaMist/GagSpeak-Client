@@ -32,6 +32,7 @@ public class GagSpeakChangelog
         Add3_0_0_2(Changelog);
         Add3_0_1_0(Changelog);
         Add3_1_0_0(Changelog);
+        Add3_1_1_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -58,6 +59,15 @@ public class GagSpeakChangelog
             _config.Save();
         }
     }
+
+    private static void Add3_1_1_0(Changelog log)
+        => log.NextVersion("Version 3.1.1.0 Release")
+            .RegisterHighlight("Audio detection failures no longer will preventing the plugin from installing the plugin")
+            .RegisterEntry("Your audio device for the plugin can be selected now within the toybox module. This does not change where your FF sounds go to, only the simulated vibrator sounds.")
+            .RegisterEntry("Fixed the issue where tooltips were only displaying the first whitelisted name")
+            .RegisterEntry("Adjusting vibrator intensity now stops active patterns")
+            .RegisterHighlight("Gagspeak Debug now has an additional tab for automating the ports of Lovense Patterns from the Lovense Pattern Library, into a savable gagspeak pattern.")
+            .RegisterEntry("Fixed issue where the lovense pattern port functionality made patterns 3-5 times the original length");
 
     private static void Add3_1_0_0(Changelog log)
         => log.NextVersion("Version 3.1.0.0 Release")

@@ -37,6 +37,7 @@ public partial class ToyboxPatternTable {
     public List<int> itemsToRemove = new List<int>();
     // draw the pattern table
     private void DrawPatternsTable() {
+        // draw the table
         ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(ImGui.GetStyle().CellPadding.X * 0.2f, ImGui.GetStyle().CellPadding.Y)); // Modify the X padding
         try{
             using (var table = ImRaii.Table("UniquePatternListCreator", 6, ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY, new Vector2(0, -1*ImGuiHelpers.GlobalScale))) {

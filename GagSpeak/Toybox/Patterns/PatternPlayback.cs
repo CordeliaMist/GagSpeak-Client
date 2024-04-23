@@ -23,7 +23,7 @@ public class PatternPlayback : IDisposable
     public Stopwatch                    _recordingStopwatch;
     private List<byte>                  storedRecordedPositions = new List<byte>(); // the stored pattern data to playback
     private double[]                    currentPos = new double[2];  // The plotted points position on the wavelength graph
-    private bool                        _isPlaybackActive;  // Whether the playback is active
+    public bool                         _isPlaybackActive;  // Whether the playback is active
 
     public PatternPlayback(PlugService plugService, CharacterHandler characterHandler, SoundPlayer soundPlayer) {
         _plugService = plugService;

@@ -21,7 +21,7 @@ public class PermsAndInfoSubtab : IDisposable
     private readonly    IClientState                _client;
     private readonly    PlugService                 _plugService;
     private readonly    SoundPlayer                 _soundPlayer;
-    private readonly    PatternHandler              _patternCollection;
+    private readonly    PatternHandler              _patternHandler;
     private readonly    FontService                 _fontService; // for getting the font
     private readonly    ActiveDeviceChangedEvent    _activeDeviceChangedEvent; // for getting the active device
     private             int? _tempSliderValue; // for storing the slider value
@@ -36,7 +36,7 @@ public class PermsAndInfoSubtab : IDisposable
         _client = client;
         _plugService = plugService;
         _soundPlayer = soundPlayer;
-        _patternCollection = patternCollection;
+        _patternHandler = patternCollection;
         _fontService = fontService;
         _activeDeviceChangedEvent = activeDeviceChangedEvent;
         // setup values
@@ -214,7 +214,6 @@ public class PermsAndInfoSubtab : IDisposable
         ImGui.PushStyleColor(ImGuiCol.FrameBgActive, new Vector4(0.602f, 0.283f, 0.448f, 0.740f));
         ImGui.PushStyleColor(ImGuiCol.SliderGrab, new Vector4(0.955f, .289f, .687f, 1.0f));
         ImGui.PushStyleColor(ImGuiCol.SliderGrabActive, new Vector4(0.964f, 0.392f, 0.765f, 1.0f));
-        if(_patternCollection.GetActiveIdx() != -1 && _patternCollection._patterns[_patternCollection._activePatternIndex]._isActive) { ImGui.BeginDisabled(); }
         try{
             // draw out the slider here
             width = 75*ImGuiHelpers.GlobalScale;
@@ -226,8 +225,15 @@ public class PermsAndInfoSubtab : IDisposable
                 _charHandler.UpdateIntensityLevel(intensityResult);
                 //GSLogger.LogType.Debug($"[Toybox Overview Panel] Intensity Level: {_charHandler.playerChar._intensityLevel}");
                 // update the intensity on our device if it is set to active
-                if(_tempSliderValue != intensityResult) {
+                if(_tempSliderValue != intensityResult)
+                {
                     _tempSliderValue = intensityResult;
+
+                    // if any pattern is playing, overwrite it and shut the pattern down
+                    if(_patternHandler.IsAnyPatternActive()) {
+                        _patternHandler.StopPattern();
+                    }
+
                     // send the intensity to the device, if it is active
                     if(_charHandler.playerChar._isToyActive && _plugService.activeDevice != null) {
                         _ = _plugService.ToyboxVibrateAsync((byte)((intensityResult/(double)maxVal)*100), 20);
@@ -240,7 +246,6 @@ public class PermsAndInfoSubtab : IDisposable
             }
         } finally {
             ImGui.PopStyleColor(5);
-            if(_patternCollection.GetActiveIdx() != -1 && _patternCollection._patterns[_patternCollection._activePatternIndex]._isActive) { ImGui.EndDisabled(); }
         }
     }
 
@@ -258,6 +263,30 @@ public class PermsAndInfoSubtab : IDisposable
             }
         }
         if(ImGui.IsItemHovered()) { ImGui.SetTooltip("Select the type of simulated vibrator sound to play when the intensity is adjusted."); }
+
+        // draw out the combo for the audio device selection to play to
+        ImGui.SetNextItemWidth(250*ImGuiHelpers.GlobalScale);
+        int prevDeviceId = _soundPlayer.ActiveDeviceId; // to only execute code to update data once it is changed
+        // display the list        
+        if (ImGui.BeginCombo("##Device", _soundPlayer.DeviceNames[_soundPlayer.ActiveDeviceId])) {
+            for (int i = 0; i < _soundPlayer.DeviceNames.Count; i++) {
+                bool isSelected = (_soundPlayer.ActiveDeviceId == i);
+                if (ImGui.Selectable(_soundPlayer.DeviceNames[i], isSelected)) {
+                    _soundPlayer.ActiveDeviceId = i;
+                }
+                if (isSelected) {
+                    ImGui.SetItemDefaultFocus();
+                }
+            }
+            ImGui.EndCombo();
+        }
+        if(ImGui.IsItemHovered()) {
+            ImGui.SetTooltip("Select the device you want to use for audio output.");
+        }
+        // Update if changed 
+        if (prevDeviceId != _soundPlayer.ActiveDeviceId) { // set the device to the newly selected device once it is changed
+            _soundPlayer.SwitchDevice(_soundPlayer.ActiveDeviceId);
+        }
     }
 
     private void SwitchToQuietVibe() {

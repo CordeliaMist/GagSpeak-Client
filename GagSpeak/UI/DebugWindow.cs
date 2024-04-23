@@ -14,6 +14,9 @@ using GagSpeak.UI.Tabs.GeneralTab;
 using GagSpeak.CharacterData;
 using GagSpeak.Wardrobe;
 using GagSpeak.Hardcore;
+using System.Linq;
+using GagSpeak.ToyboxandPuppeteer;
+using System.Collections.Generic;
 
 namespace GagSpeak.UI;
 // probably can remove this later, atm it is literally just used for the debug window
@@ -45,15 +48,21 @@ public class DebugWindow : Window //, IDisposable
     private readonly GagListingsDrawer      _gagListingsDrawer;             // for knowing the information in the currently equipped gags
     private readonly FontService            _fontService;                   // for displaying the IPA symbols on the bottom chart
     private readonly GagService             _gagService;                    // for displaying the number of registered gags
+    private readonly PatternHandler         _patternHandler;
     private readonly GagSpeakGlamourEvent   _gagSpeakGlamourEvent;          // for knowing if the glamour event is executing
     private          string?                _tempTestMessage;               // stores the input password for the test translation system
+    private          string?                _tempPatternStorage;            // temporarily stores the pattern of the string.
+    private          string?                _outputString = "";             // converted pattern output
+    private          string[]?              _splitInput;
+    private          List<byte>             convertedPatternData; // temp pattern data
     private          string?                _translatedMessage = "";        // stores the translated message for the test translation system
     private          string?                _translatedMessageSpaced ="";   // stores the translated message for the test translation system
     private          string?                _translatedMessageOutput ="";   // stores the translated message for the test translation system
 
-    public DebugWindow(DalamudPluginInterface pluginInt, FontService fontService, GagService gagService, RestraintSetManager restraintSetManager,
-    IpaParserEN_FR_JP_SP translatorLanguage, GagSpeakConfig config, CharacterHandler characterHandler, GagSpeakGlamourEvent gagSpeakGlamourEvent,
-    GagGarbleManager GagGarbleManager, GagListingsDrawer gagListingsDrawer, HardcoreManager hardcoreManager) : base(GetLabel()) {
+    public DebugWindow(DalamudPluginInterface pluginInt, FontService fontService, GagService gagService,
+    RestraintSetManager restraintSetManager, IpaParserEN_FR_JP_SP translatorLanguage, GagSpeakConfig config,
+    CharacterHandler characterHandler, GagSpeakGlamourEvent gagSpeakGlamourEvent, GagGarbleManager GagGarbleManager,
+    GagListingsDrawer gagListingsDrawer, HardcoreManager hardcoreManager, PatternHandler patternHandler) : base(GetLabel()) {
         // Let's first make sure that we disable the plugin while inside of gpose.
         pluginInt.UiBuilder.DisableGposeUiHide = true;
         // Next let's set the size of the window
@@ -71,6 +80,9 @@ public class DebugWindow : Window //, IDisposable
         _restraintSetManager = restraintSetManager;
         _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
         _hcManager = hardcoreManager;
+        _patternHandler = patternHandler;
+
+        convertedPatternData = new List<byte>();
     }
 
 
@@ -93,6 +105,7 @@ public class DebugWindow : Window //, IDisposable
         DrawRestraintSetOverview();
         DrawAdvancedGarblerInspector();
         DrawPhoneticDebugInformation();
+        DrawLovensePatternConverter();
     }
 
     // basic string function to get the label of title for the window
@@ -315,6 +328,77 @@ public class DebugWindow : Window //, IDisposable
             ImGui.NewLine();
             GSLogger.LogType.Error($"Error while fetching config in debug: {e}");
         }
+    }
+
+    public string convertedPatternDuration = "";
+    public void DrawLovensePatternConverter() {
+        if(!ImGui.CollapsingHeader("Lovense Pattern Converted INFORMATION")) { return; }
+        // input for the text to convert
+        var lovenseFormattedPattern  = _tempPatternStorage ?? ""; // temp storage to hold until we de-select the text input
+        ImGui.Text("Input Lovense Downloaded Pattern Data Here:");
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        if (ImGui.InputTextWithHint("##LovensePatternConverter", "Input Lovense Pattern Here", ref lovenseFormattedPattern, 500000, ImGuiInputTextFlags.None))
+        {
+            _tempPatternStorage = lovenseFormattedPattern;
+        }
+        if(ImGui.IsItemDeactivatedAfterEdit()) {
+            _tempPatternStorage = lovenseFormattedPattern;
+            _splitInput = Array.Empty<string>(); // clear it then make the new one
+            _splitInput = lovenseFormattedPattern.Split(';').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+        }
+        ImGui.Spacing();
+        ImGui.Text($"Element Count: {_splitInput?.Length ?? 0}");
+        ImGui.Spacing();
+        // if we press the convert button, convert it
+        if(ImGui.Button("Convert Pattern")) {
+            _splitInput = lovenseFormattedPattern.Split(';').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+            GSLogger.LogType.Information($"Converting Lovense Pattern to GagSpeak Pattern");
+            // clear the lists
+            convertedPatternData.Clear();
+            for (int i = 0; i < _splitInput.Length; i++)
+            {
+                // get the current number and the one after
+                byte number = byte.Parse(_splitInput[i]);
+                byte nextNumber = i < _splitInput.Length - 1 ? byte.Parse(_splitInput[i+1]) : number;
+                // append the data * 5 with easing
+                for(int j = 0; j < 5; j++)
+                {
+                    byte intropolatedNumber = (byte)(number*5 + (nextNumber*5 - number*5) * j / 5);
+                    convertedPatternData.Add(intropolatedNumber);
+                }
+            }
+            GSLogger.LogType.Information($"Converted Lovense Pattern to GagSpeak Pattern, pairing with commas now.\nArray has {convertedPatternData.Count} elements.");
+            // set the output string
+            _outputString = string.Join(",", convertedPatternData);
+            GSLogger.LogType.Information($"Converted Lovense Pattern to GagSpeak Pattern");
+
+            int totalMilliseconds = convertedPatternData.Count * 20;
+            TimeSpan duration = TimeSpan.FromMilliseconds(totalMilliseconds);
+            convertedPatternDuration = string.Format("{0}h{1:D2}m{2:D2}s", duration.Hours, duration.Minutes, duration.Seconds);
+        }
+
+        // display the output string
+        ImGui.InputText("##PatternOutput", ref _outputString, 500000, ImGuiInputTextFlags.None);
+
+
+        if(ImGui.Button("Create New Pattern From Data")) {
+            PatternData newPattern = new PatternData();
+            newPattern._name = "Converted Lovense Pattern";
+            newPattern._description = "Converted Lovense Pattern From GagSpeak Debug";
+            // get duration and add it
+            int totalMilliseconds = convertedPatternData.Count * 20;
+            TimeSpan duration = TimeSpan.FromMilliseconds(totalMilliseconds);
+            newPattern._duration = string.Format("{0}h{1:D2}m{2:D2}s", duration.Hours, duration.Minutes, duration.Seconds);
+            // add pattern
+            List<byte> newPatternData = new List<byte>(convertedPatternData);
+            newPattern._patternData = newPatternData;
+            _patternHandler.AddNewPattern(newPattern); // Add the new pattern to the list
+            GSLogger.LogType.Information($"Added new pattern to the list");
+        }
+        ImGui.Spacing();
+        ImGui.Text($"Converted Element Count: {convertedPatternData.Count}");
+        ImGui.Spacing();
+        ImGui.Text($"Converted Pattern Duration: {convertedPatternDuration}");
     }
 }
 

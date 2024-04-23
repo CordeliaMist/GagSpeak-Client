@@ -66,11 +66,6 @@ public class PatternHandler : ISavable
         }
         _saveService.QueueSave(this);
     }
-    public void AddNewPattern() {
-        var newSet = new PatternData();
-        newSet._name = GenerateUniqueName(newSet._name);
-        AddNewPattern(newSet);
-    }
 
     public string GenerateUniqueName(string baseName) {
         int copyNumber = 1;
@@ -86,6 +81,12 @@ public class PatternHandler : ISavable
     public void ReplacePattern(int idx, PatternData newPattern) {
         _patterns[idx] = newPattern;
         _saveService.QueueSave(this);
+    }
+
+    public void AddNewPattern() {
+        var newSet = new PatternData();
+        newSet._name = GenerateUniqueName(newSet._name);
+        AddNewPattern(newSet);
     }
 
     // add a new pattern by passing in a pattern object
@@ -128,6 +129,14 @@ public class PatternHandler : ISavable
             return;
         }
         _patternPlayback.StartPlayback(_patterns[_activePatternIndex], _activePatternIndex);
+    }
+
+    // create a function that checks to see if any patterns are currently active
+    public bool IsAnyPatternActive() {
+        if(_patternPlayback._isPlaybackActive) {
+            return true;
+        }
+        return false;
     }
 
     public void StopPattern() {

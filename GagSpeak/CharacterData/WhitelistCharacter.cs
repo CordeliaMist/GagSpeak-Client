@@ -116,8 +116,20 @@ public class WhitelistedCharacterInfo : CharacterInfoBase
             }
             return "";
         }
-        // Display the duration in the desired format
-        return $"{duration.Hours}h, {duration.Minutes}m, {duration.Seconds}s";
+        // get the format to display
+        string ret = "";
+        if (duration.Days > 0)
+            ret += $"{duration.Days}d, ";
+        
+        if (duration.Hours > 0)
+            ret += $"{duration.Hours}h, ";
+        
+        if (duration.Minutes > 0)
+            ret += $"{duration.Minutes}m, ";
+        
+        ret += $"{duration.Seconds}s";
+
+        return ret;
     }
 #endregion General Interactions
 #region State Fetching / Setting

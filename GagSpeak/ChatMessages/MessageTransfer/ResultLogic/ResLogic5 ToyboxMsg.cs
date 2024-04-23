@@ -93,13 +93,18 @@ public partial class ResultLogic {
                 if(_characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._allowChangingToyState 
                 && _characterHandler.playerChar._uniquePlayerPerms[whitelistCharIdx]._allowIntensityControl)
                 {
+                    // if any pattern is playing, stop the pattern first
+                    if(_patternHandler.IsAnyPatternActive()) {
+                        _patternHandler.StopPattern();
+                    }
+
                     // update the active connected vibe, if one is
                     if(_plugService.HasConnectedDevice() && _plugService.IsClientConnected() && _plugService.anyDeviceConnected) {
                         _ = _plugService.ToyboxVibrateAsync((byte)((decodedMessageMediator.intensityLevel/(double)_plugService.stepCount)*100), 20);
                     }
                     // regardless, update the intensity level
                     _characterHandler.UpdateIntensityLevel((byte)decodedMessageMediator.intensityLevel);
-                    // after, update the simulated vibe volume, if it is active
+
                     // update our simulated toy, if active
                     if(_characterHandler.playerChar._usingSimulatedVibe) {
                         var maxval = _plugService.stepCount == 0 ? 20 : _plugService.stepCount;

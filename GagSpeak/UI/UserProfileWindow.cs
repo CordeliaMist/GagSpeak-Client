@@ -190,5 +190,5 @@ public class UserProfileWindow : Window, IDisposable
     }
 
     // basic string function to get the label of title for the window
-    private static string GetLabel() => "GagSpeakProfileViewer###GagSpeakProfileViewer"; 
+    private static string GetLabel() => "Player Status###GagSpeakProfileViewer"; 
 }
