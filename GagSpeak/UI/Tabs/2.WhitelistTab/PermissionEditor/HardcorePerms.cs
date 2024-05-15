@@ -19,7 +19,7 @@ public partial class WhitelistPanel {
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
 
         // store their dynamic tier for edit purposes
-        DynamicTier dynamicTier = _tempWhitelistChar.GetDynamicTierClient();
+        DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTierClient();
         // store temp name for display
 
         // draw out the table for our permissions
@@ -37,10 +37,10 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Follow Order:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["FollowOrderTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_tempWhitelistChar._allowForcedFollow ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowForcedFollow ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"If this permission is allowed by {AltCharHelpers.FetchCurrentName().Split(' ')[0]} or not"); }
             ImGui.TableNextColumn();
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_tempWhitelistChar._forcedFollow ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._forcedFollow ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"If {AltCharHelpers.FetchCurrentName().Split(' ')[0]} is currently performing this order or not"); }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("HOVER ME");
@@ -53,10 +53,10 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Sit Order:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["SitOrderTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_tempWhitelistChar._allowForcedSit ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowForcedSit ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"If this permission is allowed by {AltCharHelpers.FetchCurrentName().Split(' ')[0]} or not"); }
             ImGui.TableNextColumn();
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_tempWhitelistChar._forcedSit ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._forcedSit ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"If {AltCharHelpers.FetchCurrentName().Split(' ')[0]} is currently performing this order or not"); }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("HOVER ME");
@@ -70,10 +70,10 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Lock Away Order:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["LockAwayTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_tempWhitelistChar._allowForcedToStay ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowForcedToStay ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"If this permission is allowed by {AltCharHelpers.FetchCurrentName().Split(' ')[0]} or not"); }
             ImGui.TableNextColumn();
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_tempWhitelistChar._forcedToStay ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._forcedToStay ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"If {AltCharHelpers.FetchCurrentName().Split(' ')[0]} is currently performing this order or not"); }
             ImGui.TableNextColumn();
             ImGuiUtil.Center("HOVER ME");
@@ -86,14 +86,14 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Blindfold Order:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["BlindfoldTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_tempWhitelistChar._allowBlindfold ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowBlindfold ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"If this permission is allowed by {AltCharHelpers.FetchCurrentName().Split(' ')[0]} or not"); }
             ImGui.TableNextColumn();
-            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_tempWhitelistChar._blindfolded ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
+            using (var font = ImRaii.PushFont(UiBuilder.IconFont)) { ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._blindfolded ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString()); }
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"If {AltCharHelpers.FetchCurrentName().Split(' ')[0]} is currently performing this order or not"); }
             ImGui.TableNextColumn();
             if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleBlindfoldStateButton", new Vector2(ImGui.GetContentRegionAvail().X, 0),
-            tooltips["ToggleButtonTT"](), !_tempWhitelistChar._allowBlindfold)) {
+            tooltips["ToggleButtonTT"](), !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowBlindfold)) {
                 // how to treat what happens when we press the button
                 ToggleBlindfoldOption();
                 _interactOrPermButtonEvent.Invoke(5);
@@ -116,7 +116,7 @@ public partial class WhitelistPanel {
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"this players Blindfold! Make sure they dont trip!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetBlindfoldCondition(_characterHandler.activeListIdx, !_tempWhitelistChar._blindfolded);
+        _characterHandler.SetBlindfoldCondition(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._blindfolded);
         _chatManager.SendRealMessage(_messageEncoder.EncodeBlindfoldToggleOption(playerPayload, targetPlayer));
     }
 #endregion ButtonHelpers

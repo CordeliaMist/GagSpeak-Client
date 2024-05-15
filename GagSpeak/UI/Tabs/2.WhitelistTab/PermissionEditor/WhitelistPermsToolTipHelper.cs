@@ -8,7 +8,7 @@ public partial class WhitelistPanel {
 
     private void InitializeToolTips() {
         // temp name storage
-        string tempPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        string tempPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
     
         tooltips = new Dictionary<string, Func<string>>
         {

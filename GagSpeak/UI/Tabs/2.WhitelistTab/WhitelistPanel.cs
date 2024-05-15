@@ -29,10 +29,7 @@ public partial class WhitelistPanel {
     private readonly    MessageEncoder              _messageEncoder;
     private readonly    OnChatMsgManager            _chatManager;
     private readonly    UserProfileWindow           _userProfileWindow;
-    // helpers for making code easier to read
-    private int                         _tempWhitelistIdx;
-    private WhitelistedCharacterInfo    _tempWhitelistChar;
-    private WhitelistPanelTab           _activePanelTab;
+    private             WhitelistPanelTab           _activePanelTab;
 
     #pragma warning disable CS8618
     public WhitelistPanel(InteractOrPermButtonEvent interactOrPermButtonEvent, GagSpeakConfig config,
@@ -54,8 +51,6 @@ public partial class WhitelistPanel {
         _gagLabel = "None";
         _lockLabel = "None";
         _layer = 0;
-        _tempWhitelistIdx = _characterHandler.activeListIdx;
-        _tempWhitelistChar = _characterHandler.whitelistChars[_characterHandler.activeListIdx];
         _activePanelTab = WhitelistPanelTab.Overview;
         // draw out our gagtype filter combo listings
         _gagTypeFilterCombo = new GagTypeFilterCombo[] {
@@ -76,13 +71,6 @@ public partial class WhitelistPanel {
 
     public void Draw(ref bool _interactions)
     {
-        // update temp vars for easier code if a change occurs
-        if(_tempWhitelistIdx != _characterHandler.activeListIdx)
-        {
-            _tempWhitelistIdx = _characterHandler.activeListIdx;
-            _tempWhitelistChar = _characterHandler.whitelistChars[_characterHandler.activeListIdx];
-            InitializeToolTips();
-        }
         // draw out the panel
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
@@ -125,13 +113,13 @@ public partial class WhitelistPanel {
 
         // tab selection
         if (ImGuiUtil.DrawDisabledButton("Overview", buttonSize1,
-        $"View {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}'s Basic Attributes & Settings", _activePanelTab == WhitelistPanelTab.Overview)) {
+        $"View {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}'s Basic Attributes & Settings", _activePanelTab == WhitelistPanelTab.Overview)) {
             _activePanelTab = WhitelistPanelTab.Overview;
         }
         ImGui.SameLine();
-        if (ImGuiUtil.DrawDisabledButton($"{AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}'s Settings",
+        if (ImGuiUtil.DrawDisabledButton($"{AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}'s Settings",
         buttonSize2,
-        $"Inspect what settings {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]} has enabled for you.\n"+
+        $"Inspect what settings {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]} has enabled for you.\n"+
         $"You can override their settings if you have a strong enough Dynamic Tier.\n"+
         "Otherwise, the toggle buttons will be disabled.\n"+
         "Look in the Overview Section of the Whitelist Tab to see how people aquire certain Tiers",
@@ -141,11 +129,11 @@ public partial class WhitelistPanel {
             _activePanelTab = WhitelistPanelTab.TheirSettings;
         }
         ImGui.SameLine();
-        if (ImGuiUtil.DrawDisabledButton($"Your Settings for {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}",
+        if (ImGuiUtil.DrawDisabledButton($"Your Settings for {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}",
         buttonSize3,
-        $"Configure which permissions you want to give {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]} Access to.\n"+
-        $"Any Settings you enable here, {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]} will be able to use.\n"+
-        $"{AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]} can override your Settings if they have a strong enough Dynamic Tier.\n"+
+        $"Configure which permissions you want to give {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]} Access to.\n"+
+        $"Any Settings you enable here, {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]} will be able to use.\n"+
+        $"{AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]} can override your Settings if they have a strong enough Dynamic Tier.\n"+
         "Look in the Overview Section of the Whitelist Tab to see how people aquire certain Tiers",
         _activePanelTab == WhitelistPanelTab.YourSettings))
         {
@@ -161,17 +149,17 @@ public partial class WhitelistPanel {
         // add a button to display it
         if (ImGui.Button("Mini-Profile", buttonWidth)) {
             // Get the currently selected user
-            var selectedUser = _tempWhitelistChar;
+            var selectedUser = _characterHandler.whitelistChars[_characterHandler.activeListIdx];
             // Check if the UserProfileWindow is already open
             _userProfileWindow.Toggle();
         }
         if(ImGui.IsItemHovered()) {
-            ImGui.SetTooltip($"View a fucking adorable mini-profile window.\nThis window displays all information about {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}'s active gags.");
+            ImGui.SetTooltip($"View a fucking adorable mini-profile window.\nThis window displays all information about {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}'s active gags.");
         }
 
         // draw the relationship removal
         ImGui.SameLine();
-        if(_tempWhitelistChar._yourStatusToThem == RoleLean.None) {
+        if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem == RoleLean.None) {
             ImGui.BeginDisabled();
             try
             {
@@ -181,7 +169,7 @@ public partial class WhitelistPanel {
                     // send a request to remove your relationship, or just send a message that does remove it, removing it from both ends.
                 }
                 if(ImGui.IsItemHovered()) {
-                    ImGui.SetTooltip($"Removes both ends of the dynamic relation with {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}.");
+                    ImGui.SetTooltip($"Removes both ends of the dynamic relation with {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}.");
                 }
             }
             finally {
@@ -189,7 +177,7 @@ public partial class WhitelistPanel {
             }
         } else {
             if (ImGuiUtil.DrawDisabledButton("Reset Dynamic##RemoveTwo", buttonWidth2,
-            $"Removes both ends of the dynamic relation with {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}.\n\nMust hold CTRL and SHIFT to execute.",
+            $"Removes both ends of the dynamic relation with {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}.\n\nMust hold CTRL and SHIFT to execute.",
             !(ImGui.GetIO().KeyShift && ImGui.GetIO().KeyCtrl), false))
             {
                 GSLogger.LogType.Debug("[Whitelist]: Sending Request to remove relation to player");
@@ -207,7 +195,7 @@ public partial class WhitelistPanel {
             if (_config.sendInfoName == "" && _config.acceptingInfoRequests == true && _config.processingInfoRequest == false)
             {
                 // we MUST satisfy these conditions to send a message, otherwise, do not send it.
-                _config.SetSendInfoName(AltCharHelpers.FetchNameWorldFormatByTupleIdx(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess));
+                _config.SetSendInfoName(AltCharHelpers.FetchNameWorldFormatByTupleIdx(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess));
                 _config.SetAcceptInfoRequests(false);
                 // send it
                 InfoSendAndRequestHelpers.RequestInfoFromPlayer(_characterHandler.activeListIdx,
@@ -219,7 +207,7 @@ public partial class WhitelistPanel {
             }
         }
         if(ImGui.IsItemHovered()) {
-            ImGui.SetTooltip($"Sends a request for information to {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess)}.\n"+
+            ImGui.SetTooltip($"Sends a request for information to {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess)}.\n"+
             "This then makes them send back all of their information to you. This process can around 8seconds to process.\n\n"+
             "It is HIGHLY RECOMMENDED to use this whenever meet up with someone before you begin interacting.");
         }
@@ -243,10 +231,10 @@ public partial class WhitelistPanel {
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         // draw out the collapsible tabs and their bodies
         ImGui.PushFont(_fontService.UidFont);
-        try { ImGuiUtil.Center($"Inspect / Override {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}'s Settings"); }
+        try { ImGuiUtil.Center($"Inspect / Override {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}'s Settings"); }
         finally { ImGui.PopFont(); }
         // draw the dropdowns
-        var text = $"{AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}";
+        var text = $"{AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}";
         var suffix = "'s";
         try{
             DrawDetailsOverview(ref _interactions, text, suffix);
@@ -267,14 +255,14 @@ public partial class WhitelistPanel {
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         // draw out the collapsible tabs and their bodies
         ImGui.PushFont(_fontService.UidFont);
-        try { ImGuiUtil.Center($"Set what {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]} can do to You"); }
+        try { ImGuiUtil.Center($"Set what {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]} can do to You"); }
         finally { ImGui.PopFont(); }
         // draw the warning
-        if(_tempWhitelistChar._yourStatusToThem == RoleLean.None || _tempWhitelistChar._theirStatusToYou == RoleLean.None) {
+        if(_characterHandler.whitelistChars[_characterHandler.activeListIdx]._yourStatusToThem == RoleLean.None || _characterHandler.whitelistChars[_characterHandler.activeListIdx]._theirStatusToYou == RoleLean.None) {
             try{
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
                 ImGuiUtil.Center($"Before establishing a 2 way dynamic, make sure you have setup");
-                ImGuiUtil.Center($"the options you want to grant {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]} Access to.");
+                ImGuiUtil.Center($"the options you want to grant {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]} Access to.");
                 ImGuiUtil.Center("Doing so after will cause a lot of desync and not recommended!");
             } finally {
                 ImGui.PopStyleColor();
@@ -329,10 +317,10 @@ public partial class WhitelistPanel {
     private void DrawDetailsWardrobe(ref bool _interactions, string text, string suffix) {
         var tooltipText = WhitelistPanelTab.TheirSettings == _activePanelTab
             ? $"View which permissions {text} has set for you.\nAdditionally, you can enable/disable and lock restraint sets, given permission to do so is granted."
-            : $"Configure what wardrobe spesific permissions {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]} will be able to use on you.";
+            : $"Configure what wardrobe spesific permissions {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]} will be able to use on you.";
         var headerText = WhitelistPanelTab.TheirSettings == _activePanelTab
             ? $"{text}{suffix} Wardrobe Permissions & Interactions"
-            : $"{text}{suffix} Wardrobe Permissions for {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}";
+            : $"{text}{suffix} Wardrobe Permissions for {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}";
         if(!ImGui.CollapsingHeader($"{headerText}")) { 
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); }
             return;
@@ -351,11 +339,11 @@ public partial class WhitelistPanel {
         var tooltipText = WhitelistPanelTab.TheirSettings == _activePanelTab
             ? $"View which puppeteer permissions {text} has set for you.\n"+
               $"You can also view the trigger phrase they have set for you, and the custom start/end character brackets they have setup."
-            : $"View what puppeteer permissions you have given {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]} access to execute with your trigger phrase.\n"+
+            : $"View what puppeteer permissions you have given {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]} access to execute with your trigger phrase.\n"+
               "Any permissions that cannot be toggled are readonly because they must be toggled in the puppeteer module.";
         var headerText = WhitelistPanelTab.TheirSettings == _activePanelTab
             ? $"{text}{suffix} Puppeteer Permissions & Interactions"
-            : $"{text}{suffix} Puppeteer Permissions for {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}";
+            : $"{text}{suffix} Puppeteer Permissions for {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}";
         if(!ImGui.CollapsingHeader($"{headerText}")) { 
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); }
             return;
@@ -373,12 +361,12 @@ public partial class WhitelistPanel {
         var tooltipText = WhitelistPanelTab.TheirSettings == _activePanelTab
             ? $"View which toybox permissions {text} has set for you.\n"+
               $"You can also execute patterns and adjust their active toy's intensity if you have access to do so."
-            : $"Configure what toybox permissions you wish to give {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]} access to.\n"+
+            : $"Configure what toybox permissions you wish to give {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]} access to.\n"+
               "Any permissions that cannot be toggled are readonly because they must be toggled in the toybox module.";
         
         var headerText = WhitelistPanelTab.TheirSettings == _activePanelTab
             ? $"{text}{suffix} Toybox Permissions & Interactions"
-            : $"{text}{suffix} Toybox Permissions for {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess).Split(' ')[0]}";
+            : $"{text}{suffix} Toybox Permissions for {AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess).Split(' ')[0]}";
         if(!ImGui.CollapsingHeader($"{headerText}")) { 
             if(ImGui.IsItemHovered()) { ImGui.SetTooltip($"{tooltipText}"); }
             return;

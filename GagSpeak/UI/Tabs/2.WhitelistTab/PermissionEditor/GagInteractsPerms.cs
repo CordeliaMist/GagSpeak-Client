@@ -89,9 +89,9 @@ public partial class WhitelistPanel {
             // unlock gag
             if (ImGui.Button("Unlock Gag", new Vector2(ImGui.GetContentRegionAvail().X, 34*ImGuiHelpers.GlobalScale))) {
                 // if our selected dropdown lock label doesnt match the currently equipped type of the player, send an error message to the chat
-                if(_lockLabel != _tempWhitelistChar._selectedGagPadlocks[layer].ToString()) {
+                if(_lockLabel != _characterHandler.whitelistChars[_characterHandler.activeListIdx]._selectedGagPadlocks[layer].ToString()) {
                     GSLogger.LogType.Debug($"[Whitelist]: Selected lock type does not match equipped lock type of that player! "+
-                    $"({_lockLabel} != {_tempWhitelistChar._selectedGagPadlocks[layer].ToString()})");
+                    $"({_lockLabel} != {_characterHandler.whitelistChars[_characterHandler.activeListIdx]._selectedGagPadlocks[layer].ToString()})");
                     _chatGui.Print(
                         new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddRed($"Selected lock type does not match equipped lock "+
                         $"type of that player!").AddItalicsOff().BuiltString

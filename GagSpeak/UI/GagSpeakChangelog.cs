@@ -33,6 +33,7 @@ public class GagSpeakChangelog
         Add3_0_1_0(Changelog);
         Add3_1_0_0(Changelog);
         Add3_1_1_0(Changelog);
+        Add3_1_2_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -59,6 +60,11 @@ public class GagSpeakChangelog
             _config.Save();
         }
     }
+
+    private static void Add3_1_2_0(Changelog log)
+        => log.NextVersion("Version 3.1.2.0 Release")
+            .RegisterHighlight("Fixed the issue in where dynamics between players were fucked up for the first index of the whitelist until you reloaded the plugin.")
+            .RegisterHighlight("Fixed the issue in where a refresh was not applied when a gag was removed.");
 
     private static void Add3_1_1_0(Changelog log)
         => log.NextVersion("Version 3.1.1.0 Release")

@@ -16,7 +16,7 @@ public partial class WhitelistPanel {
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         // store their dynamic tier for edit purposes
-        DynamicTier dynamicTier = _tempWhitelistChar.GetDynamicTierClient();
+        DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTierClient();
         // draw out the table for our permissions
         using (var tableOverrideSettings = ImRaii.Table("RelationsManagerTable", 4, ImGuiTableFlags.RowBg)) {
             if (!tableOverrideSettings) return;
@@ -32,7 +32,7 @@ public partial class WhitelistPanel {
             if(ImGui.IsItemHovered()) { var tt = tooltips["usedSafewordTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             var usedSafewordIcon = _activePanelTab==WhitelistPanelTab.TheirSettings
-                                 ? _tempWhitelistChar._safewordUsed : _characterHandler.playerChar._safewordUsed;
+                                 ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._safewordUsed : _characterHandler.playerChar._safewordUsed;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((usedSafewordIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
@@ -48,7 +48,7 @@ public partial class WhitelistPanel {
             if(ImGui.IsItemHovered()) { var tt = tooltips["hardcoreModeTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
-                ImGuiUtil.Center((_tempWhitelistChar._inHardcoreMode ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+                ImGuiUtil.Center((_characterHandler.whitelistChars[_characterHandler.activeListIdx]._inHardcoreMode ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
             }
             if(ImGui.IsItemHovered()) { var tt = tooltips["CurrentStateTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
@@ -61,7 +61,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Extended Lock Times:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["ExtendedLockTimesTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var extendedLockTimesIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._grantExtendedLockTimes
+            var extendedLockTimesIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._grantExtendedLockTimes
                                                   : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._grantExtendedLockTimes;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((extendedLockTimesIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
@@ -85,7 +85,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Live Chat Garbler:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["LiveChatGarblerTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var directChatGarblerActiveIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._directChatGarblerActive
+            var directChatGarblerActiveIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerActive
                                                         : _characterHandler.playerChar._directChatGarblerActive;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((directChatGarblerActiveIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
@@ -109,7 +109,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Live Chat Garbler Lock:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["LiveChatGarblerLockTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var directChatGarblerLockedIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._directChatGarblerLocked
+            var directChatGarblerLockedIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerLocked
                                                         : _characterHandler.playerChar._directChatGarblerLocked;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((directChatGarblerLockedIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
@@ -134,7 +134,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Wardrobe Enabled:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["WardrobeEnabledTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var wardrobeIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._enableWardrobe
+            var wardrobeIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe
                                          : _characterHandler.playerChar._enableWardrobe;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((wardrobeIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
@@ -149,7 +149,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Puppeteer Active:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["PuppeteerEnabledTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var puppeteerIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._allowPuppeteer
+            var puppeteerIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._allowPuppeteer
                                          : _characterHandler.playerChar._allowPuppeteer;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((puppeteerIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
@@ -165,7 +165,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Toybox Enabled:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["ToyboxEnabledTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var toyboxIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._enableToybox
+            var toyboxIcon = _activePanelTab==WhitelistPanelTab.TheirSettings ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableToybox
                                        : _characterHandler.playerChar._enableToybox;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((toyboxIcon ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
@@ -198,14 +198,14 @@ public partial class WhitelistPanel {
         if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
         
         string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
-        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
         
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{targetPlayerName}'s Extended Lock Times Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistGrantExtendedLockTimes(_characterHandler.activeListIdx, !_tempWhitelistChar._grantExtendedLockTimes);
+        _characterHandler.SetWhitelistGrantExtendedLockTimes(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._grantExtendedLockTimes);
         _chatManager.SendRealMessage(_messageEncoder.OrderToggleExtendedLockTimes(playerPayload, targetPlayer));
     }
 
@@ -216,14 +216,14 @@ public partial class WhitelistPanel {
         if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
 
         string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
-        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
         
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{targetPlayerName}'s Live Chat Garbler Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistDirectChatGarblerActive(_characterHandler.activeListIdx, !_tempWhitelistChar._directChatGarblerActive);
+        _characterHandler.SetWhitelistDirectChatGarblerActive(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerActive);
         _chatManager.SendRealMessage(_messageEncoder.GagOrderToggleLiveChatGarbler(playerPayload, targetPlayer));
     }
 
@@ -234,14 +234,14 @@ public partial class WhitelistPanel {
         if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
 
         string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
-        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
 
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+ 
             $"{targetPlayerName}'s Live Chat Garbler Lock Option for your character!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistDirectChatGarblerLocked(_characterHandler.activeListIdx, !_tempWhitelistChar._directChatGarblerLocked);
+        _characterHandler.SetWhitelistDirectChatGarblerLocked(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._directChatGarblerLocked);
         _chatManager.SendRealMessage(_messageEncoder.GagOrderToggleLiveChatGarblerLock(playerPayload, targetPlayer));
     }
 

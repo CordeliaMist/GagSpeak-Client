@@ -23,7 +23,7 @@ public partial class WhitelistPanel {
         var spacing = ImGui.GetStyle().ItemInnerSpacing with { Y = ImGui.GetStyle().ItemInnerSpacing.Y };
         ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, spacing);
         // store their dynamic tier for edit purposes
-        DynamicTier dynamicTier = _tempWhitelistChar.GetDynamicTierClient();
+        DynamicTier dynamicTier = _characterHandler.whitelistChars[_characterHandler.activeListIdx].GetDynamicTierClient();
         // draw out the table for our permissions
         using (var tableOverrideSettings = ImRaii.Table("RelationsManagerTable", 4, ImGuiTableFlags.RowBg)) {
             if (!tableOverrideSettings) return;
@@ -38,7 +38,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Lock Gag Storage on Gag Lock:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["LockGagStorageTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var gagStorageUILock = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._lockGagStorageOnGagLock 
+            var gagStorageUILock = _activePanelTab==WhitelistPanelTab.TheirSettings ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockGagStorageOnGagLock 
                                              : _characterHandler.playerChar._lockGagStorageOnGagLock;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((gagStorageUILock ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
@@ -61,7 +61,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Allow Toggling Restraint Sets:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["AllowTogglingRestraintSetsTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var enableRestraintSets = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._enableRestraintSets 
+            var enableRestraintSets = _activePanelTab==WhitelistPanelTab.TheirSettings ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets 
                                                 : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._enableRestraintSets;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((enableRestraintSets ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
@@ -84,7 +84,7 @@ public partial class WhitelistPanel {
             ImGuiUtil.DrawFrameColumn($"Restraint Set Locking:");
             if(ImGui.IsItemHovered()) { var tt = tooltips["AllowLockingRestraintSetsTT"](); ImGui.SetTooltip($"{tt}"); }
             ImGui.TableNextColumn();
-            var restraintSetLocking = _activePanelTab==WhitelistPanelTab.TheirSettings ? _tempWhitelistChar._restraintSetLocking 
+            var restraintSetLocking = _activePanelTab==WhitelistPanelTab.TheirSettings ? _characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking 
                                                : _characterHandler.playerChar._uniquePlayerPerms[_characterHandler.activeListIdx]._restraintSetLocking;
             using (var font = ImRaii.PushFont(UiBuilder.IconFont)) {
                 ImGuiUtil.Center((restraintSetLocking ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
@@ -118,7 +118,7 @@ public partial class WhitelistPanel {
             ImGui.TableSetupColumn("Toggle",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Togglem").X);
 
             // None of the editable states should be enabled if the wardrobe is not enabled
-            if(!_tempWhitelistChar._enableWardrobe || _activePanelTab==WhitelistPanelTab.TheirSettings==false) { ImGui.BeginDisabled();}
+            if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _activePanelTab==WhitelistPanelTab.TheirSettings==false) { ImGui.BeginDisabled();}
             try
             {
                 
@@ -140,7 +140,7 @@ public partial class WhitelistPanel {
                     ImGuiUtil.Center("2");
                     if(ImGui.IsItemHovered()) { var tt = tooltips["ReqTierTT"](); ImGui.SetTooltip($"{tt}"); }
                     ImGui.TableNextColumn();
-                    if(!_tempWhitelistChar._enableRestraintSets) { ImGui.BeginDisabled(); }
+                    if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets) { ImGui.BeginDisabled(); }
                     try
                     {
                         if(ImGuiUtil.DrawDisabledButton("Toggle##ToggleRestraintSet", new Vector2(ImGui.GetContentRegionAvail().X, 0),
@@ -149,10 +149,10 @@ public partial class WhitelistPanel {
                             _interactOrPermButtonEvent.Invoke(5);
                         }
                     } finally {
-                        if(!_tempWhitelistChar._enableRestraintSets) { ImGui.EndDisabled(); }
+                        if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets) { ImGui.EndDisabled(); }
                     }
                     // Lock Restraint Set option, if the permission is enabled
-                    if(!_tempWhitelistChar._restraintSetLocking) { ImGui.BeginDisabled(); }
+                    if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking) { ImGui.BeginDisabled(); }
                     try
                     {
                         ImGui.AlignTextToFramePadding();
@@ -176,7 +176,7 @@ public partial class WhitelistPanel {
                             _interactOrPermButtonEvent.Invoke(5);
                         }
                     } finally {
-                        if(!_tempWhitelistChar._restraintSetLocking) { ImGui.EndDisabled(); }
+                        if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking) { ImGui.EndDisabled(); }
                     }
                     // dont need any state to try and unlock
                     ImGui.AlignTextToFramePadding();
@@ -205,7 +205,7 @@ public partial class WhitelistPanel {
                         if(ImGui.IsItemHovered()) { var tt = tooltips["StoredSetListTT"](); ImGui.SetTooltip($"{tt}"); }
                         ImGui.TableNextColumn();
                         // Create a combo box with the stored restraint data (had to convert to array because am dumb)
-                        string[] restraintData = _tempWhitelistChar._storedRestraintSets.ToArray();
+                        string[] restraintData = _characterHandler.whitelistChars[_characterHandler.activeListIdx]._storedRestraintSets.ToArray();
                         int currentRestraintIndex = _activeStoredSetListIdx==0 ? 0 : _activeStoredSetListIdx; // This should be the current selected index
                         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
                         if (ImGui.Combo("##storedRestraintData", ref currentRestraintIndex, restraintData, restraintData.Length)) {
@@ -219,7 +219,7 @@ public partial class WhitelistPanel {
                     }
                 }
             } finally {
-                if(!_tempWhitelistChar._enableWardrobe || _activePanelTab==WhitelistPanelTab.TheirSettings==false) { ImGui.EndDisabled();}
+                if(!_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableWardrobe || _activePanelTab==WhitelistPanelTab.TheirSettings==false) { ImGui.EndDisabled();}
             }
         }
         // pop the spacing
@@ -234,14 +234,14 @@ public partial class WhitelistPanel {
         if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
 
         string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
-        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
 
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+
             $"{targetPlayerName}'s GagStorageUILock state!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistLockGagStorageOnGagLock(_characterHandler.activeListIdx, !_tempWhitelistChar._lockGagStorageOnGagLock);
+        _characterHandler.SetWhitelistLockGagStorageOnGagLock(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._lockGagStorageOnGagLock);
         _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeGagStorageUiLockToggle(playerPayload, targetPlayer));
     }
 
@@ -252,14 +252,14 @@ public partial class WhitelistPanel {
         if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
 
         string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
-        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
 
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+
             $"{targetPlayerName}'s Allow RestraintSet Toggling Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistEnableRestraintSets(_characterHandler.activeListIdx, !_tempWhitelistChar._enableRestraintSets);
+        _characterHandler.SetWhitelistEnableRestraintSets(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._enableRestraintSets);
         _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeToggleRestraintSetsOption(playerPayload, targetPlayer));
     }
 
@@ -270,14 +270,14 @@ public partial class WhitelistPanel {
         if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
 
         string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
-        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
 
         // print to chat that you sent the request
         _chatGui.Print(
             new SeStringBuilder().AddItalicsOn().AddYellow($"[GagSpeak]").AddText($"Toggling  "+
             $"{targetPlayerName}'s allow RestraintSet Locking Option!").AddItalicsOff().BuiltString);
         //update information to be the new toggled state and send message
-        _characterHandler.SetWhitelistRestraintSetLocking(_characterHandler.activeListIdx, !_tempWhitelistChar._restraintSetLocking);
+        _characterHandler.SetWhitelistRestraintSetLocking(_characterHandler.activeListIdx, !_characterHandler.whitelistChars[_characterHandler.activeListIdx]._restraintSetLocking);
         _chatManager.SendRealMessage(_messageEncoder.EncodeWardrobeToggleRestraintSetLockingOption(playerPayload, targetPlayer));
     }
 
@@ -288,7 +288,7 @@ public partial class WhitelistPanel {
         if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
 
         string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
-        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
 
         // print to chat that you sent the request
         _chatGui.Print(
@@ -304,7 +304,7 @@ public partial class WhitelistPanel {
          if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
 
         string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
-        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
 
         // print to chat that you sent the request
         _chatGui.Print(
@@ -322,7 +322,7 @@ public partial class WhitelistPanel {
          if (!_characterHandler.IsIndexWithinBounds(_characterHandler.activeListIdx)) { return; }
 
         string targetPlayer = AltCharHelpers.FetchNameWorldFormatByWhitelistIdxForNAWIdxToProcess(_characterHandler.activeListIdx);
-        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _tempWhitelistChar._charNAWIdxToProcess);
+        string targetPlayerName = AltCharHelpers.FetchName(_characterHandler.activeListIdx, _characterHandler.whitelistChars[_characterHandler.activeListIdx]._charNAWIdxToProcess);
 
         // print to chat that you sent the request
         _chatGui.Print(
