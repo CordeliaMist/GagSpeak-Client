@@ -1,19 +1,19 @@
 namespace GagSpeak.Gagsandlocks {
 
-    /// <summary> the type of statechange provided by glamourerIPC </summary>
-    public enum StateChangeType {
-        Model,
-        EntireCustomize,
-        Customize,
-        Equip,
-        Weapon,
-        Stain,
-        Crest,
-        Parameter,
-        Design,
-        Reset,
-        Other,
-    }
+    // /// <summary> the type of statechange provided by glamourerIPC </summary>
+    // public enum StateChangeType {
+    //     Model,
+    //     EntireCustomize,
+    //     Customize,
+    //     Equip,
+    //     Weapon,
+    //     Stain,
+    //     Crest,
+    //     Parameter,
+    //     Design,
+    //     Reset,
+    //     Other,
+    // }
 
     public enum LockType { // unsure how ill ever use this but feel it helps make things more modular
         Padlock,        // for general padlock locking

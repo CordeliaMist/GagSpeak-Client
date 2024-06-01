@@ -10,9 +10,13 @@ using GagSpeak.CharacterData;
 using GagSpeak.Gagsandlocks;
 using GagSpeak.UI.Equipment;
 using System.Collections.Generic;
+using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using GagSpeak.Services;
 using GagSpeak.Hardcore;
+using Glamourer.Api.Helpers;
+using Glamourer.Api.Enums;
+using Glamourer.Api.IpcSubscribers;
 
 namespace GagSpeak.Interop;
 
@@ -27,11 +31,11 @@ public class GlamourerFunctions : IDisposable
     private readonly    GlamourerService                _Interop;               // the glamourer interop class
     private readonly    IFramework                      _framework;             // the framework for running tasks on the main thread
     private readonly    GagSpeakGlamourEvent            _gagSpeakGlamourEvent;  // for whenever glamourer changes
-    private readonly    OnFrameworkService              _onFrameworkService;      // character data updates/helpers (framework based)
-    private             Action<StateChangeType, nint, Lazy<string>> _ChangedDelegate;       // delgate for  GlamourChanged, so it is subscribed and disposed properly
+    private readonly    OnFrameworkService              _onFrameworkService;    // character data updates/helpers (framework based)
     private             CancellationTokenSource         _cts;
+    public  readonly    EventSubscriber<nint, StateChangeType> _StateChangedSubscriber;// for listening to state changes
 
-    public GlamourerFunctions(GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager,
+    public GlamourerFunctions(DalamudPluginInterface pi, GagStorageManager gagStorageManager, RestraintSetManager restraintSetManager,
     CharacterHandler characterHandler, GlamourerService GlamourerService, IFramework framework,
     GagSpeakGlamourEvent gagSpeakGlamourEvent, OnFrameworkService onFrameworkService, HardcoreManager hardcoreManager) {
         // initialize the glamourer interop class
@@ -44,19 +48,22 @@ public class GlamourerFunctions : IDisposable
         _gagSpeakGlamourEvent = gagSpeakGlamourEvent;
         _onFrameworkService = onFrameworkService;
         // initialize delegate for the glamourer changed event
-        _ChangedDelegate = (type, address, customize) => GlamourerChanged(type, address);
         _cts = new CancellationTokenSource(); // for handling gearset changes
         
-        _Interop._StateChangedSubscriber.Subscribe(_ChangedDelegate);    // to know when glamourer state changes
+        // also subscribe to the state changed event so we know whenever they try to change an outfit
+        _StateChangedSubscriber = StateChangedWithType.Subscriber(pi, GlamourerChanged);
+        _StateChangedSubscriber.Enable();
         _gagSpeakGlamourEvent.GlamourEventFired += GlamourEventFired;    // to know when we update any setting that should trigger a particular glamour refresh.
         _framework.Update += FrameworkUpdate;                            // to know when we should process the last glamour data
-        
         GSLogger.LogType.Information($"[GlamourerService]: GlamourerFunctions initialized!");
     }
 
     public void Dispose() {
         GSLogger.LogType.Information($"[GlamourerService]: Disposing of GlamourerService");
-        _Interop._StateChangedSubscriber.Unsubscribe(_ChangedDelegate);
+        // unsubscribe from the state changed event
+        _StateChangedSubscriber.Disable();
+        _StateChangedSubscriber.Dispose();
+        // unsub from our other events.
         _gagSpeakGlamourEvent.GlamourEventFired -= GlamourEventFired;
         _framework.Update -= FrameworkUpdate;
     }
@@ -74,43 +81,42 @@ public class GlamourerFunctions : IDisposable
         } 
     }
 
-    // we must account for certain situations, and perform an early exit return or access those functions if they are true.
-    // another slim
-
-    private void GlamourerChanged(StateChangeType type, nint address) {
-        // just know the type and address
-        if (address != _onFrameworkService._address) {
-            GSLogger.LogType.Verbose($"[GlamourerChanged]: Change not from Character, IGNORING"); return;
+    private void GlamourerChanged(nint address, StateChangeType type) {
+        // make sure it is coming from our character, otherwise ignore.
+        if (address != _onFrameworkService._address)
+        {
+            GSLogger.LogType.Verbose($"[GlamourerChanged]: Change not from Character, IGNORING");
+            return;
         }
         
-        // make sure we have wardrobe enabled
-        if(!_characterHandler.playerChar._enableWardrobe) {
+        // make sure we have wardrobe enabled, otherwise ignore
+        if(!_characterHandler.playerChar._enableWardrobe)
+        {
             GSLogger.LogType.Verbose($"[GlamourerChanged]: Wardrobe is disabled, so we wont be updating/applying any gag items");
             return;
         }
         
         // make sure we are not already processing a glamour event
-        if(_gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting || disableGlamChangeEvent) {
+        if(_gagSpeakGlamourEvent.IsGagSpeakGlamourEventExecuting || disableGlamChangeEvent)
+        {
             GSLogger.LogType.Verbose($"[GlamourerChanged]: Blocked due to request variables");
             return;
         }
         
-        // if it is a design change, then we should reapply the gags and restraint sets
-        if(type == StateChangeType.Design || type == StateChangeType.Reapply ||  type == StateChangeType.Reset) {
-            GSLogger.LogType.Verbose($"[GlamourerChanged]: StateChangeType is Design, Re-Applying any Gags or restraint sets configured if conditions are satisfied");
-            // process the latest glamourerData and append our alterations
+        // The StateChangeType is a type we want to perform a reapply on
+        if(type == StateChangeType.Design
+        || type == StateChangeType.Reapply
+        || type == StateChangeType.Reset
+        || type == StateChangeType.Equip
+        || type == StateChangeType.Stain 
+        || type == StateChangeType.Weapon)
+        {
+            GSLogger.LogType.Verbose($"[GlamourerChanged]: StateChangeType is {(StateChangeType)type}");
             _gagSpeakGlamourEvent.Invoke(UpdateType.RefreshAll);
-            return;
         }
-        
-        // CONDITION FIVE: The StateChangeType is an equip or Stain, meaning that the player changed classes in game, or gearsets, causing multiple events to trigger
-        if(type == StateChangeType.Equip || type == StateChangeType.Stain || type == StateChangeType.Weapon) {
-            var enumType = (StateChangeType)type;  
-            GSLogger.LogType.Verbose($"[GlamourerChanged]: StateChangeType is {enumType}");
-            _gagSpeakGlamourEvent.Invoke(UpdateType.RefreshAll);
-        } else {
-            var enumType = (StateChangeType)type;  
-            GSLogger.LogType.Verbose($"[GlamourerChanged]: GlamourerChangedEvent was not equipmenttype, stain, or weapon; but rather {enumType}");
+        else // it is not a type we care about, so ignore
+        {
+            GSLogger.LogType.Verbose($"[GlamourerChanged]: GlamourerChanged event was not a type we care about, so skipping (Type was: {(StateChangeType)type})");
         }
     }
 
@@ -192,7 +198,7 @@ public class GlamourerFunctions : IDisposable
                         // unequip it
                         await _Interop.SetItemToCharacterAsync(
                                 _onFrameworkService._address,
-                                Convert.ToByte(_gagStorageManager._gagEquipData[gagType]._slot),
+                                (Glamourer.Api.Enums.ApiEquipSlot)_gagStorageManager._gagEquipData[gagType]._slot,
                                 ItemIdVars.NothingItem(_gagStorageManager._gagEquipData[gagType]._slot).Id.Id,
                                 0,
                                 0
@@ -209,7 +215,7 @@ public class GlamourerFunctions : IDisposable
                     // this should replace it with nothing
                     await _Interop.SetItemToCharacterAsync(
                             _onFrameworkService._address,
-                            Convert.ToByte(_gagStorageManager._gagEquipData[gagType]._slot),
+                            (Glamourer.Api.Enums.ApiEquipSlot)_gagStorageManager._gagEquipData[gagType]._slot,
                             ItemIdVars.NothingItem(_gagStorageManager._gagEquipData[gagType]._slot).Id.Id,
                             0,
                             0
@@ -300,7 +306,7 @@ public class GlamourerFunctions : IDisposable
         // attempt to equip the blindfold to the player
         await _Interop.SetItemToCharacterAsync(
             _onFrameworkService._address,
-            Convert.ToByte(_hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._slot),
+            (Glamourer.Api.Enums.ApiEquipSlot)_hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._slot,
             _hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
             _hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._gameStain.Id, // The _drawData._gameStain.Id
             0
@@ -312,7 +318,7 @@ public class GlamourerFunctions : IDisposable
         // attempt to unequip the blindfold from the player
         await _Interop.SetItemToCharacterAsync(
             _onFrameworkService._address,
-            Convert.ToByte(_hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._slot),
+            (Glamourer.Api.Enums.ApiEquipSlot)_hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._slot,
             ItemIdVars.NothingItem(_hardcoreManager._perPlayerConfigs[idxOfBlindfold]._blindfoldItem._slot).Id.Id, // The _drawData._gameItem.Id.Id
             0,
             0
@@ -355,7 +361,7 @@ public class GlamourerFunctions : IDisposable
                         // because it is enabled, we will still apply nothing items
                         tasks.Add(_Interop.SetItemToCharacterAsync(
                             _onFrameworkService._address, 
-                            Convert.ToByte(pair.Key), // the key (EquipSlot)
+                            (Glamourer.Api.Enums.ApiEquipSlot)pair.Key, // the key (EquipSlot)
                             pair.Value._gameItem.Id.Id, // Set this slot to nothing (naked)
                             pair.Value._gameStain.Id, // The _drawData._gameStain.Id
                             0));
@@ -366,7 +372,7 @@ public class GlamourerFunctions : IDisposable
                             GSLogger.LogType.Debug($"[ApplyRestrainSetToData] Calling on Helmet Placement {pair.Key}!");
                             tasks.Add(_Interop.SetItemToCharacterAsync(
                                 _onFrameworkService._address, 
-                                Convert.ToByte(pair.Key), // the key (EquipSlot)
+                                (Glamourer.Api.Enums.ApiEquipSlot)pair.Key, // the key (EquipSlot)
                                 pair.Value._gameItem.Id.Id, // The _drawData._gameItem.Id.Id
                                 pair.Value._gameStain.Id, // The _drawData._gameStain.Id
                                 0));
@@ -414,7 +420,7 @@ public class GlamourerFunctions : IDisposable
         if(ValidGagAssignerUser(gagName, _gagStorageManager._gagEquipData[gagType])) {
             try {
                 await _Interop.SetItemToCharacterAsync(_onFrameworkService._address, 
-                                                       Convert.ToByte(_gagStorageManager._gagEquipData[gagType]._slot),
+                                                       (Glamourer.Api.Enums.ApiEquipSlot)_gagStorageManager._gagEquipData[gagType]._slot,
                                                        _gagStorageManager._gagEquipData[gagType]._gameItem.Id.Id,
                                                        _gagStorageManager._gagEquipData[gagType]._gameStain.Id,
                                                        0

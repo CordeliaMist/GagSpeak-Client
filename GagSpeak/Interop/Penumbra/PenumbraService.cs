@@ -9,10 +9,13 @@ using GagSpeak.Services;
 using Penumbra.Api;
 using Penumbra.Api.Enums;
 using Penumbra.Api.Helpers;
+using Penumbra.GameData.Interop;
+using Penumbra.GameData.Structs;
+using Penumbra.Api.IpcSubscribers;
 
 namespace GagSpeak.Interop.Penumbra;
 
-using CurrentSettings = ValueTuple<PenumbraApiEc, (bool, int, IDictionary<string, IList<string>>, bool)?>;
+// using CurrentSettings = ValueTuple<PenumbraApiEc, (bool, int, IDictionary<string, IList<string>>, bool)?>;
 
 public readonly record struct Mod(string Name, string DirectoryName) : IComparable<Mod> {
     public int CompareTo(Mod other) {
@@ -25,8 +28,8 @@ public readonly record struct Mod(string Name, string DirectoryName) : IComparab
 }
 
 // gets the settings for the mod, including all details about it.
-public readonly record struct ModSettings(IDictionary<string, IList<string>> Settings, int Priority, bool Enabled) {
-    public ModSettings() : this(new Dictionary<string, IList<string>>(), 0, false) { }
+public readonly record struct ModSettings(Dictionary<string, List<string>> Settings, int Priority, bool Enabled) {
+    public ModSettings() : this(new Dictionary<string, List<string>>(), 0, false) { }
 
     public static ModSettings Empty
         => new();
@@ -35,31 +38,35 @@ public readonly record struct ModSettings(IDictionary<string, IList<string>> Set
 // the penumbra service that we will use to interact with penumbra
 public unsafe class PenumbraService : IDisposable
 {
-    public const int RequiredPenumbraBreakingVersion = 4;
-    public const int RequiredPenumbraFeatureVersion  = 15;
-    private readonly DalamudPluginInterface                                         _pluginInterface;
-    private readonly EventSubscriber<ChangedItemType, uint>                         _tooltipSubscriber;
-    private readonly EventSubscriber<MouseButton, ChangedItemType, uint>            _clickSubscriber;
-    private          ActionSubscriber<GameObject, RedrawType>                       _redrawSubscriber;    // when a target redraws
-    private          FuncSubscriber<IList<(string, string)>>                        _getMods;             // gets the mod list for our table
-    private          FuncSubscriber<ApiCollectionType, string>                      _currentCollection;   // gets the current collection of our character (0)
-    private          FuncSubscriber<string, string, string, bool, CurrentSettings>  _getCurrentSettings;  // we shouldnt need this nessisarily  
-    private          FuncSubscriber<string, string, string, bool, PenumbraApiEc>    _setMod;              // set the mod to be enabled or disabled
-    private          FuncSubscriber<string, string, string, int, PenumbraApiEc>     _setModPriority;      // change the mod priority while active to that it overrides other things
+    public const int RequiredPenumbraBreakingVersion = 5;
+    public const int RequiredPenumbraFeatureVersion  = 0;
+    private readonly DalamudPluginInterface                                 _pluginInterface;
+    private readonly EventSubscriber<ChangedItemType, uint>                 _tooltipSubscriber;
+    private readonly EventSubscriber<MouseButton, ChangedItemType, uint>    _clickSubscriber;
+    private          RedrawObject?          _redrawSubscriber;    // when a target redraws
+    private          GetModList?            _getMods;             // gets the mod list for our table
+    private          GetCollection?         _currentCollection;   // gets the current collection of our character (0)
+    private          GetCurrentModSettings? _getCurrentSettings;  // we shouldnt need this nessisarily  
+    private          TrySetMod?             _setMod;              // set the mod to be enabled or disabled
+    private          TrySetModPriority?     _setModPriority;      // change the mod priority while active to that it overrides other things
 
-    private readonly EventSubscriber _initializedEvent;
-    private readonly EventSubscriber _disposedEvent;
-
-    public bool Available { get; private set; }
-
+    private readonly IDisposable _initializedEvent;
+    private readonly IDisposable _disposedEvent;
     private readonly OnFrameworkService _frameworkService;
+
+
+    public bool     Available    { get; private set; }
+    public int      CurrentMajor { get; private set; }
+    public int      CurrentMinor { get; private set; }
+    public DateTime AttachTime   { get; private set; }
+
     public PenumbraService(DalamudPluginInterface pi, OnFrameworkService frameworkService) {
         _frameworkService = frameworkService;
         _pluginInterface       = pi;
-        _initializedEvent      = Ipc.Initialized.Subscriber(pi, Reattach);
-        _disposedEvent         = Ipc.Disposed.Subscriber(pi, Unattach);
-        _tooltipSubscriber     = Ipc.ChangedItemTooltip.Subscriber(pi);
-        _clickSubscriber       = Ipc.ChangedItemClick.Subscriber(pi);
+        _initializedEvent      = Initialized.Subscriber(pi, Reattach);
+        _disposedEvent         = Disposed.Subscriber(pi, Unattach);
+        _tooltipSubscriber     = ChangedItemTooltip.Subscriber(pi);
+        _clickSubscriber       = ChangedItemClicked.Subscriber(pi);
         Reattach();
     }
 
@@ -79,10 +86,10 @@ public unsafe class PenumbraService : IDisposable
             return Array.Empty<(Mod Mod, ModSettings Settings)>();
 
         try{
-            var allMods    = _getMods.Invoke();
-            var collection = _currentCollection.Invoke(ApiCollectionType.Current);
+            var allMods    = _getMods!.Invoke();
+            var collection = _currentCollection!.Invoke(ApiCollectionType.Current);
             return allMods
-                .Select(m => (m.Item1, m.Item2, _getCurrentSettings.Invoke(collection, m.Item1, m.Item2, true)))
+                .Select(m => (m.Key, m.Value, _getCurrentSettings!.Invoke(collection!.Value.Id, m.Key)))
                 .Where(t => t.Item3.Item1 is PenumbraApiEc.Success)
                 .Select(t => (new Mod(t.Item2, t.Item1),
                     !t.Item3.Item2.HasValue
@@ -100,7 +107,8 @@ public unsafe class PenumbraService : IDisposable
         }
     }
 
-    public string CurrentCollection => Available ? _currentCollection.Invoke(ApiCollectionType.Current) : "<Unavailable>"; // gets the current collection type
+    public (Guid Id, string Name) CurrentCollection
+        => Available ? _currentCollection!.Invoke(ApiCollectionType.Current)!.Value : (Guid.Empty, "<Unavailable>"); // gets the current collection type
 
     /// <summary>
     /// Try to set all mod settings as desired. Only sets when the mod should be enabled.
@@ -113,27 +121,27 @@ public unsafe class PenumbraService : IDisposable
         var sb = new StringBuilder(); 
         try {
             // get the collection of our character
-            var collection = _currentCollection.Invoke(ApiCollectionType.Current);
+            var collection = _currentCollection!.Invoke(ApiCollectionType.Current)!.Value.Id;
             // create error code, assume success
             PenumbraApiEc errorCode = PenumbraApiEc.Success;
             // now, if the newsetstate is true, we should enable the mod
             if(newSetState == true) {
                 // enable the mod
-                errorCode = _setMod.Invoke(collection, mod.DirectoryName, mod.Name, true);
+                errorCode = _setMod!.Invoke(collection, mod.DirectoryName, true, mod.Name);
                 // get the recieved message
                 switch (errorCode) {
                     case PenumbraApiEc.ModMissing:        return $"The mod {mod.Name} [{mod.DirectoryName}] could not be found.";
                     case PenumbraApiEc.CollectionMissing: return $"The collection {collection} could not be found.";
                 }
                 // after this, raise the priority to 99
-                errorCode = _setModPriority.Invoke(collection, mod.DirectoryName, mod.Name, settings.Priority+50);
+                errorCode = _setModPriority!.Invoke(collection, mod.DirectoryName, settings.Priority+50, mod.Name);
                 Debug.Assert(errorCode is PenumbraApiEc.Success or PenumbraApiEc.NothingChanged, "Setting Priority should not be able to fail.");
             }
             // otherwise, we are attempting to disable the mod
             else {
                 // disable the mod, but ONLY if disabledMods is true
                 if(disableMods == true) {
-                    errorCode = _setMod.Invoke(collection, mod.DirectoryName, mod.Name, false);
+                    errorCode = _setMod!.Invoke(collection, mod.DirectoryName, false, mod.Name);
                     // get the recieved message
                     switch (errorCode) {
                         case PenumbraApiEc.ModMissing:        return $"The mod {mod.Name} [{mod.DirectoryName}] could not be found.";
@@ -141,7 +149,7 @@ public unsafe class PenumbraService : IDisposable
                     }
                 }
                 // regardless of if that was on or not, we want to reset it back to their original priority
-                errorCode = _setModPriority.Invoke(collection, mod.DirectoryName, mod.Name, settings.Priority);
+                errorCode = _setModPriority!.Invoke(collection, mod.DirectoryName, settings.Priority, mod.Name);
                 Debug.Assert(errorCode is PenumbraApiEc.Success or PenumbraApiEc.NothingChanged, "Setting Priority should not be able to fail.");
             }
 
@@ -167,7 +175,7 @@ public unsafe class PenumbraService : IDisposable
     /// <summary> Try to redraw the given actor. </summary>
     public void RedrawObject(IntPtr playerCharObjPtr, RedrawType settings) {
         GameObject playerCharObj = _frameworkService.CreateGameObject(playerCharObjPtr) ?? throw new InvalidOperationException("Player object not found.");
-        _redrawSubscriber.Invoke(playerCharObj, settings);
+        _redrawSubscriber!.Invoke(playerCharObj.ObjectIndex, settings);
 
     }
 
@@ -176,21 +184,40 @@ public unsafe class PenumbraService : IDisposable
         try {
             // unattach from the current penumbra
             Unattach();
-            // get the version of the penumbra
-            var (breaking, feature) = Ipc.ApiVersions.Subscriber(_pluginInterface).Invoke();
-            if (breaking != RequiredPenumbraBreakingVersion || feature < RequiredPenumbraFeatureVersion) {
+
+            AttachTime = DateTime.UtcNow;
+            try
+            {
+                (CurrentMajor, CurrentMinor) = new global::Penumbra.Api.IpcSubscribers.ApiVersion(_pluginInterface).Invoke();
+            }
+            catch
+            {
+                try
+                {
+                    (CurrentMajor, CurrentMinor) = new global::Penumbra.Api.IpcSubscribers.Legacy.ApiVersions(_pluginInterface).Invoke();
+                }
+                catch
+                {
+                    CurrentMajor = 0;
+                    CurrentMinor = 0;
+                    throw;
+                }
+            }
+            // if its broken, dont reattach
+            if (CurrentMajor != RequiredPenumbraBreakingVersion || CurrentMinor < RequiredPenumbraFeatureVersion)
+            {
                 throw new Exception(
-                    $"Invalid Version {breaking}.{feature:D4}, required major Version {RequiredPenumbraBreakingVersion} with feature greater or equal to {RequiredPenumbraFeatureVersion}.");
+                    $"Invalid Version {CurrentMajor}.{CurrentMinor:D4}, required major Version {RequiredPenumbraBreakingVersion} with feature greater or equal to {RequiredPenumbraFeatureVersion}.");
             }
             // attach to the penumbra
             _tooltipSubscriber.Enable();
             _clickSubscriber.Enable();
-            _redrawSubscriber   = Ipc.RedrawObject.Subscriber(_pluginInterface);
-            _getMods            = Ipc.GetMods.Subscriber(_pluginInterface);
-            _currentCollection  = Ipc.GetCollectionForType.Subscriber(_pluginInterface);
-            _getCurrentSettings = Ipc.GetCurrentModSettings.Subscriber(_pluginInterface);
-            _setMod             = Ipc.TrySetMod.Subscriber(_pluginInterface);
-            _setModPriority     = Ipc.TrySetModPriority.Subscriber(_pluginInterface);
+            _redrawSubscriber   = new RedrawObject(_pluginInterface);
+            _getMods            = new GetModList(_pluginInterface);
+            _currentCollection  = new GetCollection(_pluginInterface);
+            _getCurrentSettings = new GetCurrentModSettings(_pluginInterface);
+            _setMod             = new TrySetMod(_pluginInterface);
+            _setModPriority     = new TrySetModPriority(_pluginInterface);
             Available           = true;
             // _penumbraReloaded.Invoke();
             GSLogger.LogType.Debug("Glamourer attached to Penumbra.");

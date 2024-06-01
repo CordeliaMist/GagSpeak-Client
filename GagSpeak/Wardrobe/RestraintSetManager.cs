@@ -17,6 +17,7 @@ namespace GagSpeak.Wardrobe;
 
 public class RestraintSetManager : ISavable, IDisposable
 {
+    public const int RestraintSetsFileVersion = 1;
     public List<RestraintSet> _restraintSets = []; // stores the restraint sets
     public int _selectedIdx = 0;
 
@@ -408,6 +409,7 @@ public class RestraintSetManager : ISavable, IDisposable
             array.Add(set.Serialize());
         // return the new object under the label "RestraintSets"
         return new JObject() {
+            ["Version"] = RestraintSetsFileVersion,
             ["ActiveSetIdx"] = _selectedIdx,
             ["RestraintSets"] = array,
         };
@@ -423,16 +425,30 @@ public class RestraintSetManager : ISavable, IDisposable
         try {
             var text = File.ReadAllText(file);
             var jsonObject = JObject.Parse(text);
+
+            // first deserialize the activesetidx and the sets array, as these are supported under both deserializations
             _selectedIdx = jsonObject["ActiveSetIdx"]?.Value<int>() ?? 0;
             var restraintSetsArray = jsonObject["RestraintSets"]?.Value<JArray>();
             if(restraintSetsArray == null) {
                 throw new Exception("RestraintSets.json is missing the RestraintSets array.");
             }
+
+            // Check if "Version" property exists. Basically anything from version 0 is processed here to be migrated to version 1
+            if (jsonObject["Version"] == null || jsonObject["Version"].Value<int>() < RestraintSetsFileVersion)
+            {
+                GSLogger.LogType.Information($"[RestraintSetManager] RestraintSetManager is behind in file versions, migrating!");
+            }
+            else
+            {
+                // let us know we are up to date
+                GSLogger.LogType.Information($"[RestraintSetManager] Your RestraintSetManager file is up to date, migration not nessisary!");
+            }
+            // we are in version 1, so we should deserialize appropriately
             foreach (var item in restraintSetsArray) {
                 var restraintSet = new RestraintSet();
                 var ItemValue = item.Value<JObject>();
                 if (ItemValue != null) {
-                    restraintSet.Deserialize(ItemValue);
+                    restraintSet.Deserialize(ItemValue, RestraintSetsFileVersion);
                     _restraintSets.Add(restraintSet);
                 } else {
                     GSLogger.LogType.Error($"[RestraintSetManager] Array contains an invalid entry (it is null), skipping!");
@@ -441,7 +457,7 @@ public class RestraintSetManager : ISavable, IDisposable
         } catch (Exception ex) {
             GSLogger.LogType.Error($"Failure to load automated designs: Error during parsing. {ex}");
         } finally {
-            GSLogger.LogType.Debug($"[GagStorageManager] RestraintSets.json loaded! Loaded {_restraintSets.Count} restraint sets.");
+            GSLogger.LogType.Debug($"[RestraintSetManager] RestraintSets.json loaded! Loaded {_restraintSets.Count} restraint sets.");
         }
     }
 }

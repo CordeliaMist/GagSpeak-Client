@@ -111,7 +111,7 @@ public unsafe class ChatInputProcessor : IDisposable {
             var inputString = Encoding.UTF8.GetString(*message, bc);
             var matchedCommand = "";
             var matchedChannelType = "";
-            GSLogger.LogType.Information($"[Chat Processor]: Detouring Message: {inputString}"); // see our message
+            ////////////////////////////////////////////// GSLogger.LogType.Information($"[Chat Processor]: Detouring Message: {inputString}"); // see our message
             // first let's make sure its not a command
             if (inputString.StartsWith("/")) {
                 // Check if command is not one of configured channels commands
@@ -150,7 +150,7 @@ public unsafe class ChatInputProcessor : IDisposable {
                 && _characterHandler.playerChar._directChatGarblerActive)
             {
                 // if we satisfy this condition, it means we can try to attempt modifying the message.
-                GSLogger.LogType.Debug($"[Chat Processor]: Input -> {inputString}, MatchedCommand -> {matchedCommand}");
+                //////////////////////////////////////////////  GSLogger.LogType.Debug($"[Chat Processor]: Input -> {inputString}, MatchedCommand -> {matchedCommand}");
                 // we can try to attempt modifying the message.
                 try {
                     //////////////////////// MAIN SECTION WHERE THE MESSAGE IS ACTUALLY TRANSLATED ////////////////////////
@@ -170,14 +170,14 @@ public unsafe class ChatInputProcessor : IDisposable {
                     var output = _gagManager.ProcessMessage(stringToProcess);
                     // adding command back to front
                     output = matchedCommand + output;
-                    GSLogger.LogType.Debug($"[Chat Processor]: Output -> {output}");
+                    ////////////////////////////////////////////// GSLogger.LogType.Debug($"[Chat Processor]: Output -> {output}");
 
                     // create the new string
                     var newStr = output;
                     // if our new string is less than or equal to 500 characters, we can alias it
                     if (newStr.Length <= 500) {
                         // log the sucessful alias
-                        GSLogger.LogType.Debug($"[Chat Processor]: New Packet Message: {newStr}");
+                       //////////////////////////////////////////////  GSLogger.LogType.Debug($"[Chat Processor]: New Packet Message: {newStr}");
                         // encode the new string
                         var bytes = Encoding.UTF8.GetBytes(newStr);
                         // allocate the memory

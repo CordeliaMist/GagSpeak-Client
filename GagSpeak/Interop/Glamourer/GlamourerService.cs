@@ -3,8 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin;
-using Dalamud.Plugin.Ipc;
 using Dalamud.Plugin.Services;
+using Glamourer.Api.Enums;
+using Glamourer.Api.IpcSubscribers;
 using GagSpeak.Services;
 
 namespace GagSpeak.Interop;
@@ -19,46 +20,23 @@ public sealed class GlamourerService : IDisposable
     private readonly OnFrameworkService _OnFrameworkService; // the game framework utility
     
     /// <summary> Initialize the IPC Subscriber callgates:  </summary>
-    public readonly ICallGateSubscriber<(int, int)> _ApiVersions; // Gets Glamourer's API version.
-    public readonly ICallGateSubscriber<GameObject?, string>? _GetAllCustomizationFromCharacter; // get all customization from YOUR player character
-    public readonly ICallGateSubscriber<string, GameObject?, object>? _ApplyOnlyEquipmentToCharacter; // for applying equipment to player
-    public readonly ICallGateSubscriber<string, GameObject?, object>? _ApplyOnlyCustomizationsToCharacter; // for applying customizations to player
-    public readonly ICallGateSubscriber<GameObject?, uint, bool> _UnlockCharacter; // Unlocks yourself, allowing you to edit again.
-    public readonly ICallGateSubscriber<GameObject?, object> _RevertCharacter; // Unlocks yourself, and reverts you back to base game state
-    // public readonly ICallGateSubscriber<GameObject?, uint, object?> _RevertCharacterLock; // Unlocks yourself, and reverts you back to base game state
-    public readonly ICallGateSubscriber<GameObject?, uint, bool> _RevertToAutomationCharacter; // reverts your character to the automation design state of that job.
-    public readonly ICallGateSubscriber<GameObject?, byte, ulong, byte, uint, int> _SetItemOnce; // sets an item to your character
-    public readonly ICallGateSubscriber<StateChangeType, nint, Lazy<string>, object?> _StateChangedSubscriber;
-
-    public readonly uint LockCode = 0x6D617265; // setting a lock code for our plugin
+    private readonly ApiVersion _ApiVersion; // the API version of glamourer
+    private readonly ApplyState? _ApplyOnlyEquipment; // for applying equipment to player
+    private readonly SetItem _SetItem; // for setting an item to the character (not once by default, must setup with flags)
+    private readonly RevertState _RevertCharacter; // for reverting the character
+    private readonly RevertToAutomation _RevertToAutomation; // for reverting the character to automation
     private bool _Available = false; // defines if glamourer is currently interactable at all or not.
 
     public GlamourerService(DalamudPluginInterface pluginInterface, OnFrameworkService OnFrameworkService, IClientState clientState) {
         _pluginInterface = pluginInterface; // initialize the plugin interface
         _OnFrameworkService = OnFrameworkService; // initialize the game framework utility
         _clientState = clientState; // initialize the client state utility
-        
-        // API callgate
-        _ApiVersions = _pluginInterface.GetIpcSubscriber<(int, int)>("Glamourer.ApiVersions");
-        
-        // customization callgates
-        _GetAllCustomizationFromCharacter = _pluginInterface.GetIpcSubscriber<GameObject?, string>("Glamourer.GetAllCustomizationFromCharacter");
-        
-        // apply callgates
-        _ApplyOnlyEquipmentToCharacter = _pluginInterface.GetIpcSubscriber<string, GameObject?, object>("Glamourer.ApplyOnlyEquipmentToCharacter"); // Meant for you
-        _ApplyOnlyCustomizationsToCharacter = _pluginInterface.GetIpcSubscriber<string, GameObject?, object>("Glamourer.ApplyOnlyCustomizationToCharacter"); // Meant for you
-        
-        // unlock & revert callgates
-        _UnlockCharacter = _pluginInterface.GetIpcSubscriber<GameObject?, uint, bool>("Glamourer.Unlock");
-        _RevertCharacter = _pluginInterface.GetIpcSubscriber<GameObject?, object>("Glamourer.RevertCharacter");
-            // _RevertCharacterLock = _pluginInterface.GetIpcSubscriber<GameObject?, uint, object?>("Glamourer.RevertCharacterLock");
-        _RevertToAutomationCharacter = _pluginInterface.GetIpcSubscriber<GameObject?, uint, bool>("Glamourer.RevertToAutomationCharacter");
-        
-        // set item callgate
-        _SetItemOnce = _pluginInterface.GetIpcSubscriber<GameObject?, byte, ulong, byte, uint, int>("Glamourer.SetItem"); 
-        
-        // also subscribe to the state changed event so we know whenever they try to change an outfit
-        _StateChangedSubscriber = _pluginInterface.GetIpcSubscriber<StateChangeType, nint, Lazy<string>, object?>("Glamourer.StateChanged");
+
+        _ApiVersion = new ApiVersion(_pluginInterface); // get the API version
+        _ApplyOnlyEquipment = new ApplyState(_pluginInterface); // get the apply only equipment callgate
+        _SetItem = new SetItem(_pluginInterface); // get the set item callgate
+        _RevertCharacter = new RevertState(_pluginInterface); // get the revert character callgate
+        _RevertToAutomation = new RevertToAutomation(_pluginInterface); // get the revert to automation callgate
     }
 
     public void Dispose() {
@@ -80,13 +58,13 @@ public sealed class GlamourerService : IDisposable
     private bool CheckGlamourerApiInternal() {
         bool apiAvailable = false; // assume false at first
         try {
-            var version = _ApiVersions.InvokeFunc();
+            var version = _ApiVersion.Invoke();
             // once obtained, check if it matches the version of the currently installed glamourer from the plugin list
             bool versionValid = (_pluginInterface.InstalledPlugins
                 .FirstOrDefault(p => string.Equals(p.InternalName, "Glamourer", StringComparison.OrdinalIgnoreCase))
-                ?.Version ?? new Version(0, 0, 0, 0)) >= new Version(1, 0, 6, 1);
-            // if the version is 0.1.0 or higher, and the version is valid, then we can assume the API is available.
-            if (version.Item1 == 0 && version.Item2 >= 1 && versionValid) {
+                ?.Version ?? new Version(0, 0, 0, 0)) >= new Version(1, 2, 1, 4);
+            if (version is { Major: 1, Minor: >= 1 } && versionValid)
+            {
                 apiAvailable = true;
             }
             return apiAvailable;
@@ -101,7 +79,8 @@ public sealed class GlamourerService : IDisposable
 
     /// <summary> ========== BEGIN OUR IPC CALL MANAGEMENT UNDER ASYNC TASKS ========== </summary>
     
-    /// <summary> Apply all customizations to the character. </summary>
+    // /// <summary> Apply all customizations to the character. </summary>
+    /*
     public async Task ApplyAllToCharacterAsync(string? customization, IntPtr character) {
         // If our customization is empty, glamourer is not enabled, or we are zoning, do not process this request.
         if (!CheckGlamourerApi() || string.IsNullOrEmpty(customization)) return;
@@ -112,34 +91,17 @@ public sealed class GlamourerService : IDisposable
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
                     GSLogger.LogType.Verbose("[ApplyAllAsyncIntrop] Calling on IPC: GlamourerApplyAll");
-                    _ApplyOnlyEquipmentToCharacter!.InvokeAction(customization, c); // can modify to be the lock later.
+                    _ApplyOnlyEquipment!.Invoke(customization, c.ObjectIndex, 0, Glamourer.Api.Enums.ApplyFlag.Equipment);
                 }
             }).ConfigureAwait(false);
         } catch (Exception) {
             GSLogger.LogType.Debug("[ApplyAllAsyncIntrop] Failed to apply Glamourer data");
         } 
     }
+    */
 
-    /// <summary> Apply all customizations to the character. </summary>
-    public async Task ApplyCustomizationsToCharacterAsync(string? customization, IntPtr character) {
-        // If our customization is empty, glamourer is not enabled, or we are zoning, do not process this request.
-        if (!CheckGlamourerApi() || string.IsNullOrEmpty(customization)) return;
-        try {
-            await _OnFrameworkService.RunOnFrameworkThread(() => {
-                // set the game object to the character
-                var gameObj = _OnFrameworkService.CreateGameObject(character);
-                // if the game object is the character, then get the customization for it.
-                if (gameObj is Character c) {
-                    GSLogger.LogType.Verbose("[ApplyAllAsyncIntrop] Calling on IPC: ApplyOnlyCustomizaitonsToCharacter");
-                    _ApplyOnlyCustomizationsToCharacter!.InvokeAction(customization, c); // can modify to be the lock later.
-                }
-            }).ConfigureAwait(false);
-        } catch (Exception) {
-            GSLogger.LogType.Debug("[ApplyAllAsyncIntrop] Failed to apply Glamourer data");
-        } 
-    }
-
-    /// <summary> Apply only equipment to the character. </summary>
+    // /// <summary> Apply only equipment to the character. </summary>
+    /*
     public async Task<string> GetCharacterCustomizationAsync(IntPtr character) {
         // if the glamourerApi is not active, then return an empty string for the customization
         if (!CheckGlamourerApi()) return string.Empty;
@@ -161,8 +123,9 @@ public sealed class GlamourerService : IDisposable
             return string.Empty;
         }
     }
+    */
 
-    public async Task SetItemToCharacterAsync(IntPtr character, byte slot, ulong item, byte dye, uint variant) {
+    public async Task SetItemToCharacterAsync(IntPtr character, Glamourer.Api.Enums.ApiEquipSlot slot, ulong item, byte dye, uint variant) {
         // if the glamourerApi is not active, then return an empty string for the customization
         if (!CheckGlamourerApi()) return;
         try {
@@ -172,7 +135,7 @@ public sealed class GlamourerService : IDisposable
                 var gameObj = _OnFrameworkService.CreateGameObject(character);
                 // if the game object is the character, then get the customization for it.
                 if (gameObj is Character c) {
-                    _SetItemOnce!.InvokeFunc(c, slot, item, dye, 1337);
+                    _SetItem!.Invoke(c.ObjectIndex, slot, item, dye, 1337);
                 }
             }).ConfigureAwait(true);
         } catch(Exception ex) {
@@ -194,11 +157,14 @@ public sealed class GlamourerService : IDisposable
                     // set the game object to the character
                     var gameObj = _OnFrameworkService.CreateGameObject(character);
                     // if the game object is the character, then get the customization for it.
-                    if (gameObj is Character c) {
+                    if (gameObj is Character c)
+                    {
                         GSLogger.LogType.Verbose("[GlamourRevertIPC] Calling on IPC: GlamourerRevertToAutomationCharacter");
-                        bool result = _RevertToAutomationCharacter.InvokeFunc(c, 1337);
+                        GlamourerApiEc result = _RevertToAutomation.Invoke(c.ObjectIndex);
                         GSLogger.LogType.Verbose($"[GlamourRevertIPC] Revert to automation result: {result}");
-                        if(!result) {
+                        // if it doesnt return success, revert to game instead
+                        if(result != GlamourerApiEc.Success)
+                        {
                             GSLogger.LogType.Warning($"[GlamourRevertIPC] Revert to automation failed, reverting to game instead");
                             await GlamourerRevertCharacter(character);
                         }
@@ -229,7 +195,7 @@ public sealed class GlamourerService : IDisposable
                     var gameObj = _OnFrameworkService.CreateGameObject(character);
                     // if the game object is the character, then get the customization for it.
                     if (gameObj is Character c) {
-                        _RevertCharacter.InvokeAction(c);
+                        _RevertCharacter.Invoke(c.ObjectIndex);
                     }
                 }
                 catch (Exception ex)

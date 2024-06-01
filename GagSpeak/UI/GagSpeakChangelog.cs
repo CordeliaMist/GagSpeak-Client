@@ -34,6 +34,7 @@ public class GagSpeakChangelog
         Add3_1_0_0(Changelog);
         Add3_1_1_0(Changelog);
         Add3_1_2_0(Changelog);
+        Add3_1_3_0(Changelog);
     }
 
     /// <summary> Retrieves the configuration data. </summary>
@@ -60,6 +61,10 @@ public class GagSpeakChangelog
             _config.Save();
         }
     }
+
+    private static void Add3_1_3_0(Changelog log)
+        => log.NextVersion("Version 3.1.3.0 Release")
+            .RegisterHighlight("Updated to work with the new penumbra and glamourer API's");
 
     private static void Add3_1_2_0(Changelog log)
         => log.NextVersion("Version 3.1.2.0 Release")

@@ -6,7 +6,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <Copyright>Copyright © 2023</Copyright>
     <LangVersion>latest</LangVersion>
-    <Version>3.1.2.0</Version>
+    <Version>3.1.3.0</Version>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
@@ -90,6 +90,7 @@
     <ProjectReference Include="..\Penumbra.String\Penumbra.String.csproj" />
 	  <ProjectReference Include="..\Penumbra.GameData\Penumbra.GameData.csproj" />
     <ProjectReference Include="..\OtterGui\OtterGui.csproj" />
+    <ProjectReference Include="..\Glamourer.Api\Glamourer.Api.csproj" />
 		<PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Buttplug" Version="3.0.1" />
     <PackageReference Include="Buttplug.Client.Connectors.WebsocketConnector" Version="3.0.1" />

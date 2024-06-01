@@ -118,7 +118,7 @@ public class RestraintSet //: IDisposable
         return ret;
     }
 
-    public void Deserialize(JObject jsonObject) {
+    public void Deserialize(JObject jsonObject, int RestraintSetFileVersion = 0) {
         #pragma warning disable CS8604, CS8602 // Possible null reference argument.
         _name = jsonObject["Name"]?.Value<string>() ?? string.Empty;
         _description = jsonObject["Description"]?.Value<string>() ?? string.Empty;
@@ -145,12 +145,20 @@ public class RestraintSet //: IDisposable
                 }
             }
         }
-        // load the mods
-        DeserializeMods(jsonObject["AssociatedMods"]);
+        // load the mods, based on the version
+        if(RestraintSetFileVersion < 1)
+        {
+            DeserializeModsV0(jsonObject["AssociatedMods"]);
+        }
+        else
+        {
+            // we can assume this is the up to date version now
+            DeserializeModsV1(jsonObject["AssociatedMods"]);
+        }
         #pragma warning restore CS8604, CS8602 // Possible null reference argument.
     }
 
-    private void DeserializeMods(JToken? mods) {
+    private void DeserializeModsV0(JToken? mods) {
         if (mods is not JArray array)
             return;
 
@@ -165,7 +173,42 @@ public class RestraintSet //: IDisposable
                 continue;
             }
 
-            var settingsDict = tok["Settings"]?.ToObject<Dictionary<string, IList<string>>>() ?? new Dictionary<string, IList<string>>();
+            // convert the dictionaries to match version 1
+            var originalDict = tok["Settings"]?.ToObject<Dictionary<string, IList<string>>>();
+            var settingsDict = new Dictionary<string, List<string>>();
+
+            if (originalDict != null)
+            {
+                foreach (var kvp in originalDict)
+                {
+                    settingsDict[kvp.Key] = new List<string>(kvp.Value);
+                }
+            }
+            var priority = tok["Priority"]?.ToObject<int>() ?? 0;
+
+            var mod = new Mod(name, directory);
+            var modSettings = new ModSettings(settingsDict, priority, enabled.Value);
+
+            _associatedMods.Add((mod, modSettings, disableWhenInactive, redrawAfterToggle));
+        }
+    }
+
+    private void DeserializeModsV1(JToken? mods) {
+        if (mods is not JArray array)
+            return;
+
+        foreach (var tok in array) {
+            var name      = tok["Name"]?.ToObject<string>();
+            var directory = tok["Directory"]?.ToObject<string>();
+            var enabled   = tok["Enabled"]?.ToObject<bool>();
+            var disableWhenInactive = tok["DisableWhenInactive"]?.ToObject<bool>() ?? false;
+            var redrawAfterToggle = tok["RedrawAfterToggle"]?.ToObject<bool>() ?? false;
+            if (name == null || directory == null || enabled == null) {
+                GagSpeak.Messager.NotificationMessage("The loaded design contains an invalid mod, skipped.", NotificationType.Warning);
+                continue;
+            }
+
+            var settingsDict = tok["Settings"]?.ToObject<Dictionary<string, List<string>>>() ?? new Dictionary<string, List<string>>();
             var priority = tok["Priority"]?.ToObject<int>() ?? 0;
 
             var mod = new Mod(name, directory);
