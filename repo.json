@@ -32,9 +32,9 @@
         "IsTestingExclusive": "False",
         "DownloadCount": 35849,
         "LastUpdate": 1618608322,
-        "DownloadLinkInstall": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v3.1.3.0-Release/latest.zip",
-        "DownloadLinkUpdate": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v3.1.3.0-Release/latest.zip",
-        "DownloadLinkTesting": "https://github.com/CordeliaMist/Dalamud-GagSpeak/releases/download/v3.1.3.0-Release/latest.zip",
-        "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Dalamud-GagSpeak/main/images/icon.png"
+        "DownloadLinkInstall": "https://github.com/CordeliaMist/GagSpeak-Client/releases/download/v3.1.3.0-Release/latest.zip",
+        "DownloadLinkUpdate": "https://github.com/CordeliaMist/GagSpeak-Client/releases/download/v3.1.3.0-Release/latest.zip",
+        "DownloadLinkTesting": "https://github.com/CordeliaMist/GagSpeak-Client/releases/download/v3.1.3.0-Release/latest.zip",
+        "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/GagSpeak-Client/main/images/icon.png"
     }
 ]
