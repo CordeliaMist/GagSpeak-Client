@@ -1,4 +1,6 @@
 # Dalamud-GagSpeak 
+NOTICE: THIS PLUGIN IS OVERGOING MASSIVE CHANGES. ANY ISSUES MADE UNTIL ITS RELEASE WILL BE IGNORED!
+
 ![Banner Image](images/promopic2.png)
 # Overview
 GagSpeak is made with the intent of being more than just a one-sided translator. Gagspeak will allow the user to muffle their speech using a sophisticated garbler algorithm, based on real life gag sound data, to accurately garble speech for each individual gag in their own unique way.
